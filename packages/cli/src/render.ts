@@ -4,14 +4,14 @@
 // A `.flux` archive is opened by the loader under the shape content policy; its saved packs' exact
 // artwork fonts are embedded under their private aliases, and missing bytes refuse it (ADR-0192).
 import { readFile, writeFile } from 'node:fs/promises';
-import { loadFlux, sha256Hex } from '@fluxion/format';
+import { embeddedConnectors, loadFlux, sha256Hex } from '@fluxion/format';
 import { type AssetUrls, builtinRegistries } from '@fluxion/render';
 import { type EmbeddedShapePacks, embedSavedShapePacks, renderDocumentToHtml } from '@fluxion/render/ssr';
-import { globalRoutes } from '@fluxion/routing';
+import { globalRoutes, registerConnectorDefs } from '@fluxion/routing';
 import { type Diagnostic, type DocumentFile, jsonPointer, parseDocument, type RecordId } from '@fluxion/schema';
 import { allowsShapePackContentLicense } from '@fluxion/sdk';
 import { type Command, internal, io, type Outcome, unsupported, usage } from './command.js';
-import { hostRegistries } from './host.js';
+import { hostRegistries, hostRouters } from './host.js';
 import { measurerFor } from './measurer.js';
 import { type Launcher, playwrightLauncher, renderPngs } from './render-png.js';
 
@@ -76,9 +76,10 @@ function pageOf(
   const problem = screenProblem(document, options.screens ?? [], options.label);
   if (problem !== undefined) return usage(problem);
   const fonts = options.embedded?.fonts ?? [];
-  // shapes and markers come from the bundled packs, registered in the host's core registries (ADR-0017); the connectors draw the global
-  // routing pass's routes, as the studio and the .flux.html do (M16.28)
-  const registries = { ...builtinRegistries(host.shapeDefs, undefined, host.markers, options.embedded?.artworkFonts), globalPass: () => globalRoutes };
+  // shapes, markers and connector types come from the bundled packs (and a .flux's own), registered in the host's core registries
+  // (ADR-0017, M18.252); the connectors draw the global routing pass's routes, as the studio and the .flux.html do (M16.28)
+  const routers = hostRouters(host);
+  const registries = { ...builtinRegistries(host.shapeDefs, routers, host.markers, options.embedded?.artworkFonts), globalPass: () => globalRoutes };
   const { html, screens: drawn } = renderDocumentToHtml(document, {
     registries,
     measurer: measurerFor(document),
@@ -119,7 +120,29 @@ export async function archivePage(bytes: Uint8Array, screens: readonly string[] 
   const noted = notes.map(
     (n): Diagnostic => ({ code: 'FLX_CLI_IO', severity: 'warning', path: jsonPointer(['entries', n.entry]), message: `${label}: ${n.message}` }),
   );
-  return pageOf(document, host.registries, { screens, label, diagnostics: [...diagnostics, ...noted], embedded: packs.value, assets: assetUrls(loaded.value) });
+  const refusedTypes = registerEmbeddedConnectors(hostRouters(host.registries), loaded.value.extraEntries, label);
+  return pageOf(document, host.registries, {
+    screens,
+    label,
+    diagnostics: [...diagnostics, ...noted, ...refusedTypes],
+    embedded: packs.value,
+    assets: assetUrls(loaded.value),
+  });
+}
+
+/**
+ * Register the pack connector types `entries` (a `.flux`'s extra entries) carry into `routers`, as the studio does on open
+ * (FR-CON-010, FR-LIB-009): each `connectors/<pack>.json` all or none, over a bundled pack's types of that namespace. A refused
+ * entry is a warning, and its connectors are drawn as an unknown type.
+ */
+function registerEmbeddedConnectors(routers: ReturnType<typeof hostRouters>, entries: ReadonlyMap<string, Uint8Array>, label: string): Diagnostic[] {
+  return embeddedConnectors(entries).flatMap(({ pack, input }): Diagnostic[] => {
+    const r = registerConnectorDefs(routers, input, pack);
+    if (r.ok) return [];
+    const why = r.error.map((d) => d.message).join('; ');
+    const message = `${label}: the connector types of ${pack} were refused (${why}); its connectors are drawn as plain routes`;
+    return [{ code: 'FLX_PACK_INVALID', severity: 'warning', path: jsonPointer(['entries', `connectors/${pack}.json`]), message }];
+  });
 }
 
 /** The archive's images as `data:` URLs by asset record id, from the loader's verified bytes. */
