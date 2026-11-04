@@ -188,3 +188,5 @@ cp34 F4: M18.144 landed a three-engine e2e run only on Chromium and closed befor
 cp35 F4: Bullets carry no task id the gate can tell apart from a reference, as M18.231 r2 found. The harm in cp34 F2, rounds restarting past the cap, is closed by foreignLineProblems and nextRound's landed set, both with harness cases, and a misplaced bullet now needs its digest lines, which are refused. Review code-reviews progress bullets by hand until a structured progress format exists.
 
 M18.242 F1: r2 minor, a dangling "On that engine" before "The probe measured" in ADR-0215 option 3; the sentence after it says what the probe measured, so the meaning stands. A round is not spent on it alone (code-review step 5); the next edit of ADR-0215 drops the two words.
+
+M18.264 F1: r2 minor, the loop test's comment says a verdict that waited on a timer "still spins past the bound"; a review rerun of the setTimeout(…, 0) mutant passed once in six (cold run), so the catch is likely, not certain. progress.md and the commit say so. A round is not spent on the comment alone (code-review step 5); the next edit of the test words it as likely.

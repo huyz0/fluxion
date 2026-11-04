@@ -6,6 +6,9 @@ import { expect, it } from 'vitest';
 import { createWitnessCleanup } from './svg-witness-cleanup.js';
 import { ownBrowserProcess } from './svg-witness-process.js';
 
+/** The loop turns (immediates) the verdict may take once the held loop resumes: the expired reserve's timer, its immediate, then the verdict's settlement. */
+const MAX_TURNS = 4;
+
 /** Block the event loop for `ms`, as a starved host does: nothing it has queued runs until this returns. */
 const block = (ms: number) => {
   const end = performance.now() + ms;
@@ -63,10 +66,14 @@ it('NFR-SEC-001: a process still running when the held loop resumes past the res
     });
     block(2300);
     // the verdict is read in the turn the reserve expires in, after its I/O, with no timer of its own: it is in by a few
-    // immediates after the loop resumes, never a timer period later
-    const resumed = performance.now();
-    while (verdict === undefined && performance.now() - resumed < 1000) await new Promise((resolve) => setImmediate(resolve));
-    expect(performance.now() - resumed).toBeLessThan(100);
+    // immediates after the loop resumes, never a timer period later. Counted in loop turns, not milliseconds, so a slow host
+    // cannot fail it (ci 41895431898: 110 ms on macOS) and a verdict that waited on a timer still spins past the bound
+    let turns = 0;
+    while (verdict === undefined && turns < 10000) {
+      await new Promise((resolve) => setImmediate(resolve));
+      turns++;
+    }
+    expect(turns).toBeLessThanOrEqual(MAX_TURNS);
     expect(verdict).toBe(false);
   } finally {
     child.kill('SIGKILL');
