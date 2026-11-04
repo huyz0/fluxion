@@ -1,13 +1,14 @@
 import { createCoreRegistries, type ShapeDef } from '@fluxion/core';
 import { buildLibraryIndex } from '@fluxion/editor';
 import { sha256Hex, writePortableFlux } from '@fluxion/format';
+import { connectorDefOf } from '@fluxion/routing';
 import type { QualifiedName, Result } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { openDocument } from './bootstrap.js';
 import { openFileBytes } from './file-session.js';
 import { shapeSaveOptions } from './file-shapes.js';
-import { bundledPackCatalog, documentCatalog, loadPackCatalog, usedDefIds } from './pack-catalog.js';
+import { bundledPackCatalog, documentCatalog, loadPackCatalog, registerPackConnectors, usedDefIds } from './pack-catalog.js';
 
 declare global {
   interface ImportMeta {
@@ -222,5 +223,86 @@ describe('the first-party packs in the studio library (M18.32)', () => {
     expect(again.loaders.length).toBeGreaterThan(0);
     // and a catalog that was read is kept
     expect(await bundledPackCatalog(hasher, () => Promise.reject(new Error('not read again')))).toBe(again);
+  });
+});
+
+describe("the first-party packs' connector types in the studio (M18.251)", () => {
+  const connectorFiles = (edit?: (text: string) => string) =>
+    Object.fromEntries(
+      Object.entries(files)
+        .filter(([path]) => path.endsWith('/pack/connectors.json'))
+        .map(([path, text]) => [path, async () => (edit ? edit(text as string) : (text as string))]),
+    );
+  const joined = () => {
+    const b = documentBuilder({ seed: 251 });
+    const s = b.screen();
+    const [a, c] = [0, 1].map((i) => b.rect(s, { x: i * 200, y: 0, w: 80, h: 50 })) as [never, never];
+    b.connect(a, c, { route: 'arrows:wavy' });
+    return b.build();
+  };
+
+  it("FR-CON-010, FR-LIB-009: a pack's connectors.json is read with its index and its types registered in an open document's routers until disposed", async () => {
+    const f = packFiles();
+    const catalog = await loadPackCatalog(hasher, f.indexes, f.categories, connectorFiles());
+    expect(catalog.refused).toEqual([]);
+    expect(catalog.connectors.map((c) => [c.pack, c.definitions.map((d) => d.id)])).toEqual([
+      ['arrows', ['arrows:cable', 'arrows:double', 'arrows:pipe', 'arrows:wavy', 'arrows:zigzag']],
+    ]);
+    const opened = value(openDocument(joined()));
+    const problems: string[] = [];
+    const registered = registerPackConnectors(catalog, opened.registries.routers, new Set(), (m) => problems.push(m));
+    expect(connectorDefOf(opened.registries.routers, 'arrows:wavy')?.decoration).toEqual({ kind: 'wavy', amplitude: 3, wavelength: 12 });
+    expect(problems).toEqual([]);
+    registered.dispose();
+    expect(opened.registries.routers.get('arrows:wavy')).toBeUndefined();
+  });
+
+  it("FR-CON-010: a refused connectors.json is listed under the refused packs and drops only its types, the pack's shapes still listed", async () => {
+    const f = packFiles();
+    const catalog = await loadPackCatalog(
+      hasher,
+      f.indexes,
+      f.categories,
+      connectorFiles((t) => t.replace('"orthogonal"', '"spiral"')),
+    );
+    expect(catalog.connectors).toEqual([]);
+    expect(catalog.refused).toHaveLength(1);
+    expect(catalog.refused[0]).toMatch(/pack-arrows\/pack\/connectors\.json: /);
+    expect(catalog.loaders.map((l) => l.index.id)).toContain('arrows');
+  });
+
+  it('FR-CON-010, FR-LIB-009: a connectors.json that fails to read drops only its types, never the catalog (M18.251 r4 F1)', async () => {
+    const f = packFiles();
+    const files = Object.fromEntries(Object.keys(connectorFiles((t) => t)).map((path) => [path, () => Promise.reject(new Error('chunk failed'))]));
+    const catalog = await loadPackCatalog(hasher, f.indexes, f.categories, files);
+    expect(catalog.connectors).toEqual([]);
+    expect(catalog.refused).toEqual([expect.stringMatching(/pack-arrows\/pack\/connectors\.json: chunk failed$/)]);
+    expect(catalog.loaders.map((l) => l.index.id)).toContain('arrows');
+  });
+
+  it("FR-LIB-009: a namespace the opened file carries its own types for keeps the file's types (ADR-0183's rule)", async () => {
+    const f = packFiles();
+    const catalog = await loadPackCatalog(hasher, f.indexes, f.categories, connectorFiles());
+    const saved = { id: 'arrows:wavy', router: 'orthogonal', decoration: { kind: 'wavy', amplitude: 6, wavelength: 20 } };
+    const opened = value(
+      openDocument(joined(), { connectors: [{ pack: 'arrows', input: { format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [saved] } }] }),
+    );
+    const registered = registerPackConnectors(catalog, opened.registries.routers, new Set(['arrows']), () => undefined);
+    expect(connectorDefOf(opened.registries.routers, 'arrows:wavy')).toEqual(saved);
+    expect(opened.registries.routers.get('arrows:pipe')).toBeUndefined();
+    registered.dispose();
+    expect(connectorDefOf(opened.registries.routers, 'arrows:wavy')).toEqual(saved);
+  });
+
+  it('FR-CON-010: a pack whose types another source holds is reported, nothing of it registered', async () => {
+    const f = packFiles();
+    const catalog = await loadPackCatalog(hasher, f.indexes, f.categories, connectorFiles());
+    const opened = value(openDocument(joined()));
+    const held = opened.registries.routers.register('arrows:wavy', opened.registries.routers.get('orthogonal') as never, 'other');
+    expect(held.ok).toBe(true);
+    const problems: string[] = [];
+    registerPackConnectors(catalog, opened.registries.routers, new Set(), (m) => problems.push(m));
+    expect(problems).toEqual([expect.stringMatching(/^The connector types of arrows could not be registered: /)]);
+    expect(opened.registries.routers.get('arrows:pipe')).toBeUndefined();
   });
 });

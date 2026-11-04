@@ -2,11 +2,22 @@
 // verified up front, so the library lists and searches all of them by the names their indexes give; a definition's
 // category is fetched, hash-checked and registered only when it is picked, dropped or already used by the open document.
 // What a document loaded is what its save embeds (`sources`). A namespace the opened file brought its own saved geometry
-// for is left to that geometry: installed and saved versions never mix (ADR-0183).
-import { allowsShapePackContentLicense, type Hasher, type Registry, type ShapeDef, type VersionedShapePackSubset } from '@fluxion/core';
+// for is left to that geometry: installed and saved versions never mix (ADR-0183). A pack's `connectors.json` is read with its
+// index, and its connector types are registered into each open document's routers, so they can be chosen before any save
+// (M18.251); a namespace whose types the opened file embeds is left to the file's, by the same rule.
+import {
+  allowsShapePackContentLicense,
+  type ConnectorDef,
+  type Disposable,
+  type Hasher,
+  type Registry,
+  type ShapeDef,
+  type VersionedShapePackSubset,
+} from '@fluxion/core';
 import { entriesOfIndex, entriesOfSubset, type LibraryCatalog, type LibraryEntry } from '@fluxion/editor';
 import type { ShapePackSourceData } from '@fluxion/format';
-import { createShapePackLoader, type ShapePackLoader } from '@fluxion/sdk';
+import { type Router, registerConnectorDefs } from '@fluxion/routing';
+import { createShapePackLoader, loadPackConnectors, type ShapePackLoader } from '@fluxion/sdk';
 
 /** A pack file read as text, by its path in the studio's dependencies. */
 type Files = Readonly<Record<string, () => Promise<string>>>;
@@ -23,6 +34,8 @@ declare global {
  */
 const INDEXES: Files = import.meta.glob('../node_modules/@fluxion/pack-*/pack/index.json', { query: '?raw', import: 'default' });
 const CATEGORIES: Files = import.meta.glob('../node_modules/@fluxion/pack-*/pack/categories/*.json', { query: '?raw', import: 'default' });
+/** Each first-party pack's `connectors.json`, for the packs that have one (M18.250). */
+const CONNECTORS: Files = import.meta.glob('../node_modules/@fluxion/pack-*/pack/connectors.json', { query: '?raw', import: 'default' });
 
 /** The most one index or category file may hold. */
 const MAX_PACK_FILE_BYTES = 4 * 1024 * 1024;
@@ -60,21 +73,89 @@ async function loaderOf(path: string, read: () => Promise<string>, categories: F
 }
 
 /**
- * The first-party packs' verified indexes, one loader each, and the indexes refused (a studio bug).
+ * A first-party pack's connector types, from its `connectors.json`.
+ *
+ * @public
+ */
+export type PackConnectors = {
+  /** The pack's namespace. */
+  readonly pack: string;
+  /** Its connector types, validated by the SDK's `loadPackConnectors`. */
+  readonly definitions: readonly ConnectorDef[];
+};
+
+/** The connector types of `loader`'s pack, read from its `connectors.json` beside the index at `path`; none without one. */
+async function connectorsOf(path: string, loader: ShapePackLoader, connectors: Files): Promise<PackConnectors | string | undefined> {
+  const file = `${path.slice(0, -'index.json'.length)}connectors.json`;
+  const read = connectors[file];
+  if (read === undefined) return undefined;
+  let text: string;
+  // a file that fails to read (its chunk did not load) drops only this pack's types, like an index (M18.216, M18.251 r4 F1)
+  try {
+    text = await read();
+  } catch (error) {
+    return `${file}: ${reason(error)}`;
+  }
+  const loaded = loadPackConnectors(encoder.encode(text), loader.index.id, MAX_PACK_FILE_BYTES);
+  return loaded.ok ? { pack: loader.index.id, definitions: loaded.value } : `${file}: ${loaded.error.map((d) => d.message).join('; ')}`;
+}
+
+/**
+ * The first-party packs' verified indexes, one loader each, their connector types, and the files refused (a studio bug): an
+ * index refused drops its pack, a `connectors.json` refused drops only its connector types.
  *
  * @public
  */
 export type PackCatalog = {
   readonly loaders: readonly ShapePackLoader[];
+  readonly connectors: readonly PackConnectors[];
   readonly refused: readonly string[];
 };
 
-/** Read and verify every first-party pack index (`indexes` and `categories` default to the bundled ones). */
-export async function loadPackCatalog(hasher: Hasher, indexes: Files = INDEXES, categories: Files = CATEGORIES): Promise<PackCatalog> {
-  const loaded = await Promise.all(Object.entries(indexes).map(([path, read]) => loaderOf(path, read, categories, hasher)));
+/** Read and verify every first-party pack index and `connectors.json` (`indexes`, `categories` and `connectors` default to the bundled ones). */
+export async function loadPackCatalog(
+  hasher: Hasher,
+  indexes: Files = INDEXES,
+  categories: Files = CATEGORIES,
+  connectors: Files = CONNECTORS,
+): Promise<PackCatalog> {
+  const read = await Promise.all(
+    Object.entries(indexes).map(async ([path, index]) => {
+      const loader = await loaderOf(path, index, categories, hasher);
+      return { loader, types: typeof loader === 'string' ? undefined : await connectorsOf(path, loader, connectors) };
+    }),
+  );
   return {
-    loaders: loaded.filter((l): l is ShapePackLoader => typeof l !== 'string'),
-    refused: loaded.filter((l): l is string => typeof l === 'string'),
+    loaders: read.flatMap(({ loader }) => (typeof loader === 'string' ? [] : [loader])),
+    connectors: read.flatMap(({ types }) => (types === undefined || typeof types === 'string' ? [] : [types])),
+    refused: read.flatMap(({ loader, types }) => [loader, types].filter((r): r is string => typeof r === 'string')),
+  };
+}
+
+/**
+ * Register `catalog`'s connector types into `routers` (an open document's) with routing's `registerConnectorDefs`, each pack
+ * all or none, except the packs in `embedded` (namespaces the opened file carries its own types for). A refused pack is
+ * reported to `onProblem` and its connectors drawn as an unknown type. Disposing releases what was registered.
+ *
+ * @public
+ */
+export function registerPackConnectors(
+  catalog: Pick<PackCatalog, 'connectors'>,
+  routers: Registry<string, Router>,
+  embedded: ReadonlySet<string>,
+  onProblem: (message: string) => void,
+): Disposable {
+  const done = catalog.connectors.flatMap(({ pack, definitions }) => {
+    if (embedded.has(pack)) return [];
+    const r = registerConnectorDefs(routers, { format: 'fluxion-connector-defs', formatVersion: '1.0', definitions }, pack);
+    if (r.ok) return [r.value];
+    onProblem(`The connector types of ${pack} could not be registered: ${r.error.map((d) => d.message).join('; ')}`);
+    return [];
+  });
+  return {
+    dispose: () => {
+      for (const d of done) d.dispose();
+    },
   };
 }
 

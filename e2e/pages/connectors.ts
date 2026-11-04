@@ -56,7 +56,10 @@ export async function stepPair(page: Page, editor: EditorPage): Promise<void> {
   await expect(editor.canvas.locator('.fx-el[data-kind="connector"]')).toHaveCount(1);
 }
 
-/** Set the selected connector's route type from the inspector's Route buttons. */
+/**
+ * Set the selected connector's route type from the inspector's Route field: a menu, since the studio offers the first-party
+ * packs' connector types beside the four built-in routes (M18.251; five or more choices are a menu).
+ */
 export async function routeType(editor: EditorPage, type: string): Promise<void> {
-  await editor.panel('Inspector').getByRole('group', { name: 'Route' }).getByRole('button', { name: type, exact: true }).click();
+  await editor.panel('Inspector').getByRole('combobox', { name: 'Route' }).selectOption(type);
 }

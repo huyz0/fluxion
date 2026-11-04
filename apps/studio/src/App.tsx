@@ -38,7 +38,7 @@ import { createRoutePort } from './route-port.js';
 import { routeOf } from './routes.js';
 import { noArtworkFonts, noSavedPacks, useSavedShapePacks } from './saved-shape-packs.js';
 import { installTestHooks } from './test-hooks.js';
-import { useDocumentCatalog } from './use-document-catalog.js';
+import { useDocumentCatalog, usePackConnectors } from './use-document-catalog.js';
 
 const subscribe = (onChange: () => void) => {
   window.addEventListener('popstate', onChange);
@@ -183,8 +183,7 @@ function ProtectedEditor(props: {
   // what a save embeds, read when it is needed: imported libraries, loaded first-party definitions, My shapes' packs (M18.122)
   const mine = useMyShapePacks(opened, entry, () => [...shapePackSources, ...(catalog?.sources() ?? [])], catalog);
   // the library lists the imported and saved packs by their own pack and category names (M18.212)
-  const saved = entry?.file.shapePacks ?? noSavedPacks;
-  const library = useMemo(() => withPackEntries(catalog, shapePackSources, saved), [catalog, shapePackSources, saved]);
+  const library = useMemo(() => withPackEntries(catalog, shapePackSources, entry?.file.shapePacks ?? noSavedPacks), [catalog, shapePackSources, entry]);
   return (
     <>
       <EditorRoot
@@ -279,9 +278,10 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   // the file's saved packs, their exact artwork fonts first, before the document is shown (M18.115)
   const packs = useSavedShapePacks(opened, entry?.file.shapePacks ?? noSavedPacks, entry?.file.artworkFonts ?? noArtworkFonts);
   const catalog = useDocumentCatalog(opened.ok ? opened.value.core : undefined, entry?.file.shapePacks ?? noSavedPacks);
+  const connectors = usePackConnectors(opened.ok ? opened.value.registries.routers : undefined, entry?.file.extraEntries);
   if (!opened.ok) return <Problem message={opened.error} />;
   if (packs.phase === 'refused') return <Problem message={packs.message} />;
-  if (packs.phase === 'registering') return <main data-testid="studio-root" aria-busy="true" />;
+  if (packs.phase === 'registering' || !connectors) return <main data-testid="studio-root" aria-busy="true" />;
   return mode === 'edit' ? (
     <ProtectedEditor opened={opened.value} docId={docId} entry={entry} guard={guard} instance={instance} catalog={catalog} />
   ) : (
