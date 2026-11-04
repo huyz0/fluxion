@@ -9,12 +9,17 @@ import { bundledPackCatalog, type DocumentCatalog, documentCatalog, type PackCat
  * The first-party packs' catalog for an open document (M18.32): read once per page, then the definitions the document already
  * uses are loaded, so a document saved without its pack geometry (autosave, an example) draws them.
  */
-export function useDocumentCatalog(core: Core | undefined, saved: readonly { readonly id: string }[]): DocumentCatalog | undefined {
+export function useDocumentCatalog(
+  core: Core | undefined,
+  saved: readonly { readonly id: string }[],
+  /** The first-party packs' read; a port so a test can make it reject (M18.261). */
+  readPacks: (hasher: typeof webHasher) => Promise<PackCatalog> = bundledPackCatalog,
+): DocumentCatalog | undefined {
   const [packs, setPacks] = useState<PackCatalog | undefined>(undefined);
   useEffect(() => {
     let live = true;
     const logger = studioLogger(window.location.search, console).child('studio');
-    bundledPackCatalog(webHasher).then(
+    readPacks(webHasher).then(
       (p) => {
         if (!live) return;
         for (const refused of p.refused) logger.log('error', 'a first-party pack was refused', { refused });
@@ -26,7 +31,7 @@ export function useDocumentCatalog(core: Core | undefined, saved: readonly { rea
     return () => {
       live = false;
     };
-  }, []);
+  }, [readPacks]);
   const catalog = useMemo(() => {
     if (core === undefined || packs === undefined) return undefined;
     const logger = studioLogger(window.location.search, console).child('studio');

@@ -83,9 +83,9 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/artwork-fonts.test.ts` +53 |
 | FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/library-import.browser.test.ts` +11 |
 | FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/library-import.browser.test.ts` +8 |
-| FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +24 |
+| FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +25 |
 | FR-LIB-008 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.my-shapes.spec.ts` +2 |
-| FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/file-recovery.test.ts` +37 |
+| FR-LIB-009 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/file-recovery.test.ts` +38 |
 | FR-LIB-010 | S | R6 | M26 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-011 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.replace-shape.spec.ts` +3 |
 | FR-ANC-001 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/anchor.test.ts`, `packages/routing/src/connector-route.test.ts` |
