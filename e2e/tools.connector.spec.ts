@@ -6,6 +6,15 @@ test.describe('the connector tool', { tag: '@desktop' }, () => {
   test('FR-EDT-003: a drag between two shapes adds exactly one connector bound to both, undone in one step', async ({ page }) => {
     const editor = new EditorPage(page);
     await editor.open('new');
+    // the first frame shows the screen unfitted at 100 %, 1920 px wide from the canvas's left edge, so the second point (0.7 of it) lies past the
+    // 1280 px viewport and its click places nothing; the fit lands a frame later (nightly 41559194820, previous webkit: one shape of two, as in
+    // M18.240), so the points are taken once it has landed
+    // the probe (M18.245): what the first frame showed, in the report on every run and in the setup's failure message
+    const first = `first read: zoom ${await editor.zoomValue.textContent()}, screen ${JSON.stringify(await editor.screenBox())}`;
+    test.info().annotations.push({ type: 'opening fit', description: first });
+    // and in the job log, which a green run keeps too: a line 'M18.245 opening fit:' whose zoom reads 100 % is the unfitted frame seen
+    console.log(`M18.245 opening fit: ${first}`);
+    await expect(editor.zoomValue).not.toHaveText('100 %');
     // two rectangles, placed with the shape tool
     const screen = await editor.screenBox();
     const point = (fx: number, fy: number) => ({ x: Math.round(screen.x + screen.width * fx), y: Math.round(screen.y + screen.height * fy) });
@@ -14,7 +23,7 @@ test.describe('the connector tool', { tag: '@desktop' }, () => {
       const p = point(fx, 0.4);
       await page.mouse.click(p.x, p.y);
     }
-    await expect(editor.shapes).toHaveCount(2);
+    await expect(editor.shapes, `the setup's shapes placed (${first}; points from ${JSON.stringify(screen)})`).toHaveCount(2);
     await page.keyboard.press('c');
     await expect(editor.toolButton('Connector')).toHaveAttribute('aria-pressed', 'true');
     const [from, to] = [point(0.2, 0.4), point(0.7, 0.4)];
