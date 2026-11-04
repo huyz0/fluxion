@@ -64,18 +64,23 @@ async function bothModes(page: Page, name: string, index = 0) {
   if (index > 0) await editor.panel('Screens, library and layers').locator('.fx-chrome-screen-button').nth(index).click();
   await focus.click();
   await expect.poll(async () => (await editor.canvas.boundingBox())?.width).toBe(2200);
-  // fit the resized canvas, then 100 % about its centre
-  await page.keyboard.press('Shift+Digit1');
-  await page.keyboard.press('Shift+Digit0');
-  await expect(editor.zoomValue).toHaveText('100 %');
+  const screen = editor.screens.first();
+  // fit the resized canvas, then 100 % about its centre, centred at whole pixels: 140 px in from the canvas (0, 40) each way.
+  // The camera commands take the canvas size the editor last observed, which reaches it one ResizeObserver delivery after the
+  // DOM box polled above. In ci 41847238589 Shift+1 fitted the 1632 x 1356 canvas from before focus mode (z 0.8167) and
+  // Shift+0 zoomed about the new centre, which puts the screen at exactly (-207.76, 177.55): the keys are pressed again
+  // until the editor has the new size (M18.263)
+  await expect(async () => {
+    await page.keyboard.press('Shift+Digit1');
+    await page.keyboard.press('Shift+Digit0');
+    await expect(editor.zoomValue).toHaveText('100 %');
+    expect(await screen.boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
+  }).toPass();
   // the pointer is off the canvas, nothing is selected: the overlay is not mounted
   await page.mouse.move(0, 0);
   await expect(page.locator('svg.fx-chrome-overlay')).toHaveCount(0);
   // the global pass's routes, which present draws too (M16.28)
   await expect(page.getByTestId('editor-root')).toHaveAttribute('data-routes', 'settled');
-  const screen = editor.screens.first();
-  // centred at whole pixels: 140 px in from the canvas (0, 40) each way
-  expect(await screen.boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
   const edit = { dom: await contentDom(page), png: await screen.screenshot({ animations: 'disabled' }) };
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.keyboard.press(index === 0 ? 'F5' : 'Shift+F5');
