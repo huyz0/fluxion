@@ -104,6 +104,41 @@ describe('My shapes section (FR-LIB-008)', () => {
     await act(async () => button('Remove Pair from My shapes').click());
     await act(async () => button('Undo').click());
     expect(told).toEqual(['Pair could not be put back in My shapes.']);
+    // M18.130: the removal stays offered and focus stays on its Undo, never the page body
+    expect(host.querySelector('[role="status"]')?.textContent).toContain('Removed Pair.');
+    expect(document.activeElement).toBe(button('Undo'));
+  });
+
+  it('FR-LIB-008: every removal in a row can be undone, latest first (M18.130)', async () => {
+    const { props } = await render();
+    await act(async () => button('Remove Pair from My shapes').click());
+    await act(async () => button('Remove Trio from My shapes').click());
+    expect(names()).toEqual([]);
+    expect(host.querySelector('[role="status"]')?.textContent).toContain('Removed Trio.');
+    await act(async () => button('Undo').click());
+    expect(document.activeElement?.textContent).toBe('Trio');
+    expect(host.querySelector('[role="status"]')?.textContent).toContain('Removed Pair.');
+    await act(async () => button('Undo').click());
+    expect(props.myShapes.items().map((i) => i.id)).toEqual(['b', 'a']);
+    expect(host.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it('FR-LIB-008: when the control focus would return to is disabled, focus stays in the section (M18.130)', async () => {
+    let canSave = true;
+    const props = await render({
+      onSave: () => {
+        canSave = false;
+        return { ok: true, value: undefined };
+      },
+    });
+    await act(async () => button('Save selection to My shapes').click());
+    await type('Pipe');
+    await act(async () => {
+      button('Save').click();
+      root.render(<MyShapesSection {...props.props} canSave={canSave} />);
+    });
+    expect(canSave).toBe(false);
+    expect(document.activeElement).toBe(host.querySelector('section'));
   });
 
   it('FR-LIB-008: Save is disabled for a blank name, Escape cancels, and focus returns to the Save selection button', async () => {

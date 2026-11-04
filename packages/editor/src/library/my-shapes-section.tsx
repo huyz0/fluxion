@@ -148,7 +148,9 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode {
   const notify = (message: string) => props.notify?.(message);
   const items = useValue(myShapes.items);
   const [naming, setNaming] = useState(false);
-  const [removed, setRemoved] = useState<MyShape | undefined>(undefined);
+  // every removal, latest last: Undo puts back the latest, and the one before it is offered next (M18.130)
+  const [removed, setRemoved] = useState<readonly MyShape[]>([]);
+  const latest = removed.at(-1);
   const section = useRef<HTMLElement>(null);
   // where focus goes once the next render is on screen: the Save button after the form closes, Undo after a remove,
   // the restored item after an undo; never left on a control that is gone
@@ -156,11 +158,15 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode {
   useEffect(() => {
     const selector = focusNext.current;
     focusNext.current = undefined;
-    if (selector !== undefined) section.current?.querySelector<HTMLElement>(selector)?.focus();
+    if (selector === undefined) return;
+    // the control may be gone or disabled: focus stays in the section, never on the page body
+    const target = section.current?.querySelector<HTMLElement>(selector);
+    if (target !== null && target !== undefined && !(target as HTMLButtonElement).disabled) target.focus();
+    else section.current?.focus();
   });
   const heading = useId();
   return (
-    <section ref={section} className="fx-chrome-library-mine" aria-labelledby={heading}>
+    <section ref={section} className="fx-chrome-library-mine" aria-labelledby={heading} tabIndex={-1}>
       <h3 id={heading} className="fx-chrome-heading">{t`My shapes`}</h3>
       {naming ? (
         <SaveForm
@@ -182,17 +188,19 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode {
         onInsert={onInsert}
         onRemove={(item) => {
           myShapes.remove(item.id);
-          setRemoved(item);
+          setRemoved((now) => [...now, item]);
           focusNext.current = '[data-mine="undo"]';
         }}
       />
-      {removed !== undefined && (
+      {latest !== undefined && (
         <RemovedBar
-          item={removed}
+          item={latest}
           onUndo={() => {
-            setRemoved(undefined);
-            if (!myShapes.put(removed)) return notify(t`${removed.name} could not be put back in My shapes.`);
-            focusNext.current = `[data-my-shape="${CSS.escape(removed.id)}"] [data-mine="insert"]`;
+            // a refused put keeps the removal offered, to try again; nothing re-renders, so focus stays on the clicked
+            // Undo (a pending focus here would jump later, on some unrelated render)
+            if (!myShapes.put(latest)) return notify(t`${latest.name} could not be put back in My shapes.`);
+            setRemoved((now) => now.filter((i) => i !== latest));
+            focusNext.current = `[data-my-shape="${CSS.escape(latest.id)}"] [data-mine="insert"]`;
           }}
         />
       )}

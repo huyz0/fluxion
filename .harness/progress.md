@@ -4144,3 +4144,8 @@ note: a category read failure already came back as a loader result (sdk), so ens
 - Review r1 changes-requested F1 (two earlier definitions of one unknown type were both carried, so the entry was refused whole on reopen): at most one per id, the first valid one; format case added.
 - Review r2 changes-requested F1 (an earlier definition parseConnectorDefs takes but registering refuses, a describe of two lines or past 160 characters, refused the whole entry): carried only when its describe is one catalog line (describeOf); format case added.
 - Review r3 pass; minor F1 left open: a carried definition so large that the canonical entry passes 1 MiB is read back as nothing, so the known types draw plain (a crafted file only).
+
+## M18.130 — My shapes Undo keeps every removal (2026-11-03)
+
+- Removals are a stack: Undo puts back the latest and offers the one before; a refused put keeps the removal offered (focus stays on the clicked Undo, no pending focus; r1 minor); focus whose target is gone or disabled falls back to the section (tabIndex -1), never the body. my-shapes-section.browser.test.tsx 8/8 (two new cases, one strengthened); the disabled-target case fails without the fallback.
+- Replayed onto M18.239 (95450a1) after cp38: written 2026-10-27 over the old My shapes base; its r1 lines came to main with 2966a8a.
