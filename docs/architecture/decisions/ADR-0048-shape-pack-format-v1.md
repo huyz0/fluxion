@@ -191,6 +191,13 @@ registers join it: valid 1.0 definitions of the pack whose describe, if any, is 
 at most one per id (the first). Any other is dropped, since it would make the whole entry refused. The host's own definition of a known type replaces the earlier one. A pack none of whose
 used types the host knows keeps the file's entry as it was, as before. The file format is unchanged.
 
+This reverses M18.112's keep-the-entry-whole behaviour for a pack with at least one known used
+type. One round trip loses a definition: a file saved by a newer host writes a 1.1 entry whose
+definition of a type this host does not know uses a 1.1-only field. This host's save rewrites the
+entry as 1.0, cannot carry that definition, and the newer host then draws that type plain. Since
+M18.260 `savedConnectorEntries` reports each dropped used type id to the caller (`onDropped`, once
+per pack, sorted), and the studio logs them as a warning, so the loss is told, not silent.
+
 ### M18.34 — My shapes file (FR-LIB-008)
 
 My shapes, the person's local pack, is stored in local storage under `fluxion.my-shapes` and

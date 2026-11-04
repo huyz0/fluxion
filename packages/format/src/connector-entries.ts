@@ -49,23 +49,31 @@ const registrable = (def: unknown, pack: string): boolean =>
   parseConnectorDefs({ format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [def] }, pack).ok &&
   ((def as { readonly describe?: unknown }).describe === undefined || describeOf(def) !== undefined);
 
+/** What `carried` took from an earlier entry: the definitions that join the new entry, and the used ids it had to drop. */
+type Carried = { readonly definitions: readonly unknown[]; readonly dropped: readonly string[] };
+
 /**
  * The definitions of `earlier` (the file's `connectors/<pack>.json`, of any envelope version) whose ids are in `ids` and
  * that every host registers (`registrable`), at most one per id (the first), so they can join a 1.0 entry this host reads
- * back; none when it is not JSON.
+ * back; none when it is not JSON. `dropped` lists, sorted, each id of `ids` that `earlier` defines but none of whose
+ * definitions could be carried (M18.260).
  */
-function carried(earlier: Uint8Array | undefined, ids: ReadonlySet<string>, pack: string): readonly unknown[] {
+function carried(earlier: Uint8Array | undefined, ids: ReadonlySet<string>, pack: string): Carried {
   const input = earlier === undefined ? undefined : readEntry(earlier);
   const definitions = typeof input === 'object' && input !== null ? (input as { readonly definitions?: unknown }).definitions : undefined;
-  if (!Array.isArray(definitions)) return [];
+  if (!Array.isArray(definitions)) return { definitions: [], dropped: [] };
   const taken = new Set<unknown>();
-  return definitions.filter((def) => {
+  const seen = new Set<string>();
+  const kept = definitions.filter((def) => {
     const id = idOf(def);
-    if (taken.has(id) || !ids.has(id as string)) return false;
+    if (typeof id !== 'string' || !ids.has(id)) return false;
+    seen.add(id);
+    if (taken.has(id)) return false;
     const valid = registrable(def, pack);
     if (valid) taken.add(id);
     return valid;
   });
+  return { definitions: kept, dropped: [...seen].filter((id) => !taken.has(id)).sort() };
 }
 
 /**
@@ -78,11 +86,12 @@ function packEntry(
   types: readonly string[],
   defs: readonly (ConnectorDef | undefined)[],
   earlier: Uint8Array | undefined,
-): Uint8Array | undefined {
+): { readonly entry: Uint8Array | undefined; readonly dropped: readonly string[] } {
   const known = defs.filter((def): def is ConnectorDef => def !== undefined);
-  if (known.length === 0) return earlier;
+  if (known.length === 0) return { entry: earlier, dropped: [] };
   const unknown = new Set(types.filter((_, i) => defs[i] === undefined));
-  return entryOf([...known, ...carried(earlier, unknown, pack)]);
+  const kept = carried(earlier, unknown, pack);
+  return { entry: entryOf([...known, ...kept.definitions]), dropped: kept.dropped };
 }
 
 /**
@@ -91,8 +100,9 @@ function packEntry(
  * holds every used type `defOf` (the host's registered types) knows, and the file's earlier definitions of the used types
  * it does not know (M18.239), so a reader without the pack draws the known types and an entry this host refused on open
  * keeps its types; a pack none of whose used types `defOf` knows keeps the file's entry as it was. An earlier definition
- * that is not a valid 1.0 definition cannot join the 1.0 entry and is not carried. Entries of packs the document no
- * longer uses are dropped.
+ * that is not a valid 1.0 definition, has a describe registering refuses, or repeats an id cannot join the 1.0 entry and
+ * is not carried: `onDropped` is called once per pack with the used type ids whose earlier definitions were all dropped,
+ * sorted, so the host can say so (M18.260). Entries of packs the document no longer uses are dropped.
  *
  * @public
  */
@@ -100,6 +110,7 @@ export function savedConnectorEntries(
   document: DocumentFile,
   entries: ReadonlyMap<string, Uint8Array> | undefined,
   defOf: (type: string) => ConnectorDef | undefined,
+  onDropped?: (pack: string, ids: readonly string[]) => void,
 ): ReadonlyMap<string, Uint8Array> {
   const held = entries ?? new Map<string, Uint8Array>();
   const out = new Map([...held].filter(([name]) => !name.startsWith(CONNECTOR_ENTRY_PREFIX)));
@@ -107,8 +118,9 @@ export function savedConnectorEntries(
   for (const type of usedConnectorTypes(document)) byPack.set(packOf(type), [...(byPack.get(packOf(type)) ?? []), type]);
   for (const [pack, types] of [...byPack].sort(([a], [b]) => (a < b ? -1 : 1))) {
     const name = `${CONNECTOR_ENTRY_PREFIX}${pack}.json`;
-    const entry = packEntry(pack, types, types.map(defOf), held.get(name));
+    const { entry, dropped } = packEntry(pack, types, types.map(defOf), held.get(name));
     if (entry !== undefined) out.set(name, entry);
+    if (dropped.length > 0) onDropped?.(pack, dropped);
   }
   return out;
 }

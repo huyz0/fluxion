@@ -819,7 +819,7 @@ export function sanitizeAsset(asset: FluxAsset): FluxAsset | undefined;
 export function sanitizeSvg(input: string): string | undefined;
 
 // @public
-export function savedConnectorEntries(document: DocumentFile, entries: ReadonlyMap<string, Uint8Array> | undefined, defOf: (type: string) => ConnectorDef | undefined): ReadonlyMap<string, Uint8Array>;
+export function savedConnectorEntries(document: DocumentFile, entries: ReadonlyMap<string, Uint8Array> | undefined, defOf: (type: string) => ConnectorDef | undefined, onDropped?: (pack: string, ids: readonly string[]) => void): ReadonlyMap<string, Uint8Array>;
 
 // @public
 export function scaleToFit(width: number, height: number, max: number): PixelSize | undefined;

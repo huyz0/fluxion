@@ -281,11 +281,15 @@ function gapsOf(document: DocumentFile): SavedBytes['fontGaps'] {
 
 /**
  * The extra entries a save writes: the file's, with its `connectors/` entries replaced by the pack connector types `document`
- * uses when the host gives their definitions.
+ * uses when the host gives their definitions; an earlier definition that cannot be kept is logged as a warning.
  */
 function savedEntries(input: SaveInput, document: DocumentFile): ReadonlyMap<string, Uint8Array> {
   const entries = input.file?.extraEntries ?? new Map<string, Uint8Array>();
-  return input.connectorDefOf === undefined ? entries : savedConnectorEntries(document, entries, input.connectorDefOf);
+  if (input.connectorDefOf === undefined) return entries;
+  // an earlier definition the save cannot carry is told, not silently lost (M18.260)
+  return savedConnectorEntries(document, entries, input.connectorDefOf, (pack, ids) =>
+    console.warn(`The save could not keep the file's definitions of ${ids.join(', ')} (pack ${pack}): they are not valid connector types.`),
+  );
 }
 
 /** Write `document` with the assets of `byHash` it references. */

@@ -5,7 +5,7 @@ import type { DocumentFile } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { type OpenDocument, openDocument } from './bootstrap.js';
 import { fileBytes, openFileBytes } from './file-session.js';
 
@@ -138,6 +138,17 @@ describe('pack connector types in a saved file (FR-CON-010, FR-LIB-009)', () => 
     const second = await save({ ...first.file, extraEntries: new Map([['connectors/lines.json', future]]) });
     expect(connectorDefOf(second.routers, 'lines:wavy')).toEqual(wavy);
     expect(connectorDefOf(second.routers, 'lines:pipe')).toEqual(pipe);
+    // an earlier definition of the unknown type that cannot be carried is logged as a warning naming it (M18.260)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const invalid = new TextEncoder().encode(JSON.stringify({ ...LINES, formatVersion: '1.1', definitions: [{ ...pipe, decoration: { kind: 'braided' } }] }));
+      const third = await save({ ...first.file, extraEntries: new Map([['connectors/lines.json', invalid]]) });
+      expect(third.routers.get('lines:pipe')).toBeUndefined();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0]?.[0])).toContain('lines:pipe');
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('FR-CON-010: a refused embedded entry is logged and its connectors are drawn as an unknown type, the document still opens', () => {

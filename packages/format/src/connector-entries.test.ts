@@ -87,8 +87,17 @@ describe('pack connector types in saved entries (FR-CON-010, FR-LIB-009)', () =>
       }),
     );
     const known = new Map([['lines:wavy', { ...def('lines:wavy'), name: 'Wavy here' }]]);
-    const entries = savedConnectorEntries(b.build(), new Map([['connectors/lines.json', earlier]]), (t) => known.get(t));
+    const dropped: [string, readonly string[]][] = [];
+    const entries = savedConnectorEntries(
+      b.build(),
+      new Map([['connectors/lines.json', earlier]]),
+      (t) => known.get(t),
+      (pack, ids) => dropped.push([pack, ids]),
+    );
     const read = JSON.parse(decodeUtf8(entries.get('connectors/lines.json') as Uint8Array));
+    // each used unknown type whose earlier definitions were all left out is reported once, sorted (M18.260); zig is not, as
+    // its second definition travels, and gone is not used
+    expect(dropped).toEqual([['lines', ['lines:bad', 'lines:long', 'lines:two']]]);
     // the host's own definition of a known type wins over the earlier one; zig travels on once (the first valid one, a
     // second would refuse the whole entry); gone is unused, bad not 1.0, two and long would refuse it on registering
     expect(read).toEqual({
@@ -96,6 +105,32 @@ describe('pack connector types in saved entries (FR-CON-010, FR-LIB-009)', () =>
       formatVersion: '1.0',
       definitions: [{ ...def('lines:line'), describe: 'One line.' }, known.get('lines:wavy'), zig],
     });
+  });
+
+  it("FR-CON-010, FR-LIB-009: a save that cannot carry an earlier 1.1 entry's definition reports its id, and a pack it keeps whole reports none (M18.260)", () => {
+    const b = documentBuilder({ seed: 260 });
+    const s = b.screen();
+    const [a, c] = [0, 1].map((i) => b.rect(s, { x: i * 200, y: 0, w: 80, h: 50 })) as [never, never];
+    b.connect(a, c, { route: 'lines:wavy' });
+    b.connect(c, a, { route: 'lines:newer' });
+    // a newer host's 1.1 entry: its definition of lines:newer uses a decoration this 1.0 entry cannot hold
+    const earlier = encodeUtf8(
+      JSON.stringify({
+        format: 'fluxion-connector-defs',
+        formatVersion: '1.1',
+        definitions: [{ id: 'lines:newer', router: 'orthogonal', decoration: { kind: 'braided', strands: 3 } }],
+      }),
+    );
+    const dropped: [string, readonly string[]][] = [];
+    const report = (pack: string, ids: readonly string[]) => dropped.push([pack, ids]);
+    const entries = savedConnectorEntries(b.build(), new Map([['connectors/lines.json', earlier]]), (t) => DEFS.get(t), report);
+    expect(JSON.parse(decodeUtf8(entries.get('connectors/lines.json') as Uint8Array)).definitions).toEqual([DEFS.get('lines:wavy')]);
+    expect(dropped).toEqual([['lines', ['lines:newer']]]);
+    // a host that knows none of the pack's used types keeps the entry as it was, so nothing is lost or reported
+    dropped.length = 0;
+    const kept = savedConnectorEntries(b.build(), new Map([['connectors/lines.json', earlier]]), () => undefined, report);
+    expect(kept.get('connectors/lines.json')).toBe(earlier);
+    expect(dropped).toEqual([]);
   });
 
   it('FR-CON-010: reading back gives each pack with its JSON; an entry that is not UTF-8 JSON or is nested reads as nothing to register', () => {
