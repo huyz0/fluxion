@@ -96,14 +96,17 @@ function registerCompileTools(server: McpServer, sources: Sources): void {
   server.registerTool(
     'list_catalog',
     {
-      description: 'List the shapes, layouts and markers this host can draw, in the format an AI reads best.',
-      inputSchema: { format: z.enum(FORMATS).optional() },
+      description: 'List the shapes, layouts and markers this host can draw, in the format an AI reads best; with pack, every entry of that one pack in full.',
+      inputSchema: { format: z.enum(FORMATS).optional(), pack: z.string().min(1).optional() },
     },
-    ({ format }) => {
-      const r = catalogText(registries, format ?? 'llm');
+    ({ format, pack }) => {
+      const r = catalogText(registries, format ?? 'llm', pack === undefined ? {} : { pack });
       if (!r.ok) return failure(r.diagnostics);
       const used = format ?? 'llm';
-      return { content: [{ type: 'text' as const, text: r.value.text }], structuredContent: { format: used, text: r.value.text, diagnostics: r.diagnostics } };
+      return {
+        content: [{ type: 'text' as const, text: r.value.text }],
+        structuredContent: { format: used, ...(pack === undefined ? {} : { pack }), text: r.value.text, diagnostics: r.diagnostics },
+      };
     },
   );
   server.registerTool(

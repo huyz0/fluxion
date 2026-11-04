@@ -34,6 +34,9 @@
                     "md"
                   ]
                 },
+                "pack": {
+                  "type": "string"
+                },
                 "bytes": {
                   "type": "integer",
                   "minimum": 0,

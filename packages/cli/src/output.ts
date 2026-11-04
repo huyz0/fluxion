@@ -180,7 +180,15 @@ export const OUTPUT_SCHEMAS: { readonly [command: string]: z.ZodType } = {
   catalog: reply(
     z.literal('catalog'),
     z.union([
-      z.object({ format: z.enum(['llm', 'json', 'md']), bytes: z.number().int().min(0), out: z.string().optional(), text: z.string().optional() }).strict(),
+      z
+        .object({
+          format: z.enum(['llm', 'json', 'md']),
+          pack: z.string().optional(),
+          bytes: z.number().int().min(0),
+          out: z.string().optional(),
+          text: z.string().optional(),
+        })
+        .strict(),
       helpResult,
       versionResult,
     ]),

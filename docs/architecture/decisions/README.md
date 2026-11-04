@@ -132,6 +132,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0209](ADR-0209-macos-verify-envelope.md) | macOS verification gets its own CI envelope (20 of 40 minutes) | accepted | 2026-10-29 |
 | [0210](ADR-0210-pack-category-names.md) | Shape pack format 1.2: category display names, as 1.1 plus `name` | accepted | 2026-11-02 |
 | [0211](ADR-0211-catalog-summarizes-packs.md) | The AI catalog lists core entries in full and every other pack as one line; a pack's entries come with `pack` | accepted | 2026-11-02 |
+| [0212](ADR-0212-catalog-pack-on-cli-and-mcp.md) | `fluxion catalog --pack` and `list_catalog({ pack })` return one pack's entries in full | accepted | 2026-11-02 |
 | [0213](ADR-0213-clipboard-copy-shared-between-pages.md) | The editor's newest copy is shared between its pages of one origin, for an engine that keeps only text/plain | accepted | 2026-11-03 |
 | [0214](ADR-0214-windows-harness-tests-job.md) | On Windows the full ladder's harness-tests leg runs in a job of its own | accepted | 2026-11-03 |
 | [0215](ADR-0215-old-webkit-page-text-copy.md) | On the previous Playwright's WebKit, a keyboard copy of page text is the engine's limit | accepted | 2026-11-04 |

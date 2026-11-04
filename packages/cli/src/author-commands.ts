@@ -79,31 +79,44 @@ export const DECOMPILE: Command = {
   },
 };
 
-/** `catalog [--format llm|json|md] [-o file]`. */
+type CatalogAsk = { readonly format: (typeof FORMATS)[number]; readonly named: { readonly pack?: string } };
+
+/** The format and pack `catalog` was asked for, or the usage outcome refusing them. */
+function catalogAsk(values: Record<string, unknown>, positionals: readonly string[]): CatalogAsk | Outcome {
+  if (positionals.length > 0) return usage(`catalog takes no file, got ${positionals.length}`);
+  const format = values['format'] ?? 'llm';
+  const known = FORMATS.find((f) => f === format);
+  if (known === undefined) return unsupported(`--format is ${FORMATS.join(', ')}; got "${String(format)}"`);
+  const pack = values['pack'];
+  if (pack === '') return usage('--pack names a pack id');
+  return { format: known, named: typeof pack === 'string' ? { pack } : {} };
+}
+
+/** `catalog [--format llm|json|md] [--pack id] [-o file]`. */
 export const CATALOG: Command = {
   summary: 'List the shapes, layouts and markers the host can draw',
-  usage: 'catalog [--format llm|json|md] [-o <file>]',
-  options: { format: { type: 'string' }, out: { type: 'string', short: 'o' } },
+  usage: 'catalog [--format llm|json|md] [--pack <id>] [-o <file>]',
+  options: { format: { type: 'string' }, pack: { type: 'string' }, out: { type: 'string', short: 'o' } },
   run: async ({ values, positionals }, io) => {
-    if (positionals.length > 0) return usage(`catalog takes no file, got ${positionals.length}`);
-    const format = values['format'] ?? 'llm';
-    if (!FORMATS.some((f) => f === format)) return unsupported(`--format is ${FORMATS.join(', ')}; got "${String(format)}"`);
+    const ask = catalogAsk(values, positionals);
+    if ('exitCode' in ask) return ask;
+    const { format, named } = ask;
     const registries = host();
     if (!('layouts' in registries)) return registries;
-    const r = catalogText(registries, format as (typeof FORMATS)[number]);
-    if (!r.ok) return { exitCode: 1, diagnostics: r.diagnostics };
+    const r = catalogText(registries, format, named);
+    if (!r.ok) return { exitCode: r.diagnostics.some((d) => d.code === 'FLX_CLI_USAGE') ? 2 : 1, diagnostics: r.diagnostics };
     const out = values['out'];
     if (typeof out === 'string' && out !== '') {
       const bad = await writeText(out, r.value.text);
       if (bad) return bad;
-      return { exitCode: 0, diagnostics: r.diagnostics, result: { format, out, bytes: r.value.text.length } };
+      return { exitCode: 0, diagnostics: r.diagnostics, result: { format, ...named, out, bytes: r.value.text.length } };
     }
     // without -o the catalog is the output: on stdout for people, in the reply for --json (stdout carries the reply alone)
     if (values['json'] !== true) io.stdout(r.value.text);
     return {
       exitCode: 0,
       diagnostics: r.diagnostics,
-      result: { format, bytes: r.value.text.length, ...(values['json'] === true ? { text: r.value.text } : {}) },
+      result: { format, ...named, bytes: r.value.text.length, ...(values['json'] === true ? { text: r.value.text } : {}) },
     };
   },
 };

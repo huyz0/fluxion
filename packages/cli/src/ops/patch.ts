@@ -47,12 +47,42 @@ export function decompileText(text: string, registries: CoreRegistries): OpResul
 }
 
 /**
- * The catalog of what `registries` can draw, as `format`.
+ * What {@link catalogText} lists.
  *
  * @public
  */
-export function catalogText(registries: CoreRegistries, format: CatalogFormat): OpResult<{ readonly text: string }> {
-  const built = buildCatalog(registries);
+export type CatalogTextOptions = {
+  /** Only the entries this pack registered, in full: what a catalog's `packs` summary line names (ADR-0211, ADR-0212). */
+  readonly pack?: string;
+};
+
+/** The ids of every registrant of `registries` (`core`, `basic`, a pack's id), sorted. */
+function registrants(registries: CoreRegistries): string[] {
+  return (buildCatalog(registries, { core: [] }).catalog.packs ?? []).map((p) => p.id);
+}
+
+/**
+ * The catalog of what `registries` can draw, as `format`; with `pack`, only that pack's entries, and an error naming the registered packs when it
+ * registered none.
+ *
+ * @public
+ */
+export function catalogText(registries: CoreRegistries, format: CatalogFormat, options: CatalogTextOptions = {}): OpResult<{ readonly text: string }> {
+  const { pack } = options;
+  const known = pack === undefined ? [] : registrants(registries);
+  if (pack !== undefined && !known.includes(pack)) {
+    // the registered packs are in the message, which every surface prints (an MCP tool error's text carries code and message only)
+    return opFail([
+      {
+        code: 'FLX_CLI_USAGE',
+        severity: 'error',
+        path: '',
+        message: `no pack "${pack}" is registered; registered: ${known.join(', ')}`,
+        hint: 'Ask for one of the registered packs, or list the whole catalog without pack.',
+      },
+    ]);
+  }
+  const built = buildCatalog(registries, pack === undefined ? {} : { detail: 'full', pack });
   return opOk({ text: formatCatalog(built.catalog, format) }, built.diagnostics);
 }
 

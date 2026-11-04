@@ -12,7 +12,7 @@ Files are read and written only under a `--root` directory; with none, the curre
 
 | Tool | Does |
 |---|---|
-| `list_catalog` | The shapes and kinds an agent may use |
+| `list_catalog` | The shapes and kinds an agent may use; `pack` lists one pack's entries in full |
 | `compile_dsl`, `validate`, `lint` | Dry runs with diagnostics, as in the CLI |
 | `create_document`, `apply_patch`, `layout` | Build and change a document held under a `docHandle` |
 | `get_document_outline`, `get_screen` | Read it back as an outline or as FluxScript |

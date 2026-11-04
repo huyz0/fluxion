@@ -57,6 +57,20 @@ describe('the MCP read tools over the in-memory transport (FR-MCP-001, ADR-0038)
     expect(r.structuredContent).toMatchObject({ format: 'json', text, diagnostics: [] });
   });
 
+  it('FR-MCP-001, FR-LIB-007: list_catalog with pack returns that pack in full, and an unregistered pack is an error naming the packs (ADR-0212)', async () => {
+    const client = await connect();
+    const r = await call(client, 'list_catalog', { pack: 'basic' });
+    expect(r.isError).toBeFalsy();
+    const text = r.content[0]?.text ?? '';
+    expect(text).toContain('basic:rect');
+    expect(text).toContain('; params:');
+    expect(text).not.toContain('layered');
+    expect(r.structuredContent).toMatchObject({ format: 'llm', pack: 'basic', text });
+    const nope = await call(client, 'list_catalog', { pack: 'nope' });
+    expect(nope.isError).toBe(true);
+    expect(nope.content[0]?.text ?? '').toMatch(/no pack "nope" is registered; registered: .*\bbasic\b/);
+  });
+
   it('FR-MCP-001: compile_dsl counts screens and records, and rejects bad FluxScript with diagnostics', async () => {
     const client = await connect();
     const ok = await call(client, 'compile_dsl', { fluxscript: SCRIPT });

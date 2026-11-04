@@ -60,6 +60,24 @@ describe('the document commands in-process (FR-CLI-002, FR-LAY-004, FR-EXP-007)'
     expect((await cli('catalog', '--format', 'xml')).code).toBe(2);
   });
 
+  it('FR-AI-002, FR-LIB-007: catalog --pack lists one pack in full and names it in the reply; an unregistered pack exits 2 naming the packs (ADR-0212)', async () => {
+    const basic = await cli('catalog', '--pack', 'basic');
+    expect(basic.code).toBe(0);
+    expect(basic.reply.result).toMatchObject({ format: 'llm', pack: 'basic' });
+    const text = String(basic.reply.result?.['text']);
+    expect(text).toContain('basic:rect');
+    expect(text).toContain('; params:');
+    expect(text).not.toContain('layered');
+    const all = await cli('catalog');
+    expect(String(all.reply.result?.['text'])).toContain('layered');
+    expect(all.reply.result?.['pack']).toBeUndefined();
+    const nope = await cli('catalog', '--pack', 'nope');
+    expect(nope.code).toBe(2);
+    expect(nope.reply.errors?.map((e) => e.code)).toEqual(['FLX_CLI_USAGE']);
+    expect(JSON.stringify(nope.reply.errors)).toMatch(/registered: .*\bbasic\b/);
+    expect((await cli('catalog', '--pack', '')).code).toBe(2);
+  });
+
   it('FR-EXP-008: convert and render run in-process over a .flux and a document', async () => {
     const hasher = { sha256: (bytes: Uint8Array) => Promise.resolve(sha256Hex(bytes)) };
     const parsed = parseDocument(readFileSync('fixtures/docs/two-rects-line.flux.json', 'utf8'));

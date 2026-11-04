@@ -8,7 +8,7 @@ import { type DocumentFile, serializeDocument } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
 import { countTokens } from '../../packages/dsl/src/__fixtures__/token-count.js';
 import { t } from '../gates/thresholds.mjs';
-import { registries } from './host-registries.js';
+import { EXAMPLE_PACKS, registries } from './host-registries.js';
 
 const DIR = join(import.meta.dirname, '..', '..', 'examples', 'dsl');
 const FILES = readdirSync(DIR)
@@ -18,7 +18,7 @@ const FILES = readdirSync(DIR)
 describe('the token cost of FluxScript against canonical JSON (NFR-AI-003)', () => {
   const rows = FILES.map((file) => {
     const source = readFileSync(join(DIR, file), 'utf8');
-    const { doc } = compile(source, { registries: registries() });
+    const { doc } = compile(source, { registries: registries(EXAMPLE_PACKS) });
     return { file, dsl: countTokens(source), json: countTokens(serializeDocument(doc as DocumentFile)) };
   });
 

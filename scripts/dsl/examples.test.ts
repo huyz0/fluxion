@@ -12,7 +12,10 @@ import { renderDocumentToHtml } from '@fluxion/render/ssr';
 import { type DocumentFile, serializeDocument } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
 import { BASIC_IDS } from '../../packages/editor/src/source-view/completion-fixture.js';
-import { registries } from './host-registries.js';
+import { EXAMPLE_PACKS, registries as host } from './host-registries.js';
+
+/** The example corpus host: the bundled packs and the packs the examples use. */
+const registries = () => host(EXAMPLE_PACKS);
 
 const DIR = join(import.meta.dirname, '..', '..', 'examples', 'dsl');
 const FILES = readdirSync(DIR)

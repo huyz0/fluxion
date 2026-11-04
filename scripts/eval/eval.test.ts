@@ -28,6 +28,10 @@ async function runAll(): Promise<CaseResult[]> {
 }
 
 describe('the recorded eval (FR-AI-009, ADR-0039)', () => {
+  it('FR-AI-002: the system prompt names no pack to expand, since a scripted run cannot ask for one (M18.218, cp32 F3)', () => {
+    expect(system).not.toMatch(/listed with pack:/);
+  });
+
   it('FR-AI-009: EVAL_AUTHOR=1 rewrites the scripted cases and their recordings', () => {
     if (process.env['EVAL_AUTHOR'] !== '1') return;
     rmSync(CASES, { recursive: true, force: true });

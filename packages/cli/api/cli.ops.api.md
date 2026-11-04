@@ -19,9 +19,14 @@ import { ScreenScore } from '@fluxion/dsl';
 export const BUNDLED_PACKS: readonly Pack[];
 
 // @public
-export function catalogText(registries: CoreRegistries, format: CatalogFormat): OpResult<{
+export function catalogText(registries: CoreRegistries, format: CatalogFormat, options?: CatalogTextOptions): OpResult<{
     readonly text: string;
 }>;
+
+// @public
+export type CatalogTextOptions = {
+    readonly pack?: string;
+};
 
 // @public
 export function compileDocument(text: string, registries: CoreRegistries): OpResult<{
