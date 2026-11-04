@@ -4076,3 +4076,8 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 | 41729679980 (fc0ef8a) | 912 s (22:37:12 to 22:52:24, job 126243459469) | 532 s (22:30:25 to 22:39:17, job 126243458806) |
 
 - All under 1200 s (80% of the 25-minute step limit); the highest is 927 s (62%). Before the split the step read 1188-1415 s and was killed at 1500 s in 41639993998. Both Windows jobs succeeded in the three runs. 41680012230 is red only for M18.257's webkit flake (e2e-report), not for either Windows job.
+
+## 2026-11-04 M18.257 (readings; the row stays todo): two of five clean main runs after the fix
+- The fix 0dffab1 landed at 2026-11-03 23:29Z, before the row's 2026-11-04 20:40Z deadline, so neither test is quarantined (stream 1 agreed); a flaky report of either on main after 0dffab1 quarantines it at once under this row and reopens the cause.
+- e2e-report flake-report by run: 41739533570 (0dffab1, job 126360017617) and 41740762019 (7e51950, job 126363078272): "939 run, 0 flaky, 0 failed, 0 skipped" in both, so neither the webkit nor the firefox case is listed. Three more completed main runs are needed.
+- Before the fix, 41729130437 (ac27cb1, e2e-report job 126297004744) listed the webkit case again (1 flaky of 939), as 41680012230 did.
