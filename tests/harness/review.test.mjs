@@ -224,7 +224,7 @@ describe('review binding (NFR-DX-003)', () => {
       s.git('add', 'src/d.txt');
       const refused = rec(v(), body);
       assert.equal(refused.status, 3, out(refused));
-      assert.match(refused.stderr, /would skip review rounds its text names: record round r3 \(the text names r3, the digest holds up to r2\)/);
+      assert.match(refused.stderr, /would skip review rounds its text names: record round r3 \(the text names it, the digest holds r1, r2\)/);
       assert.equal(s.read('.harness/reviews/digest.log').trim().split('\n').length, 1);
       // the same from a staged progress entry; another task's rounds named in its own sentence are not this task's
       s.write(
@@ -257,23 +257,59 @@ describe('review binding (NFR-DX-003)', () => {
     }
   });
 
+  it('refuses a pass while a round its text names is missing below the highest held, until it is appended (M18.268, cp42 F6)', () => {
+    const s = sandbox(undefined, { git: true });
+    try {
+      const rec = (message) => {
+        s.write('.harness/tmp/msg.txt', message);
+        const hash = s.node('scripts/harness/review.mjs', ['hash']).stdout.trim();
+        s.write('.harness/tmp/v.json', JSON.stringify({ task: TASK, diff_sha256: hash, reviewer: 'test:unit', verdict: 'pass', findings: [] }));
+        return s.node('scripts/harness/review.mjs', [
+          'record',
+          '--file',
+          s.path('.harness/tmp/v.json'),
+          '--task',
+          TASK,
+          '--message',
+          s.path('.harness/tmp/msg.txt'),
+        ]);
+      };
+      const back = (n) => `${TASK}\t-\tr${n}\tchanges-requested\ttest:unit:posthoc\t1 findings\tcontent:\n`;
+      s.write('src/d.txt', 'a\n');
+      s.git('add', 'src/d.txt');
+      // r2 held, r1 lost: the pass would be r3, one past the highest held, yet r1 is still missing
+      s.write('.harness/reviews/digest.log', back(2));
+      const body = `${TASK}: feat(x): y\n\nReviewed: r1 changes-requested, r2 changes-requested, r3 pass.\n`;
+      const refused = rec(body);
+      assert.equal(refused.status, 3, out(refused));
+      assert.match(refused.stderr, /would skip review rounds its text names: record round r1 \(the text names it, the digest holds r2, r3\)/);
+      // r1 appended as posthoc: the pass is round 3 and is accepted
+      s.write('.harness/reviews/digest.log', `${back(2)}${back(1)}`);
+      const accepted = rec(body);
+      assert.equal(accepted.status, 0, out(accepted));
+      assert.match(accepted.stdout, /recorded pass for M0\.5 round 3/);
+    } finally {
+      s.cleanup();
+    }
+  });
+
   it('reads the rounds a text names line by line, and a round sent back only where a round number names it (M18.259 r1)', () => {
-    const none = { max: 0, changesRequested: false };
+    const none = { rounds: [], sentBack: [] };
     // a subject, a heading or a list item that names a checkpoint or another task does not swallow the next line
     assert.deepEqual(namedRounds('M18.300: fix(x): y (cp40 F1)\n\nReviewed: r1 changes-requested (a), r2 pass.\n', 'M18.300'), {
-      max: 2,
-      changesRequested: true,
+      rounds: [1, 2],
+      sentBack: [1],
     });
-    assert.deepEqual(namedRounds('## M18.300: thing (cp40 F1)\n- Reviewed: r1 changes-requested, r2 pass.', 'M18.300'), { max: 2, changesRequested: true });
-    assert.deepEqual(namedRounds('- r1 changes-requested (x), r2 pass\n- Follows M18.231.', 'M18.300'), { max: 2, changesRequested: true });
+    assert.deepEqual(namedRounds('## M18.300: thing (cp40 F1)\n- Reviewed: r1 changes-requested, r2 pass.', 'M18.300'), { rounds: [1, 2], sentBack: [1] });
+    assert.deepEqual(namedRounds('- r1 changes-requested (x), r2 pass\n- Follows M18.231.', 'M18.300'), { rounds: [1, 2], sentBack: [1] });
     // a wrapped sentence still belongs to the task it names
     assert.deepEqual(namedRounds('M18.300: x\n\nThis follows M18.237, which was\nsent back in round 3.', 'M18.300'), none);
     // a list of rounds before the word; a generic or negated use is no round
-    assert.deepEqual(namedRounds('Reviewed: r1 and r2 changes-requested, r3 pass.', 'M18.300'), { max: 3, changesRequested: true });
-    assert.deepEqual(namedRounds('Reviewed: r1 pass, no changes-requested round.', 'M18.300'), { max: 1, changesRequested: false });
+    assert.deepEqual(namedRounds('Reviewed: r1 and r2 changes-requested, r3 pass.', 'M18.300'), { rounds: [1, 2, 3], sentBack: [1, 2] });
+    assert.deepEqual(namedRounds('Reviewed: r1 pass, no changes-requested round.', 'M18.300'), { rounds: [1], sentBack: [] });
     assert.deepEqual(namedRounds('A pass is refused when the text names a changes-requested round.', 'M18.300'), none);
     // a checkpoint cited beside the task's own rounds: only the checkpoint's own round and findings are left out (M18.259 r5 F1)
-    assert.deepEqual(namedRounds('Review: r1 changes-requested (cp40 F1 not covered), r2 pass.', 'M18.300'), { max: 2, changesRequested: true });
+    assert.deepEqual(namedRounds('Review: r1 changes-requested (cp40 F1 not covered), r2 pass.', 'M18.300'), { rounds: [1, 2], sentBack: [1] });
     assert.deepEqual(namedRounds("cp40 r3 F1 and cp41's round 4 asked for it.", 'M18.300'), none);
     // trailers are not read
     assert.deepEqual(namedRounds('x\n\nFixes-ci: r9 changes-requested', 'M18.300'), none);

@@ -10,6 +10,8 @@ const POLICY = 'scripts/gates/check-digest.mjs';
 const DIGEST = '.harness/reviews/digest.log';
 const ROW = (id, state = 'todo', commit = '') => `| ${id} | task | HARNESS | WHEN x THE SYSTEM SHALL y | — | ${state} | ${commit} |`;
 const backlog = (rows) => `# Backlog\n\n| ID | Task | Req | Acceptance | Deps | State | Commit |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`;
+/** The ref review.mjs record and check-digest take the landed base from. */
+const LANDED = 'refs/remotes/origin/main';
 const line = (task, verdict = 'pass', content = '') => `${task}\tdeadbeef\tr1\t${verdict}\tt:unit\t0 findings${content ? `\tcontent:${content}` : ''}\n`;
 
 describe('digest coverage (M18.99)', () => {
@@ -262,8 +264,8 @@ describe('digest coverage (M18.99)', () => {
       const lost = lines2('M18.2', 'Reviewed: r1 pass, r2 changes-requested (x), r3 pass.');
       const r = check(['--head']);
       assert.equal(r.status, 1, out(r));
-      assert.match(r.stderr, new RegExp(`${lost.slice(0, 7)} M18\\.2: its message names review rounds r2-r3`));
-      assert.match(r.stderr, /M18\.2: its message names review a changes-requested round/);
+      assert.match(r.stderr, new RegExp(`${lost.slice(0, 7)} M18\\.2: its message names review rounds r2, r3 \\(the text names them, the digest holds r1\\)`));
+      assert.match(r.stderr, /M18\.2: its message names review round r2 as changes-requested/);
       // a landed slip is excused only by a recorded decision, so it cannot keep the gate red for good (M18.259 r4 F1)
       put('.harness/baselines/named-rounds-exempt.txt', `${lost.slice(0, 7)} M18.2 rounds lost before the hook judged messages (fixture)\n`);
       assert.equal(check().status, 0, out(check()));
@@ -276,7 +278,7 @@ describe('digest coverage (M18.99)', () => {
       append(DIGEST, line('M18.2', 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
       const denied = sb.git('commit', '-q', '-m', 'M18.2: test: change', '-m', 'Reviewed: r1 changes-requested (x), r2 pass.');
       assert.equal(denied.status, 1, out(denied));
-      assert.match(out(denied), /digest message: M18\.2: its message names review round r2 \(the text names r2, the digest holds up to r1\)/);
+      assert.match(out(denied), /digest message: M18\.2: its message names review round r2 \(the text names it, the digest holds r1\)/);
       assert.equal(run('log', '-1', '--format=%s'), 'M18.259: test: change');
       const named = sb.git('commit', '-q', '-m', 'M18.2: test: change', '-m', 'Reviewed: r1 pass.');
       assert.equal(named.status, 0, out(named));
@@ -292,6 +294,79 @@ describe('digest coverage (M18.99)', () => {
       lines2('M18.3', 'This follows M18.1 r4 changes-requested. cp40 r2 F1 asked for it.');
       assert.equal(check(['--head']).status, 0, out(check(['--head'])));
     } finally {
+      run('reset', '-q', '--hard', start);
+    }
+  });
+
+  it('HARNESS: a task commit is refused while its digest lines lack any round its text names, not only one past the highest (M18.268, cp42 F6)', () => {
+    const start = run('rev-parse', 'HEAD');
+    /** A digest line of round `n`; a verdict `posthoc` is a changes-requested line a posthoc reviewer wrote. */
+    const at = (task, n, verdict, content) =>
+      `${task}\tdeadbeef\tr${n}\t${verdict === 'posthoc' ? 'changes-requested\tt:unit:posthoc' : `${verdict}\tt:unit`}\t0 findings\tcontent:${content}\n`;
+    const body = 'Reviewed: r1 changes-requested, r2 changes-requested, r3 pass.';
+    try {
+      put('docs/backlog/current.md', backlog(['M18.259', 'M18.4'].map((id) => ROW(id))));
+      commit('chore: open rows');
+      put('src/M18.259.txt', 'x\n');
+      append(DIGEST, line('M18.259', 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+      run('commit', '-q', '--no-verify', '-m', 'M18.259: test: change', '-m', 'Reviewed: pass.');
+      const base = run('rev-parse', 'HEAD');
+      /** M18.4's change with digest lines of the given rounds, `[n, verdict]`. */
+      const stage = (rounds) => {
+        put('src/M18.4.txt', 'x\n');
+        const content = sb.node('scripts/harness/review.mjs', ['content']).stdout.trim();
+        append(DIGEST, rounds.map(([n, verdict]) => at('M18.4', n, verdict, content)).join(''));
+      };
+      // r1 and r3 held, r2 lost: refused by check-digest over history
+      stage([
+        [1, 'changes-requested'],
+        [3, 'pass'],
+      ]);
+      run('commit', '-q', '--no-verify', '-m', 'M18.4: test: change', '-m', body);
+      const r = check(['--head']);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /M18\.4: its message names review round r2 \(the text names it, the digest holds r1, r3\)/);
+      assert.match(r.stderr, /M18\.4: its message names review round r2 as changes-requested/);
+      // and by the commit-msg hook before it lands
+      run('reset', '-q', '--hard', base);
+      sb.write('.githooks/commit-msg', sb.readRepo('.githooks/commit-msg'));
+      chmodSync(sb.path('.githooks/commit-msg'), 0o755);
+      run('config', 'core.hooksPath', '.githooks');
+      stage([
+        [1, 'changes-requested'],
+        [3, 'pass'],
+      ]);
+      const denied = sb.git('commit', '-q', '-m', 'M18.4: test: change', '-m', body);
+      assert.equal(denied.status, 1, out(denied));
+      assert.match(out(denied), /digest message: M18\.4: its message names review round r2 \(the text names it, the digest holds r1, r3\)/);
+      // r2 appended as a posthoc changes-requested line: accepted by the hook and by check-digest
+      append(DIGEST, at('M18.4', 2, 'posthoc', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+      const accepted = sb.git('commit', '-q', '-m', 'M18.4: test: change', '-m', body);
+      assert.equal(accepted.status, 0, out(accepted));
+      run('config', '--unset', 'core.hooksPath');
+      assert.equal(check(['--head']).status, 0, out(check(['--head'])));
+      // a second commit of the same task counts its rounds again: the first commit's r1 and r2 never stand in for its own (r1 F1)
+      put('src/M18.4.txt', 'y\n');
+      append(DIGEST, at('M18.4', 3, 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+      run('commit', '-q', '--no-verify', '-m', 'M18.4: test: again', '-m', body);
+      const again = check(['--head']);
+      assert.equal(again.status, 1, out(again));
+      assert.match(again.stderr, /M18\.4: its message names review rounds r1, r2 \(the text names them, the digest holds r3\)/);
+      // an amend that folds in a review fix keeps the amended commit's rounds, in the hook as over history (r2 F2): with the landed
+      // base below the first commit, its r1-r3 lines and the amend's r4 are all one change's
+      run('reset', '-q', '--hard', 'HEAD^');
+      run('update-ref', LANDED, base);
+      run('config', 'core.hooksPath', '.githooks');
+      put('src/M18.4.txt', 'z\n');
+      append(DIGEST, at('M18.4', 4, 'pass', sb.node('scripts/harness/review.mjs', ['content']).stdout.trim()));
+      const amended = sb.git('commit', '-q', '--amend', '-m', 'M18.4: test: change', '-m', 'Reviewed: r1 and r2 changes-requested, r3 pass, r4 pass.');
+      assert.equal(amended.status, 0, out(amended));
+      run('config', '--unset', 'core.hooksPath');
+      // (its earlier lines bind the earlier contents, which other legs refuse; the rounds agree)
+      assert.doesNotMatch(out(check(['--head'])), /names review/);
+    } finally {
+      sb.git('config', '--unset', 'core.hooksPath');
+      sb.git('update-ref', '-d', LANDED);
       run('reset', '-q', '--hard', start);
     }
   });

@@ -19,6 +19,7 @@ import { currentMilestone, exists, git, node, readText, repoPath, stagedDiff, st
 import {
   contentId,
   contentIds,
+  mergeRounds,
   missingRounds,
   namedRounds,
   nextRound,
@@ -130,14 +131,8 @@ function reviewTexts() {
   const message = arg('message');
   return [...hunks.map((h) => h.join('\n')), ...(message ? [readFileSync(message, 'utf8')] : [])];
 }
-/** The rounds the texts name for `task`, merged: the highest, and whether any names a round sent back. */
-const textRounds = (task) =>
-  reviewTexts()
-    .map((t) => namedRounds(t, task))
-    .reduce((a, b) => ({ max: Math.max(a.max, b.max), changesRequested: a.changesRequested || b.changesRequested }), {
-      max: 0,
-      changesRequested: false,
-    });
+/** The rounds the texts name for `task`, merged: every round any names, and every round any sends back (M18.268). */
+const textRounds = (task) => mergeRounds(reviewTexts().map((t) => namedRounds(t, task)));
 /**
  * The human allowance for review rounds past the cap, as `.harness/state.json` roundAllowance[task] or a
  * progress.md line `round-allowance: <task> <who, when>`; '' when none is named (M18.215, cp30 F3).

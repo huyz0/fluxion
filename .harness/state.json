@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.264",
+  "currentTask": "M18.268",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp41 F3: Huy to download CI artifact 13195593788 (expires 2026-11-17T01:32:32Z) for M18.245; this container cannot download artifacts. cp42 F1: main ci is red: 41895431898 at afa58b6 (verify macos-latest, svg-witness-cleanup-loop.test.ts:69, 110.08 ms against < 100) and 41899223962 at 83bb285 (cli-mcp macos node 22 never got a runner); M18.264 (blocks-landing, Fixes-ci 41895431898) lands first and alone. cp42 F4: Huy to answer one card on whether his 2026-11-04T13:34:57Z 'you decide and carry on' is a standing delegation of round allowances and run cancellations (M18.259 r6, M18.218 r4-r5, the five ci runs cancelled about 15:42Z) or covered only the cards open then; M18.250-252 wait on it. M18.10: Huy allowed the streams to merge and release tzap at 13:34:57Z; @huyz0/tzap 0.1.2 was published at 2026-11-04T14:08:30Z, and fluxion's bump waits for minimumReleaseAge (1440 min) until about 2026-11-05T14:09Z. The M18.258 round-4 card was answered and closed at 13:41Z.",
-  "updated": "2026-11-04T20:57:29.407Z",
+  "updated": "2026-11-04T22:30:00.000Z",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 3

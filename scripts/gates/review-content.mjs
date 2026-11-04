@@ -194,12 +194,12 @@ export function nextRound(digest, task, { content = '', committed = [], landed }
 }
 
 /**
- * The review rounds a text names for `task` (a commit body, a progress entry): the highest `r<N>` or `round <N>`, and whether it
- * names a round sent back (`r<N> changes-requested`, a list of rounds before the word too), read only from sentences that name no
+ * The review rounds a text names for `task` (a commit body, a progress entry): every `r<N>` or `round <N>` (`rounds`), and those it
+ * names as sent back (`sentBack`: `r<N> changes-requested`, a list of rounds before the word too), each sorted, read only from sentences that name no
  * other task, since those speak of other reviews, with a checkpoint reference and the round or finding right after it left out
  * (M18.259, cp40 F1). A sentence ends at `.` or `;`, and also at a
  * subject line, a blank line, a heading or a list item, so a subject or heading that names a checkpoint does not swallow the next
- * paragraph. `{ max: 0, changesRequested: false }` when it names none.
+ * paragraph. Each round is held on its own, not only the highest (M18.268, cp42 F6). `{ rounds: [], sentBack: [] }` when it names none.
  */
 export function namedRounds(text, task) {
   const own = (sentence) => [...sentence.matchAll(/\b(M\d+\.\d+)\b/g)].every((m) => m[1] === task);
@@ -226,23 +226,41 @@ export function namedRounds(text, task) {
     .flatMap((b) => b.split(/[.;]\s+/))
     .filter(own)
     .map(ownText);
-  const numbers = sentences.flatMap((s) => [...s.matchAll(/\b(?:r|round )(\d+)\b/g)].map((m) => Number(m[1])));
-  const sentBack = /\b(?:r|round )\d+(?:\s*(?:,|and|,\s*and)\s*(?:r|round )?\d+)*\s+changes-requested\b/;
-  return { max: Math.max(0, ...numbers), changesRequested: sentences.some((s) => sentBack.test(s)) };
+  const numbers = (t, re) => [...t.matchAll(re)].map((m) => Number(m[1]));
+  const sentBack = /\b(?:r|round )\d+(?:\s*(?:,|and|,\s*and)\s*(?:r|round )?\d+)*\s+changes-requested\b/g;
+  return {
+    rounds: sortedSet(sentences.flatMap((t) => numbers(t, /\b(?:r|round )(\d+)\b/g))),
+    // every number in a sent-back list: `r1 and r2 changes-requested` sends back both
+    sentBack: sortedSet(sentences.flatMap((t) => [...t.matchAll(sentBack)].flatMap((m) => numbers(m[0], /(\d+)/g)))),
+  };
 }
 
+const sortedSet = (ns) => [...new Set(ns)].sort((a, b) => a - b);
+
+/** `named` from several texts as one: every round any names, and every round any sends back. */
+export const mergeRounds = (all) => ({ rounds: sortedSet(all.flatMap((n) => n.rounds)), sentBack: sortedSet(all.flatMap((n) => n.sentBack)) });
+
 /**
- * What `named` (from {@link namedRounds}) says happened that `lines` (the task's digest lines for this change) do not hold: a round
- * past the highest held, or a changes-requested round when none is held (M18.259); [] when the digest holds them all.
+ * What `named` (from {@link namedRounds}) says happened that `lines` (the task's digest lines for this change) do not hold: a named
+ * round with no line, or a round named as changes-requested that no changes-requested line holds; [] when the digest holds them all.
+ * Each round is checked, so 'r1 changes-requested, r2 changes-requested, r3 pass' over lines r1 and r3 lacks r2 (M18.268, cp42 F6).
  */
 export function missingRounds(named, lines) {
-  const held = Math.max(0, ...lines.map((l) => Number(/^r(\d+)$/.exec(l.round)?.[1]) || 0));
+  const number = (l) => Number(/^r(\d+)$/.exec(l.round)?.[1]) || 0;
+  const held = new Set(lines.map(number).filter(Boolean));
+  const heldBack = new Set(lines.filter((l) => l.verdict === 'changes-requested').map(number));
+  const list = (ns) => ns.map((n) => `r${n}`).join(', ');
+  const plural = (ns) => (ns.length > 1 ? 's' : '');
+  const lacking = named.rounds.filter((n) => !held.has(n));
+  const notBack = named.sentBack.filter((n) => !heldBack.has(n));
   const missing = [];
-  if (named.max > held)
+  if (lacking.length)
     missing.push(
-      `round${named.max - held > 1 ? 's' : ''} r${held + 1}${named.max - held > 1 ? `-r${named.max}` : ''} (the text names r${named.max}, the digest holds up to r${held})`,
+      `round${plural(lacking)} ${list(lacking)} (the text names ${lacking.length > 1 ? 'them' : 'it'}, the digest holds ${held.size ? list([...held].sort((a, b) => a - b)) : 'none'})`,
     );
-  if (named.changesRequested && !lines.some((l) => l.verdict === 'changes-requested'))
-    missing.push('a changes-requested round (the text names one, the digest holds none)');
+  if (notBack.length)
+    missing.push(
+      `round${plural(notBack)} ${list(notBack)} as changes-requested (the text sends ${notBack.length > 1 ? 'them' : 'it'} back, no changes-requested line holds ${notBack.length > 1 ? 'them' : 'it'})`,
+    );
   return missing;
 }

@@ -18,7 +18,7 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
-import { contentIds, isPosthoc, missingRounds, namedRounds, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
+import { contentIds, isPosthoc, missingRounds, namedRounds, openLines, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
@@ -274,16 +274,53 @@ function namedRoundProblems(tree) {
   const exempt = exemptions(tree, ROUNDS_EXEMPT);
   return ownLineCommits(ROUNDS_SINCE).flatMap(({ sha, task }) => {
     if (exempt.has(`${sha.slice(0, 7)} ${task}`)) return [];
-    return messageRoundProblems(git(['log', '-1', '--format=%B', sha]).stdout, task, [`${sha}^`, sha]).map((m) => `${sha.slice(0, 7)} ${m}`);
+    return messageRoundProblems(git(['log', '-1', '--format=%B', sha]).stdout, task, `${sha}^`, sha).map((m) => `${sha.slice(0, 7)} ${m}`);
   });
 }
 
-/** What a message names for `task` that the task's digest lines in `range` (git diff arguments) do not hold. */
-function messageRoundProblems(body, task, range) {
-  const own = addedLines(range).filter((l) => l.task === task && l.verdict !== 'rebind');
+/** The remote-tracking branch land.mjs lands on, whose merge-base review.mjs record numbers rounds from. */
+const LANDED = 'refs/remotes/origin/main';
+
+/**
+ * The landed base `target` was reviewed over, as review.mjs record reads it (M18.268 r2 F2, F3): a landed commit's parent, else the
+ * merge-base with LANDED (the commit being made: of HEAD, so an amend keeps the amended commit's rounds), else the parent.
+ */
+function reviewBase(target) {
+  const tip = target ? `${target}^` : 'HEAD';
+  if (target && git(['merge-base', '--is-ancestor', target, LANDED]).status === 0) return tip;
+  const base = git(['merge-base', tip, LANDED]);
+  return base.status === 0 ? base.stdout.trim() : tip;
+}
+
+/**
+ * The task's digest lines that count for the commit `target` (the index when absent): those record counted, openLines over the digest
+ * on its review base, where a task's landed lines close its rounds once its own commit is there (M18.231). So a landed commit's
+ * rounds never stand in for a later commit's, a replay keeps rounds another task's commit carried in, and an amend keeps its own.
+ */
+function countedLines(task, target) {
+  const digest = (rev) => {
+    const r = git(['show', `${rev}:${DIGEST}`]);
+    return parseDigest(r.status === 0 ? r.stdout : '');
+  };
+  const base = reviewBase(target);
+  const anyTask = git(['log', '-1', '-E', '--grep=^M[0-9]+\\.[0-9]+: ', '--format=%s', base]).stdout.trim() !== '';
+  const own = git(['log', '--format=%s', '-F', `--grep=${task}: `, base])
+    .stdout.split(/\r?\n/)
+    .some((l) => l.startsWith(`${task}: `));
+  // as landedTasks: a base with no task commit at all (a fixture) closes the committed lines as before
+  const landed = anyTask ? new Set(own ? [task] : []) : undefined;
+  return openLines(digest(target ?? ''), task, { committed: digest(base), landed });
+}
+
+/**
+ * What a message names for `task` that the task's digest lines do not hold, for the commit `target` (the index when absent) over
+ * `parent`, when it adds lines of its own. Each named round is looked for among the lines record counted for it (M18.268, cp42 F6).
+ */
+function messageRoundProblems(body, task, parent, target) {
+  const own = addedLines(target ? [parent, target] : ['--cached', parent]).filter((l) => l.task === task && l.verdict !== 'rebind');
   // a commit with no line of its own is bookkeeping the recorder refuses ("no reviewable content"): it has no rounds to hold
   if (own.length === 0) return [];
-  return missingRounds(namedRounds(body, task), own).map((m) => `${task}: its message names review ${m} (M18.259)`);
+  return missingRounds(namedRounds(body, task), countedLines(task, target)).map((m) => `${task}: its message names review ${m} (M18.259, M18.268)`);
 }
 
 /**
@@ -294,7 +331,7 @@ export function checkMessage(message) {
   const task = /^(M\d+\.\d+): /.exec(message)?.[1];
   if (!task || git(['rev-parse', '--verify', 'HEAD']).status !== 0) return { ok: true, detail: 'digest message: SKIP — no task subject' };
   if (task !== ROUNDS_SINCE && ownLineCommits(ROUNDS_SINCE).length === 0) return { ok: true, detail: `digest message: SKIP — before ${ROUNDS_SINCE}` };
-  const problems = messageRoundProblems(message, task, ['--cached', 'HEAD']);
+  const problems = messageRoundProblems(message, task, 'HEAD');
   if (problems.length)
     return {
       ok: false,
