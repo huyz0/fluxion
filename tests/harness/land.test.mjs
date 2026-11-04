@@ -93,10 +93,12 @@ describe('ciRefusal (M18.223, cp32 F2)', () => {
 /** Key of `reviewed`'s extra files that is a commit-message trailer instead (Object.entries skips it). */
 const TRAILER = Symbol('trailer');
 
-describe('land (M18.106)', () => {
-  let sb;
-  let origin;
-  let other;
+/** A sandbox repo with the real hooks, its bare origin and another stream's clone, and the helpers that drive them; each
+ * rig has its own checkpoint budget (M18.265). */
+function landRig() {
+  const sb = sandbox(undefined, { git: true });
+  const origin = `${sb.dir}-origin.git`;
+  const other = `${sb.dir}-other`;
   const ok = (r) => {
     assert.equal(r.status, 0, out(r));
     return r.stdout.trim();
@@ -135,32 +137,35 @@ describe('land (M18.106)', () => {
     ok(sb.git('fetch', '-q', 'origin', 'main'));
     ok(sb.git('reset', '-q', '--hard', 'FETCH_HEAD'));
   }
-
-  before(() => {
-    sb = sandbox(undefined, { git: true });
-    sb.write('src/shared.txt', 'one\ntwo\nthree\n');
-    ok(sb.git('add', '-A'));
-    ok(sb.git('commit', '-q', '--no-verify', '-m', 'fixture: shared file'));
-    origin = `${sb.dir}-origin.git`;
-    other = `${sb.dir}-other`;
-    ok(git(sb.dir, 'clone', '-q', '--bare', sb.dir, origin));
-    ok(sb.git('remote', 'add', 'origin', origin));
-    ok(git(sb.dir, 'clone', '-q', origin, other));
-    for (const [k, v] of [
-      ['user.email', 'other@example.invalid'],
-      ['user.name', 'other-stream'],
-    ])
-      ok(git(other, 'config', k, v));
-    for (const hook of ['pre-commit', 'commit-msg']) {
-      sb.write(`.githooks/${hook}`, sb.readRepo(`.githooks/${hook}`));
-      chmodSync(sb.path(`.githooks/${hook}`), 0o755); // POSIX git skips non-executable hooks
-    }
-    ok(sb.git('config', 'core.hooksPath', '.githooks'));
-  });
-  after(() => {
+  sb.write('src/shared.txt', 'one\ntwo\nthree\n');
+  ok(sb.git('add', '-A'));
+  ok(sb.git('commit', '-q', '--no-verify', '-m', 'fixture: shared file'));
+  ok(git(sb.dir, 'clone', '-q', '--bare', sb.dir, origin));
+  ok(sb.git('remote', 'add', 'origin', origin));
+  ok(git(sb.dir, 'clone', '-q', origin, other));
+  for (const [k, v] of [
+    ['user.email', 'other@example.invalid'],
+    ['user.name', 'other-stream'],
+  ])
+    ok(git(other, 'config', k, v));
+  for (const hook of ['pre-commit', 'commit-msg']) {
+    sb.write(`.githooks/${hook}`, sb.readRepo(`.githooks/${hook}`));
+    chmodSync(sb.path(`.githooks/${hook}`), 0o755); // POSIX git skips non-executable hooks
+  }
+  ok(sb.git('config', 'core.hooksPath', '.githooks'));
+  const cleanup = () => {
     sb.cleanup();
     for (const dir of [origin, other]) rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+  };
+  return { sb, origin, other, ok, git, remoteHead, head, land, upstream, reviewed, reset, cleanup };
+}
+
+describe('land (M18.106)', () => {
+  let sb, origin, other, ok, git, remoteHead, head, land, upstream, reviewed, reset, cleanup;
+  before(() => {
+    ({ sb, origin, other, ok, git, remoteHead, head, land, upstream, reviewed, reset, cleanup } = landRig());
   });
+  after(() => cleanup());
 
   it('re-gates a reviewed commit on the moved remote branch and pushes it', () => {
     reviewed('M0.5', 'src/mine.txt', 'mine\n');
@@ -529,6 +534,43 @@ describe('land (M18.106)', () => {
       assert.equal(remoteHead(), head());
     } finally {
       rmSync(runsFile, { force: true });
+    }
+  });
+});
+
+describe("land reads main's ci again before the push (M18.265)", () => {
+  let sb, remoteHead, head, land, reviewed, reset, cleanup;
+  before(() => {
+    ({ sb, remoteHead, head, land, reviewed, reset, cleanup } = landRig());
+  });
+  after(() => cleanup());
+
+  it("HARNESS: main's ci is read again just before the push: turned red, the push is refused; still green, it is pushed (M18.265, cp42 F2)", () => {
+    reset();
+    const green = `${sb.dir}-green-runs.json`;
+    const red = `${sb.dir}-late-red-runs.json`;
+    writeFileSync(green, '[]');
+    // ci run 701 fails on the remote tip while the commit is being gated
+    const run = { databaseId: 701, workflowName: 'ci', headSha: remoteHead(), status: 'completed', createdAt: '2026-11-04T20:00:00Z' };
+    writeFileSync(red, JSON.stringify([{ ...run, conclusion: 'failure', jobs: [{ name: 'verify (macos-latest)', conclusion: 'failure' }] }]));
+    try {
+      const start = reviewed('M0.26', 'src/late.txt', 'x\n');
+      const before = remoteHead();
+      const refused = land('--push', '--ci-runs-file', green, '--ci-runs-file-at-push', red);
+      assert.equal(refused.status, 1, out(refused));
+      assert.match(
+        refused.stderr,
+        /M0\.26: test: src\/late\.txt\) may not be pushed: main's ci changed while it was gated; main's ci is red \(last-ci exit 1\) at run 701 \(ci at [0-9a-f]{7}: verify \(macos-latest\)\)/,
+      );
+      // the local branch is back where it started and nothing was pushed
+      assert.equal(head(), start);
+      assert.equal(remoteHead(), before);
+      const pushed = land('--push', '--ci-runs-file', green, '--ci-runs-file-at-push', green);
+      assert.equal(pushed.status, 0, out(pushed));
+      assert.equal(remoteHead(), head());
+    } finally {
+      rmSync(green, { force: true });
+      rmSync(red, { force: true });
     }
   });
 });

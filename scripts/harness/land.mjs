@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Land reviewed local task commits on a moving remote branch (M18.106, ADR-0195):
-//   land.mjs [--remote origin] [--branch main] [--push] [--attempts 3] [--ci-runs-file f (tests)]
+//   land.mjs [--remote origin] [--branch main] [--push] [--attempts 3] [--ci-runs-file f (tests)] [--ci-runs-file-at-push f (tests)]
 // Each attempt fetches, re-applies the local commits onto the remote branch one by one,
 // regenerates the API reports and traceability, and commits each through the real hooks, so
 // commit-msg, checkpoint, the precommit ladder and the content-bound review check run on the tree
@@ -10,7 +10,7 @@
 // a rewritten commit follows it the same way (M18.155). A conflict or any refused gate
 // stops the run with the local branch back where it started; nothing is pushed. While a `blocks-landing` row is open, only that row's commits
 // and commits confined to harness paths land, and closing it needs CI evidence (M18.123, M18.135). With --push, the result is pushed as a fast-forward, retried when the branch moved.
-// Main's ci is read once per attempt with last-ci (M18.223, cp32 F2): while it is red or waiting on a declared fix, a commit
+// Main's ci is read with last-ci at the start of each attempt and again just before its push (M18.223, cp32 F2; M18.265): while it is red or waiting on a declared fix, a commit
 // that changes a non-harness path lands only with a `Fixes-ci: <id>` trailer naming a run last-ci reads as red now (M18.225);
 // while it is unknown, a `feat` commit waits. Pushing still needs a human's request (skill ship).
 import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync } from 'node:fs';
@@ -163,8 +163,7 @@ function remapped(sha, rewritten) {
  * Main's ci by last-ci (M18.223): `verdict` 0 green, 1 red, 2 waiting on a declared fix, 3 unknown (any other answer is
  * unknown), and `red`, the runs it reads as red now, `[{ run, workflow, sha, jobs }]` (M18.225).
  */
-function ciVerdict(branch) {
-  const runsFile = opt('ci-runs-file');
+function ciVerdict(branch, runsFile = opt('ci-runs-file')) {
   const dir = mkdtempSync(join(tmpdir(), 'land-ci-'));
   const redFile = join(dir, 'red.json');
   const r = node('scripts/harness/last-ci.mjs', ['--branch', branch, '--red-file', redFile, ...(runsFile ? ['--runs-file', runsFile, '--offline'] : [])]);
@@ -269,6 +268,20 @@ function untrackedInTheWay(upstream) {
   return lines(git(['diff', '--name-only', '--no-renames', '--diff-filter=A', 'HEAD', upstream])).filter((p) => existsSync(repoPath(p)));
 }
 
+/**
+ * Why the re-gated commits on `upstream..HEAD` may not be pushed now that main's ci reads `ci`, or null (M18.265, cp42 F2):
+ * main's ci can turn red during the minutes the gates take, so the rule applied at the start is applied again just before the push.
+ */
+function lateCiRefusal(upstream, ci) {
+  for (const sha of lines(git(['rev-list', '--reverse', `${upstream}..HEAD`]))) {
+    const subject = must(['log', '-1', '--format=%s', sha], 'read the subject');
+    const paths = lines(git(['diff', '--name-only', '--no-renames', `${sha}^`, sha]));
+    const red = ciRefusal(ci, { paths, subject, message: must(['log', '-1', '--format=%B', sha], 'read the message') });
+    if (red) return `${sha.slice(0, 7)} (${subject}) may not be pushed: main's ci changed while it was gated; ${red}`;
+  }
+  return null;
+}
+
 /** One attempt: gate the commits on the fetched branch, then push. `retry` when the branch moved. */
 function attempt({ remote, branch, push, start }) {
   must(['fetch', '-q', remote, branch], `fetch ${remote}/${branch}`);
@@ -281,6 +294,8 @@ function attempt({ remote, branch, push, start }) {
   const digest = node('scripts/gates/check-digest.mjs', ['--head']);
   if (digest.status !== 0) return fail(`landed history lacks review evidence:\n${digest.stdout}${digest.stderr}`);
   if (!push) return { ok: true, message: `re-gated ${gated.count} commit(s) on ${remote}/${branch}; not pushed (--push)` };
+  const late = lateCiRefusal(upstream, ciVerdict(branch, opt('ci-runs-file-at-push', opt('ci-runs-file'))));
+  if (late) return fail(late);
   const pushed = git(['push', '-q', remote, `HEAD:${branch}`]);
   if (pushed.status === 0)
     return { ok: true, message: `landed ${gated.count} commit(s) on ${remote}/${branch} at ${must(['rev-parse', '--short', 'HEAD'], 'read HEAD')}` };
