@@ -4111,3 +4111,13 @@ round-allowance: M18.35 Huy answered "Y" on 2026-11-02 10:37Z (fourth round) and
 - The probe read the label and the box in two calls (`zoomValue.textContent()`, then `screenBox()`), so a line could pair a label read in one frame with a box read in a later one: the two 100 % lines show WebKit's label still unfitted when the probe started reading, with the box already fitted by the second call. No read has yet shown the unfitted box itself (x 284, width 1920), so the cause of 41559194820 is supported but not shown.
 - The probe now reads both in one page.evaluate over the two elements, so a line describes one frame. Locally (chromium): "zoom 34 %, screen {x 316, width 648}".
 - Once M18.258 lands (the fit before the first paint), no frame can show the unfitted box, so the probe cannot show it after that; the cause is then confirmed only from the trace in artifact 13195593788 of 41559194820, which this container cannot download: Huy fetches it before it expires (about 2026-11-17), or the cause is recorded in an ADR with his decision. Green nightlies after M18.258 do not close this row.
+## 2026-11-04 M18.253 and M18.257: the ci backlog has cleared; six clean main runs after the flake fix (cp40 F6)
+- M18.253: last-ci exits 0 (ci green at 8a9c517, run 41791263579), and main ci runs again finish within their own timeouts (41787823667 to 41791263579, 25 to 33 min). blockedReason drops the backlog and held-stack clauses and says M18.257's landing clause has lapsed; currentTask names this row. Huy's nightly-cancel card was withdrawn on 2026-11-04 at about 09:00Z without an answer: 41559194820 completed by itself (M18.214), and 41612451867 had 7 jobs queued and 4 running. The row closes.
+- M18.257: the fix 0dffab1 landed at 23:29Z on 2026-11-03, before the 2026-11-04 20:40Z deadline, so nothing was quarantined. Six completed main runs after it, each e2e-report printing no flaky test:
+  - 41739533570 at 0dffab1, job 126360017617: 939 run, 0 flaky, 0 failed, 0 skipped
+  - 41740762019 at 7e51950, job 126363078272: 939 run, 0 flaky
+  - 41787823667 at 3632b46, job 126438326328: 939 run, 0 flaky
+  - 41789216228 at 1f1139a, job 126444174691: 939 run, 0 flaky
+  - 41790388708 at 1b37a0c, job 126451467180: 939 run, 0 flaky
+  - 41791263579 at 8a9c517, job 126453736118: 942 run, 0 flaky
+- The webkit case's race was not in c790660's path (it flaked again at 0fc624a after it); its cause and the firefox drag's are in 0dffab1's entry. The row closes.
