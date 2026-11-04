@@ -1,5 +1,6 @@
 // Public entry of @fluxion/pack-arrows; the package comment is the dts banner in tsdown.config.ts.
 import { type DeclarativeShapePack, definePack, namedShapeDefs, type Pack } from '@fluxion/sdk';
+import { connectors } from './connectors.js';
 import { shapes } from './shapes.js';
 
 /**
@@ -53,12 +54,14 @@ export const arrowsSource: DeclarativeShapePack = {
     },
   ],
   definitions: namedShapeDefs(shapes, NAMES),
+  connectors,
 };
 
 /**
- * The Arrows shapes, namespace `arrows`. Hosts register it into their core registries (ADR-0017), or load its declarative
+ * The Arrows shapes and connector types, namespace `arrows`. Hosts register it into their core registries (ADR-0017) and its
+ * `connectors` into their routers, or load its declarative
  * distribution in `pack/` (ADR-0048).
  *
  * @public
  */
-export const arrowsPack: Pack = definePack({ id: 'arrows', shapes: shapes });
+export const arrowsPack: Pack = definePack({ id: 'arrows', shapes: shapes, connectors });

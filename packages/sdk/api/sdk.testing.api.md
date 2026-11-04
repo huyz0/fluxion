@@ -5,6 +5,7 @@
 ```ts
 
 import { ArtworkFontBinding } from '@fluxion/core';
+import { ConnectorDef } from '@fluxion/core';
 import { Diagnostic } from '@fluxion/schema';
 import { Result } from '@fluxion/schema';
 import { ShapeDef } from '@fluxion/core';
@@ -26,6 +27,7 @@ export type CheckedInShapePack = {
 export type CheckedShapePack = {
     readonly index: VersionedShapePackIndex;
     readonly definitions: readonly ShapeDef[];
+    readonly connectors?: readonly ConnectorDef[];
 };
 
 // @public

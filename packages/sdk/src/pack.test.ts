@@ -155,4 +155,13 @@ describe('packs (ADR-0017)', () => {
     // a pack without themes needs none
     expect(definePack({ id: 'plain' }).register(hostWithout).ok).toBe(true);
   });
+  it('FR-CON-010: definePack keeps the connector types for the host to register in its routers; register leaves them (M18.250)', () => {
+    const wavy = { id: 'demo:wavy', router: 'orthogonal', decoration: { kind: 'wavy', amplitude: 3, wavelength: 12 } } as const;
+    const registries = createCoreRegistries();
+    const pack = definePack({ id: 'demo', shapes: [shape('demo:a')], connectors: [wavy] });
+    expect(pack.connectors).toEqual([wavy]);
+    expect(pack.register(registries).ok).toBe(true);
+    expect(registries.routers.get('demo:wavy')).toBeUndefined();
+    expect(definePack({ id: 'demo', shapes: [shape('demo:a')] }).connectors).toBeUndefined();
+  });
 });

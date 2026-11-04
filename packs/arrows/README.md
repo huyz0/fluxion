@@ -5,7 +5,7 @@ registers them like any plugin (ADR-0017), or loads the declarative distribution
 
 | Layer | Pure | Status |
 |---|---|---|
-| Pack | data | M18: 18 shapes, declarative distribution in `pack/` |
+| Pack | data | M18: 18 shapes and 5 connector types, declarative distribution in `pack/` |
 
 | Category | Ids |
 |---|---|
@@ -13,6 +13,9 @@ registers them like any plugin (ADR-0017), or loads the declarative distribution
 | `process` | `chevron`, `pentagon` (param `point`) |
 | `bent` | `bent-right`, `bent-up`, `u-turn`, `curved-right`, `circular` |
 | `callout` | `callout-right`, `split` |
+
+Connector types (FR-CON-010, `pack/connectors.json` and `arrowsPack.connectors`), each over the orthogonal router: `wavy`,
+`zigzag`, `double`, `pipe` and `cable`. A host registers them in its routers with routing's `registerConnectorDefs`.
 
 `pack/` holds `index.json` and one hashed file per category; `__golden__/` holds one normalized SVG per definition.
 `src/pack.test.ts` checks both, and `pack-versions.json` (each released version's category hashes), against the exported `arrowsSource` with the SDK's

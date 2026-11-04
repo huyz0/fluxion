@@ -1,0 +1,85 @@
+{
+  "definitions": [
+    {
+      "decoration": {
+        "kind": "cable",
+        "pitch": 10
+      },
+      "defaultStyle": {
+        "stroke": {
+          "width": 2
+        }
+      },
+      "describe": "A tied cable, for a physical wired link.",
+      "id": "arrows:cable",
+      "keywords": [
+        "wire",
+        "wired",
+        "physical"
+      ],
+      "name": "Cable",
+      "router": "orthogonal"
+    },
+    {
+      "decoration": {
+        "gap": 3,
+        "kind": "double"
+      },
+      "describe": "Two parallel lines, for a redundant or high-capacity link.",
+      "id": "arrows:double",
+      "keywords": [
+        "parallel",
+        "redundant"
+      ],
+      "name": "Double",
+      "router": "orthogonal"
+    },
+    {
+      "decoration": {
+        "kind": "pipe",
+        "wall": 1.5
+      },
+      "describe": "A hollow pipe, for a data or fluid pipeline.",
+      "id": "arrows:pipe",
+      "keywords": [
+        "pipeline",
+        "tube"
+      ],
+      "name": "Pipe",
+      "router": "orthogonal"
+    },
+    {
+      "decoration": {
+        "amplitude": 3,
+        "kind": "wavy",
+        "wavelength": 12
+      },
+      "describe": "A wavy line, for a loose or wireless link.",
+      "id": "arrows:wavy",
+      "keywords": [
+        "wave",
+        "wireless",
+        "loose"
+      ],
+      "name": "Wavy",
+      "router": "orthogonal"
+    },
+    {
+      "decoration": {
+        "amplitude": 3,
+        "kind": "zigzag",
+        "wavelength": 8
+      },
+      "describe": "A zigzag line, for an electrical or unstable link.",
+      "id": "arrows:zigzag",
+      "keywords": [
+        "electric",
+        "unstable"
+      ],
+      "name": "Zigzag",
+      "router": "orthogonal"
+    }
+  ],
+  "format": "fluxion-connector-defs",
+  "formatVersion": "1.0"
+}

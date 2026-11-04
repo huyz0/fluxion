@@ -71,6 +71,24 @@ describe('the declarative pack suite (ADR-0193, ADR-0194)', () => {
     expect(checked.value.index.credits).toEqual([credit]);
   });
 
+  it('FR-CON-010, FR-LIB-003: a connectors.json beside the index is read as a host reads it, and an invalid one fails the pack (M18.250)', async () => {
+    const wavy = { id: 'sample:wavy', router: 'orthogonal', decoration: { kind: 'wavy', amplitude: 3, wavelength: 12 } } as const;
+    const files = built({ ...draft, connectors: [wavy] });
+    expect(Object.keys(files)).toContain('connectors.json');
+    const checked = await checkShapePackFiles(files);
+    if (!checked.ok) throw new Error(checked.error.map((d) => d.message).join('; '));
+    expect(checked.value.connectors).toEqual([wavy]);
+    // a pack without one has none
+    const without = await checkShapePackFiles(built(draft));
+    expect(without.ok).toBe(true);
+    expect(without.ok ? without.value.connectors : 'refused').toBeUndefined();
+    const bad = await checkShapePackFiles({
+      ...files,
+      'connectors.json': JSON.stringify({ format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [{ ...wavy, id: 'x:wavy' }] }),
+    });
+    expect(bad.ok ? [] : bad.error.map((d) => d.path)).toEqual(['/connectors.json/definitions/0/id']);
+  });
+
   it('FR-LIB-003, NFR-LIC-003: a changed category, a stray file, a missing index, a forbidden license and an empty pack fail', async () => {
     const files = built(draft);
     const failure = async (input: Readonly<Record<string, string>>) => {

@@ -184,6 +184,7 @@ export type Pack = {
     readonly shapes: readonly ShapeDef[];
     readonly markers: readonly MarkerDef[];
     readonly themes: readonly ThemeDef[];
+    readonly connectors?: readonly ConnectorDef[];
     register(registries: PackRegistries): Result<Disposable, readonly Diagnostic[]>;
 };
 
@@ -196,6 +197,7 @@ export type PackSpec = {
     readonly shapes?: readonly ShapeDef[];
     readonly markers?: readonly MarkerDef[];
     readonly themes?: readonly ThemeDef[];
+    readonly connectors?: readonly ConnectorDef[];
 };
 
 export { ParamSpec }

@@ -164,6 +164,21 @@ the SDK does not depend on routing (architecture 01). The same pack registering 
 types id by id; a type the newer file drops stays until the earlier registration is disposed. No
 host loads pack directories yet; the document open path registers embedded types (M18.112).
 
+### M18.250 — a declarative pack's `connectors.json` (FR-CON-010, FR-LIB-007)
+
+A pack draft (core `ShapePackDraft`, sdk `DeclarativeShapePack`) may list `connectors`. The shared
+encoder (`encodeShapePack`, ADR-0196) then also writes `connectors.json`: the M18.38 envelope at
+1.0, canonical JSON (sorted keys, two-space, final newline) with the definitions in id order,
+validated by `parseConnectorDefs` for the pack's namespace and with each `describe` one catalog
+line, as registering requires. Any problem refuses the whole pack, with diagnostics under
+`/connectors`. The file stays beside the index, unlisted and unhashed as M18.111 set out; every
+other file of a pack is written byte for byte as before, so a pack without `connectors` and every
+golden are unchanged. The SDK's pack check (`checkShapePackFiles`, `testShapePack`) accepts that
+one unlisted file, reads it with `loadPackConnectors`, and compares it like the other distribution
+files. The arrows pack ships the five types over orthogonal: `arrows:wavy`, `arrows:zigzag`,
+`arrows:double`, `arrows:pipe` and `arrows:cable`. Hosts register them in M18.251 (studio) and
+M18.252 (CLI).
+
 ### M18.112 — pack connector types in saved files and the inspector (FR-CON-010, FR-LIB-009)
 
 A save embeds the definitions of the pack connector types the document's connectors use: one

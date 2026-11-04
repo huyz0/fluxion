@@ -5,9 +5,12 @@
 // A draft with `fonts` encodes as pack 1.1 (ADR-0192): its font metadata in the index and each exact font file, checked against
 // its resource, at `fonts/<sha256>.woff2`. A category text that is neither its slug nor the slug's title form is kept as the
 // category's display name, and the pack encodes as 1.2, which is 1.1 plus names (ADR-0210); every other pack's bytes are unchanged.
+// A draft with `connectors` also writes `connectors.json`, a `fluxion-connector-defs` 1.0 envelope beside the index (M18.250).
 import { type Diagnostic, err, ok, type Result } from '@fluxion/schema';
+import { type ConnectorDef, parseConnectorDefs } from '../connector-def.js';
 import { sha256Hex } from '../hash/sha256.js';
 import { utf8 } from '../hash/stable-id.js';
+import { describeOf } from '../registry.js';
 import type { ShapePackDistributionFontResource, ShapePackFonts, VersionedShapePackIndex } from './pack-font-types.js';
 import { parseVersionedShapePackCategory, parseVersionedShapePackIndex } from './pack-font-validation.js';
 import { CATEGORY_NAME_MAX, categoryNameProblem, categoryTitle, packHasFonts } from './pack-format.js';
@@ -43,6 +46,11 @@ export type ShapePackDraft = {
   }[];
   /** Exact artwork fonts (ADR-0192): present, the pack encodes as 1.1, even with an empty closure. */
   readonly fonts?: ShapePackDraftFonts;
+  /**
+   * The pack's connector types (FR-CON-010, ADR-0048 amendment M18.250): present, the pack also has a `connectors.json`
+   * beside its index, which the index does not list. Every id is in the pack's namespace, each once.
+   */
+  readonly connectors?: readonly ConnectorDef[];
 };
 
 /**
@@ -64,7 +72,7 @@ export type ShapePackDraftFonts = ShapePackFonts<ShapePackDistributionFontResour
  * @public
  */
 export type EncodedShapePack = {
-  /** Canonical file bytes by pack-relative path; `index.json` first, then categories in order of first use, then fonts by resource. */
+  /** Canonical file bytes by pack-relative path; `index.json` first, then categories in order of first use, then fonts by resource, then `connectors.json`. */
   readonly files: ReadonlyMap<string, Uint8Array>;
   /** The validated index, version 1.1 when the draft has fonts. */
   readonly index: VersionedShapePackIndex;
@@ -240,9 +248,26 @@ function fontMetadataOf(fonts: ShapePackDraftFonts | undefined, formatVersion: s
 }
 
 /**
+ * `draft`'s `connectors.json` file, its definitions in id order, validated for the pack's namespace (`parseConnectorDefs`) and
+ * with each `describe` one catalog line as registering requires; diagnostics under `/connectors`, by sorted position. None
+ * without `connectors`.
+ */
+function connectorFiles(draft: ShapePackDraft): Result<[string, Uint8Array][], readonly Diagnostic[]> {
+  if (draft.connectors === undefined) return ok([]);
+  const definitions = [...draft.connectors].sort((a, b) => (a.id < b.id ? -1 : 1));
+  const envelope = { format: 'fluxion-connector-defs', formatVersion: '1.0', definitions };
+  const parsed = parseConnectorDefs(envelope, draft.id);
+  if (!parsed.ok) return err(parsed.error.map((d) => ({ ...d, path: `/connectors${d.path.replace(/^\/definitions/, '')}` })));
+  // a describe registering refuses (routing registerConnectorDefs: one catalog line) would refuse the shipped file whole
+  const lines = definitions.flatMap((def, i) => (def.describe === undefined || describeOf(def) !== undefined ? [] : [i]));
+  if (lines.length > 0) return err(lines.map((i) => problem(`/connectors/${i}/describe`, 'describe must be one line of at most 160 characters')));
+  return ok([['connectors.json', utf8(canonicalJson(envelope))]]);
+}
+
+/**
  * Encode `draft` as a declarative pack (ADR-0048, ADR-0196) and validate every file it writes under
  * `licensePolicy`. Refuses an empty pack, ids outside the namespace, invalid definitions and rights the policy
- * does not permit; nothing is partial. The same draft always gives the same bytes. A draft with `fonts` is a
+ * does not permit, and invalid connector types; nothing is partial. The same draft always gives the same bytes. A draft with `fonts` is a
  * pack 1.1 (ADR-0192): its index and categories are validated by the 1.1 parsers (exact font closure of each
  * definition's artwork text, scoped font credits) and every resource's bytes must match it.
  *
@@ -254,6 +279,8 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
   const { members, names } = parts.value;
   const fonts = draft.fonts === undefined ? ok([] as [string, Uint8Array][]) : fontFiles(draft.fonts);
   if (!fonts.ok) return fonts;
+  const connectors = connectorFiles(draft);
+  if (!connectors.ok) return connectors;
   // names need 1.2, which carries the 1.1 font metadata (empty without fonts); a pack without names is written exactly as before
   const formatVersion = names.size > 0 ? '1.2' : draft.fonts === undefined ? '1.0' : '1.1';
   const { categoryFiles, envelopes, descriptors } = categoryFilesOf(groupBySlug(members), formatVersion, names);
@@ -276,6 +303,6 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
   if (!index.ok) return index;
   const checked = checkCategories(index.value, envelopes, licensePolicy);
   if (!checked.ok) return checked;
-  const files = new Map<string, Uint8Array>([['index.json', utf8(canonicalJson(index.value))], ...categoryFiles, ...fonts.value]);
+  const files = new Map<string, Uint8Array>([['index.json', utf8(canonicalJson(index.value))], ...categoryFiles, ...fonts.value, ...connectors.value]);
   return ok({ files, index: index.value, definitions: members.map((m) => m.def) });
 }

@@ -2,6 +2,7 @@
 // connector end markers, registered into core's registries through the public registry API only.
 // First-party packs use exactly this.
 import {
+  type ConnectorDef,
   type CoreRegistries,
   type Disposable,
   type MarkerDef,
@@ -38,6 +39,11 @@ export type PackSpec = {
   readonly markers?: readonly MarkerDef[];
   /** Themes (validated with `validateTheme` when the pack is registered). */
   readonly themes?: readonly ThemeDef[];
+  /**
+   * Connector types (FR-CON-010, ADR-0017 amendment M18.250). `register` does not register them: a host registers them in its
+   * routers with routing's `registerConnectorDefs`, which validates them, all or none.
+   */
+  readonly connectors?: readonly ConnectorDef[];
 };
 
 /**
@@ -62,6 +68,8 @@ export type Pack = {
   readonly markers: readonly MarkerDef[];
   /** Its themes. */
   readonly themes: readonly ThemeDef[];
+  /** Its connector types, for the host to register in its routers (`register` leaves them); absent when it has none. */
+  readonly connectors?: readonly ConnectorDef[];
   /**
    * Validate and register everything under the pack's id as source: all of it, or nothing and the
    * diagnostics (`FLX_PACK_INVALID`, `FLX_SHAPE_DEF_INVALID`, `FLX_REGISTRY_DUPLICATE`).
@@ -176,6 +184,7 @@ export function definePack(spec: PackSpec): Pack {
     shapes: spec.shapes ?? [],
     markers: spec.markers ?? [],
     themes: spec.themes ?? [],
+    ...(spec.connectors === undefined ? {} : { connectors: spec.connectors }),
     register: (registries) => {
       if (!PACK_ID.test(pack.id)) return err([packProblem(['id'], `pack id "${pack.id}" must be lower-case letters, digits and "-"`)]);
       const shapes: Part<ShapeDef> = { field: 'shapes', noun: 'shape', parse: parseShapeDef, registry: registries.shapeDefs };

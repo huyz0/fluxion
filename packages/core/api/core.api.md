@@ -836,6 +836,7 @@ export type ShapePackDraft = {
         readonly def: ShapeDef;
     }[];
     readonly fonts?: ShapePackDraftFonts;
+    readonly connectors?: readonly ConnectorDef[];
 };
 
 // @public

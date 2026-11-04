@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   allowsShapePackContentLicense,
+  type ConnectorDef,
   canonicalJson,
   encodeShapePack,
   parseVersionedShapePackCategory,
@@ -111,5 +112,34 @@ describe('one shared pack encoder (M18.108, ADR-0196)', () => {
     expect(problems(draft([at('boxes', 'a')], { credits: [{ ...credit, license: 'GPL-3.0-only' }] }))).toEqual(['/credits/0/license']);
     expect(problems(draft([{ name: 'X', def: { ...box, license: 'GPL-3.0-only' } }]))).toEqual(['/categories/boxes/definitions/0/license']);
     expect(problems(draft([{ name: '', def: box }]))).not.toEqual([]);
+  });
+  it('FR-CON-010, FR-LIB-007: a draft with connector types also writes connectors.json, canonical with ids in order, which the index does not list (M18.250)', () => {
+    const wavy: ConnectorDef = { id: 'sample:wavy', router: 'orthogonal', decoration: { kind: 'wavy', amplitude: 3, wavelength: 12 }, name: 'Wavy' };
+    const pipe: ConnectorDef = { id: 'sample:pipe', router: 'orthogonal', decoration: { kind: 'pipe', wall: 2 } };
+    const plain = encodeShapePack(draft([{ name: 'Box', def: box }]), policy);
+    const withTypes = encodeShapePack(draft([{ name: 'Box', def: box }], { connectors: [wavy, pipe] }), policy);
+    if (!plain.ok || !withTypes.ok) throw new Error('encode failed');
+    expect([...plain.value.files.keys()]).not.toContain('connectors.json');
+    expect([...withTypes.value.files.keys()]).toEqual([...plain.value.files.keys(), 'connectors.json']);
+    // every other file is byte for byte the pack without them, and the index does not name the file
+    for (const [path, bytes] of plain.value.files) expect(withTypes.value.files.get(path)).toEqual(bytes);
+    expect(text(withTypes.value.files.get('connectors.json'))).toBe(
+      canonicalJson({ format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [pipe, wavy] }),
+    );
+  });
+
+  it('FR-CON-010: an invalid connector type, one outside the namespace or listed twice, a describe registering refuses, or an empty list refuse the whole pack (M18.250)', () => {
+    const wavy: ConnectorDef = { id: 'sample:wavy', router: 'orthogonal', decoration: { kind: 'wavy', amplitude: 3, wavelength: 12 } };
+    const refused = (connectors: readonly unknown[]) => {
+      const r = encodeShapePack(draft([{ name: 'Box', def: box }], { connectors: connectors as ConnectorDef[] }), policy);
+      return r.ok ? [] : r.error.map((d) => d.path);
+    };
+    expect(refused([{ ...wavy, decoration: { kind: 'wavy', amplitude: -1, wavelength: 12 } }])).toEqual(['/connectors/0/decoration/amplitude']);
+    expect(refused([{ ...wavy, id: 'other:wavy' }])).toEqual(['/connectors/0/id']);
+    expect(refused([wavy, wavy])).toEqual(['/connectors/1/id']);
+    expect(refused([])).toEqual(['/connectors']);
+    // valid to the parser, refused by registering: two lines, past 160 characters
+    expect(refused([{ ...wavy, describe: 'two\nlines' }])).toEqual(['/connectors/0/describe']);
+    expect(refused([{ ...wavy, describe: 'x'.repeat(161) }])).toEqual(['/connectors/0/describe']);
   });
 });

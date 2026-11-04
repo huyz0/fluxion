@@ -105,7 +105,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-CON-007 | M | R1 | M7 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/connectors.curve.spec.ts` +8 |
 | FR-CON-008 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/dsl/src/patch/jumps.test.ts` +4 |
 | FR-CON-009 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/host-binding.test.ts` |
-| FR-CON-010 | S | R3 | M18 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `apps/studio/src/pack-connectors.browser.test.tsx` +6 |
+| FR-CON-010 | S | R3 | M18 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `apps/studio/src/pack-connectors.browser.test.tsx` +9 |
 | FR-CON-011 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/render/src/pack-connectors.test.ts` +2 |
 | FR-CON-012 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/attachment.test.ts` |
 | FR-CON-013 | S | R4 | M23 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
