@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.130",
+  "currentTask": "M18.259",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). The ci backlog has cleared (M18.253): last-ci exits 0, ci green at 8a9c517 (41791263579). M18.257 is done, so its landing clause has lapsed; product rows land while last-ci exits 0 (drive step 3). Huy's card on cancelling the nightlies' mutation shards was withdrawn on 2026-11-04 (41559194820 completed by itself; 41612451867 had 7 jobs queued). M18.251: Huy to answer stream 3's fourth-round allowance card; M18.250-252 wait on it. M18.10: Huy chose the cheaper tzap confirmation; stream 2's tzap fix 3090a1b (branch claude/cheaper-confirmation) waits on Huy to merge and release it. M18.254 waits on a third nightly perf reading that contains 84bdb8e.",
-  "updated": "2026-11-04T08:47:22.000Z",
+  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp41 F2: Huy to answer the card (posted about 12:38Z on 2026-11-04) on whether M18.258's round-4 pass (0526486) stands under a retroactive allowance or gets one fresh review; recommended: it stands. cp41 F3: Huy to answer the card (posted about 12:38Z on 2026-11-04) on downloading CI artifact 13195593788 (expires 2026-11-17T01:32:32Z) for M18.245; this container cannot download artifacts. Nightly 41806720128 (schedule at 3eb1679) holds the runner queue, so main ci takes 2-3 h (41806346624: ci-ok queued 10:22-11:55Z); every finished job is green. M18.251: Huy to answer stream 3's fourth-round allowance card; M18.250-252 wait on it. M18.10: Huy chose the cheaper tzap confirmation; stream 2's tzap fix 3090a1b (branch claude/cheaper-confirmation) waits on Huy to merge and release it.",
+  "updated": "2026-11-04T12:43:17.000Z",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 3
