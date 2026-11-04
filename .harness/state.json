@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.245",
+  "currentTask": "M18.214",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp38 F3/cp39 F3: Huy to answer the card (2026-11-03 12:45Z) on cancelling the queued mutation shards of nightlies 41559194820 (dispatched at 60ce6af, already red: 20 shards cancelled at the limit) and 41612451867 (scheduled at 095be5d); every other leg of both is read (M18.249). They hold the ubuntu runner pool, so main ci has run behind 5 to 10 pending runs since 41595947349 at 5bca80b; separately GitHub's macOS capacity cancels queued macOS jobs (41633787769 verify macos; 41660137068 cli-mcp macos node 22 and 24), which nothing in the repo controls. Until last-ci exits 0 only harness-path, Fixes-ci, docs-only and M18.257 commits land (M18.253, M18.257); stream 3's held stack waits. M18.214 needs a completed nightly on a current main commit; M18.216 lands after it. The newest completed nightly is 41421711034 at 590e0a4, red. M18.10: Huy chose the cheaper tzap confirmation; stream 2's tzap fix 3090a1b (branch claude/cheaper-confirmation) waits on Huy to merge and release it.",
-  "updated": "2026-11-03T23:02:17.000Z",
+  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp38 F3/cp39 F3: Huy to answer the card (2026-11-03 12:45Z) on cancelling the queued mutation shards of nightly 41612451867 (scheduled at 095be5d; 41559194820 has since completed); every other leg of both is read (M18.249). They hold the ubuntu runner pool, so main ci has run behind 5 to 10 pending runs since 41595947349 at 5bca80b; separately GitHub's macOS capacity cancels queued macOS jobs (41633787769 verify macos; 41660137068 cli-mcp macos node 22 and 24), which nothing in the repo controls. Until last-ci exits 0 only harness-path, Fixes-ci, docs-only and M18.257 commits land (M18.253, M18.257); stream 3's held stack waits. M18.214 closed: nightly 41559194820 at 60ce6af completed (red: 30 mutation shards cancelled at the limit, plus the known previous-playwright webkit and visual-xos windows/macos legs); M18.216 lands next. M18.10: Huy chose the cheaper tzap confirmation; stream 2's tzap fix 3090a1b (branch claude/cheaper-confirmation) waits on Huy to merge and release it.",
+  "updated": "2026-11-04T07:05:03.000Z",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 3
