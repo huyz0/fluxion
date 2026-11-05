@@ -270,6 +270,23 @@ describe('edit-mode root (FR-EDT-001)', () => {
     expect(session.camera.get()).toBe(moved);
   });
 
+  it('FR-EDT-002: shift + 1 pressed in the task that enters focus mode fits the screen to the canvas it has now, before any ResizeObserver delivery (M18.267)', async () => {
+    const core = createCore(newDocument(seededRandom(8)));
+    const session = createSession('doc');
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />),
+    );
+    await act(frame);
+    const canvas = host.querySelector('main') as HTMLElement;
+    const before = canvas.clientWidth;
+    const focus = [...host.querySelectorAll('[role="banner"] button')].find((b) => b.textContent === 'Focus mode') as HTMLElement;
+    // one task: the panels go and the canvas grows (a sync act renders, but no ResizeObserver delivers), then the key is pressed
+    act(() => focus.click());
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '!', code: 'Digit1', shiftKey: true, bubbles: true }));
+    expect(canvas.clientWidth).toBeGreaterThan(before);
+    expect(session.camera.get().z).toBeCloseTo(Math.min((canvas.clientWidth - 64) / 1920, (canvas.clientHeight - 64) / 1080), 10);
+  });
+
   it('FR-EDT-005: dragging one element re-renders only that element and the overlay', async () => {
     const b = documentBuilder({ seed: 71 });
     const screen = b.screen();

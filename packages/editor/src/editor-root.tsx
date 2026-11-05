@@ -324,6 +324,8 @@ function useShellBasics(props: EditorRootProps) {
   return { store, settings, layout, setLayout, session, screenId, shown, execute, tools, present, switchMode };
 }
 
+const EDIT_ROOT = { className: 'fx-editor', 'data-testid': 'editor-root', 'data-mode': 'edit' } as const;
+
 function EditorShell(props: EditorRootProps): ReactNode {
   const { store, registries } = props;
   useChromeCss();
@@ -336,16 +338,17 @@ function EditorShell(props: EditorRootProps): ReactNode {
   // reactive: a resized screen (an edit, undo, the SDK) is fitted at its new size
   const area = useValue(useMemo(() => store.query((view) => areaOf(view, screenId)), [store, screenId]));
   const [box, setBox] = useState({ w: 0, h: 0 });
+  const rootRef = useRef<HTMLDivElement>(null);
   const [overrides, setOverrides] = useKeyOverrides(settings);
   const dialogs = useDialogs();
   const base = useMemo(() => baseKeymap(tools.list()), [tools]);
   const { assets, url: assetUrl } = useEditorAssets(store, props.assets);
-  const { run, system, notice, notify } = useRootKeys({ ...basics, box, area, overrides, assets, dialogs, from: props });
+  const { run, system, notice, notify } = useRootKeys({ ...basics, box, root: rootRef, area, overrides, assets, dialogs, from: props });
   useOnOpen(store, session, area, box);
   const shell = { store, registries, screenId, area, session, tools: present, assets: assetUrl, revision, routes };
   if (mode === 'present') return <PresentShell {...shell} />;
   return (
-    <div className="fx-editor" data-testid="editor-root" data-mode="edit" data-revision={revision} data-routes={routes} data-focus={layout.focus || undefined}>
+    <div ref={rootRef} {...EDIT_ROOT} data-revision={revision} data-routes={routes} data-focus={layout.focus || undefined}>
       <EditToolbar
         layout={layout}
         onLayout={setLayout}

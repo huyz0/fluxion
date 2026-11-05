@@ -66,16 +66,11 @@ async function bothModes(page: Page, name: string, index = 0) {
   await expect.poll(async () => (await editor.canvas.boundingBox())?.width).toBe(2200);
   const screen = editor.screens.first();
   // fit the resized canvas, then 100 % about its centre, centred at whole pixels: 140 px in from the canvas (0, 40) each way.
-  // The camera commands take the canvas size the editor last observed, which reaches it one ResizeObserver delivery after the
-  // DOM box polled above. In ci 41847238589 Shift+1 fitted the 1632 x 1356 canvas from before focus mode (z 0.8167) and
-  // Shift+0 zoomed about the new centre, which puts the screen at exactly (-207.76, 177.55): the keys are pressed again
-  // until the editor has the new size (M18.263)
-  await expect(async () => {
-    await page.keyboard.press('Shift+Digit1');
-    await page.keyboard.press('Shift+Digit0');
-    await expect(editor.zoomValue).toHaveText('100 %');
-    expect(await screen.boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
-  }).toPass();
+  // Each key is pressed once: the camera commands read the canvas's box when they run, not the size last observed (M18.267)
+  await page.keyboard.press('Shift+Digit1');
+  await page.keyboard.press('Shift+Digit0');
+  await expect(editor.zoomValue).toHaveText('100 %');
+  expect(await screen.boundingBox()).toEqual({ x: 140, y: 180, width: 1920, height: 1080 });
   // the pointer is off the canvas, nothing is selected: the overlay is not mounted
   await page.mouse.move(0, 0);
   await expect(page.locator('svg.fx-chrome-overlay')).toHaveCount(0);

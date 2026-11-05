@@ -9,7 +9,7 @@ import type { AssetStore } from './asset-store.js';
 import { screenToPage } from './camera.js';
 import { createClipboard } from './clipboard.js';
 import { PaletteHost } from './command-palette.js';
-import type { EditorCommand } from './editor-commands.js';
+import type { CanvasSize, EditorCommand } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
 import { enteredHolds } from './group-edit.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
@@ -53,6 +53,8 @@ export type RootKeys = {
   readonly tools: ToolDispatcher;
   readonly present: ToolDispatcher;
   readonly box: { readonly w: number; readonly h: number };
+  /** The editor's root element: the camera commands read its canvas's box when they run. */
+  readonly root: { readonly current: HTMLElement | null };
   readonly area: Box | undefined;
   readonly switchMode: ModeSwitch;
   /** The screen shown, as the keys' undo restores it. */
@@ -65,6 +67,12 @@ export type RootKeys = {
   /** The root's props: the editor commands besides the built-in ones, and the runner of the Arrange commands. */
   readonly from: { readonly commands?: readonly EditorCommand[] | undefined; readonly arrange?: ArrangePort | undefined };
 };
+
+/** The canvas's box now: a resize its ResizeObserver has not delivered yet counts (M18.267). */
+function canvasBoxIn(root: HTMLElement | null): CanvasSize | undefined {
+  const canvas = root?.querySelector<HTMLElement>('main.fx-chrome-canvas');
+  return canvas == null ? undefined : { w: canvas.clientWidth, h: canvas.clientHeight };
+}
 
 /** The editor's keys over the root's tools, with its own clipboard (the system clipboard joins it in M7.22); the runner of a command by id. */
 export function useRootKeys(i: RootKeys): {
@@ -95,6 +103,7 @@ export function useRootKeys(i: RootKeys): {
     tools: i.tools,
     present: i.present,
     viewport: i.box,
+    measure: () => canvasBoxIn(i.root.current),
     area: i.area,
     switchMode: i.switchMode,
     openHelp: i.dialogs.openHelp,

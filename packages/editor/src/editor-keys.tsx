@@ -52,8 +52,10 @@ export type EditorKeysInput = {
   readonly tools: ToolDispatcher;
   /** The present-mode tools, when the host presents in place. */
   readonly present?: ToolDispatcher | undefined;
-  /** The canvas's size, in screen px. */
+  /** The canvas's size, in screen px, as last observed. */
   readonly viewport: CanvasSize;
+  /** The canvas's size now, read when a command runs: a resize not yet observed counts (M18.267). Undefined falls back to `viewport`. */
+  readonly measure?: (() => CanvasSize | undefined) | undefined;
   /** The shown screen's area on the page, if any. */
   readonly area: Box | undefined;
   /** Switch between editing and presenting, when the host can. */
@@ -91,7 +93,8 @@ export const pressOf = (e: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'met
 
 /** What the editor's commands act on at a key press, in the session's mode. */
 function commandCtx(input: EditorKeysInput): EditorCommandCtx {
-  const { store, session, tools, present, viewport, area, switchMode, openHelp, openPalette, restoreView, clipboard, assets, arrange, notify } = input;
+  const { store, session, tools, present, area, switchMode, openHelp, openPalette, restoreView, clipboard, assets, arrange, notify } = input;
+  const viewport = input.measure?.() ?? input.viewport;
   const presenting = session.mode.get() === 'present' && present !== undefined;
   return {
     mode: presenting ? 'present' : 'edit',

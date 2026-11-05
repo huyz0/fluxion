@@ -447,6 +447,7 @@ export type EditorKeysInput = {
     readonly tools: ToolDispatcher;
     readonly present?: ToolDispatcher | undefined;
     readonly viewport: CanvasSize;
+    readonly measure?: (() => CanvasSize | undefined) | undefined;
     readonly area: Box | undefined;
     readonly switchMode?: ModeSwitch | undefined;
     readonly overrides?: KeyOverrides | undefined;
