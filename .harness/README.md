@@ -26,7 +26,11 @@
 
 - `loopActive` — set true by `drive` when running under a goal; read by the optional
   `stop-check.mjs` Stop hook.
+- `currentTask` — the backlog row the staged commit is made for (check-digest's fallback owner of the staged digest lines).
 - `blockedReason` — set on any stop condition; a human clears it.
+- `updated` — when the state last moved: a commit that changes `currentTask`, `blockedReason` or any backlog
+  row's State must set it later than HEAD's (or than HEAD's commit time, when HEAD's ran ahead of it), and a commit that
+  sets it may put it at most 5 minutes ahead of the commit; check-digest refuses otherwise (M18.266). Use the time of the change.
 - `attempts` — consecutive failed fix attempts on the current cause (stop at 3).
 
 ## Optional deterministic Stop hook (`scripts/harness/stop-check.mjs`)

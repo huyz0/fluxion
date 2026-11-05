@@ -1,10 +1,13 @@
 // HARNESS NFR-DX-003: rebased task commits land only through the gates, bound to their reviewed content (M18.106, ADR-0195).
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import { ciRefusal, fillCommitCells, regenerateSteps } from '../../scripts/harness/land.mjs';
 import { cleanEnv, out, sandbox } from './helpers.mjs';
+
+const STATE = '.harness/state.json';
 
 describe('fillCommitCells (M18.106)', () => {
   const ROW = (id, state, commit) => `| ${id} | task | HARNESS | WHEN x THE SYSTEM SHALL y | — | ${state} | ${commit} |`;
@@ -126,6 +129,12 @@ function landRig() {
       sb.write(path, body);
       ok(sb.git('add', path));
     }
+    // a commit that moves a row's State moves state.json's clock, as the harness loop does (M18.266)
+    if (Object.keys(extra).includes('docs/backlog/current.md') && existsSync(sb.path(STATE))) {
+      const state = JSON.parse(sb.read(STATE));
+      sb.write(STATE, `${JSON.stringify({ ...state, updated: new Date(Date.parse(state.updated) + 1000).toISOString() }, null, 2)}\n`);
+      ok(sb.git('add', STATE));
+    }
     const hash = ok(sb.node('scripts/harness/review.mjs', ['hash']));
     sb.write('.harness/tmp/v.json', JSON.stringify({ task, kind: 'code', diff_sha256: hash, reviewer: 'test:unit', verdict: 'pass', findings: [] }));
     ok(sb.node('scripts/harness/review.mjs', ['record', '--file', sb.path('.harness/tmp/v.json'), '--task', task]));
@@ -230,6 +239,27 @@ describe('land (M18.106)', () => {
     assert.match(r.stderr, /conflicts with the remote branch/);
     assert.equal(head(), start);
     assert.equal(ok(sb.git('status', '--porcelain', '--untracked-files=no')), '');
+  });
+
+  it('names the clock fix when a re-applied commit conflicts on state.json (M18.266, cp43 F1)', () => {
+    const BACKLOG = 'docs/backlog/current.md';
+    const row = (id, state) => `| ${id} | gate ${id} | HARNESS | acceptance | | ${state} | |`;
+    upstream(BACKLOG, `${row('M0.60', 'todo')}\n`);
+    reset();
+    // this commit closes its row and moves the clock (reviewed() ticks it); another stream moves the clock meanwhile
+    reviewed('M0.60', 'scripts/gates/M0.60.txt', 'M0.60\n', { [BACKLOG]: `${row('M0.60', 'done')}\n` });
+    ok(git(other, 'pull', '-q', '--ff-only', 'origin', 'main'));
+    const theirs = JSON.parse(readFileSync(join(other, STATE), 'utf8'));
+    writeFileSync(join(other, STATE), `${JSON.stringify({ ...theirs, updated: new Date(Date.parse(theirs.updated) + 60_000).toISOString() }, null, 2)}\n`);
+    ok(git(other, 'commit', '-q', '--no-verify', '-am', 'chore: upstream clock'));
+    ok(git(other, 'push', '-q', 'origin', 'HEAD:main'));
+    const start = head();
+    const r = land('--push');
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /conflicts with the remote branch/);
+    assert.match(r.stderr, /\.harness\/state\.json: keep the remote's fields, .* set `updated` to the time of the resolution/);
+    assert.equal(head(), start);
+    reset();
   });
 
   it('refuses to land when git would not run the repo hooks (M18.106 r1 F1)', () => {

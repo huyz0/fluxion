@@ -14,6 +14,8 @@
 // (M18.119): a posthoc review binds to what landed, not to a diff that never did. A `rebind` line
 // counts only when it names a pass line of its task, and a pass line a commit adds for other content
 // must be followed by a later line of its task (M18.127).
+// A staged commit that changes state.json's currentTask or blockedReason, or any backlog row's State, must move state.json's
+// `updated` past HEAD's (M18.266, cp42 F3).
 // CI (gates.yml) runs `--head --full-history` on every push and PR.
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -184,6 +186,66 @@ export function headerCountProblems(text) {
   if (stated === undefined) return [];
   const rows = text.split(/\r?\n/).filter((l) => /^\| M\d+\.\d+ \|/.test(l)).length;
   return Number(stated) === rows ? [] : [`backlog header says current: ${stated} but it has ${rows} rows; correct the header`];
+}
+
+/** Each backlog row's State by its id. */
+function rowStates(text) {
+  const states = new Map();
+  for (const line of text.split(/\r?\n/)) {
+    const cells = line.split('|').map((c) => c.trim());
+    const id = /^M\d+\.\d+$/.exec(cells[1] ?? '')?.[0];
+    if (id && cells.length >= 9) states.set(id, cells[6]);
+  }
+  return states;
+}
+
+/** How far ahead of the commit being made state.json's `updated` may be (M18.266, cp43 F1). */
+export const CLOCK_SLACK_MS = 5 * 60 * 1000;
+
+/**
+ * The problem when a staged change moves the loop's state without moving its clock honestly (M18.266, cp42 F3, cp43 F1):
+ * state.json's currentTask or blockedReason, or the State of a backlog row HEAD already has, differs from HEAD, and the
+ * staged `updated` is not later than HEAD's clock; and a staged `updated` that differs from HEAD's is refused whenever it is more
+ * than CLOCK_SLACK_MS ahead of `now`. HEAD's clock is
+ * its `updated`, or its commit time when that `updated` ran ahead of it, so an honest time after a future-dated HEAD
+ * passes. A HEAD without state.json has no clock to compare.
+ *
+ * @param {{headState: string, stagedState: string, headBacklog: string, stagedBacklog: string, headCommitTime?: number, now?: number}} trees
+ *   the four files' texts, HEAD's commit time and the time of this change (epoch ms)
+ */
+export function stateClockProblems({ headState, stagedState, headBacklog, stagedBacklog, headCommitTime = Number.NaN, now = Date.now() }) {
+  if (!headState) return [];
+  const [head, staged] = parseStates(headState, stagedState);
+  if (head === undefined) return ['state.json is not readable JSON in HEAD or the staged tree'];
+  const at = Date.parse(staged.updated);
+  // a clock this change sets is never ahead of it, whatever else it moves; an unchanged one is HEAD's to answer for
+  if (staged.updated !== head.updated && at > now + CLOCK_SLACK_MS)
+    return [`state.json's updated (${staged.updated}) is ahead of this change's time; set it to the time of this change`];
+  const moved = movedState(head, staged, headBacklog, stagedBacklog);
+  if (moved.length === 0) return [];
+  const what = `this change moves ${moved.join(', ')}`;
+  if (Number.isNaN(at)) return [`state.json's updated (${staged.updated}) is not a date, and ${what}`];
+  const floor = Math.min(...[Date.parse(head.updated), headCommitTime].filter((t) => !Number.isNaN(t)));
+  if (!Number.isFinite(floor) || at > floor) return [];
+  return [`state.json's updated (${staged.updated}) is not later than HEAD's (${head.updated}), but ${what}; set it to the time of this change`];
+}
+
+/** HEAD's and the staged state.json, or `[undefined]` when either is not JSON. */
+function parseStates(headState, stagedState) {
+  try {
+    return [JSON.parse(headState), JSON.parse(stagedState)];
+  } catch {
+    return [undefined];
+  }
+}
+
+/** What the staged change moves: currentTask, blockedReason, and each row of HEAD's whose State differs. */
+function movedState(head, staged, headBacklog, stagedBacklog) {
+  const same = (key) => JSON.stringify(head[key] ?? null) === JSON.stringify(staged[key] ?? null);
+  const moved = ['currentTask', 'blockedReason'].filter((key) => !same(key));
+  const before = rowStates(headBacklog);
+  for (const [id, state] of rowStates(stagedBacklog)) if (before.has(id) && before.get(id) !== state) moved.push(`${id}'s State`);
+  return moved;
 }
 
 /** The Commit cell problem of one backlog line, if it is a done row (see commitCellProblems). */
@@ -380,6 +442,15 @@ export function checkDigest({ tree = 'index', fullHistory = false } = {}) {
     ...foreignLineProblems(tree),
     ...progressProblems(tree),
     ...namedRoundProblems(tree),
+    ...(tree === 'index'
+      ? stateClockProblems({
+          headCommitTime: Date.parse(git(['log', '-1', '--format=%cI', 'HEAD']).stdout.trim()),
+          headState: show('HEAD', STATE),
+          stagedState: show('index', STATE),
+          headBacklog: show('HEAD', BACKLOG),
+          stagedBacklog: show('index', BACKLOG),
+        })
+      : []),
   ];
   if (problems.length) return { ok: false, detail: `digest: ${problems.length} problem(s)\n  ${problems.join('\n  ')}` };
   return { ok: true, detail: `digest: ${commits.length} ${milestone} task commits have tracked review evidence and Commit cells` };

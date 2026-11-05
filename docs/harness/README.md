@@ -41,7 +41,7 @@ Codex only: trust the project `.codex/` layer when prompted (hooks re-prompt whe
 | Transcript `EVIDENCE` / `GATE` lines | per-turn task, precommit, review, commit, gate progress |
 | `node scripts/gates/m<N>-complete.mjs` | the only definition of "done" (one line per leg) |
 | `.harness/progress.md` | ≤ 10-line entry per task/session |
-| `.harness/state.json` | current task, attempts, `loopActive`, `blockedReason` |
+| `.harness/state.json` | current task, attempts, `loopActive`, `blockedReason`, `updated`. `currentTask` names the row the staged commit is made for; a commit that changes it, `blockedReason` or any row's State must move `updated` past HEAD's, or past HEAD's commit time when HEAD's `updated` ran ahead of it, and any `updated` a commit sets may be at most 5 minutes ahead of the commit (check-digest, M18.266): set it to the time of the change |
 | `.harness/reviews/digest.log` | every recorded review verdict (task, diff hash, round, verdict, reviewer, findings, content id); each task commit carries its own pass line (ADR-0195) |
 | `.harness/reviews/milestone-*.json` | checkpoint and final milestone reviews with dispositions |
 | `node scripts/gates/check-checkpoint.mjs --commit HEAD` | checkpoint cadence at that exact commit; local commit-msg checks staged review evidence |

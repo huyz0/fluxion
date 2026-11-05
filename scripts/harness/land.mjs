@@ -26,6 +26,7 @@ const opt = (name, fallback) => {
   return i >= 0 ? argv[i + 1] : fallback;
 };
 const BACKLOG = 'docs/backlog/current.md';
+const STATE = '.harness/state.json';
 const CI_EVIDENCE = '.harness/reviews/ci-evidence.json';
 const BUDGET = '.harness/budget.json';
 const lines = (r) => r.stdout.split(/\r?\n/).filter(Boolean);
@@ -115,6 +116,17 @@ function fillCells(rewritten) {
       .map((m) => [m[2], m[1].slice(0, 7)]),
   );
   restage(BACKLOG, (text) => fillCommitCells(text, commitOf, rewritten));
+}
+
+/**
+ * The fix to name when a re-applied commit conflicts on state.json (M18.266, cp43 F1): check-digest refuses a resolution
+ * that keeps the older clock, so the resolution sets `updated` to its own time.
+ */
+function clockHint() {
+  const conflicted = lines(git(['diff', '--name-only', '--diff-filter=U']));
+  return conflicted.includes(STATE)
+    ? `\n${STATE}: keep the remote's fields, re-apply this commit's currentTask, blockedReason and row changes, and set \`updated\` to the time of the resolution (check-digest refuses an older one)`
+    : '';
 }
 
 /** The bookkeeping that names commits, each with how it follows the commits this landing rewrote. */
@@ -234,7 +246,7 @@ function recommit(upstream, start, ci) {
     const picked = git(['cherry-pick', '-n', remapped(sha, rewritten)]);
     if (picked.status !== 0)
       return fail(
-        `${sha.slice(0, 7)} (${subject}) conflicts with the remote branch; rebase by hand (keep both sides of bookkeeping, regenerate reports), then land again:\n${picked.stdout}${picked.stderr}`,
+        `${sha.slice(0, 7)} (${subject}) conflicts with the remote branch; rebase by hand (keep both sides of bookkeeping, regenerate reports), then land again:\n${picked.stdout}${picked.stderr}${clockHint()}`,
       );
     const stale = regenerate();
     if (stale) return fail(stale);
