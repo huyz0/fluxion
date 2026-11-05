@@ -17,6 +17,15 @@ export type ContentHasher = {
 };
 
 // @public
+export type EmbeddedConnectors = {
+    readonly pack: string;
+    readonly input: unknown;
+};
+
+// @public
+export function embeddedConnectors(entries: ReadonlyMap<string, Uint8Array> | undefined): readonly EmbeddedConnectors[];
+
+// @public
 export type FormatError = {
     readonly code: FormatErrorCode;
     readonly message: string;

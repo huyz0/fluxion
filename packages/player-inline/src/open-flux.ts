@@ -10,11 +10,12 @@ import {
   createStore,
   type Registry,
 } from '@fluxion/core';
-import { type ContentHasher, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
+import { type ContentHasher, embeddedConnectors, type LoadedFlux, loadFluxLean, sanitizeAsset, sha256Hex } from '@fluxion/format/player';
 import { basicPack } from '@fluxion/pack-basic';
 import { creditedPacks, renderRegistriesFor } from '@fluxion/player';
 import type { OpenedFlux } from '@fluxion/player/element';
-import { registerSavedShapePacks } from '@fluxion/render';
+import { type RenderRegistries, registerSavedShapePacks } from '@fluxion/render';
+import { registerConnectorDefs } from '@fluxion/routing';
 import type { AssetRecord, RecordId } from '@fluxion/schema';
 import { loadEmbeddedFonts } from './fonts.js';
 import type { RoutingWorker } from './routing-chunk-loader.js';
@@ -66,6 +67,15 @@ function registerBundled(registries: Pick<CoreRegistries, 'shapeDefs' | 'markers
 }
 
 /**
+ * Register the pack connector types `loaded` carries (`connectors/<pack>.json`, FR-CON-010, FR-LIB-009) in `render`'s routers, as the
+ * studio does on open (M18.147): the cheap routes draw their decoration, and the routing worker's input, built with these routers, takes an
+ * orthogonal-based type in. Each entry is all or nothing; a refused one leaves its connectors drawn as an unknown type, never failing the open.
+ */
+function registerEmbeddedConnectors(render: RenderRegistries, loaded: LoadedFlux): void {
+  for (const { pack, input } of embeddedConnectors(loaded.extraEntries)) registerConnectorDefs(render.routers, input, pack);
+}
+
+/**
  * Open the `.flux` file `bytes` for presenting: the document in a store that refuses every write (FR-PRS-004), the registries with the bundled shapes, the file's
  * images and fonts. The connectors draw the cheap routes, then the global routing pass's routes as `routing` (the lazily loaded routing
  * chunk's worker, M16.28) routes each screen; `settled` hears whether every screen was routed, and false at once without a worker. Whatever goes wrong is a message, and nothing is left behind (no image URL, no font face).
@@ -112,6 +122,7 @@ export async function openFlux(
     // the file's own fonts first: the first paint is in them, measured with their recorded metrics
     made.push(await loadEmbeddedFonts(loaded.value));
     const render = renderRegistriesFor(registries, artworkFonts);
+    registerEmbeddedConnectors(render, loaded.value);
     if (routing === undefined) settled(false);
     const routes = routing === undefined ? undefined : workerRoutes(store, render, routing);
     void routes?.done.then(settled);
