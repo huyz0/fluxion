@@ -14,6 +14,7 @@ import { advisoryAnnotation, advisoryLines, failureAnnotation, failureLines, wri
 // check-tests-kept and check-drift run from the commit-msg hook (they need the Removes-test /
 // Threshold-change trailers); CI re-checks each pushed commit with --commit <sha>.
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
+import { hasRecords, recordFailures, replayRecorded } from './fc-replay.mjs';
 import { gateLatency } from './gate-latency.mjs';
 import {
   evalNeeded,
@@ -158,16 +159,29 @@ const STEPS = [
     // quick mode runs only tests related to uncommitted changes, without coverage. A staged commit that
     // touches no browser-tested workspace nor its dependencies runs the node project only, its
     // coverage limited to the workspaces without browser tests (ladder-scope.mjs).
-    () => {
+    async () => {
       // CI's verify job names a durations file (M18.222); only this run writes it
       const durations = process.env.FLUXION_TEST_DURATIONS ? { FLUXION_TEST_DURATIONS: process.env.FLUXION_TEST_DURATIONS } : {};
       const vitest = (...a) => runAsync('pnpm', a, { env: { ...testStepEnv(), ...durations } });
       if (mode === 'quick') return vitest('exec', 'vitest', 'run', '--changed');
       const plan = testPlan();
-      if (plan.browser) return vitest('run', 'test:coverage');
-      return vitest('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`));
+      const result = await (plan.browser
+        ? vitest('run', 'test:coverage')
+        : vitest('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`)));
+      // a fast-check seed that refused this run is recorded, for the fc-replay step of every later staged run (M18.275)
+      if (mode === 'staged' && result.status !== 0) {
+        try {
+          recordFailures(`${result.stdout}\n${result.stderr}`);
+        } catch (e) {
+          return { ...result, stderr: `${result.stderr}\n${e.message}` };
+        }
+      }
+      return result;
     },
   ],
+  // a fast-check seed that refused an earlier staged run must pass before any later one lands, whatever
+  // it stages: its own step, so a commit the Vitest step skips is held too (M18.275, r1 F1)
+  ['fc-replay', (m) => m === 'staged', () => hasRecords() || 'no recorded fast-check seed', () => replayRecorded()],
   // the FluxScript example corpus compiles against the real packs (FR-DSL-001, FR-DSL-006; M12.44): a staged commit runs it when it touches dsl,
   // a pack, an example or a workspace the examples compile against; --all (verify, CI) always does. Sources through aliases: no build needed.
   // Its own Vite cache: it runs beside the test step, whose browser run serves the optimized deps of .vitest-cache (M1.36, M5.29)
