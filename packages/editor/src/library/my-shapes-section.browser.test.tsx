@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { MyShape, MyShapes, MyShapesResult } from './my-shapes.js';
+import { myShapePacksCheck } from './my-shapes-packs.js';
 import { MyShapesSection, type MyShapesSectionProps } from './my-shapes-section.js';
 
 let host: HTMLElement;
@@ -112,6 +113,33 @@ describe('My shapes section (FR-LIB-008)', () => {
     expect(button('Flow').disabled).toBe(false);
     await act(async () => button('Flow').click());
     expect(inserted).toEqual(['b']);
+  });
+
+  it('FR-LIB-008, FR-LIB-009: an item whose installed pack now has other geometry is listed as unavailable with why, and not offered (M18.271)', async () => {
+    const inserted: string[] = [];
+    const saved = { id: 'flow:decision', name: 'Decision', path: 'M0 0 L1 1' };
+    const packs = [{ subset: { id: 'flow', definitions: [saved] }, fonts: {} }] as unknown as NonNullable<MyShape['packs']>;
+    // the installed flow pack's decision is drawn otherwise now; its process is the same, and an absent shape is no refusal
+    const installed = new Map<string, unknown>([['flow:decision', { ...saved, path: 'M0 0 L2 2' }]]);
+    const checkPacks = myShapePacksCheck(async (id) => installed.get(id) as never);
+    const same = [{ subset: { id: 'flow', definitions: [{ id: 'flow:process' }] }, fonts: {} }] as unknown as NonNullable<MyShape['packs']>;
+    await render({
+      myShapes: fakeMyShapes([
+        { ...item('b', 'Flow', ['flow:decision']), packs },
+        { ...item('c', 'Step', ['flow:process']), packs: same },
+      ]),
+      onInsert: (i) => inserted.push(i.id),
+      checkPacks,
+    });
+    await act(async () => undefined);
+    expect(names()).toEqual(['Flow (unavailable)', 'Step']);
+    const flow = button('Flow (unavailable)');
+    expect(flow.disabled).toBe(true);
+    const reason = document.getElementById(flow.getAttribute('aria-describedby') ?? '');
+    expect(reason?.textContent).toBe('Unavailable: the flow shapes here have other geometry for flow:decision');
+    expect(reason?.checkVisibility()).toBe(true);
+    await act(async () => flow.click());
+    expect(inserted).toEqual([]);
   });
 
   it('FR-LIB-008: an undo storage refuses is told, not silently lost', async () => {

@@ -212,6 +212,7 @@ export {
   type MyShapePackSources,
   mergeMyShapePacks,
   myShapePackSet,
+  myShapePacksCheck,
   packShapeIds,
   packsFor,
   parseMyShapePacks,

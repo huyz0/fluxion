@@ -5,7 +5,7 @@ import { useValue } from '@fluxion/render';
 import { t } from '@lingui/core/macro';
 import '../i18n.js';
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
-import { exportMyShapes, type MyShape, type MyShapes, type MyShapesResult, myShapeUnavailable, type ShapeAvailable } from './my-shapes.js';
+import { exportMyShapes, type MyShape, type MyShapes, type MyShapesPacks, type MyShapesResult, myShapeUnavailable, type ShapeAvailable } from './my-shapes.js';
 
 /**
  * Props of {@link MyShapesSection}.
@@ -25,7 +25,29 @@ export type MyShapesSectionProps = {
   readonly onExport: (text: string) => void;
   /** Tell the person something (a save, import or undo refused). */
   readonly notify?: ((message: string) => void) | undefined;
+  /** Why an item's packs could not be used here, checked before it is offered (M18.271); absent, none is checked ahead. */
+  readonly checkPacks?: MyShapesPacks['check'];
 };
+
+/**
+ * Why each item with packs could not be used here, by item id, as `check` answers (M18.271): an item is listed with that reason
+ * rather than offered for an insert that would be refused. Items are checked again when the list or the check changes.
+ */
+function usePackRefusals(items: readonly MyShape[], check: MyShapesPacks['check']): ReadonlyMap<string, string> {
+  const [refusals, setRefusals] = useState<ReadonlyMap<string, string>>(new Map());
+  useEffect(() => {
+    if (check === undefined) return setRefusals(new Map());
+    let current = true;
+    const withPacks = items.filter((item) => (item.packs?.length ?? 0) > 0);
+    void Promise.all(withPacks.map(async (item) => [item.id, await check(item.packs ?? []).catch(() => undefined)] as const)).then((answers) => {
+      if (current) setRefusals(new Map(answers.flatMap(([id, reason]) => (reason === undefined ? [] : [[id, reason] as const]))));
+    });
+    return () => {
+      current = false;
+    };
+  }, [items, check]);
+  return refusals;
+}
 
 /** The name form shown while saving. */
 function SaveForm(props: { readonly onDone: (name: string | undefined) => void }): ReactNode {
@@ -74,6 +96,7 @@ function RemovedBar(props: { readonly item: MyShape; readonly onUndo: () => void
 function ItemList(props: {
   readonly items: readonly MyShape[];
   readonly available: ShapeAvailable;
+  readonly refusals: ReadonlyMap<string, string>;
   readonly onInsert: (item: MyShape) => void;
   readonly onRemove: (item: MyShape) => void;
 }): ReactNode {
@@ -82,7 +105,7 @@ function ItemList(props: {
     <ul className="fx-chrome-library-mine-list" aria-label={t`My shapes`}>
       {props.items.map((item) => {
         // re-checked on every read: a stored item whose shapes are not available here is listed with why, and not inserted
-        const unavailable = myShapeUnavailable(item, props.available);
+        const unavailable = myShapeUnavailable(item, props.available) ?? props.refusals.get(item.id);
         const reason = `${ids}-${item.id}`;
         return (
           <li key={item.id} className="fx-chrome-library-mine-item" data-my-shape={item.id} data-unavailable={unavailable === undefined ? undefined : ''}>
@@ -154,6 +177,7 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode {
   const { myShapes, canSave, onSave, onInsert, onExport } = props;
   const notify = (message: string) => props.notify?.(message);
   const items = useValue(myShapes.items);
+  const refusals = usePackRefusals(items, props.checkPacks);
   const [naming, setNaming] = useState(false);
   // every removal, latest last: Undo puts back the latest, and the one before it is offered next (M18.130)
   const [removed, setRemoved] = useState<readonly MyShape[]>([]);
@@ -197,6 +221,7 @@ export function MyShapesSection(props: MyShapesSectionProps): ReactNode {
       <ItemList
         items={items}
         available={myShapes.available}
+        refusals={refusals}
         onInsert={onInsert}
         onRemove={(item) => {
           // a refused remove (storage full or blocked) keeps the item listed, and says so rather than offering an Undo

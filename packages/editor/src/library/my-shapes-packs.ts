@@ -177,6 +177,25 @@ function heldRefusal(registries: ArtworkShapeRegistries, pack: MyShapePack): str
   return undefined;
 }
 
+/**
+ * The {@link MyShapesPacks.check} over `installed`, which reads the definition a shape id has here (the document's, else an installed
+ * first-party pack's, never registering it): `packs` cannot be used when one of its shapes has other geometry here, as an item saved
+ * from an older pack version whose geometry changed (M18.271, cp43 F5). A shape absent here is not a refusal: the insert registers it.
+ *
+ * @public
+ */
+export function myShapePacksCheck(installed: (id: string) => Promise<ShapeDef | undefined>): (packs: readonly MyShapePack[]) => Promise<string | undefined> {
+  return async (packs) => {
+    for (const pack of packs) {
+      for (const def of pack.subset.definitions as readonly ShapeDef[]) {
+        const here = await installed(def.id);
+        if (here !== undefined && canonical(here) !== canonical(def)) return `the ${pack.subset.id} shapes here have other geometry for ${def.id}`;
+      }
+    }
+    return undefined;
+  };
+}
+
 /** `a` then the entries of `b` keyed by `key` it lacks; undefined when an entry under the same key differs. */
 function unionBy<T>(
   a: readonly T[],

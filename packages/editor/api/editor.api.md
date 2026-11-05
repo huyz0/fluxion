@@ -1076,6 +1076,9 @@ export type MyShapePack = {
 };
 
 // @public
+export function myShapePacksCheck(installed: (id: string) => Promise<ShapeDef | undefined>): (packs: readonly MyShapePack[]) => Promise<string | undefined>;
+
+// @public
 export type MyShapePackSet = {
     readonly add: (packs: readonly MyShapePack[]) => Promise<MyShapesResult<undefined>>;
     readonly sources: () => readonly ShapePackSourceData[];
@@ -1112,6 +1115,7 @@ export type MyShapesFile = {
 export type MyShapesPacks = {
     readonly forSave: (records: ClipboardPayload["records"]) => Promise<MyShapesResult<readonly MyShapePack[]>>;
     readonly forInsert: (packs: readonly MyShapePack[]) => Promise<MyShapesResult<undefined>>;
+    readonly check?: ((packs: readonly MyShapePack[]) => Promise<string | undefined>) | undefined;
 };
 
 // @public
@@ -1134,6 +1138,7 @@ export type MyShapesSectionProps = {
     readonly onInsert: (item: MyShape) => void;
     readonly onExport: (text: string) => void;
     readonly notify?: ((message: string) => void) | undefined;
+    readonly checkPacks?: MyShapesPacks["check"];
 };
 
 // @public

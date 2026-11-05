@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.273",
+  "currentTask": "M18.271",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
-  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp41 F3: Huy to download CI artifact 13195593788 (expires 2026-11-17T01:32:32Z) for M18.245; this container cannot download artifacts. cp42 F4: the card posted 2026-11-04T20:22:58Z (is Huy's 13:34:57Z 'you decide and carry on' a standing delegation of round allowances and run cancellations?) is still unanswered at 2026-11-05T02:52:02.000Z; the streams proceed on its recommended option (standing, each use logged with the agent that used it). Under it, M18.250 (483217b) and M18.251 (cdeb16f) landed, and stream 1 allowed M18.122's fourth review (logged at 2e51ac1). M18.252 (0c2c5af), M18.233 (452066c) and M18.147 (7989d10) have landed; none waits. M18.272 closed the changesets leg (cp44 F1). Rows left: M18.267, M18.271, M18.10 (tzap 0.1.2 bump after minimumReleaseAge, about 2026-11-05T14:09Z, then a nightly with no cancelled shard; 41806720128 recorded by job once it completes), M18.157 and M18.182 (need named streams), M18.236 (after M18.10), M18.245 (Huy's artifact) and M18.43's closeout.",
-  "updated": "2026-11-05T03:37:43.000Z",
+  "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209). cp41 F3: Huy to download CI artifact 13195593788 (expires 2026-11-17T01:32:32Z) for M18.245; this container cannot download artifacts. cp42 F4: the card posted 2026-11-04T20:22:58Z (is Huy's 13:34:57Z 'you decide and carry on' a standing delegation of round allowances and run cancellations?) is still unanswered at 2026-11-05T02:52:02.000Z; the streams proceed on its recommended option (standing, each use logged with the agent that used it). Under it, M18.250 (483217b) and M18.251 (cdeb16f) landed, and stream 1 allowed M18.122's fourth review (logged at 2e51ac1). M18.252 (0c2c5af), M18.233 (452066c) and M18.147 (7989d10) have landed; none waits. M18.272 closed the changesets leg (cp44 F1). Rows left: M18.267, M18.10 (tzap 0.1.2 bump after minimumReleaseAge, about 2026-11-05T14:09Z, then a nightly with no cancelled shard; 41806720128 recorded by job once it completes), M18.157 and M18.182 (need named streams), M18.236 (after M18.10), M18.245 (Huy's artifact) and M18.43's closeout.",
+  "updated": "2026-11-05T03:52:26.000Z",
   "rowAttempts": {
     "M18.157": 2,
     "windows-witness-cleanup": 3

@@ -170,6 +170,8 @@ export type DocumentCatalog = LibraryCatalog & {
   sources(): readonly ShapePackSourceData[];
   /** Load every catalog definition `defIds` names that is not registered yet; resolves to the ids that failed. */
   resolve(defIds: Iterable<string>): Promise<readonly string[]>;
+  /** The definition `id` has here: the registered one, else a catalog pack's read without registering it; undefined when neither (M18.271). */
+  installed(id: string): Promise<ShapeDef | undefined>;
   /** Every first-party pack's display name by pack id, saved namespaces included (M18.143). */
   readonly names: ReadonlyMap<string, string>;
 };
@@ -231,6 +233,14 @@ export function documentCatalog(
         index: (byPack.get(pack) as ShapePackLoader).index,
         definitions: [...used.values()],
       })),
+    async installed(id) {
+      const held = defs.get(id);
+      if (held !== undefined) return held;
+      const loader = byPack.get(id.slice(0, id.indexOf(':')));
+      if (loader === undefined || heldElsewhere(id.slice(0, id.indexOf(':')))) return undefined;
+      const def = await loader.load(id);
+      return def.ok ? def.value : undefined;
+    },
     async resolve(defIds) {
       const wanted = [...new Set(defIds)].filter((id) => defs.get(id) === undefined && byPack.has(id.slice(0, id.indexOf(':'))));
       const results = await Promise.all(wanted.map(async (id) => [id, await ensure(id)] as const));

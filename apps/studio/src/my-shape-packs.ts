@@ -3,7 +3,9 @@
 // first-party definitions); inserting one registers the namespaces this document lacks (or adds the shapes an earlier insert's
 // namespace lacks), and their sources join the next save.
 // Disposing releases what was registered and forgets the sources.
-import { type MyShapePack, type MyShapesPacks, myShapePackSet, packsFor } from '@fluxion/editor';
+
+import type { ShapeDef } from '@fluxion/core';
+import { type MyShapePack, type MyShapesPacks, myShapePackSet, myShapePacksCheck, packsFor } from '@fluxion/editor';
 import type { ShapePackSourceData } from '@fluxion/format';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { OpenDocument } from './bootstrap.js';
@@ -30,6 +32,9 @@ export type StudioMyShapePacks = {
 /** Load the first-party definitions of `defIds` the document has not loaded yet; resolves to the ids that failed. */
 export type ResolveShapes = (defIds: readonly string[]) => Promise<readonly string[]>;
 
+/** The definition a shape id has here, the document's or an installed pack's, read without registering it (M18.271). */
+export type InstalledShape = (id: string) => Promise<ShapeDef | undefined>;
+
 /**
  * The port over `opened`, where `saved()` is what a save of the document embeds from now (inserted packs left out), and
  * `resolve` loads first-party definitions: an item's shapes of an installed pack are loaded from it first, so the item uses
@@ -41,6 +46,7 @@ export function studioMyShapePacks(
   opened: Pick<OpenDocument, 'core' | 'artworkFonts'>,
   saved: () => readonly ShapePackSourceData[],
   resolve: ResolveShapes = async () => [],
+  installed: InstalledShape = async (id) => opened.core.registries.shapeDefs.get(id),
 ): StudioMyShapePacks {
   let disposed = false;
   const listeners = new Set<() => void>();
@@ -61,6 +67,8 @@ export function studioMyShapePacks(
     packs: {
       forSave: (records) => packsFor(records, { sources: () => [...saved(), ...set.sources()], builtinIds: builtinShapeIds, hasher: webHasher }),
       forInsert,
+      // an item whose shapes have other geometry here (an older pack version) is listed as unavailable before any insert (M18.271)
+      check: myShapePacksCheck(installed),
     },
     sources: set.sources,
     subscribe: (listener) => {
@@ -84,7 +92,7 @@ export function useMyShapePacks(
   opened: Pick<OpenDocument, 'core' | 'artworkFonts'>,
   entry: OpenedEntry | undefined,
   others: () => readonly ShapePackSourceData[],
-  catalog?: { readonly resolve: (defIds: Iterable<string>) => Promise<readonly string[]> } | undefined,
+  catalog?: { readonly resolve: (defIds: Iterable<string>) => Promise<readonly string[]>; readonly installed?: InstalledShape | undefined } | undefined,
 ): { readonly packs: MyShapesPacks; readonly saveSources: () => readonly ShapePackSourceData[] } {
   const file = entry?.file;
   // others and catalog are read when needed, so the latest is used without making a new port
@@ -94,7 +102,12 @@ export function useMyShapePacks(
   const [sources, setSources] = useState<readonly ShapePackSourceData[]>([]);
   useEffect(() => {
     const embedded = () => [...embeddedSources(file?.shapePacks ?? [], file?.artworkFonts), ...now.current.others()];
-    const mine = studioMyShapePacks(opened, embedded, (ids) => now.current.catalog?.resolve(ids) ?? Promise.resolve([]));
+    const mine = studioMyShapePacks(
+      opened,
+      embedded,
+      (ids) => now.current.catalog?.resolve(ids) ?? Promise.resolve([]),
+      (id) => now.current.catalog?.installed?.(id) ?? Promise.resolve(opened.core.registries.shapeDefs.get(id)),
+    );
     port.current = mine;
     const off = mine.subscribe(() => setSources(mine.sources()));
     return () => {
@@ -106,7 +119,11 @@ export function useMyShapePacks(
   }, [opened, file]);
   const packs = useMemo<MyShapesPacks>(() => {
     const closed = Promise.resolve({ ok: false as const, reason: 'the document closed' });
-    return { forSave: (records) => port.current?.packs.forSave(records) ?? closed, forInsert: (p) => port.current?.packs.forInsert(p) ?? closed };
+    return {
+      forSave: (records) => port.current?.packs.forSave(records) ?? closed,
+      forInsert: (p) => port.current?.packs.forInsert(p) ?? closed,
+      check: (p) => port.current?.packs.check?.(p) ?? Promise.resolve(undefined),
+    };
   }, []);
   return { packs, saveSources: () => [...others(), ...sources] };
 }

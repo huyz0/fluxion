@@ -82,6 +82,38 @@ describe('Studio My shapes packs (M18.122)', () => {
     mine.dispose();
   });
 
+  it('FR-LIB-008, FR-LIB-009: an item saved from an older pack whose geometry changed is refused ahead of any insert, with nothing loaded into the document (M18.271)', async () => {
+    const doc = opened();
+    const problems: string[] = [];
+    const catalog = documentCatalog(await bundledPackCatalog(hasher), doc.core.registries.shapeDefs, new Set(), (m) => problems.push(m));
+    expect(await catalog.resolve(['flowchart:data', 'flowchart:database'])).toEqual([]);
+    const b = documentBuilder({ seed: 1223 });
+    b.rect(b.screen(), { defId: 'flowchart:data' });
+    const saved = await packsFor(Object.values(b.build().records), { sources: catalog.sources, builtinIds: builtinShapeIds, hasher });
+    if (!saved.ok) throw new Error(saved.reason);
+    // the item's flowchart:data as an older pack version drew it: another outline
+    const database = doc.core.registries.shapeDefs.get('flowchart:database') as { readonly outline: unknown };
+    const older = saved.value.map((p) => ({
+      ...p,
+      subset: { ...p.subset, definitions: p.subset.definitions.map((d) => ({ ...d, outline: database.outline })) },
+    })) as unknown as readonly MyShapePack[];
+    const fresh = opened();
+    const library = documentCatalog(await bundledPackCatalog(hasher), fresh.core.registries.shapeDefs, new Set(), (m) => problems.push(m));
+    const mine = studioMyShapePacks(
+      fresh,
+      library.sources,
+      (ids) => library.resolve(ids),
+      (id) => library.installed(id),
+    );
+    expect(await mine.packs.check?.(older)).toBe('the flowchart shapes here have other geometry for flowchart:data');
+    expect(await mine.packs.check?.(saved.value)).toBeUndefined();
+    // the check read the installed definitions without loading them into the document
+    expect(fresh.core.registries.shapeDefs.list().filter(([id]) => id.startsWith('flowchart:'))).toEqual([]);
+    expect(library.sources()).toEqual([]);
+    expect(problems).toEqual([]);
+    mine.dispose();
+  });
+
   it('FR-LIB-008: under a development double mount the port is made again, so an insert is not refused as closed (M18.122 r2 F2)', async () => {
     const doc = opened();
     let port: ReturnType<typeof useMyShapePacks> | undefined;

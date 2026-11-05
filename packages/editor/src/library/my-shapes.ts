@@ -94,6 +94,11 @@ export type MyShapesPacks = {
   readonly forSave: (records: ClipboardPayload['records']) => Promise<MyShapesResult<readonly MyShapePack[]>>;
   /** Make `packs` usable in the document; why not, with nothing registered. */
   readonly forInsert: (packs: readonly MyShapePack[]) => Promise<MyShapesResult<undefined>>;
+  /**
+   * Why `packs` could not be used here, checked before any insert and without registering or loading anything into the document
+   * (an installed pack whose geometry changed since the item was saved, M18.271), or undefined; absent, nothing is checked ahead.
+   */
+  readonly check?: ((packs: readonly MyShapePack[]) => Promise<string | undefined>) | undefined;
 };
 
 /**

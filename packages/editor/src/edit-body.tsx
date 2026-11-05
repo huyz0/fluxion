@@ -124,6 +124,7 @@ function mineFor(props: EditBodyProps, selection: readonly RecordId[]): LibraryP
     myShapes,
     canSave: selection.length > 0,
     notify,
+    checkPacks: myShapePacks?.check,
     onSave: async (name) => {
       const source = {
         docId: session.docId,
