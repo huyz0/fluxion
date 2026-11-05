@@ -15,7 +15,9 @@ permissions:
   contents: read
 
 jobs:
+  # M18.187: a scanner that is off takes no runner; zizmor's job prints its SKIP line
   codeql:
+    if: vars.CODE_SCANNING == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -23,18 +25,13 @@ jobs:
       actions: read
       security-events: write
     steps:
-      - if: vars.CODE_SCANNING != 'true'
-        run: echo "codeql — SKIP, code scanning not enabled (repo variable CODE_SCANNING)"
-      - if: vars.CODE_SCANNING == 'true'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - if: vars.CODE_SCANNING == 'true'
-        uses: github/codeql-action/init@416ff0dea110f80f0f56f0046500dbf7420e4bb0 # codeql-bundle-v2.27.1
+      - uses: github/codeql-action/init@416ff0dea110f80f0f56f0046500dbf7420e4bb0 # codeql-bundle-v2.27.1
         with:
           languages: javascript-typescript
-      - if: vars.CODE_SCANNING == 'true'
-        uses: github/codeql-action/analyze@416ff0dea110f80f0f56f0046500dbf7420e4bb0 # codeql-bundle-v2.27.1
+      - uses: github/codeql-action/analyze@416ff0dea110f80f0f56f0046500dbf7420e4bb0 # codeql-bundle-v2.27.1
 
   osv-scanner:
     runs-on: ubuntu-latest
@@ -51,17 +48,13 @@ jobs:
           scan-args: --lockfile=pnpm-lock.yaml
 
   dependency-review:
+    if: github.event_name == 'pull_request' && vars.CODE_SCANNING == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - if: github.event_name != 'pull_request'
-        run: echo "dependency-review — SKIP, only a pull request has a dependency diff"
-      - if: github.event_name == 'pull_request' && vars.CODE_SCANNING != 'true'
-        run: echo "dependency-review — SKIP, dependency review not enabled (repo variable CODE_SCANNING)"
       # new high/critical advisories or a license outside the allowlist fail the PR (NFR-LIC-002 is
       # also enforced by check-licenses in ci.yml)
-      - if: github.event_name == 'pull_request' && vars.CODE_SCANNING == 'true'
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
 
@@ -69,6 +62,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # the scanners skipped at job level above say why (a disabled scanner never passes silently)
+      - if: vars.CODE_SCANNING != 'true'
+        run: echo "codeql — SKIP, code scanning not enabled (repo variable CODE_SCANNING)"
+      - if: github.event_name != 'pull_request'
+        run: echo "dependency-review — SKIP, only a pull request has a dependency diff"
+      - if: github.event_name == 'pull_request' && vars.CODE_SCANNING != 'true'
+        run: echo "dependency-review — SKIP, dependency review not enabled (repo variable CODE_SCANNING)"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false

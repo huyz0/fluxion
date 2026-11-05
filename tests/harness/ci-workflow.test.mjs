@@ -299,6 +299,19 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(sec, /^ {2}workflow_call:/m);
     // a disabled scanner says so instead of passing silently
     assert.equal([...sec.matchAll(/SKIP, [a-z ]+not enabled \(repo variable CODE_SCANNING\)/g)].length, 2);
+    // M18.187: a scanner that is off takes no runner; the zizmor job, which always runs, prints why each one skipped
+    const job = (name) => new RegExp(`^ {2}${name}:\\n[\\s\\S]*?(?=^ {2}\\S|(?![\\s\\S]))`, 'm').exec(sec)[0];
+    assert.match(job('codeql'), /^ {4}if: vars\.CODE_SCANNING == 'true'$/m);
+    assert.match(job('dependency-review'), /^ {4}if: github\.event_name == 'pull_request' && vars\.CODE_SCANNING == 'true'$/m);
+    for (const name of ['codeql', 'dependency-review']) assert.doesNotMatch(job(name), /SKIP|^ {6}- if:/m, name);
+    const zizmor = job('zizmor');
+    assert.doesNotMatch(zizmor, /^ {4}if:/m, 'zizmor always runs');
+    assert.match(zizmor, /- if: vars\.CODE_SCANNING != 'true'\n\s+run: echo "codeql — SKIP, code scanning not enabled/);
+    assert.match(zizmor, /- if: github\.event_name != 'pull_request'\n\s+run: echo "dependency-review — SKIP, only a pull request has a dependency diff"/);
+    assert.match(
+      zizmor,
+      /- if: github\.event_name == 'pull_request' && vars\.CODE_SCANNING != 'true'\n\s+run: echo "dependency-review — SKIP, dependency review not enabled/,
+    );
     assert.match(ci, /^ {2}security:\n[\s\S]*?uses: \.\/\.github\/workflows\/security\.yml/m);
   });
 

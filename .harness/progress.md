@@ -4364,3 +4364,9 @@ round-allowance: M18.122 stream 1 allowed the fourth review under Huy's 2026-11-
 - Replayed by stream 1 onto 319f2af (2026-11-05). Stream 1's CI-time card to Huy (posted 03:13:18Z: do M18.182, M18.184 and M18.187 land?) is unanswered; the coordinator decided 'land them' at 07:12Z under Huy's 2026-11-04 13:34:57Z 'you decide and carry on', a use of that delegation pending his cp42 F4 answer like the others, and the card stays open (a 'Hold them' answer reverts the landed rows). In the replay: the harness-windows job (added since, ADR-0214) gets the same cache step; M18.182's existing todo row is marked done.
 - actionlint 1.7.12 and zizmor 1.31.1 report no findings (on 10-29; the gate, check-workflows.mjs, pins zizmor 1.30.1, which r2 ran on the replay: no findings) (the pinned images could not be pulled here; gates.yml runs them). After: to be read from main's first runs once the cache is warm.
 - Review r1 pass (10-29, before the replay); r2 changes-requested on the replay's bookkeeping (blockedReason still listed M18.182 as asked on the card; zizmor version), both fixed.
+
+## M18.187 — switched-off security scanners take no runner
+
+- Before: codeql and dependency-review each took an ubuntu runner on every ci run only to echo SKIP (0.1 min each, 5 to 6 min median queue wait, 60 runs to 2026-10-29).
+- Now both skip at job level (a skipped job takes no runner and counts as success in the reusable workflow's result); zizmor's job prints the same three SKIP lines under the same conditions. The new test fails on the previous security.yml and passes now.
+- Replayed from the CI-time thread's 544a51e (r1 pass, 10-29) onto main after M18.182 (8398d83); Huy answered 'yes' on the CI-time card at 2026-11-05T08:28:14Z.
