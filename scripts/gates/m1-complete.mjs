@@ -205,9 +205,11 @@ leg('ci.yml has the planned job set and ci-ok needs all of them', () => {
   // only 2-space keys inside the top-level `jobs:` block (not children of `on:`)
   const jobsBlock = /^jobs:\s*\n([\s\S]*?)(?=^\S|(?![\s\S]))/m.exec(wf)?.[1] ?? '';
   const jobs = [...jobsBlock.matchAll(/^ {2}([a-z][\w-]*):\s*$/gm)].map((m) => m[1]);
-  const need = ['verify', 'build', 'e2e', 'e2e-report', 'visual', 'a11y', 'size', 'api', 'license', 'eval-recorded', 'ci-ok'];
+  // ADR-0207: the a11y gate is the chromium e2e shards (every chromium spec, axe included), not a job of its own
+  const need = ['verify', 'build', 'e2e', 'e2e-report', 'visual', 'size', 'api', 'license', 'eval-recorded', 'ci-ok'];
   const missing = need.filter((j) => !jobs.includes(j));
   if (missing.length) return `ci.yml missing jobs: ${missing.join(', ')}`;
+  if (!/browser: \[chromium, firefox, webkit\]/.test(wf)) return 'ci.yml e2e does not run chromium (the a11y gate, ADR-0207)';
   const needs = (/^ {2}ci-ok:[\s\S]*?needs:\s*\[([^\]]*)\]/m.exec(jobsBlock)?.[1] ?? '')
     .split(',')
     .map((s) => s.trim())

@@ -4370,3 +4370,10 @@ round-allowance: M18.122 stream 1 allowed the fourth review under Huy's 2026-11-
 - Before: codeql and dependency-review each took an ubuntu runner on every ci run only to echo SKIP (0.1 min each, 5 to 6 min median queue wait, 60 runs to 2026-10-29).
 - Now both skip at job level (a skipped job takes no runner and counts as success in the reusable workflow's result); zizmor's job prints the same three SKIP lines under the same conditions. The new test fails on the previous security.yml and passes now.
 - Replayed from the CI-time thread's 544a51e (r1 pass, 10-29) onto main after M18.182 (8398d83); Huy answered 'yes' on the CI-time card at 2026-11-05T08:28:14Z.
+
+
+## M18.184 — the duplicate a11y job goes (ADR-0207)
+
+- Before: `a11y` ran `playwright test --project=chromium --grep-invert @no-a11y`, a second pass of the chromium desktop project the e2e shards already run; axe runs inside specs via `expectAccessible`, so every assertion ran twice. 6.8 min median, 37 min median queue wait (60 main runs to 2026-10-29).
+- ci.yml drops the job and its ci-ok need; m1-complete's job-set leg asks that e2e runs chromium instead; ci-cd.md and ADR-0207 say the shards are the a11y gate. Huy approved on the decision card (2026-10-29 21:31Z).
+- Replayed from the CI-time thread's 9714a25 onto main after M18.182 (8398d83) and M18.187 (a1fa831); ci-ok's needs now also keep harness-windows (added since). Huy answered 'yes' on the CI-time card at 2026-11-05T08:28:14Z.

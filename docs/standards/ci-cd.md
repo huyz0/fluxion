@@ -65,19 +65,19 @@ jobs:
                      # + verify within COLD_SETUP_MAX_MS (NFR-DX-001); in CI it, not the committed
                      # budget.json, answers for a changed lockfile (ADR-0143)
   build:             # turbo run build --affected; uploads dist/ artifact
-  e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/4..4/4]
+  e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/4..4/4]; the chromium
+                     # shards are the a11y gate: every spec, axe (0 serious/critical) included (ADR-0207)
     container: mcr.microsoft.com/playwright:v1.62.0-noble
     steps: [... , pnpm test:e2e --project=$browser --shard=$shard, upload blob-report]
   e2e-report:        # needs e2e; playwright merge-reports; flake-report
   visual:            # needs build; pinned Playwright image; pnpm test:visual; uploads diffs on failure
-  a11y:              # needs build; pnpm test:a11y (axe, 0 serious/critical)
   size:              # needs build; size-limit (NFR-SIZE-001/002/003)
   api:               # api-extractor run (reports must match packages/*/api/*.api.md); changeset present
   license:           # license check against allowlist (NFR-LIC-002)
   eval-recorded:     # pnpm eval --recorded (T5 on recorded responses)
   ci-ok:
     if: always()
-    needs: [verify, cold-setup, build, e2e-report, visual, a11y, size, api, license, eval-recorded]
+    needs: [verify, cold-setup, build, e2e-report, visual, size, api, license, eval-recorded]
     steps: [node scripts/ci/all-green.mjs '${{ toJSON(needs) }}']
 ```
 

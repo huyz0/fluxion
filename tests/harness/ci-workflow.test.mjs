@@ -153,7 +153,7 @@ function runBlockLength(lines, i) {
 describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
   it('has the planned job set and ci-ok needs every other job (NFR-PORT-005)', () => {
     const jobs = jobsOf(ci);
-    for (const j of ['verify', 'cold-setup', 'build', 'e2e', 'e2e-report', 'visual', 'a11y', 'size', 'api', 'license', 'eval-recorded', 'ci-ok'])
+    for (const j of ['verify', 'cold-setup', 'build', 'e2e', 'e2e-report', 'visual', 'size', 'api', 'license', 'eval-recorded', 'ci-ok'])
       assert.ok(jobs.includes(j), j);
     const needs = /^ {2}ci-ok:[\s\S]*?needs:\s*\[([^\]]*)\]/m
       .exec(ci)[1]
@@ -177,7 +177,7 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.match(ci, /os: \[ubuntu-latest, windows-latest, macos-latest\]/);
     assert.match(ci, /browser: \[chromium, firefox, webkit\]\n\s+shard: \[1, 2, 3, 4\]/);
     const images = [...ci.matchAll(/image:\s*(\S+)/g)].map((m) => m[1]);
-    assert.ok(images.length >= 3, 'e2e, visual and a11y run in the Playwright image');
+    assert.ok(images.length >= 3, 'e2e, visual and lighthouse run in the Playwright image');
     const pw = JSON.parse(readFileSync(join(REPO, 'node_modules/@playwright/test/package.json'), 'utf8')).version;
     // the image tag is the installed Playwright version: browsers and test runner must match
     for (const i of images) assert.ok(i.startsWith(`mcr.microsoft.com/playwright:v${pw}-noble@sha256:`) && /@sha256:[0-9a-f]{64}$/.test(i), i);
@@ -202,6 +202,24 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
         assert.ok(n <= 3, `${name}:${i + 1} run block has ${n} lines — move it to scripts/ci/`);
       }
     }
+  });
+
+  it('NFR-A11Y-001 (ADR-0207, M18.184): the chromium e2e shards run every spec the a11y job ran, so axe runs once per commit', () => {
+    const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')).scripts;
+    // test:a11y = the chromium project minus @no-a11y; test:e2e on chromium = the chromium project minus @perf, which that project already drops
+    assert.equal(pkg['test:a11y'], 'playwright test --project=chromium --grep-invert @no-a11y');
+    assert.equal(pkg['test:e2e'], 'playwright test --grep-invert @perf');
+    const config = readFileSync(join(REPO, 'playwright.config.ts'), 'utf8');
+    assert.match(config, /\{ name: 'chromium', use: \{[^\n]*\}, grepInvert: \/@mobile\|@perf\/ \}/);
+    const e2e = /^ {2}e2e:[\s\S]*?(?=^ {2}\S)/m.exec(ci)[0];
+    assert.match(e2e, /browser: \[chromium, firefox, webkit\]/);
+    assert.match(e2e, /- run: pnpm test:e2e --project="\$BROWSER" --project="\$MOBILE" --shard="\$SHARD\/\d" --reporter=blob --pass-with-no-tests\n/);
+    assert.ok(!jobsOf(ci).includes('a11y'), 'axe runs once, in the e2e shards');
+    // the axe fixture is part of every spec's test object, so the shards make the same assertions the a11y job made
+    assert.match(readFileSync(join(REPO, 'e2e/test.ts'), 'utf8'), /expectAccessible: async \(\{ page \}, use\) =>/);
+    const specs = readdirSync(join(REPO, 'e2e')).filter((f) => f.endsWith('.spec.ts'));
+    const axe = specs.filter((f) => readFileSync(join(REPO, 'e2e', f), 'utf8').includes('expectAccessible'));
+    assert.ok(axe.length >= 10, axe.join());
   });
 
   it('HARNESS (M18.182): every bare-runner browser install restores the locked release from a cache keyed on it; cold-setup downloads everything', () => {
