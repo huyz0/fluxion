@@ -4312,3 +4312,10 @@ round-allowance: M18.122 stream 1 allowed the fourth review under Huy's 2026-11-
 - Harness case in mutation-nightly.test.mjs reads the real nightly.yml and fails for no concurrency block, a per-run group (`${{ github.run_id }}`), cancel-in-progress true or left out. With the block removed from nightly.yml it fails ("no top-level concurrency").
 - Nightly 41806720128 (schedule, 3eb1679, from 2026-11-04T09:20:50Z) is still in progress at 2026-11-05T03:00Z, so its by-job record waits for it to complete. No nightly has started since, and this change does not affect the run already in progress.
 - The tzap 0.1.2 bump and the shard timings under it wait for minimumReleaseAge, until about 2026-11-05T14:09Z.
+
+## 2026-11-05 M18.10: nightly 41806720128's final state, by job (cp44)
+- Schedule at 3eb1679, from 2026-11-04T09:20:50Z to 2026-11-05T03:31:45Z (18 h 11 min), conclusion failure. 299 jobs: 265 success, 30 cancelled, 4 failed. Mutation: mutation-plan 126495452556, 287 shard jobs at max-parallel 4+4 (two chains), then the aggregate `mutation` 127030154986.
+- 30 shards cancelled at the 60-minute limit (29 at 60 min, one at 61): core-3, -7, -10 to -15, -21, -29; dsl-32; schema-1 to -3, -6 to -9, -11, -12, -17, -19, -24, -25, -31, -32; theme-2, -7, -10, -11. Since cp44's list, theme-7, -10 and -11 were added. The last shard, format-27, finished at 03:29:53Z.
+- The aggregate 127030154986 downloaded 287 partition artifacts and failed "Verification failed: mutation aggregate", so the missing shards failed aggregation as they should. report 127030726429 succeeded.
+- The other failures are known: visual-xos (macos-latest) 126495452642 and (windows-latest) 126495452654 (the known-red legs, ADR-0202), and previous-playwright (webkit) 126495452719 (copy-paste :58, ADR-0215).
+- The row stays open. The 0.1.2 bump must still show the cancelled schema, core, dsl and theme shards finishing in 60 minutes, or re-partition them, and the qualifying nightly needs no cancelled or failed shard. Bookkeeping only.
