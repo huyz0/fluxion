@@ -2,7 +2,7 @@
 
 - precommit.mjs: `--no-coverage`, with `--all` only (exit 2 otherwise); the test step runs `vitest run` and logs that
   the verify jobs gate coverage. check-budget's cold setup runs `pnpm verify --no-coverage`.
-- vitest.config.ts: node project groupOrder 0, browser 1 on every OS; browser fileParallelism with maxWorkers 3 on Linux.
+- vitest.config.ts: node project groupOrder 0, browser 1 on every OS (on Windows the one-worker node project still runs last, M18.276); browser fileParallelism with maxWorkers 3 on Linux.
 - Harness: licenses' two real-repo runs give way to a fixture (the ladder's licenses step runs the gate on the repo);
   workspace-shape's type-check cases share one sandbox and one full tsc -b; layering's real-tree and lower-import cases
   share one run.

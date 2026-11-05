@@ -1,11 +1,11 @@
 {
   "milestone": "M18",
-  "currentTask": "M18.157",
+  "currentTask": "M18.276",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": "cp24 F5: Huy to confirm or change the visual-xos known-red legs (M18.133, 0024bcc; ADR-0202 decision-makers). Feature work is not held on it. cp25 F4: Huy to answer the coverage-placement card (macOS verify bound after ADR-0209); the coordinator decided it 2026-11-05T07:12Z under Huy's 2026-11-04T13:34:57Z delegation (ADR-0216: the cold setup runs the ladder without coverage, the verify jobs gate it), and the card stays open: Huy's answer overrules it. cp41 F3: Huy to download CI artifact 13195593788 (expires 2026-11-17T01:32:32Z) for M18.245; this container cannot download artifacts (card due by 2026-11-10). cp42 F4: the card posted 2026-11-04T20:22:58Z (is Huy's 13:34:57Z 'you decide and carry on' a standing delegation of round allowances and run cancellations?) is still unanswered at 2026-11-05T06:03:34.000Z; the streams proceed on its recommended option (standing, each use logged with the agent that used it); under it M18.250 and M18.251 landed and stream 1 allowed M18.122's fourth review (logged at 2e51ac1). CI-time card: posted 2026-11-05T03:13:18Z by stream 1, asking Huy whether the CI-time thread's reviewed rows M18.182 (todo here), M18.184 and M18.187 land; M18.184 and M18.187 are held off this backlog until he answers, and M18.43 cannot close while they are held. M18.157 (rowAttempts 3): attempt 3 had its diagnostic review (ADR-0176) and follows the coordinator's cp25 F4 decision (ADR-0216); it is committed and held off main until Huy OKs the CI-time card, and closes after three consecutive cold-setup runs within the limit. M18.275 closed the fast-check re-roll (cp45 F2). Rows left: M18.10 (tzap 0.1.2 bump after about 2026-11-05T14:09Z with local or running-dispatch timings of the 30 shards 41806720128 cancelled, then a qualifying nightly), M18.157, M18.182, M18.236 (after M18.10), M18.245 (Huy's artifact) and M18.43's closeout.",
-  "updated": "2026-11-05T08:36:13.000Z",
+  "updated": "2026-11-05T09:15:22.000Z",
   "rowAttempts": {
     "M18.157": 3,
     "windows-witness-cleanup": 3

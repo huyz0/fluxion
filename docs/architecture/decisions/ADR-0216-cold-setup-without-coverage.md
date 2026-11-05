@@ -54,8 +54,10 @@ Option 1, with the review's cuts:
   or package script passes it, and that `verify` and `test:coverage` are unchanged.
 - The verify jobs (ubuntu, Windows, macOS) run `pnpm verify`, coverage and floors as before, and
   ci-ok needs them. The staged pre-commit keeps its coverage run.
-- The browser project runs after the node project on every OS (`sequence.groupOrder`), three
-  files at a time on Linux; macOS and Windows stay one at a time (M18.44).
+- On Linux and macOS the browser project runs after the node project (`sequence.groupOrder`),
+  three files at a time on Linux; macOS stays one at a time (M18.44). On Windows both projects
+  run one file at a time, and Vitest runs the one-worker node project last, after the browser one,
+  as before (M18.276 corrects this ADR's first wording, which said every OS).
 - Harness cases that repeated a ladder leg on the real repo share or drop that work: the licences
   gate's real-repo runs (the ladder's licenses step runs the same gate on the repo) give way to a
   fixture that keeps the pack-index count, workspace-shape's two type-check cases share one
@@ -72,10 +74,11 @@ Option 1, with the review's cuts:
   setup; the measurement no longer says how long.
 - Bad: on Linux, browser files share the machine with each other and with harness, attw and api,
   though never with the node project's bounded-time tests. The first CI runs are the evidence.
-- macOS and Windows keep their order and width: a project of one worker already ran after the
-  others there (Vitest 5 puts it in its sequential group; the diagnosis's timeline shows it on
-  Linux before this change), and Windows set the order explicitly. So the explicit groupOrder adds
-  no time to macOS verify's 20 minutes (ADR-0209); its next runs are the check.
+- macOS and Windows keep their order and width. A project of one worker with groupOrder 0 goes to
+  Vitest 5's sequential group, which runs after the ordered ones (groupSpecs): on macOS that was
+  and is the browser project, after the node one, so the explicit groupOrder adds no time to macOS
+  verify's 20 minutes (ADR-0209); on Windows it is the node project, which runs last, after the
+  browser one, as before this change.
 - M18.157 closes only after three consecutive main runs within the limit; budget.json's cold
   number is then recorded with `--cold-from-ci` (ADR-0145), which ends M18.159's exemption.
 - If Huy answers cp25 F4 otherwise, his answer overrules this ADR.

@@ -4,7 +4,8 @@ import { spawnSync } from 'node:child_process';
 import { chmodSync, rmSync } from 'node:fs';
 import { after, before, describe, it } from 'node:test';
 import { headerCountProblems } from '../../scripts/gates/check-digest.mjs';
-import { cleanEnv, out, sandbox } from './helpers.mjs';
+import { prefetch, show } from '../../scripts/gates/review-content.mjs';
+import { cleanEnv, out, REPO, sandbox } from './helpers.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const DIGEST = '.harness/reviews/digest.log';
@@ -502,4 +503,20 @@ describe('backlog header count (M18.223, cp32 F5)', () => {
   it('accepts a header whose count matches the rows', () => assert.deepEqual(headerCountProblems(text(2, 2)), []));
   it('names a header whose count drifted from the rows', () => assert.match(headerCountProblems(text(3, 2))[0], /current: 3 but it has 2 rows/));
   it('ignores a backlog without a count header', () => assert.deepEqual(headerCountProblems(backlog([ROW('M0.1')])), []));
+});
+
+describe('reads at a commit (M18.276)', () => {
+  it('HARNESS: one git cat-file --batch reads what git show reads at a commit and its parent: a file, a missing path, a tree', () => {
+    const at = (args) => spawnSync('git', args, { cwd: REPO, encoding: 'utf8' });
+    const head = at(['rev-parse', 'HEAD']).stdout.trim();
+    const paths = ['.harness/reviews/digest.log', 'docs/backlog/current.md', 'no/such/file', 'scripts'];
+    prefetch([head, `${head}^`, 'HEAD'], paths);
+    for (const rev of [head, `${head}^`])
+      for (const path of paths) {
+        const shown = at(['show', `${rev}:${path}`]);
+        assert.equal(show(rev, path), shown.status === 0 ? shown.stdout : '', `${rev}:${path}`);
+      }
+    // a name that is not a full sha is read each time, never kept: HEAD moves
+    assert.equal(show('HEAD', 'docs/backlog/current.md'), at(['show', 'HEAD:docs/backlog/current.md']).stdout);
+  });
 });

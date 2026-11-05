@@ -20,7 +20,19 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { git } from './lib.mjs';
-import { contentIds, isPosthoc, mergeRounds, missingRounds, namedRounds, openLines, parseDigest, parseReviewer, reviewedDiffHash } from './review-content.mjs';
+import {
+  contentIds,
+  isPosthoc,
+  mergeRounds,
+  missingRounds,
+  namedRounds,
+  openLines,
+  parseDigest,
+  parseReviewer,
+  prefetch,
+  show as readAt,
+  reviewedDiffHash,
+} from './review-content.mjs';
 
 const POLICY = 'scripts/gates/check-digest.mjs';
 const ROADMAP = 'docs/milestones/roadmap.md';
@@ -29,6 +41,7 @@ const EXEMPT = '.harness/baselines/digest-exempt.txt';
 /** `<sha7+> <task> <reason>`: a landed commit whose message names rounds its lines lack, excused by a reviewed decision (M18.259 r4 F1). */
 const ROUNDS_EXEMPT = '.harness/baselines/named-rounds-exempt.txt';
 const BACKLOG = 'docs/backlog/current.md';
+const TRACE = 'docs/requirements/40-traceability.md';
 /** The task whose commit made review.mjs write only `vendor:role[:posthoc]` reviewers (M18.141). */
 const GRAMMAR_SINCE = 'M18.127';
 /** The task whose commit made a commit's digest lines name only its own task (M18.231, cp34 F2). */
@@ -38,10 +51,7 @@ const ROUNDS_SINCE = 'M18.259';
 const PROGRESS = '.harness/progress.md';
 const STATE = '.harness/state.json';
 
-const show = (tree, path) => {
-  const r = git(['show', `${tree === 'index' ? '' : tree}:${path}`]);
-  return r.status === 0 ? r.stdout : '';
-};
+const show = (tree, path) => readAt(tree === 'index' ? '' : tree, path);
 const lines = (r) => r.stdout.split(/\r?\n/).filter(Boolean);
 
 /** Commits (oldest first) whose subject names a task of `milestone`, on HEAD's first-parent history. */
@@ -56,7 +66,12 @@ function taskCommits(milestone) {
 function adoption() {
   return lines(git(['log', '--first-parent', '--reverse', '--diff-filter=A', '--format=%H', 'HEAD', '--', POLICY]))[0] ?? null;
 }
-const atOrAfter = (sha, base) => git(['merge-base', '--is-ancestor', base, sha]).status === 0;
+/** Commits from `base` on, of HEAD's history: one rev-list for the task commits' first-parent chain, not a merge-base per commit (M18.276). */
+const since = new Map();
+const atOrAfter = (sha, base) => {
+  if (!since.has(base)) since.set(base, new Set([base, ...lines(git(['rev-list', `${base}..HEAD`]))]));
+  return since.get(base).has(sha) || git(['merge-base', '--is-ancestor', base, sha]).status === 0;
+};
 
 /** `<sha7+> <task> <reason>` lines: reviewed decisions that a commit's evidence cannot be recovered. */
 function exemptions(tree, file = EXEMPT) {
@@ -74,6 +89,11 @@ function evidenceProblems(commits, tree, adopted) {
   const passed = new Set(digest.filter((l) => l.verdict === 'pass').map((l) => l.task));
   const exempt = exemptions(tree);
   const problems = [];
+  // what boundProblems reads at every task commit and its parent, in one git process (M18.276)
+  prefetch(
+    commits.flatMap(({ sha }) => [sha, `${sha}^`]),
+    [DIGEST, BACKLOG, TRACE],
+  );
   for (const { sha, task } of commits) {
     const short = sha.slice(0, 7);
     if (adopted && atOrAfter(sha, adopted)) problems.push(...boundProblems(sha, task).map((p) => `${short} ${task}: ${p}`));
@@ -370,10 +390,7 @@ function reviewBase(target) {
  * rounds never stand in for a later commit's, a replay keeps rounds another task's commit carried in, and an amend keeps its own.
  */
 function countedLines(task, target) {
-  const digest = (rev) => {
-    const r = git(['show', `${rev}:${DIGEST}`]);
-    return parseDigest(r.status === 0 ? r.stdout : '');
-  };
+  const digest = (rev) => parseDigest(readAt(rev, DIGEST));
   const base = reviewBase(target);
   const anyTask = git(['log', '-1', '-E', '--grep=^M[0-9]+\\.[0-9]+: ', '--format=%s', base]).stdout.trim() !== '';
   const own = git(['log', '--format=%s', '-F', `--grep=${task}: `, base])

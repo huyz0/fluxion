@@ -29,7 +29,7 @@ test('HARNESS: Windows serializes existing test projects without changing invent
       for (const key of ['coverage', 'testTimeout', 'hookTimeout', 'setupFiles', 'env']) assert.deepEqual(windows.test[key], linux.test[key]);
       for (let i = 0; i < 2; i++) for (const key of ['name', 'include', 'exclude', 'environment']) assert.deepEqual(windows.test.projects[i].test[key], linux.test.projects[i].test[key]);
       assert.equal(linux.test.projects[0].test.fileParallelism, undefined);
-      // every OS runs the node project first, then the browser one (M18.157)
+      // the same groupOrder on every OS (M18.157); on Windows, where the node project has one worker too, Vitest runs it last (M18.276)
       for (let i = 0; i < 2; i++) assert.deepEqual(windows.test.projects[i].test.sequence, linux.test.projects[i].test.sequence);
     } finally { Object.defineProperty(process, 'platform', platform); }
   `,
@@ -59,7 +59,8 @@ test('NFR-DX-003: browser test files run three at a time on Linux and one at a t
       const [node, browser] = linux.test.projects.map(p => p.test);
       const [macNode, macBrowser] = mac.test.projects.map(p => p.test);
       // side by side, Linux's browser files starved the node project's bounded-time tests (drawio-import at 10 s, twice): the browser
-      // project runs after the node one on every OS, so Chromium never shares the machine with them
+      // project runs after the node one on Linux and macOS, so Chromium never shares the machine with them (on Windows, M18.276: one
+      // file at a time each, the one-worker node project last)
       for (const [n, b] of [[node, browser], [macNode, macBrowser]]) assert.ok(n.sequence.groupOrder < b.sequence.groupOrder, n.name);
       // the browser project waits more than it computes: three files at once on Linux (M18.157); macOS stays one at a time (M18.44)
       assert.equal(browser.fileParallelism, true);
