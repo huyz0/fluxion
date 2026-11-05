@@ -213,22 +213,29 @@ describe('disposable font worker with a watchdog (FR-AST-003, ADR-0051)', () => 
 const CJK = Array.from({ length: 5000 }, (_, i) => 0x4e00 + i);
 /** A subset font record whose recorded range is `unicodes`. */
 const recorded = (unicodes: string) => font('f1', 'bundled', { font: { ...font('f1', 'bundled').font, subset: { source: hex(FIRA), unicodes } } });
-const SCALING_RUNS = 5;
+const SCALING_RUNS = 7;
 const SCALING_MAX = 3;
-const medianOf = (xs: readonly number[]): number => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] as number;
 /** Milliseconds for one subsetFontGaps read of `doc` against `inventory`. */
 function readMs(doc: DocumentFile, inventory: readonly number[]): number {
   const start = performance.now();
   subsetFontGaps(doc, inventory);
   return performance.now() - start;
 }
-/** The median of `whole` over `part`, one warm-up each and then alternated, so machine load falls on both alike. */
+/**
+ * The fastest `whole` over the fastest `part`, one warm-up each and then alternated. Load, a GC or a descheduled thread only ever
+ * adds time, so each side's minimum is its cost with the least noise; a median of per-pair ratios let one slow `whole` beside a
+ * fast `part` move it (4.02 under cold-setup contention, ci 42009583361, M18.278).
+ */
 function ratio(whole: () => number, part: () => number): number {
   whole();
   part();
-  const ratios: number[] = [];
-  for (let i = 0; i < SCALING_RUNS; i++) ratios.push(whole() / part());
-  return medianOf(ratios);
+  let fastestWhole = Number.POSITIVE_INFINITY;
+  let fastestPart = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < SCALING_RUNS; i++) {
+    fastestWhole = Math.min(fastestWhole, whole());
+    fastestPart = Math.min(fastestPart, part());
+  }
+  return fastestWhole / fastestPart;
 }
 
 describe('reading a recorded subset range (NFR-SEC-001, FR-AST-003)', () => {
