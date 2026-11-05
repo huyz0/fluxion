@@ -151,19 +151,27 @@ function runBlockLength(lines, i) {
   return n;
 }
 
-/** M18.277: the install form each kind of job must use; a Linux-only job keeps the system deps. */
+/**
+ * M18.277: the install form each kind of job must use; a Linux-only job keeps the system deps. M18.279: so does every job that runs
+ * the browser suites (`suites`), on Windows too: without Media Foundation the Windows verify ladder hung to its limit (ci 42038170007).
+ */
 const INSTALL_FORMS = {
   windows: /^install chromium$/,
   matrix: /^install \$\{\{ runner\.os != 'Windows' && '--with-deps ' \|\| '' \}\}chromium$/,
   other: /^install --with-deps (\$\{\{ matrix\.browser \}\}|\S+)$/,
+  suites: /^install --with-deps chromium$/,
 };
+/** The jobs whose Windows legs run the Vitest browser project or the Playwright visual suite (M18.279). */
+const BROWSER_SUITE_JOBS = new Set(['verify', 'visual-xos']);
 
-/** Every `playwright install` in a workflow, with the kind of job it runs in: always Windows, a matrix with Windows, or neither. */
+/** Every `playwright install` in a workflow, with the kind of job it runs in: a browser-suite job, always Windows, a matrix with Windows, or neither. */
 function browserInstalls(text) {
   return text.split(/\n(?= {2}[\w-]+:\n)/).flatMap((job) => {
+    const name = /^ {2}([\w-]+):\n/.exec(job)?.[1] ?? '';
     const runsOn = /^ {4}runs-on: (.*)$/m.exec(job)?.[1];
     const matrixWindows = /- (?:os: )?windows-latest\b|os: \[[^\]]*windows-latest/.test(job);
-    const kind = runsOn === 'windows-latest' ? 'windows' : matrixWindows ? 'matrix' : 'other';
+    const plain = matrixWindows ? 'matrix' : 'other';
+    const kind = BROWSER_SUITE_JOBS.has(name) ? 'suites' : runsOn === 'windows-latest' ? 'windows' : plain;
     return [...job.matchAll(/run: pnpm exec playwright (install .*)/g)].map(([, cmd]) => ({ kind, cmd }));
   });
 }
@@ -336,17 +344,18 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.doesNotMatch(cold, /actions\/cache|^ +cache: |playwright install/m, 'the cold setup measures an empty store and browser cache (NFR-DX-001)');
   });
 
-  it('HARNESS (M18.277): Windows installs skip --with-deps, which only enables Server-Media-Foundation; Linux and macOS keep it', () => {
-    // install_media_pack.ps1 is all `--with-deps chromium` does on win32 (~190 s per job); Chromium only delay-loads mf.dll
-    const seen = { windows: 0, matrix: 0, other: 0 };
+  it('HARNESS (M18.277, M18.279): Windows installs outside the browser-suite jobs skip --with-deps; the suites and Linux and macOS keep it', () => {
+    // install_media_pack.ps1 is all `--with-deps chromium` does on win32 (~190 s per job); Chromium only delay-loads mf.dll, but the
+    // Windows verify ladder hung to its limit without it (M18.279), so verify and visual-xos keep it
+    const seen = { windows: 0, matrix: 0, other: 0, suites: 0 };
     for (const name of ['ci.yml', 'nightly.yml']) {
       for (const { kind, cmd } of browserInstalls(workflow(name))) {
         seen[kind]++;
         assert.match(cmd, INSTALL_FORMS[kind], `${name}: a ${kind} job's install: ${cmd}`);
       }
     }
-    // windows: harness-windows; matrix: ci verify and cli-mcp, nightly visual-xos
-    assert.deepEqual([seen.windows, seen.matrix], [1, 3]);
+    // windows: harness-windows; matrix: cli-mcp; suites: ci verify, nightly visual-xos
+    assert.deepEqual([seen.windows, seen.matrix, seen.suites], [1, 1, 2]);
     assert.ok(seen.other >= 5, String(seen.other));
   });
 });
@@ -497,10 +506,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     // the matrix flag is the only thing that lets a leg fail: no step and no other job forgives a failure
     assert.match(xos, /^ {4}continue-on-error: \$\{\{ matrix\.known-red \}\}$/m);
     assert.equal([...nightly.matchAll(/continue-on-error/g)].length, 2, 'the visual-xos flag and the bounded clipboard probe');
-    assert.match(
-      xos,
-      /if: \$\{\{ matrix\.image == '' \}\}\n\s+run: pnpm exec playwright install \$\{\{ runner\.os != 'Windows' && '--with-deps ' \|\| '' \}\}chromium/,
-    );
+    assert.match(xos, /if: \$\{\{ matrix\.image == '' \}\}\n\s+run: pnpm exec playwright install --with-deps chromium/);
     assert.match(nightly, /^ {2}# ADR-0202:[^\n]*\n(?: {2}#[^\n]*\n)* {2}visual-xos:/m);
   });
 
