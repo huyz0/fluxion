@@ -104,7 +104,34 @@ function assertChainedPlan(source) {
   }
 }
 
+/**
+ * Why a nightly workflow's text lets two of its runs overlap, or null (M18.10, cp44 F2): it needs a
+ * top-level concurrency group that is one fixed name for every run (an expression such as the run id or
+ * sha gives each run its own group) and that never cancels the run in progress.
+ */
+function nightlyOverlap(text) {
+  const block = /^concurrency:\n((?: {2}.*\n)+)/m.exec(text)?.[1];
+  if (!block) return 'no top-level concurrency';
+  const group = /^ {2}group:\s*(.+)$/m.exec(block)?.[1].trim();
+  if (!group || /\$\{\{/.test(group)) return `group is not one fixed name: ${group}`;
+  const cancel = /^ {2}cancel-in-progress:\s*(.+)$/m.exec(block)?.[1].trim();
+  if (cancel !== 'false') return `cancel-in-progress is ${cancel}, not false`;
+  return null;
+}
+
 describe('nightly mutation orchestration (NFR-MNT-005)', () => {
+  it('NFR-MNT-005: two nightlies never run at once: nightly.yml has one fixed concurrency group that cancels nothing (M18.10)', () => {
+    const real = readFileSync(join(REPO, '.github/workflows/nightly.yml'), 'utf8');
+    assert.equal(nightlyOverlap(real), null);
+    const block = 'concurrency:\n  group: nightly\n  cancel-in-progress: false\n';
+    assert.ok(real.includes(block));
+    assert.equal(nightlyOverlap(real.replace(block, '')), 'no top-level concurrency');
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal GitHub Actions expression, not a JS template
+    assert.match(nightlyOverlap(real.replace('group: nightly', 'group: nightly-${{ github.run_id }}')) ?? '', /not one fixed name/);
+    assert.match(nightlyOverlap(real.replace('cancel-in-progress: false', 'cancel-in-progress: true')) ?? '', /not false/);
+    assert.equal(nightlyOverlap(real.replace('  cancel-in-progress: false\n', '')), 'cancel-in-progress is undefined, not false');
+  });
+
   it('plans all packages, retains raw reports and emits one complete evidence notice', () => {
     const sb = mutationFixture();
     try {

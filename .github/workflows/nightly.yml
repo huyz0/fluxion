@@ -11,6 +11,14 @@ on:
 permissions:
   contents: read
 
+# One nightly at a time (M18.10, cp44 F2): a run that outlives a day (41806720128 ran past 17 h)
+# would otherwise run beside the next scheduled one, both sharing the account's runners. A fixed group with no
+# cancel queues the next run behind the one in progress; GitHub keeps one pending run per group,
+# so a later schedule or dispatch replaces a pending one, never a running one.
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
 jobs:
   # ADR-0173: complete source partitions; all nine packages and unchanged floors aggregate below.
   mutation-plan:
