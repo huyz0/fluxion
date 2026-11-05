@@ -153,7 +153,7 @@ function runBlockLength(lines, i) {
 
 /**
  * M18.277: the install form each kind of job must use; a Linux-only job keeps the system deps. M18.279: so does every job that runs
- * the browser suites (`suites`), on Windows too: without Media Foundation the Windows verify ladder hung to its limit (ci 42038170007).
+ * the browser suites (`suites`), on Windows too: the one Windows verify run without it hung to its limit (ci 42038170007, cause unconfirmed).
  */
 const INSTALL_FORMS = {
   windows: /^install chromium$/,
@@ -346,7 +346,7 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
 
   it('HARNESS (M18.277, M18.279): Windows installs outside the browser-suite jobs skip --with-deps; the suites and Linux and macOS keep it', () => {
     // install_media_pack.ps1 is all `--with-deps chromium` does on win32 (~190 s per job); Chromium only delay-loads mf.dll, but the
-    // Windows verify ladder hung to its limit without it (M18.279), so verify and visual-xos keep it
+    // one Windows verify run without it hung to its limit (M18.279, cause unconfirmed), so verify and visual-xos keep it
     const seen = { windows: 0, matrix: 0, other: 0, suites: 0 };
     for (const name of ['ci.yml', 'nightly.yml']) {
       for (const { kind, cmd } of browserInstalls(workflow(name))) {

@@ -48,7 +48,7 @@ jobs:
         with:
           path: ${{ runner.os == 'Windows' && '~/AppData/Local/ms-playwright' || runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
           key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/browsers.json') }}
-      # M18.279: --with-deps on every OS; without Media Foundation the Windows verify ladder hung to its 25-minute limit (ci 42038170007)
+      # M18.279: --with-deps on every OS; the one Windows verify run without it hung to its 25-minute limit (ci 42038170007, cause unconfirmed)
       - name: chromium for the Vitest browser project (T1)
         timeout-minutes: 15
         run: pnpm exec playwright install --with-deps chromium
