@@ -29,8 +29,8 @@ test('HARNESS: Windows serializes existing test projects without changing invent
       for (const key of ['coverage', 'testTimeout', 'hookTimeout', 'setupFiles', 'env']) assert.deepEqual(windows.test[key], linux.test[key]);
       for (let i = 0; i < 2; i++) for (const key of ['name', 'include', 'exclude', 'environment']) assert.deepEqual(windows.test.projects[i].test[key], linux.test.projects[i].test[key]);
       assert.equal(linux.test.projects[0].test.fileParallelism, undefined);
-      assert.equal(linux.test.projects[0].test.sequence, undefined);
-      assert.equal(linux.test.projects[1].test.sequence, undefined);
+      // every OS runs the node project first, then the browser one (M18.157)
+      for (let i = 0; i < 2; i++) assert.deepEqual(windows.test.projects[i].test.sequence, linux.test.projects[i].test.sequence);
     } finally { Object.defineProperty(process, 'platform', platform); }
   `,
     ],
@@ -39,7 +39,7 @@ test('HARNESS: Windows serializes existing test projects without changing invent
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
-test('NFR-DX-003: browser test files run serially on Linux as on macOS, after the node project (M18.160, cp19 F1)', () => {
+test('NFR-DX-003: browser test files run three at a time on Linux and one at a time on macOS, always after the node project (M18.157; M18.160, cp19 F1)', () => {
   const result = spawnSync(
     process.execPath,
     [
@@ -57,13 +57,18 @@ test('NFR-DX-003: browser test files run serially on Linux as on macOS, after th
     try {
       const linux = await config('linux'), mac = await config('darwin');
       const [node, browser] = linux.test.projects.map(p => p.test);
-      // side by side, Linux's browser files starved the node project's bounded-time tests (drawio-import at 10 s, twice)
-      assert.equal(browser.fileParallelism, false);
-      assert.equal(node.fileParallelism, undefined);
-      for (const p of [node, browser]) assert.equal(p.sequence, undefined, p.name);
+      const [macNode, macBrowser] = mac.test.projects.map(p => p.test);
+      // side by side, Linux's browser files starved the node project's bounded-time tests (drawio-import at 10 s, twice): the browser
+      // project runs after the node one on every OS, so Chromium never shares the machine with them
+      for (const [n, b] of [[node, browser], [macNode, macBrowser]]) assert.ok(n.sequence.groupOrder < b.sequence.groupOrder, n.name);
+      // the browser project waits more than it computes: three files at once on Linux (M18.157); macOS stays one at a time (M18.44)
+      assert.equal(browser.fileParallelism, true);
+      assert.equal(browser.maxWorkers, 3);
+      assert.equal(macBrowser.fileParallelism, false);
+      assert.equal(macBrowser.maxWorkers, undefined);
+      for (const p of [node, macNode]) assert.equal(p.fileParallelism, undefined);
       assert.equal(linux.test.fileParallelism, undefined);
       assert.equal(linux.test.maxWorkers, undefined);
-      for (let i = 0; i < 2; i++) assert.deepEqual(mac.test.projects[i].test.fileParallelism, linux.test.projects[i].test.fileParallelism);
       for (const key of ['coverage', 'testTimeout', 'hookTimeout']) assert.deepEqual(mac.test[key], linux.test[key]);
     } finally { Object.defineProperty(process, 'platform', platform); }
   `,

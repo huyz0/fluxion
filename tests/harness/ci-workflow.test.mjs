@@ -1,8 +1,9 @@
 // NFR-PORT-005 / NFR-SEC-005: the gates workflow runs the local gate definitions on three OSes
 // with SHA-pinned actions, and re-checks every commit. Structural check (no YAML dependency).
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { chmodSync, readdirSync, readFileSync } from 'node:fs';
+import { delimiter, join } from 'node:path';
 import { describe, it } from 'node:test';
 import { out, REPO, sandbox } from './helpers.mjs';
 
@@ -171,6 +172,63 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
       jobs.find((j) => j.startsWith('  cold-setup:')),
       /- name: cold setup within COLD_SETUP_MAX_MS\n\s+run: node scripts\/gates\/check-budget\.mjs --cold\n/,
     );
+  });
+
+  it('NFR-DX-001 NFR-MNT-004: only the cold setup runs the ladder without coverage; the verify jobs keep it (ADR-0216, M18.157)', () => {
+    // the ladder refuses --no-coverage outside --all: a staged or quick run never drops it
+    for (const mode of [[], ['--quick']]) {
+      const r = spawnSync(process.execPath, ['scripts/gates/precommit.mjs', ...mode, '--no-coverage'], { cwd: REPO, encoding: 'utf8' });
+      assert.equal(r.status, 2, out(r));
+      assert.match(r.stderr, /--no-coverage is for the cold setup's --all ladder only \(ADR-0216\)/);
+    }
+    // the test step itself: plain --all runs the coverage run, --all --no-coverage runs Vitest without it (a stub pnpm records the calls)
+    const stub = sandbox([]);
+    try {
+      stub.write(
+        'bin/stub.mjs',
+        "import { appendFileSync } from 'node:fs';\nappendFileSync(process.env.STUB_PNPM_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');\n",
+      );
+      stub.write('bin/pnpm', '#!/bin/sh\nexec node "$(dirname "$0")/stub.mjs" "$@"\n');
+      stub.write('bin/pnpm.cmd', '@node "%~dp0stub.mjs" %*\r\n');
+      chmodSync(stub.path('bin/pnpm'), 0o755);
+      const key = Object.keys(process.env).find((k) => k.toUpperCase() === 'PATH') ?? 'PATH';
+      const calls = (...flags) => {
+        stub.write('pnpm.log', '');
+        const env = { ...process.env, [key]: `${stub.path('bin')}${delimiter}${process.env[key] ?? ''}`, STUB_PNPM_LOG: stub.path('pnpm.log') };
+        const r = spawnSync(process.execPath, ['scripts/gates/precommit.mjs', '--all', '--only', 'test', '--no-review', '--no-budget', ...flags], {
+          cwd: REPO,
+          encoding: 'utf8',
+          env,
+        });
+        assert.equal(r.status, 0, out(r));
+        return {
+          r,
+          vitest: stub
+            .read('pnpm.log')
+            .split('\n')
+            .filter(Boolean)
+            .map((l) => JSON.parse(l))
+            .filter((a) => a.includes('vitest') || a.includes('test:coverage')),
+        };
+      };
+      assert.deepEqual(calls().vitest, [['run', 'test:coverage']]);
+      const bare = calls('--no-coverage');
+      assert.deepEqual(bare.vitest, [['exec', 'vitest', 'run']]);
+      assert.match(bare.r.stdout, /test: without coverage \(--no-coverage: the cold setup\); the verify jobs gate the coverage floors \(ADR-0216\)/);
+    } finally {
+      stub.cleanup();
+    }
+    // check-budget's cold setup is its one caller: no workflow, hook, script or package script passes it
+    const files = spawnSync('git', ['ls-files', 'scripts', '.github', '.githooks', 'package.json'], { cwd: REPO, encoding: 'utf8' }).stdout.split('\n');
+    // (tracked scripts and workflows only: no package path is read)
+    const passing = files.filter((f) => f && readFileSync(join(REPO, ...f.split('/')), 'utf8').includes('--no-coverage'));
+    assert.deepEqual(passing.toSorted(), ['scripts/gates/check-budget.mjs', 'scripts/gates/precommit.mjs']);
+    assert.match(readFileSync(join(REPO, 'scripts/gates/check-budget.mjs'), 'utf8'), /pnpm\('verify', \['verify', '--no-coverage'\]\)/);
+    // the verify jobs run `pnpm verify`, whose test step is the whole coverage run with the floors (verify needs no flag to keep it)
+    const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'));
+    assert.equal(pkg.scripts.verify, 'node scripts/gates/precommit.mjs --all');
+    assert.equal(pkg.scripts['test:coverage'], 'vitest run --coverage');
+    assert.match(/^ {2}ci-ok:[\s\S]*?(?=^ {2}\S|(?![\s\S]))/m.exec(ci)[0], /needs: \[verify,/);
   });
 
   it('verifies on three OSes and shards e2e over three engines x 4 in the pinned image (NFR-PORT-005)', () => {

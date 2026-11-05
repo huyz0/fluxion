@@ -34,8 +34,18 @@ describe('check-layering (NFR-MNT-001)', () => {
     for (const p of extra.splice(0)) sb.write(p, 'export {};\n');
   });
 
+  // one passing run for the real tree and the listed lower import planted in it (M18.157, as M16.31 did for the violations)
+  let allowed;
+  const allowedRun = () => {
+    if (allowed === undefined) {
+      put('packages/render/src/ok.ts', "import { VERSION } from '@fluxion/core';\nexport const v = VERSION;\n");
+      allowed = layering();
+    }
+    return allowed;
+  };
+
   it('passes on the real workspace tree', () => {
-    const r = layering();
+    const r = allowedRun();
     assert.equal(r.status, 0, out(r));
   });
 
@@ -113,9 +123,9 @@ describe('check-layering (NFR-MNT-001)', () => {
   });
 
   it('allows a listed same-layer or lower import (render importing core)', () => {
-    put('packages/render/src/ok.ts', "import { VERSION } from '@fluxion/core';\nexport const v = VERSION;\n");
-    const r = layering();
+    const r = allowedRun();
     assert.equal(r.status, 0, out(r));
+    assert.doesNotMatch(r.stderr, /ok\.ts/, out(r));
   });
 
   it('a browser test may import DOM libraries (only T0 tests are restricted)', () => {

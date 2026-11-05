@@ -137,6 +137,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0213](ADR-0213-clipboard-copy-shared-between-pages.md) | The editor's newest copy is shared between its pages of one origin, for an engine that keeps only text/plain | accepted | 2026-11-03 |
 | [0214](ADR-0214-windows-harness-tests-job.md) | On Windows the full ladder's harness-tests leg runs in a job of its own | accepted | 2026-11-03 |
 | [0215](ADR-0215-old-webkit-page-text-copy.md) | On the previous Playwright's WebKit, a keyboard copy of page text is the engine's limit | accepted | 2026-11-04 |
+| [0216](ADR-0216-cold-setup-without-coverage.md) | The cold setup measures the ladder without coverage; the verify jobs gate coverage | accepted | 2026-11-05 |
 
 ## ADR required when
 

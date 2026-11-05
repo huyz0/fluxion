@@ -182,8 +182,12 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     const calls = pnpmCalls(sb);
     assert.deepEqual(
       calls.map((c) => c.args),
-      [['install', '--frozen-lockfile', '--store-dir', calls[0]?.rawStore], ['run', 'setup'], ['verify']],
-      'pnpm i --frozen-lockfile, pnpm run setup, pnpm verify, in that order',
+      [
+        ['install', '--frozen-lockfile', '--store-dir', calls[0]?.rawStore],
+        ['run', 'setup'],
+        ['verify', '--no-coverage'],
+      ],
+      'pnpm i --frozen-lockfile, pnpm run setup, pnpm verify --no-coverage (ADR-0216), in that order',
     );
     const tmp = dirname(calls[0].cwd);
     for (const c of calls) {

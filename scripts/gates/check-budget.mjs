@@ -4,7 +4,7 @@
 //   check-budget.mjs --record   measure and record them: quick gate, staged pre-commit gate (on the worst-case
 //                               commit, worst-case.mjs), and a cold
 //                               setup (fresh local clone: pnpm i --frozen-lockfile, pnpm run setup,
-//                               pnpm verify); takes minutes
+//                               pnpm verify --no-coverage, ADR-0216); takes minutes
 //   check-budget.mjs --cold     measure only the cold setup, the same isolated way, and fail when it
 //                               fails or takes over COLD_SETUP_MAX_MS (only a warning while M18.157 is
 //                               open, M18.159); writes nothing (ci.yml cold-setup)
@@ -107,7 +107,8 @@ function coldSetup(provisional) {
     const phases = runPhases([
       pnpm('install', ['install', '--frozen-lockfile', '--store-dir', join(dir, 'store')]),
       pnpm('setup', ['run', 'setup']),
-      pnpm('verify', ['verify']),
+      // the ladder without coverage: the verify jobs gate it (ADR-0216, M18.157)
+      pnpm('verify', ['verify', '--no-coverage']),
     ]);
     const last = phases.at(-1).result;
     const tail = failureTail(`${last.stdout ?? ''}\n${last.stderr ?? ''}`);
@@ -153,7 +154,9 @@ if (argv.includes('--cold')) {
   const problems = limitProblems({ coldSetupMs: cold.ok ? cold.ms : null }, ['coldSetupMs']);
   for (const p of problems) console.error(`budget: ${p}`);
   if (!problems.length)
-    console.log(`budget: cold setup ${cold.ms} ms <= ${LIMITS.coldSetupMs} ms (empty store: pnpm i --frozen-lockfile, pnpm run setup, pnpm verify)`);
+    console.log(
+      `budget: cold setup ${cold.ms} ms <= ${LIMITS.coldSetupMs} ms (empty store: pnpm i --frozen-lockfile, pnpm run setup, pnpm verify --no-coverage)`,
+    );
   // a failure by status (install, setup, empty store, a verify step) always fails; while the row that wins back
   // cold-setup's margin is open, only a run over the unchanged limit is exempt, as a visible warning (M18.159)
   const exempt = cold.ok && problems.length > 0 && coldTimeExempt();

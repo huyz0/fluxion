@@ -2,7 +2,7 @@
 // never GPL-family or watermark libraries, and every workspace is MIT.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -63,11 +63,6 @@ describe('check-licenses (NFR-LIC-001, NFR-LIC-002, NFR-LIC-003)', () => {
     }
   });
   afterEach(() => sb.cleanup());
-
-  it('passes on the real repo (pnpm licenses list)', () => {
-    const real = sb.node('scripts/gates/check-licenses.mjs', ['--dir', REPO]);
-    assert.equal(real.status, 0, out(real));
-  });
 
   it('passes permissive shipped deps, OR expressions and permissive-but-unlisted dev tools', () => {
     const r = licenses({
@@ -188,12 +183,17 @@ describe('check-licenses (NFR-LIC-001, NFR-LIC-002, NFR-LIC-003)', () => {
     return sb.node('scripts/gates/check-licenses.mjs', ['--packs', '--dir', sb.dir, '--json-dir', sb.path('listings')]);
   };
 
-  it('NFR-LIC-003: --packs checks the real packs, their dependencies and content declarations', () => {
-    const real = sb.node('scripts/gates/check-licenses.mjs', ['--packs', '--dir', REPO]);
-    assert.equal(real.status, 0, out(real));
-    const built = workspaces.filter(({ dir }) => existsSync(join(REPO, dir, 'pack/index.json'))).length;
-    assert.ok(built > 0);
-    assert.match(real.stdout, new RegExp(`; ${built} pack indexes declare allowed content licences and credits`));
+  // the real repo's run is the ladder's licenses step (check-licenses.mjs on the repo, every --all run and every staged manifest, lockfile,
+  // licence or font change); here --packs counts the built indexes of a fixture (M18.157: two real pnpm licenses runs were most of this file)
+  it('NFR-LIC-003: --packs checks the packs, their dependencies and the content declarations of every built index', () => {
+    packIndex();
+    sb.write(
+      'packs/flowchart/pack/index.json',
+      JSON.stringify({ id: 'flowchart', license: 'MIT', attribution: 'Fluxion contributors', credits: [credit], categories: {} }),
+    );
+    const r = packs({ 'pack-basic': [['permissive-lib', 'MIT']] });
+    assert.equal(r.status, 0, out(r));
+    assert.match(r.stdout, /licenses: \d+ pack dependencies checked; 2 pack indexes declare allowed content licences and credits/);
   });
 
   it('NFR-LIC-003: asset-only licenses do not authorize code dependencies', () => {

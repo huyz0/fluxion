@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import { linkInstalls, out, REPO, sandbox } from './helpers.mjs';
 
 const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'));
@@ -113,39 +113,47 @@ describe('workspace packages (NFR-MNT-001, NFR-LIC-001, NFR-MNT-002)', () => {
     }
   });
 
-  it('tsc -b type-checks every workspace (a type error in any project fails it)', () => {
-    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', 'tools/vite-dom-free', ...workspaces.map((w) => w.dir)]);
-    try {
+  // one sandbox and one full tsc -b for both type-check cases, the DOM and node uses planted before it; each case then plants its error,
+  // rebuilds incrementally and takes the error out again (M18.157: four full builds were most of this file's time)
+  const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');
+  let typed;
+  const typedSandbox = () => {
+    if (typed === undefined) {
+      const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', 'tools/vite-dom-free', ...workspaces.map((w) => w.dir)]);
       // node-runtime workspaces resolve @types/node from the repo's install
       linkInstalls(sb);
-      const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');
-      const good = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
-      assert.equal(good.status, 0, out(good));
-      sb.write('packs/basic/src/broken.ts', 'export const n: number = "not a number";\n');
-      const bad = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
-      assert.notEqual(bad.status, 0, out(bad)); // tsc -b exits 2 on type errors
-      assert.match(bad.stdout, /packs\/basic\/src\/broken\.ts.*TS2322/);
-    } finally {
-      sb.cleanup();
+      sb.write('packages/render/src/dom.ts', 'export const title = (): string => document.title;\n');
+      sb.write('packages/cli/src/env.ts', "export const home = (): string | undefined => process.env['HOME'];\n");
+      typed = { sb, good: spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' }) };
     }
+    return typed;
+  };
+  after(() => typed?.sb.cleanup());
+  /** tsc -b with `path` holding `text`, which is taken out again after the build. */
+  const buildWith = (sb, path, text) => {
+    sb.write(path, text);
+    try {
+      return spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
+    } finally {
+      rmSync(sb.path(path));
+    }
+  };
+
+  it('tsc -b type-checks every workspace (a type error in any project fails it)', () => {
+    const { sb, good } = typedSandbox();
+    assert.equal(good.status, 0, out(good));
+    const bad = buildWith(sb, 'packs/basic/src/broken.ts', 'export const n: number = "not a number";\n');
+    assert.notEqual(bad.status, 0, out(bad)); // tsc -b exits 2 on type errors
+    assert.match(bad.stdout, /packs\/basic\/src\/broken\.ts.*TS2322/);
   });
 
   it('pure packages type-check without DOM; dom and node runtimes get their globals (M1 cp1 F5)', () => {
-    const sb = sandbox(['tsconfig.base.json', 'tsconfig.json', 'package.json', 'e2e', 'tools/vite-dom-free', ...workspaces.map((w) => w.dir)]);
-    try {
-      linkInstalls(sb);
-      const tsc = join(REPO, 'node_modules', 'typescript', 'bin', 'tsc');
-      sb.write('packages/render/src/dom.ts', 'export const title = (): string => document.title;\n');
-      sb.write('packages/cli/src/env.ts', "export const home = (): string | undefined => process.env['HOME'];\n");
-      const ok = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
-      assert.equal(ok.status, 0, out(ok));
-      sb.write('packages/core/src/dom.ts', 'export const title = (): string => document.title;\n');
-      const bad = spawnSync(process.execPath, [tsc, '-b'], { cwd: sb.dir, encoding: 'utf8' });
-      assert.notEqual(bad.status, 0, out(bad));
-      assert.match(bad.stdout, /packages\/core\/src\/dom\.ts.*(TS2584|TS2304)/);
-    } finally {
-      sb.cleanup();
-    }
+    // the full build passed with render's document and cli's process.env in it
+    const { sb, good } = typedSandbox();
+    assert.equal(good.status, 0, out(good));
+    const bad = buildWith(sb, 'packages/core/src/dom.ts', 'export const title = (): string => document.title;\n');
+    assert.notEqual(bad.status, 0, out(bad));
+    assert.match(bad.stdout, /packages\/core\/src\/dom\.ts.*(TS2584|TS2304)/);
   });
 
   it('generator --check fails when a tsconfig lib/types/references drift from workspaces.json', () => {
