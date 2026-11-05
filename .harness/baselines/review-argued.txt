@@ -192,3 +192,5 @@ M18.242 F1: r2 minor, a dangling "On that engine" before "The probe measured" in
 M18.264 F1: r2 minor, the loop test's comment says a verdict that waited on a timer "still spins past the bound"; a review rerun of the setTimeout(…, 0) mutant passed once in six (cold run), so the catch is likely, not certain. progress.md and the commit say so. A round is not spent on the comment alone (code-review step 5); the next edit of the test words it as likely.
 
 M18.43 cp43 F4: M18.264's MAX_TURNS bound catches a timer verdict on 5 of 6 runs, not all; accepted, since no millisecond bound can catch it on a slow host either; the next edit of the test words its comment as likely.
+
+M18.43 cp44 F5: M18.233's reopen draws arrows:wavy from the installed pack as well as the embedded entry, so it does not show embedded-only registration; accepted, since M18.147's player test (basic only) and M18.251's unit tests show it; the next edit of the spec rewords its line-33 comment.
