@@ -137,8 +137,8 @@ jobs:
           include-hidden-files: true
           retention-days: 14
 
-  # NFR-DX-001: a fresh clone set up from nothing (pnpm i --frozen-lockfile, pnpm run setup, pnpm verify
-  # into an empty pnpm store and browser cache) within COLD_SETUP_MAX_MS; check-budget --cold measures
+  # NFR-DX-001: a fresh clone set up from nothing (pnpm i --frozen-lockfile, pnpm run setup, pnpm verify without coverage
+  # into an empty pnpm store and browser cache) within COLD_SETUP_MAX_MS; the verify jobs gate coverage (ADR-0216); check-budget --cold measures
   # it the way --record does locally and fails above the threshold
   # while M18.157 is open a run over the limit is a warning (check-budget --cold exits 0 and annotates it);
   # a failure by status fails the run (M18.159, Huy's call 2026-10-28; no limit change)

@@ -69,7 +69,9 @@ export default defineConfig({
         test: {
           name: 'node',
           // Native browser-owning E2E files share this project; preserve every --project node selector.
-          ...(process.platform === 'win32' ? { fileParallelism: false, sequence: { groupOrder: 0 } } : {}),
+          ...(process.platform === 'win32' ? { fileParallelism: false } : {}),
+          // the node project first, then the browser one: Chromium never runs beside node's bounded-time tests (M18.117)
+          sequence: { groupOrder: 0 },
           environment: 'node',
           include: [`${SRC}/*.test.{ts,tsx}`, 'scripts/examples/*.test.ts'],
           exclude: [`${SRC}/*.browser.test.{ts,tsx}`],
@@ -82,9 +84,11 @@ export default defineConfig({
           // Keep RAF-driven UI files from competing for browser pages during the full ladder
           // (M18.44: macOS CI timed out under the unchanged 20 s limit). Windows also separates projects.
           // Linux too: run beside the node project (M18.117) they starved its bounded-time tests, so main
-          // went red twice; the cold setup's time is cut elsewhere (M18.160, M18.157).
-          fileParallelism: false,
-          ...(process.platform === 'win32' ? { sequence: { groupOrder: 1 } } : {}),
+          // went red twice. So the browser project runs after the node one (groupOrder 1), and on Linux
+          // three files at once: it waits more than it computes, 143 s one at a time against 71 s three wide
+          // on 4 cores, every test passing (M18.157 diagnosis). macOS and Windows stay one at a time.
+          ...(process.platform === 'linux' ? { fileParallelism: true, maxWorkers: 3 } : { fileParallelism: false }),
+          sequence: { groupOrder: 1 },
           include: [`${SRC}/*.browser.test.{ts,tsx}`],
           browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] },
         },

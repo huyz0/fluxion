@@ -62,7 +62,8 @@ jobs:
     steps: [checkout@<sha>, pnpm/action-setup@<sha>, setup-node@<sha> (cache: pnpm),
             turbo cache restore, pnpm install --frozen-lockfile, pnpm verify]
   cold-setup:        # ubuntu; no cache; check-budget --cold: fresh clone, empty store, pnpm i + run setup
-                     # + verify within COLD_SETUP_MAX_MS (NFR-DX-001); in CI it, not the committed
+                     # + verify --no-coverage within COLD_SETUP_MAX_MS (NFR-DX-001; the verify jobs gate
+                     # coverage, ADR-0216); in CI it, not the committed
                      # budget.json, answers for a changed lockfile (ADR-0143)
   build:             # turbo run build --affected; uploads dist/ artifact
   e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/4..4/4]
@@ -143,5 +144,8 @@ jobs:
 - A new gate lands in `scripts/gates/` first, is wired into `precommit.mjs` or a named CI job,
   and gets a negative test in `tests/harness/` proving it fails on bad input (run by precommit and CI).
 - Removing or loosening a CI job is a threshold change: `Threshold-change:` trailer + ADR.
+- A gate a job runs moves to another job that still gates main only with an ADR naming where it
+  now runs and a pin in `tests/harness/ci-workflow.test.mjs` (ADR-0216: coverage left the cold
+  setup for the verify jobs).
 - If the pre-commit budget is exceeded, move the slowest leg to CI rather than raising the
   budget without an ADR.

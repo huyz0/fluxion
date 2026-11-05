@@ -35,6 +35,13 @@ import { withLiveStepLog } from './live-step-log.mjs';
 
 const argv = new Set(process.argv.slice(2));
 const mode = argv.has('--all') ? 'all' : argv.has('--quick') ? 'quick' : 'staged';
+// --no-coverage (with --all only): the cold setup's ladder runs Vitest without coverage; the verify jobs, which run
+// `pnpm verify` with it, gate the floors on every OS (ADR-0216, M18.157). check-budget's cold setup is its only caller
+const noCoverage = argv.has('--no-coverage');
+if (noCoverage && mode !== 'all') {
+  console.error("precommit: --no-coverage is for the cold setup's --all ladder only (ADR-0216)");
+  process.exit(2);
+}
 const hasPkg = exists('package.json') && exists('turbo.json');
 const pnpm = (...a) => runAsync('pnpm', a);
 // --staged-paths a,b,c: scope the staged ladder as if these were staged (check-budget --record times the worst-case commit)
@@ -155,7 +162,8 @@ const STEPS = [
     'test',
     () => true,
     () => (!hasPkg ? 'no workspace yet (M1)' : mode === 'quick' || testPlan().run || 'no staged path the Vitest run reads'),
-    // one root Vitest run (node + browser projects); coverage floors are enforced on every full run.
+    // one root Vitest run (node + browser projects); coverage floors are enforced on every full run but the cold setup's
+    // --no-coverage one (ADR-0216: the verify jobs' full run gates them).
     // quick mode runs only tests related to uncommitted changes, without coverage. A staged commit that
     // touches no browser-tested workspace nor its dependencies runs the node project only, its
     // coverage limited to the workspaces without browser tests (ladder-scope.mjs).
@@ -165,9 +173,12 @@ const STEPS = [
       const vitest = (...a) => runAsync('pnpm', a, { env: { ...testStepEnv(), ...durations } });
       if (mode === 'quick') return vitest('exec', 'vitest', 'run', '--changed');
       const plan = testPlan();
-      const result = await (plan.browser
-        ? vitest('run', 'test:coverage')
-        : vitest('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`)));
+      if (noCoverage) console.log('test: without coverage (--no-coverage: the cold setup); the verify jobs gate the coverage floors (ADR-0216)');
+      const result = await (noCoverage
+        ? vitest('exec', 'vitest', 'run')
+        : plan.browser
+          ? vitest('run', 'test:coverage')
+          : vitest('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`)));
       // a fast-check seed that refused this run is recorded, for the fc-replay step of every later staged run (M18.275)
       if (mode === 'staged' && result.status !== 0) {
         try {
