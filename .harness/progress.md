@@ -4319,3 +4319,7 @@ round-allowance: M18.122 stream 1 allowed the fourth review under Huy's 2026-11-
 - The aggregate 127030154986 downloaded 287 partition artifacts and failed "Verification failed: mutation aggregate", so the missing shards failed aggregation as they should. report 127030726429 succeeded.
 - The other failures are known: visual-xos (macos-latest) 126495452642 and (windows-latest) 126495452654 (the known-red legs, ADR-0202), and previous-playwright (webkit) 126495452719 (copy-paste :58, ADR-0215).
 - The row stays open. The 0.1.2 bump must still show the cancelled schema, core, dsl and theme shards finishing in 60 minutes, or re-partition them, and the qualifying nightly needs no cancelled or failed shard. Bookkeeping only.
+## M18.273 — the refused-entry cases of M18.147 and M18.252 check what they name (2026-11-05)
+- embedded-connectors.browser.test.ts: the refused entry now has the valid envelope (format 'fluxion-connector-defs', formatVersion '1.0'), so it is refused only for its missing base router, and the case also asserts the connector is drawn with a path.
+- render.connectors.test.ts: the refused embedded entry's case asserts one connector element with a non-empty path besides no decoration (connectorPaths), as M18.252's acceptance (c) asks.
+- Review of M18.273: the first came back changes-requested (two majors: both path checks read the end marker's path in <defs>, so an empty route passed); both now read the route's own `path.fx-route`.

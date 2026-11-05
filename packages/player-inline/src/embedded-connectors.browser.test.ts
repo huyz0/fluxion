@@ -81,11 +81,14 @@ describe('embedded pack connector types in the player (FR-CON-010, FR-LIB-009; M
   });
 
   it('FR-CON-010, FR-LIB-009: a refused entry opens the file, its connector drawn as an unknown type', async () => {
-    // the entry names a base router that does not exist: refused whole
+    // a valid envelope whose one definition names a base router that does not exist: refused whole, for that alone (M18.273, cp44 F4)
     const def = { id: 'arrows:cable', name: 'Cable', describe: 'A cable.', router: 'nowhere', decoration: { kind: 'cable', pitch: 10 } };
-    const result = await window.Fluxion?.start(await walledFile('arrows:cable', entry(JSON.stringify({ definitions: [def] }))), root);
+    const refused = { format: 'fluxion-connector-defs', formatVersion: '1.0', definitions: [def] };
+    const result = await window.Fluxion?.start(await walledFile('arrows:cable', entry(JSON.stringify(refused))), root);
     expect(result?.ok, result?.message).toBe(true);
+    // drawn as a plain route: one connector with a path, and no decoration
     await vi.waitFor(() => expect(connectors().length).toBe(1), SLOW);
+    expect(connectors()[0]?.querySelector('path.fx-route')?.getAttribute('d') ?? '').not.toBe('');
     expect(decorations()).toBe(0);
     result?.unmount?.();
   });

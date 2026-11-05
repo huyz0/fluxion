@@ -26,6 +26,15 @@ function joined(route: string) {
 }
 /** The decoration strokes a rendered page draws (render's connector view marks each with data-part). */
 const parts = (html: string) => [...html.matchAll(/data-part="([^"]+)"/g)].map((m) => m[1]);
+/** The route path data of each connector a rendered page draws (its `path.fx-route`, never a marker's): one entry per connector element. */
+const connectorPaths = (html: string) =>
+  [...html.matchAll(/<svg[^>]*class="[^"]*\bfx-connector\b[^"]*"[^>]*>([\s\S]*?)<\/svg>/g)].map((m) => {
+    const routes = [...(m[1] ?? '').matchAll(/<path\b[^>]*>/g)].map((p) => p[0]).filter((tag) => /class="[^"]*\bfx-route\b/.test(tag));
+    return routes
+      .map((tag) => /\sd="([^"]*)"/.exec(tag)?.[1] ?? '')
+      .join(' ')
+      .trim();
+  });
 function html(page: Awaited<ReturnType<typeof archivePage>>): string {
   if ('exitCode' in page) throw new Error(JSON.stringify(page.diagnostics));
   return page.html;
@@ -63,6 +72,10 @@ describe('the CLI draws pack connector types (FR-CON-010, FR-LIB-009, M18.252)',
     const future = { format: 'fluxion-connector-defs', formatVersion: '1.1', definitions: [{ ...wavy, id: 'lines:wavy' }] };
     const page = await archivePage(await archive('lines:wavy', { 'connectors/lines.json': future }), undefined, 'lines.flux');
     expect(parts(html(page))).toEqual([]);
+    // drawn as a plain route: one connector element with a path (M18.273, cp44 F4)
+    const drawn = connectorPaths(html(page));
+    expect(drawn).toHaveLength(1);
+    expect(drawn[0]).not.toBe('');
     const warned = 'exitCode' in page ? [] : page.diagnostics.filter((d) => d.code === 'FLX_PACK_INVALID');
     expect(warned.map((d) => [d.severity, d.path])).toEqual([['warning', '/entries/connectors~1lines.json']]);
     expect(warned[0]?.message).toMatch(/^lines\.flux: the connector types of lines were refused \(.+\); its connectors are drawn as plain routes$/);
