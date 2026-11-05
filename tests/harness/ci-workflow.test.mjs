@@ -203,6 +203,42 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
       }
     }
   });
+
+  it('HARNESS (M18.182): every bare-runner browser install restores the locked release from a cache keyed on it; cold-setup downloads everything', () => {
+    const BROWSERS_JSON = 'node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/browsers.json';
+    // the key's glob names exactly the installed Playwright release (pnpm's store layout)
+    const store = readdirSync(join(REPO, 'node_modules/.pnpm')).filter((d) => /^playwright-core@[^_]+$/.test(d));
+    assert.equal(store.length, 1, store.join());
+    assert.ok(readFileSync(join(REPO, 'node_modules/.pnpm', store[0], 'node_modules/playwright-core/browsers.json'), 'utf8').includes('"browsers"'));
+    let installs = 0;
+    for (const name of ['ci.yml', 'nightly.yml']) {
+      const steps = workflow(name).split(/\n(?= {6}- )/);
+      steps.forEach((step, i) => {
+        const install = /run: pnpm exec playwright install --with-deps (\$\{\{ matrix\.browser \}\}|\S+)/.exec(step);
+        if (!install) return;
+        installs++;
+        const cache = steps[i - 1];
+        assert.match(
+          cache,
+          /- name: playwright browsers cache\n {8}(?:if: .*\n {8})?uses: actions\/cache@[0-9a-f]{40} # v/,
+          `${name}: no cache before ${install[0]}`,
+        );
+        assert.equal(/if: (.*)/.exec(cache)?.[1], /if: (.*)/.exec(step)?.[1], `${name}: the cache runs exactly when its install runs`);
+        assert.ok(
+          cache.includes(`key: playwright-${install[1]}-\${{ runner.os }}-\${{ runner.arch }}-\${{ hashFiles('${BROWSERS_JSON}') }}`),
+          `${name}: ${cache}`,
+        );
+        assert.match(
+          cache,
+          /path: \$\{\{ runner\.os == 'Windows' && '~\/AppData\/Local\/ms-playwright' \|\| runner\.os == 'macOS' && '~\/Library\/Caches\/ms-playwright' \|\| '~\/\.cache\/ms-playwright' \}\}/,
+        );
+      });
+    }
+    // ci: verify, harness-windows (ADR-0214) and cli-mcp; nightly: both mutation chains, properties, perf, visual-xos and previous-playwright
+    assert.equal(installs, 9);
+    const cold = /^ {2}cold-setup:[\s\S]*?(?=^ {2}\S)/m.exec(ci)[0];
+    assert.doesNotMatch(cold, /actions\/cache|^ +cache: |playwright install/m, 'the cold setup measures an empty store and browser cache (NFR-DX-001)');
+  });
 });
 
 describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', () => {

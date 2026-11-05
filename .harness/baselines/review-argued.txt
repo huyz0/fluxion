@@ -196,3 +196,5 @@ M18.43 cp43 F4: M18.264's MAX_TURNS bound catches a timer verdict on 5 of 6 runs
 M18.43 cp44 F5: M18.233's reopen draws arrows:wavy from the installed pack as well as the embedded entry, so it does not show embedded-only registration; accepted, since M18.147's player test (basic only) and M18.251's unit tests show it; the next edit of the spec rewords its line-33 comment.
 
 M18.43 cp45 F4: M18.273's acceptance asked each refused-entry case to be shown red in review with the fallback drawing removed, and no record shows that run; accepted, since by reading both cases fail with it removed (render.connectors.test.ts:75-78 asserts one fx-connector whose path.fx-route has non-empty d, embedded-connectors.browser.test.ts:90-91 waits for one connector and a non-empty path.fx-route d), and r1's changes-requested on the marker path shows the reviewer probed the checks; a later row that carries a 'shown red in review' clause records the run in progress.md.
+
+M18.182 F1: the after time can only be read from main's runs once this lands; stream 1 records it in progress.md from main's first warm-cache ci runs after it (M18.183, which would also read it, is held).
