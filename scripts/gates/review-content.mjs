@@ -16,10 +16,54 @@ export const TRACE = 'docs/requirements/40-traceability.md';
 const STATE_COLS = [6, 7]; // | ID | Task | Req | Acceptance | Deps | State | Commit |  → split indices
 const EXCLUDED = [...BOOKKEEPING_PATHS, ...GENERATED_PATHS, BACKLOG, TRACE].map((p) => `:(exclude,glob)${p}`);
 
-const show = (rev, path) => {
-  const r = git(['show', `${rev}:${path}`]);
-  return r.status === 0 ? r.stdout : '';
-};
+/** Files read at a commit, by `<sha>:<path>` and `<sha>^:<path>`: a commit's files never change, so one read serves every caller (M18.276). */
+const atCommit = new Map();
+const COMMIT_REV = /^[0-9a-f]{40}\^?$/;
+
+/** A file's text at `rev` (`''` the index), or `''` when it is not there. */
+export function show(rev, path) {
+  const spec = `${rev}:${path}`;
+  if (atCommit.has(spec)) return atCommit.get(spec);
+  const r = git(['show', spec]);
+  const text = r.status === 0 ? r.stdout : '';
+  if (COMMIT_REV.test(rev)) atCommit.set(spec, text);
+  return text;
+}
+
+/**
+ * Read `paths` at each of `revs` (full shas, or a sha and `^`) in one `git cat-file --batch`, for the `show` calls that follow:
+ * check-digest reads a few files at every task commit and its parent, thousands of `git show` processes otherwise (M18.276).
+ */
+export function prefetch(revs, paths) {
+  const specs = revs
+    .filter((rev) => COMMIT_REV.test(rev))
+    .flatMap((rev) => paths.map((path) => `${rev}:${path}`))
+    .filter((spec) => !atCommit.has(spec));
+  if (specs.length === 0) return;
+  const r = git(['cat-file', '--batch'], { input: Buffer.from(`${specs.join('\n')}\n`), encoding: 'buffer', maxBuffer: 1 << 30 });
+  if (r.status !== 0) return; // the `show` calls read them one by one
+  readBatch(r.stdout, specs);
+}
+
+/** Fill the reads from `git cat-file --batch` output, one `<oid> <type> <size>` header and body per spec, or `<spec> missing`. */
+function readBatch(out, specs) {
+  let at = 0;
+  for (const spec of specs) {
+    const end = out.indexOf(0x0a, at);
+    if (end < 0) return;
+    const header = out.subarray(at, end).toString('utf8');
+    at = end + 1;
+    const object = /^[0-9a-f]+ (\w+) (\d+)$/.exec(header);
+    // missing: `git show` fails on it too; a tree, `show` reads itself
+    if (!object) {
+      if (header.endsWith(' missing')) atCommit.set(spec, '');
+      continue;
+    }
+    const size = Number(object[2]);
+    if (object[1] === 'blob') atCommit.set(spec, out.subarray(at, at + size).toString('utf8'));
+    at += size + 1;
+  }
+}
 
 /** Backlog rows by ID, with State/Commit cells blanked except a change to `descoped` (a scope decision). */
 function specRows(text) {
@@ -104,12 +148,23 @@ export function changedPaths(commit) {
  * change touches only bookkeeping, generated reports and backlog State/Commit cells.
  */
 export function contentId(commit, { legacy = false } = {}) {
+  return identity(changeOf(commit), legacy);
+}
+
+/** What a change's identities hash: its diff (bookkeeping, reports, backlog and traceability left out) and the backlog's and traceability's deltas. */
+function changeOf(commit) {
   const diff = git(['diff', '--binary', '--full-index', '--no-color', '--no-ext-diff', '--no-renames', ...range(commit), '--', '.', ...EXCLUDED]);
   if (diff.status !== 0) throw new Error(`git diff failed: ${diff.stderr.trim()}`);
-  const patch = diff.stdout ? createHash('sha256').update(normalizedDiff(diff.stdout, { legacy })).digest('hex') : '';
   const [before, after] = revs(commit);
-  const backlog = backlogSpecDelta(show(before, BACKLOG), show(after, BACKLOG));
-  const trace = lineDelta(traceLines(show(before, TRACE)), traceLines(show(after, TRACE)));
+  return {
+    diff: diff.stdout,
+    backlog: backlogSpecDelta(show(before, BACKLOG), show(after, BACKLOG)),
+    trace: lineDelta(traceLines(show(before, TRACE)), traceLines(show(after, TRACE))),
+  };
+}
+
+function identity({ diff, backlog, trace }, legacy) {
+  const patch = diff ? createHash('sha256').update(normalizedDiff(diff, { legacy })).digest('hex') : '';
   if (!patch && !backlog && !trace) return '';
   return createHash('sha256').update(`content-v2\n${patch}\n${backlog}\n${trace}\n`).digest('hex');
 }
@@ -120,7 +175,9 @@ export function contentId(commit, { legacy = false } = {}) {
  * recorded before it still binds.
  */
 export function contentIds(commit) {
-  return [...new Set([contentId(commit), contentId(commit, { legacy: true })])];
+  // one diff and one read of each file for both identities (M18.276: check-digest computes them for every task commit)
+  const change = changeOf(commit);
+  return [...new Set([identity(change, false), identity(change, true)])];
 }
 
 /**
