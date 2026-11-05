@@ -439,6 +439,17 @@ describe('changesetGaps (M5.3, M4 final F1)', () => {
     ]);
   });
 
+  it('a test file under src/ is no gap; a source file beside it and src/testing/ are (M18.272, cp44 F1)', () => {
+    const layout = [{ dir: 'packages/layout', name: '@fluxion/layout', private: false }];
+    assert.deepEqual(changesetGaps(['packages/layout/src/templates/templates.test.ts'], [], layout), []);
+    assert.deepEqual(changesetGaps(['packages/layout/src/a.browser.test.tsx'], [], layout), []);
+    assert.deepEqual(changesetGaps(['packages/layout/src/templates/templates.test.ts', 'packages/layout/src/templates/grid.ts'], [], layout), [
+      '@fluxion/layout',
+    ]);
+    assert.deepEqual(changesetGaps(['packages/layout/src/testing/fixtures.ts'], [], layout), ['@fluxion/layout']);
+    assert.deepEqual(changesetGaps(['packages/layout/src/test-utils.ts'], [], layout), ['@fluxion/layout']);
+  });
+
   it('an older changeset does not cover a change of the range; one the range adds does (review F1)', () => {
     const sb = sandbox(['scripts', 'tools/gen'], { git: true });
     try {

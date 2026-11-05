@@ -579,8 +579,11 @@ function screenLacks(screen) {
     .map(([, what]) => what);
 }
 
+/** A test file, `*.test.*` or `*.browser.test.*`, which no package build emits (M18.272). */
+const TEST_FILE = /\.test\.[cm]?[jt]sx?$/;
+
 /**
- * The published workspaces whose shipped files (`src/`, `package.json`) `changed` touches and that no
+ * The published workspaces whose shipped files (`src/` other than test files, `package.json`) `changed` touches and that no
  * changeset text names (M4 final F1): pure, over repo-relative paths, the changeset file contents
  * and the workspaces as `{ dir, name, private }`.
  */
@@ -593,7 +596,10 @@ export function changesetGaps(changed, changesetTexts, workspaces) {
     }),
   );
   const named = (name) => released.has(name);
-  const touched = (dir) => changed.some((p) => p.startsWith(`${dir}/src/`) || p === `${dir}/package.json`);
+  // a test file under src/ ships nothing: every published `files` is dist (and assets), and no
+  // build emits a `*.test.*` file (M18.272, cp44 F1); src/testing/ is an exported subpath and counts
+  const ships = (dir, p) => (p.startsWith(`${dir}/src/`) && !TEST_FILE.test(p)) || p === `${dir}/package.json`;
+  const touched = (dir) => changed.some((p) => ships(dir, p));
   return workspaces.filter((w) => !w.private && touched(w.dir) && !named(w.name)).map((w) => w.name);
 }
 
