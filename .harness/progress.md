@@ -4334,3 +4334,9 @@ round-allowance: M18.122 stream 1 allowed the fourth review under Huy's 2026-11-
 - editor-root.browser.test.tsx enters focus mode in a sync act and presses Shift+1 in the same task: z was 0.3375 (the old canvas) before the fix, the new canvas's fit after.
 - e2e/parity.edit-vs-present.spec.ts presses Shift+1 and Shift+0 once, with no toPass around them; it passed 15 of 15 with --repeat-each 3 here.
 - Review r1 pass, minors left open: the box is read at every key the keymap takes, even one whose command needs no viewport (a lazy read would spare the layout read); the canvas is found by `querySelector` under the root, so a nested canvas in a panel before it would be read instead (none today); the browser test asserts z, not the fit's x/y (the e2e spec checks the screen's box).
+
+## 2026-11-05 M18.274: the corrupted-input parse property accepts a newer minor (stream 3's land of M18.271)
+- M18.271's first land was refused by the staged test leg: parse-robust's 'parse never throws on corrupted input' failed on fast-check seed 1397724349 (path 125:0:3:5:8:10:12:13:13:13:13). The splice turned "1.7" into "1.70", which parseDocument accepts as a newer minor (migrate.ts), but the property asserted exactly '1.7'. Any stream's land could go red on such a seed.
+- The property now asserts the current version or a canonically spelled newer minor of the same major (expectAcceptedVersion). A new case parses the seed's document with "1.70" and shows '2.0', '1.6.1', '1.07' rejected by the check. Parse code unchanged.
+- Red before: FC_SEED=1397724349 vitest parse-robust → 'parse never throws' fails (1 failed | 7 passed). After: 9 passed under FC_SEED=1397724349, at the default seed, and FC_RUNS=10000 for the property.
+- Review r1 pass, 2 minors, both fixed: the case now asserts the parsed version is "1.70", and '1.6' (an older minor) is in the rejected list.

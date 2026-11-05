@@ -1,9 +1,23 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { SCHEMA_VERSION } from './document-file.js';
 import { repair } from './repair.js';
 import { MAX_JSON_DEPTH, parseDocument, serializeDocument } from './serialize.js';
 import { arbDocument } from './testing/arbitraries.js';
 import { validate } from './validate.js';
+
+const [MAJOR, MINOR] = SCHEMA_VERSION.split('.').map(Number) as [number, number];
+
+/**
+ * A version parse accepts: the current one, or a newer minor of its major, which migrate() leaves
+ * unchanged by design (M18.274: a junk "0" spliced after "1.7" reads as "1.70").
+ */
+function expectAcceptedVersion(version: string): void {
+  const m = /^(0|[1-9]\d*)\.(0|[1-9]\d*)$/.exec(version);
+  expect(m, version).not.toBeNull();
+  expect(Number(m?.[1]), version).toBe(MAJOR);
+  expect(Number(m?.[2]), version).toBeGreaterThanOrEqual(MINOR);
+}
 
 /** Ways a stored document gets damaged: truncation, byte edits, spliced garbage, random JSON. */
 const corrupted: fc.Arbitrary<string> = fc.oneof(
@@ -53,6 +67,18 @@ describe('robust parse (NFR-REL-002)', () => {
     }
   });
 
+  it('NFR-REL-002: a corrupted version that reads as a newer minor parses as that version (M18.274)', () => {
+    // fast-check seed 1397724349 spliced a "0" after "1.7"; a generated document with "1.70" parses unchanged (migrate.ts)
+    const [doc] = fc.sample(arbDocument, { numRuns: 1, seed: 1397724349 });
+    const text = serializeDocument(doc as NonNullable<typeof doc>).replace(/("schemaVersion":\s*")([^"]+)"/, '$1$20"');
+    expect(text).toContain(`"${SCHEMA_VERSION}0"`);
+    const r = parseDocument(text);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.document.schemaVersion).toBe(`${SCHEMA_VERSION}0`);
+    expectAcceptedVersion(`${SCHEMA_VERSION}0`);
+    for (const version of ['2.0', '1.6', '1.6.1', '1.07']) expect(() => expectAcceptedVersion(version), version).toThrow();
+  });
+
   it('NFR-REL-002: parse never throws on corrupted input', () => {
     let runs = 0;
     fc.assert(
@@ -60,7 +86,7 @@ describe('robust parse (NFR-REL-002)', () => {
         runs++;
         const r = parseDocument(text);
         // either a document, or a structured error with diagnostics that carry paths
-        if (r.ok) expect(r.value.document.schemaVersion).toBe('1.7');
+        if (r.ok) expectAcceptedVersion(r.value.document.schemaVersion);
         else expect(r.error.diagnostics.length).toBeGreaterThan(0);
       }),
     );
