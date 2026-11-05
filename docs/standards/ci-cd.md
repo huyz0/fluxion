@@ -136,7 +136,8 @@ jobs:
 | pnpm store | `setup-node` `cache: pnpm` keyed on `pnpm-lock.yaml` |
 | Turborepo | remote cache (`TURBO_TOKEN`/`TURBO_TEAM` secrets); PRs use `--affected` |
 | tsc / Biome | incremental `.tsbuildinfo` restored from cache |
-| Playwright browsers | run inside the pinned image instead of downloading |
+| Playwright browsers | run inside the pinned image instead of downloading; a bare runner restores the locked browsers from actions/cache (M18.182) |
+| Windows browser deps | no `--with-deps` on windows-latest: there it only runs `Install-WindowsFeature Server-Media-Foundation` (about 190 s a job, the cost the M18.182 cache did not cut); Chromium delay-loads mf.dll and the suites play no media, so Linux and macOS keep `--with-deps` and Windows drops it (M18.277) |
 | E2E sharding | 4 shards per browser; blob reports merged in `e2e-report`; raise shard count when a shard exceeds 6 min |
 
 ## 5. Changing CI

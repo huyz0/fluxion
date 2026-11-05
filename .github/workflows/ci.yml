@@ -48,9 +48,10 @@ jobs:
         with:
           path: ${{ runner.os == 'Windows' && '~/AppData/Local/ms-playwright' || runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
           key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/browsers.json') }}
+      # M18.277: on Windows, --with-deps only enables Server-Media-Foundation (~190 s); Chromium delay-loads it for media we never play
       - name: chromium for the Vitest browser project (T1)
         timeout-minutes: 15
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install ${{ runner.os != 'Windows' && '--with-deps ' || '' }}chromium
       - name: git identity for sandbox tests
         run: |
           git config --global user.name "ci"
@@ -130,9 +131,10 @@ jobs:
         with:
           path: ${{ runner.os == 'Windows' && '~/AppData/Local/ms-playwright' || runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
           key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/browsers.json') }}
+      # M18.277: on Windows, --with-deps only enables Server-Media-Foundation (~190 s); Chromium delay-loads it for media we never play
       - name: chromium for the font-engine harness test
         timeout-minutes: 15
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
       - name: git identity for sandbox tests
         run: |
           git config --global user.name "ci"
@@ -492,8 +494,9 @@ jobs:
         with:
           path: ${{ runner.os == 'Windows' && '~/AppData/Local/ms-playwright' || runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
           key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/browsers.json') }}
+      # M18.277: on Windows, --with-deps only enables Server-Media-Foundation (~190 s); Chromium delay-loads it for media we never play
       - name: chromium for the PNG render tests
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install ${{ runner.os != 'Windows' && '--with-deps ' || '' }}chromium
       - name: e2e of @fluxion/cli and @fluxion/mcp
         run: pnpm exec vitest run --project node packages/cli/src/e2e packages/mcp/src/e2e
 

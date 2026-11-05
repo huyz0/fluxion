@@ -151,6 +151,23 @@ function runBlockLength(lines, i) {
   return n;
 }
 
+/** M18.277: the install form each kind of job must use; a Linux-only job keeps the system deps. */
+const INSTALL_FORMS = {
+  windows: /^install chromium$/,
+  matrix: /^install \$\{\{ runner\.os != 'Windows' && '--with-deps ' \|\| '' \}\}chromium$/,
+  other: /^install --with-deps (\$\{\{ matrix\.browser \}\}|\S+)$/,
+};
+
+/** Every `playwright install` in a workflow, with the kind of job it runs in: always Windows, a matrix with Windows, or neither. */
+function browserInstalls(text) {
+  return text.split(/\n(?= {2}[\w-]+:\n)/).flatMap((job) => {
+    const runsOn = /^ {4}runs-on: (.*)$/m.exec(job)?.[1];
+    const matrixWindows = /- (?:os: )?windows-latest\b|os: \[[^\]]*windows-latest/.test(job);
+    const kind = runsOn === 'windows-latest' ? 'windows' : matrixWindows ? 'matrix' : 'other';
+    return [...job.matchAll(/run: pnpm exec playwright (install .*)/g)].map(([, cmd]) => ({ kind, cmd }));
+  });
+}
+
 describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
   it('has the planned job set and ci-ok needs every other job (NFR-PORT-005)', () => {
     const jobs = jobsOf(ci);
@@ -290,7 +307,10 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
     for (const name of ['ci.yml', 'nightly.yml']) {
       const steps = workflow(name).split(/\n(?= {6}- )/);
       steps.forEach((step, i) => {
-        const install = /run: pnpm exec playwright install --with-deps (\$\{\{ matrix\.browser \}\}|\S+)/.exec(step);
+        const install =
+          /run: pnpm exec playwright install (?:--with-deps |\$\{\{ runner\.os != 'Windows' && '--with-deps ' \|\| '' \}\})?(\$\{\{ matrix\.browser \}\}|\S+)/.exec(
+            step,
+          );
         if (!install) return;
         installs++;
         const cache = steps[i - 1];
@@ -314,6 +334,20 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.equal(installs, 9);
     const cold = /^ {2}cold-setup:[\s\S]*?(?=^ {2}\S)/m.exec(ci)[0];
     assert.doesNotMatch(cold, /actions\/cache|^ +cache: |playwright install/m, 'the cold setup measures an empty store and browser cache (NFR-DX-001)');
+  });
+
+  it('HARNESS (M18.277): Windows installs skip --with-deps, which only enables Server-Media-Foundation; Linux and macOS keep it', () => {
+    // install_media_pack.ps1 is all `--with-deps chromium` does on win32 (~190 s per job); Chromium only delay-loads mf.dll
+    const seen = { windows: 0, matrix: 0, other: 0 };
+    for (const name of ['ci.yml', 'nightly.yml']) {
+      for (const { kind, cmd } of browserInstalls(workflow(name))) {
+        seen[kind]++;
+        assert.match(cmd, INSTALL_FORMS[kind], `${name}: a ${kind} job's install: ${cmd}`);
+      }
+    }
+    // windows: harness-windows; matrix: ci verify and cli-mcp, nightly visual-xos
+    assert.deepEqual([seen.windows, seen.matrix], [1, 3]);
+    assert.ok(seen.other >= 5, String(seen.other));
   });
 });
 
@@ -353,7 +387,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     const harness = /^ {2}harness-windows:[\s\S]*?(?=^ {2}\S)/m.exec(ci)?.[0] ?? '';
     assert.match(harness, /name: harness tests \(windows-latest\)\n\s+runs-on: windows-latest\n\s+timeout-minutes: 45\n/);
     assert.match(harness, /- run: node scripts\/gates\/precommit\.mjs --all --only harness-tests\n\s+timeout-minutes: 25\n/);
-    assert.match(harness, /playwright install --with-deps chromium/);
+    assert.match(harness, /playwright install chromium/);
     assert.doesNotMatch(harness, /continue-on-error|retry/);
     assert.match(ci, /needs: \[verify, harness-windows, /);
     assert.match(verify, /chromium for the Vitest browser project \(T1\)\n\s+timeout-minutes: 15/);
@@ -463,7 +497,10 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     // the matrix flag is the only thing that lets a leg fail: no step and no other job forgives a failure
     assert.match(xos, /^ {4}continue-on-error: \$\{\{ matrix\.known-red \}\}$/m);
     assert.equal([...nightly.matchAll(/continue-on-error/g)].length, 2, 'the visual-xos flag and the bounded clipboard probe');
-    assert.match(xos, /if: \$\{\{ matrix\.image == '' \}\}\n\s+run: pnpm exec playwright install --with-deps chromium/);
+    assert.match(
+      xos,
+      /if: \$\{\{ matrix\.image == '' \}\}\n\s+run: pnpm exec playwright install \$\{\{ runner\.os != 'Windows' && '--with-deps ' \|\| '' \}\}chromium/,
+    );
     assert.match(nightly, /^ {2}# ADR-0202:[^\n]*\n(?: {2}#[^\n]*\n)* {2}visual-xos:/m);
   });
 

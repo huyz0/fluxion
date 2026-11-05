@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-11-05
-decision-makers: the coordinator under Huy's delegation of 2026-11-04 13:34:57Z ("you decide and carry on"), 2026-11-05 07:12Z; Huy's open cp25 F4 card owns the question and his answer overrules this ADR
+decision-makers: the coordinator under Huy's delegation of 2026-11-04 13:34:57Z ("you decide and carry on"), 2026-11-05 07:12Z; kept under Huy's full delegation of 2026-11-05 11:04:52Z ("you decide for me and unblock anything"), which decides cp25 F4 and cp46 F1
 ---
 
 # ADR-0216 — The cold setup measures the ladder without coverage; the verify jobs gate coverage
@@ -22,8 +22,8 @@ with every test passing. Moving coverage off the cold setup alone projects to 61
 because harness-tests then becomes the critical leg; with the harness cuts and the browser files
 three wide it projects to 545–565 s.
 
-Where coverage is gated is cp25 F4, on Huy's card, still open. The coordinator decided it under
-the standing delegation: coverage leaves the cold-setup path and keeps gating main, floors
+Where coverage is gated is cp25 F4, which was on Huy's card. The coordinator decided it under
+the standing delegation, and Huy's full delegation of 2026-11-05 11:04:52Z keeps that decision: coverage leaves the cold-setup path and keeps gating main, floors
 unchanged.
 
 ## Decision Drivers
@@ -81,4 +81,5 @@ Option 1, with the review's cuts:
   browser one, as before this change.
 - M18.157 closes only after three consecutive main runs within the limit; budget.json's cold
   number is then recorded with `--cold-from-ci` (ADR-0145), which ends M18.159's exemption.
-- If Huy answers cp25 F4 otherwise, his answer overrules this ADR.
+- cp25 F4 and cp46 F1 are decided under Huy's 2026-11-05 11:04:52Z delegation; NFR-DX-001's wording is
+  no longer provisional.
