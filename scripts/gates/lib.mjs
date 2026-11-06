@@ -2,7 +2,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -47,27 +47,118 @@ export const node = (script, args = [], opts) => run(process.execPath, [repoPath
 const processOutput = new AsyncLocalStorage();
 export const withProcessOutput = (sink, work) => processOutput.run(sink, work);
 
-/** `run` without blocking, so independent gate steps can overlap. Same result shape. */
+/**
+ * `run` without blocking, so independent gate steps can overlap. Same result shape.
+ * `settle` (M18.281) unsticks a command that reported success but does not exit: once `settle.done` matches its output, it
+ * gets `settle.ms` to exit, and is then ended with its whole process tree; the process table goes to `settle.reportDir`
+ * first, a `::warning::` line is printed, and the result is status 0 with `stuck` set to the report's path. A command that
+ * fails, or never prints `done`, keeps its own result.
+ */
 export function runAsync(cmd, args = [], opts = {}) {
+  const { settle, ...spawnOpts } = opts;
   const needsShell = process.platform === 'win32' && !cmd.endsWith('.exe') && cmd !== process.execPath && cmd !== 'git';
   const [file, argv] = needsShell ? [[cmd, ...args].map(quoteWin).join(' '), []] : [cmd, args];
   return new Promise((resolve) => {
-    const child = spawn(file, argv, { cwd: REPO_ROOT, shell: needsShell, ...opts });
+    // a settled run stays in the caller's process group, so Ctrl-C still reaches it; endTree walks its descendants instead (M18.281 r1 F1)
+    const child = spawn(file, argv, { cwd: REPO_ROOT, shell: needsShell, ...spawnOpts });
     const out = { stdout: '', stderr: '' };
+    const watchdog = settle ? settleWatch(child, settle, out, resolve) : undefined;
     // decode the stream, not each chunk: a multi-byte character may straddle two chunks (M1.28 review F1)
     child.stdout?.setEncoding('utf8');
     child.stderr?.setEncoding('utf8');
     child.stdout?.on('data', (d) => {
       out.stdout += d;
       processOutput.getStore()?.('stdout', d);
+      watchdog?.saw(d);
     });
     child.stderr?.on('data', (d) => {
       out.stderr += d;
       processOutput.getStore()?.('stderr', d);
+      watchdog?.saw(d);
     });
     child.on('error', (e) => resolve({ status: 1, stdout: out.stdout, stderr: `${out.stderr}${e.message}` }));
-    child.on('close', (code) => resolve({ status: code ?? 1, ...out }));
+    child.on('close', (code) => {
+      watchdog?.stop();
+      resolve({ status: code ?? 1, ...out });
+    });
   });
+}
+
+/** turbo's closing summary when every task succeeded: `Tasks:    37 successful, 37 total` (M18.281). */
+export const TURBO_ALL_SUCCESSFUL = /^\s*Tasks:\s+(\d+) successful, \1 total\s*$/m;
+
+/** The table of running processes with their command lines, for a stuck command's report (M18.281). */
+export function processTable() {
+  const res =
+    process.platform === 'win32'
+      ? spawnSync(
+          'powershell.exe',
+          [
+            '-NoProfile',
+            '-Command',
+            'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CreationDate,CommandLine | Format-List | Out-String -Width 4096',
+          ],
+          { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+        )
+      : spawnSync('ps', ['-eo', 'pid,ppid,pgid,etime,args'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  return res.stdout || res.stderr || String(res.error?.message ?? 'no process table');
+}
+
+/** The pids under `root` (itself included) in a `ps -eo pid,ppid` table, parents first. */
+export function descendants(table, root) {
+  const children = new Map();
+  for (const [pid, ppid] of table
+    .split('\n')
+    .map((l) => l.trim().split(/\s+/).map(Number))
+    .filter(([pid, ppid]) => Number.isInteger(pid) && Number.isInteger(ppid))) {
+    children.set(ppid, [...(children.get(ppid) ?? []), pid]);
+  }
+  const out = [];
+  for (let queue = [root]; queue.length > 0; ) {
+    const pid = queue.shift();
+    out.push(pid);
+    queue.push(...(children.get(pid) ?? []));
+  }
+  return out;
+}
+
+/** The process tree under `child` ended at once: taskkill /T on Windows, every descendant ps lists elsewhere. */
+function endTree(child) {
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+    return;
+  }
+  const table = spawnSync('ps', ['-eo', 'pid,ppid'], { encoding: 'utf8' }).stdout ?? '';
+  for (const pid of descendants(table, child.pid)) {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // already gone
+    }
+  }
+}
+
+function settleWatch(child, settle, out, resolve) {
+  const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
+  let tail = '';
+  let timer;
+  const stuck = () => {
+    mkdirSync(settle.reportDir, { recursive: true });
+    const report = join(settle.reportDir, `stuck-${Date.now()}.txt`);
+    writeFileSync(report, `${settle.label ?? 'command'} printed its done line and had not exited ${settle.ms} ms later\n\n${processTable()}`);
+    const line = `::warning::${settle.label ?? 'the command'} reported success but had not exited after ${Math.round(settle.ms / 1000)} s; ended its process tree, process table in ${rel(report)} (M18.281)\n`;
+    process.stdout.write(line);
+    endTree(child);
+    resolve({ status: 0, stdout: `${out.stdout}${line}`, stderr: out.stderr, stuck: report });
+  };
+  return {
+    saw(d) {
+      if (timer) return;
+      tail = (tail + d).replace(ANSI, '').slice(-4000);
+      if (settle.done.test(tail)) timer = setTimeout(stuck, settle.ms);
+    },
+    stop: () => clearTimeout(timer),
+  };
 }
 export const nodeAsync = (script, args = [], opts) => runAsync(process.execPath, [repoPath(script), ...args], opts);
 export const git = (args, opts) => run('git', args, opts);

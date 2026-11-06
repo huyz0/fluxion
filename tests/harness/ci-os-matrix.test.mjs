@@ -21,8 +21,10 @@ describe('CI OS matrix for the CLI and MCP (NFR-PORT-004)', () => {
   });
 
   it('NFR-PORT-004: the job builds, then runs the CLI and MCP e2e tests', () => {
-    assert.ok(job.indexOf('pnpm run build') > 0);
-    assert.ok(job.indexOf('packages/cli/src/e2e') > job.indexOf('pnpm run build'));
+    // the build runs through the ladder's settle (M18.281), which runs `pnpm run build`
+    const build = 'run: node scripts/ci/build-settled.mjs';
+    assert.ok(job.indexOf(build) > 0);
+    assert.ok(job.indexOf('packages/cli/src/e2e') > job.indexOf(build));
     assert.match(job, /packages\/mcp\/src\/e2e/);
   });
 

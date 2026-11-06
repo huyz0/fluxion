@@ -30,7 +30,7 @@ import {
   workspaceCatalogOnly,
 } from './ladder-scope.mjs';
 import { listFlag, splitLadder } from './ladder-split.mjs';
-import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync, testStepEnv } from './lib.mjs';
+import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync, TURBO_ALL_SUCCESSFUL, testStepEnv } from './lib.mjs';
 import { withLiveStepLog } from './live-step-log.mjs';
 
 const argv = new Set(process.argv.slice(2));
@@ -44,6 +44,11 @@ if (noCoverage && mode !== 'all') {
 }
 const hasPkg = exists('package.json') && exists('turbo.json');
 const pnpm = (...a) => runAsync('pnpm', a);
+/**
+ * M18.281: a Windows CI build twice printed turbo's summary with every task successful and then did not exit, until the step's
+ * limit (ci 42038170007, 42092624276). After the summary the build is done; 60 s later its tree is ended and the run goes on.
+ */
+const BUILD_SETTLE = { done: TURBO_ALL_SUCCESSFUL, ms: 60_000, reportDir: repoPath('.harness/tmp/stuck-build'), label: 'build' };
 // --staged-paths a,b,c: scope the staged ladder as if these were staged (check-budget --record times the worst-case commit)
 const pretended = process.argv.includes('--staged-paths')
   ? (process.argv[process.argv.indexOf('--staged-paths') + 1] ?? '').split(',').filter(Boolean)
@@ -148,7 +153,9 @@ const STEPS = [
     'build',
     (m) => m !== 'quick',
     () => hasPkg || 'no workspace yet (M1)',
-    () => (mode === 'all' ? pnpm('run', 'build') : pnpm('turbo', 'run', 'build', '--filter=./packages/*', '--filter=./packs/*')),
+    // M18.281: a build that printed turbo's all-successful summary and does not exit is ended after BUILD_SETTLE (Windows stalls)
+    () =>
+      runAsync('pnpm', mode === 'all' ? ['run', 'build'] : ['turbo', 'run', 'build', '--filter=./packages/*', '--filter=./packs/*'], { settle: BUILD_SETTLE }),
   ],
   [
     'harness-tests',

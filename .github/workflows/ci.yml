@@ -106,6 +106,17 @@ jobs:
           path: .harness/tmp/verify-logs
           include-hidden-files: true
           retention-days: 14
+      # M18.281: a build that printed turbo's all-successful summary and did not exit leaves its process table here
+      - name: stuck build reports
+        if: always()
+        timeout-minutes: 2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stuck-build-${{ matrix.os }}
+          path: .harness/tmp/stuck-build
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 30
 
   # ADR-0214 (M18.256): the Windows ladder's harness-tests leg, split off verify (windows-latest) so the two longest legs
   # (Vitest and the harness suite, 1150-1360 s and 1050-1210 s side by side on 4 vCPUs) no longer share one runner and one
@@ -150,6 +161,17 @@ jobs:
           path: .harness/tmp/verify-logs
           include-hidden-files: true
           retention-days: 14
+      # M18.281: a build that printed turbo's all-successful summary and did not exit leaves its process table here
+      - name: stuck build reports
+        if: always()
+        timeout-minutes: 2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stuck-build-harness-windows-latest
+          path: .harness/tmp/stuck-build
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 30
 
   # NFR-DX-001: a fresh clone set up from nothing (pnpm i --frozen-lockfile, pnpm run setup, pnpm verify without coverage
   # into an empty pnpm store and browser cache) within COLD_SETUP_MAX_MS; the verify jobs gate coverage (ADR-0216); check-budget --cold measures
@@ -487,7 +509,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
+      # M18.281: the build with the ladder's settle (a Windows build stalled after turbo's summary, ci 42092624276); its step
+      # limit ends inside the job's 20 minutes so the report below still uploads
+      - name: build
+        timeout-minutes: 12
+        run: node scripts/ci/build-settled.mjs
       # M18.182: the locked Playwright release's browsers restored, not downloaded; keyed on its browsers.json, so a miss only costs time
       - name: playwright browsers cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -499,6 +525,17 @@ jobs:
         run: pnpm exec playwright install ${{ runner.os != 'Windows' && '--with-deps ' || '' }}chromium
       - name: e2e of @fluxion/cli and @fluxion/mcp
         run: pnpm exec vitest run --project node packages/cli/src/e2e packages/mcp/src/e2e
+      # M18.281: a build that printed turbo's all-successful summary and did not exit leaves its process table here
+      - name: stuck build reports
+        if: always()
+        timeout-minutes: 2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stuck-build-cli-mcp-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: .harness/tmp/stuck-build
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 30
 
   ci-ok:
     if: always()

@@ -137,7 +137,8 @@ jobs:
 | Turborepo | remote cache (`TURBO_TOKEN`/`TURBO_TEAM` secrets); PRs use `--affected` |
 | tsc / Biome | incremental `.tsbuildinfo` restored from cache |
 | Playwright browsers | run inside the pinned image instead of downloading; a bare runner restores the locked browsers from actions/cache (M18.182) |
-| Windows browser deps | no `--with-deps` on windows-latest: there it only runs `Install-WindowsFeature Server-Media-Foundation` (about 190 s a job, the cost the M18.182 cache did not cut); Chromium delay-loads mf.dll, so cli-mcp and harness-windows drop it on Windows (M18.277); verify and visual-xos keep it on every OS, because the first Windows verify without it hung to its 25-minute limit (ci 42038170007, M18.279) |
+| Windows browser deps | no `--with-deps` on windows-latest: there it only runs `Install-WindowsFeature Server-Media-Foundation` (about 190 s a job, the cost the M18.182 cache did not cut); Chromium delay-loads mf.dll, so cli-mcp and harness-windows drop it on Windows (M18.277); verify and visual-xos kept it after the first Windows verify without it hung (ci 42038170007, M18.279), but that hang was a build stall (M18.281) |
+| Windows build stall | turbo has twice printed every task successful and then not exited on windows-latest (ci 42038170007, 42092624276); the ladder's build step and cli-mcp's build end such a build 60 s after its summary, save the process table to `.harness/tmp/stuck-build/` (uploaded as `stuck-build-*`), warn and go on. A failed build, or one without an all-successful summary, keeps its status (M18.281) |
 | E2E sharding | 4 shards per browser; blob reports merged in `e2e-report`; raise shard count when a shard exceeds 6 min |
 
 ## 5. Changing CI
