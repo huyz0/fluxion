@@ -30,12 +30,15 @@ import type { NodeSvgWitnessOptions } from './svg-witness-types.js';
 export type PackImportPorts = {
   /** Starts the paint witness (the shipped Node bridge by default). */
   readonly witness: (options: NodeSvgWitnessOptions) => ReturnType<typeof createNodeSvgPaintWitness>;
-  /** Marks a phase of the run (start, witness-ready, disposed, end), so a bound can time the command's own work (M18.229). */
+  /** Marks a phase of the run (start, witness-start, witness-ready, disposed, end), so a bound can time the command's own work (M18.229). */
   readonly phase?: (name: PackImportPhase) => void;
 };
 
-/** The phases a run marks: `end` once its outcome is final, the witness closed; start-up before `start` is Node's, not the command's. */
-export type PackImportPhase = 'start' | 'witness-ready' | 'disposed' | 'end';
+/**
+ * The phases a run marks: `end` once its outcome is final, the witness closed; start-up before `start` is Node's, not the command's.
+ * `witness-start` to `witness-ready` is the first witness session's browser start, before any member is read into it (ADR-0217).
+ */
+export type PackImportPhase = 'start' | 'witness-start' | 'witness-ready' | 'disposed' | 'end';
 
 const invalid = (path: string, message: string): Diagnostic => ({ code: 'FLX_SVG_IMPORT_INVALID', severity: 'error', path, message });
 const refused = (diagnostics: readonly Diagnostic[]): Outcome => ({ exitCode: 1, diagnostics });
@@ -97,6 +100,7 @@ function flagsOf(values: Record<string, unknown>, positionals: readonly string[]
 async function convert(files: readonly SvgBatchFile[], ids: ReadonlyMap<string, string>, browser: unknown, ports: PackImportPorts) {
   const inter = await interFont();
   const browserOption = typeof browser === 'string' ? { browser: browser as 'chromium' | 'firefox' | 'webkit' } : {};
+  ports.phase?.('witness-start');
   const sessions = await witnessSessions(() =>
     ports.witness({ theme: LIGHT_THEME, fonts: [{ ...inter.face, bytes: inter.rights.bytes, profile: 'inter-latin-400-ascii' }], ...browserOption }),
   );

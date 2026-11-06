@@ -36,7 +36,7 @@ function packImport(args: readonly string[], env: NodeJS.ProcessEnv = process.en
 }
 
 /** The first mark of each phase a run printed with FLUXION_PACK_IMPORT_PHASES, in ms from its process's start (M18.229). */
-type Marks = { start?: number; 'witness-ready'?: number; disposed?: number; end?: number };
+type Marks = { start?: number; 'witness-start'?: number; 'witness-ready'?: number; disposed?: number; end?: number };
 function phasesOf(stderr: string): Marks {
   const marks: Record<string, number> = {};
   for (const line of stderr.split(/\r?\n/)) {
@@ -348,8 +348,11 @@ describe('fluxion pack-import refusals (NFR-SEC-001)', () => {
     process.stdout.write(`ADVISORY pack-import-phases ${label} ${JSON.stringify({ total, ...marks })}\n`);
     expect(marks.start, `${label}: ${r.stderr}`).toBeTypeOf('number');
     expect(marks.end, `${label}: ${r.stderr}`).toBeTypeOf('number');
-    // the bound is the command's own work, witness close included, from its start to its final outcome; only Node's start-up is left out
-    expect((marks.end as number) - (marks.start as number), label).toBeLessThan(10_000);
+    // the bound is the command's own work, witness close included, from its start to its final outcome. Left out: Node's start-up, and
+    // the first witness session's browser start, which no member reaches (ADR-0217: 23.8 s on a slowed macOS runner, ci 42178991600)
+    const browserStart = marks['witness-start'] === undefined ? 0 : (marks['witness-ready'] as number) - marks['witness-start'];
+    if (label === 'unpainted') expect([marks['witness-start'], browserStart >= 0], label).toEqual([expect.any(Number), true]);
+    expect((marks.end as number) - (marks.start as number) - browserStart, label).toBeLessThan(10_000);
     expect(r.status, `${label}: ${r.stdout}`).toBe(1);
     expect(
       JSON.parse(r.stdout)

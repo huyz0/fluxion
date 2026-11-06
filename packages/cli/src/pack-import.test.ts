@@ -300,14 +300,35 @@ describe('pack-import bounds (NFR-SEC-001)', () => {
     const unpainted = await run(folder({ 'a.svg': SQUARE, 'b.svg': SQUARE, 'c.svg': SQUARE }), async (r) =>
       ++calls === 1 ? { identity: r.identity, status: 'unsupported' as const, fontHashes: [] } : painted(r),
     );
-    expect([unpainted.code, calls, unpainted.marks]).toEqual([1, 3, ['start', 'witness-ready', 'disposed', 'end']]);
+    expect([unpainted.code, calls, unpainted.marks]).toEqual([1, 3, ['start', 'witness-start', 'witness-ready', 'disposed', 'end']]);
     expect((unpainted.reply.errors ?? []).map((e) => e.message.split(':')[0])).toEqual(['a.svg']);
     const accepted = await run(folder({ 'a.svg': SQUARE }));
-    expect([accepted.code, accepted.marks]).toEqual([0, ['start', 'witness-ready', 'disposed', 'end']]);
+    expect([accepted.code, accepted.marks]).toEqual([0, ['start', 'witness-start', 'witness-ready', 'disposed', 'end']]);
     const existing = fresh();
     mkdirSync(existing);
     const early = await run(folder({ 'a.svg': SQUARE }), undefined, existing);
     expect([early.code, early.marks]).toEqual([1, ['start', 'end']]);
+  });
+
+  it("NFR-SEC-001: the browser start a bound leaves out is the first session's alone, before any member is painted (ADR-0217)", async () => {
+    const log: string[] = [];
+    const dispose = async () => ok(undefined);
+    const paint: SvgPaintWitness = async (r) => {
+      log.push('paint');
+      return painted(r);
+    };
+    const witness = async () => {
+      log.push('session');
+      return ok({ witness: paint, observe: async () => ok({ identity: '', status: 'painted' as const, fontHashes: [] }), dispose });
+    };
+    const members = Object.fromEntries(Array.from({ length: 129 }, (_, i) => [`s${String(i).padStart(3, '0')}.svg`, SQUARE]));
+    const p = { witness, phase: (name: string) => log.push(name) } as unknown as PackImportPorts;
+    expect((await packImport([folder(members), ...flags(fresh())], p)).code).toBe(0);
+    const from = log.indexOf('witness-start');
+    const to = log.indexOf('witness-ready');
+    // inside the interval: the first session's start and nothing else; the second session (member 129) starts inside the bound
+    expect(log.slice(from, to + 1)).toEqual(['witness-start', 'session', 'witness-ready']);
+    expect([log.filter((e) => e === 'session').length, log.lastIndexOf('session') > to, log.indexOf('paint') > to]).toEqual([2, true, true]);
   });
 
   it('FR-LIB-004: more members than one witness session admits (129 > 128) are all converted through a second session', async () => {

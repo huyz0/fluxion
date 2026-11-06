@@ -106,7 +106,7 @@ packs that check clean, under a `--credits` file built from `specs/import/corpus
 (Lucide members credited to their upstream, originals to Fluxion), each credit scoped to exactly its
 members' definitions; traversal, symlink, bomb, oversized-archive, entry-count, id-collision,
 empty-slug, uncredited-member, unpermitted-license, existing-output and partial-conversion inputs
-exit 1 within 10 s and leave nothing; a text SVG
+exit 1 within 10 s of their own work (M18.229; the first witness session's browser start left out, ADR-0217) and leave nothing; a text SVG
 gives a 1.1 pack with its font. The output schema contract test validates every reply. The M18
 completion leg "50 SVG batch imports, bounded ZIP and traversal rejection" runs this suite and
 `packages/format/src/svg-batch.test.ts`, no editor wrapper (cp9 F3).

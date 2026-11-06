@@ -138,6 +138,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0214](ADR-0214-windows-harness-tests-job.md) | On Windows the full ladder's harness-tests leg runs in a job of its own | accepted | 2026-11-03 |
 | [0215](ADR-0215-old-webkit-page-text-copy.md) | On the previous Playwright's WebKit, a keyboard copy of page text is the engine's limit | accepted | 2026-11-04 |
 | [0216](ADR-0216-cold-setup-without-coverage.md) | The cold setup measures the ladder without coverage; the verify jobs gate coverage | accepted | 2026-11-05 |
+| [0217](ADR-0217-pack-import-bound-leaves-out-browser-start.md) | The pack-import refusal bound leaves out the first witness session's browser start | accepted | 2026-11-06 |
 
 ## ADR required when
 
