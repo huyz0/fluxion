@@ -1,0 +1,101 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp47",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..ca153307e0c45e25e50b104bc41391d5978e89b8",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "changes-requested",
+  "reviewedDelta": "Delta ffc9fec..ca15330 has seven commits, and I read every one in full. 24be821 M18.278: the scaling test compares each side's fastest of 7 alternated reads, with SCALING_MAX still 3 and no retry. a84deec M18.277: the Windows installs drop --with-deps, the after times are recorded, and cp24 F5, cp25 F4, cp42 F4 and cp46 F1 are decided under Huy's 2026-11-05T11:04:52Z delegation. 46d4653 M18.279: verify and visual-xos restore --with-deps after ci 42038170007's Windows verify timed out, and M18.277's 60 s target moves to cli-mcp and harness-windows. 4f52fca M18.280: the comments say the cause is unconfirmed. f6bb6d3 M18.281: the build settle ends the tree 60 s after turbo's N-of-N summary, prints a ::warning:: and returns status 0. fdc3dda M18.283: a ProgressReporter, plus an 8-minute idle watchdog that fails the test step with a report. ca15330: M18.277's closeout. Checks at ca15330, all exit 0: `node scripts/gates/check-commits.mjs --range ffc9fec..HEAD` -> 'check-commits: 7/7 commits pass (ffc9fec..HEAD)'. `node scripts/gates/check-checkpoint.mjs --commit HEAD` -> 'checkpoint: M18 has 7/8 preceding unreviewed task commits'. `node --test tests/harness/build-settle.test.mjs tests/harness/test-idle.test.mjs tests/harness/ci-workflow.test.mjs` -> tests 43, pass 43, fail 0. `pnpm exec vitest run --project node packages/editor/src/font-subset-save.test.ts -t '1.6 MB'` -> 1 passed. `node scripts/harness/last-ci.mjs` at about 06:45Z -> 'ci green at fdc3dda (run 42171158023)', 'gates green at ca15330 (run 42175625975)', 'cold-setup over budget at fdc3dda (run 42171158023): 621 s > 600 s (exempt while M18.157 is open)', 'nightly RED failure at 67b35b3 (run 42003285284)'. gh: 42003285284 completed as failure at 2026-11-06T01:33:13Z. Nightly workflow_dispatch 42049519894 (branch claude/project-thread-l8lomq) has been queued since 2026-11-05T14:54:11Z. ci 42175626033 at ca15330 is queued. pnpm-workspace.yaml:83 still pins tzap 0.1.1. Packet gate: 61/76 legs. The firefox/webkit e2e reds come from the packet host, as at cp46. The open-row leg lists M18.157, M18.236, M18.245, M18.10, M18.43 and M18.282. Backlog header 268 = 268 rows, and the next free id is M18.284. I did not run m18-complete or a full verify.",
+  "cp46DispositionsCheck": {
+    "F1": "Partly carried out. The card went to Huy at 10:59:27Z. Huy's 11:04:52Z delegation ('you decide for me and unblock anything, don't ask me unless it is permission access') came five minutes later, and a84deec decided cp46 F1 under it: ADR-0216 is kept and NFR-DX-001 is no longer provisional. The decision is logged in progress.md, in ADR-0216's decision-makers, in the spec proposal and in blockedReason, so the delegation question is settled. The disposition's last clause was not done. a84deec touched specs/M18.157-cold-setup-coverage/proposal.md but recorded no code-review --kind plan of the folder and named no diagnostic reviewer. The digest has only M18.157's r1-r3 code rounds (cp47 F2).",
+    "F2": "Carried out as M18.277. a84deec recorded the after times by run and job id, made the cut, and pinned the forms in ci-workflow.test. The row closed at ca15330 on M18.279's amended target: cli-mcp and harness-windows took 1-2 s in every main run from a84deec to fdc3dda. The Windows verify step the row was written for still takes 208 s (job 127739033750), and it is now held behind M18.282 (cp47 F1).",
+    "F3": "Carried out in ffc9fec. It has drifted again since (cp47 F3).",
+    "F4": "The argued line is in review-argued.txt (ffc9fec).",
+    "order": "(1) ffc9fec came first. (2) The card went out at 10:59:27Z, and the 11:04:52Z delegation overtook it, which is logged. (3) The M18.10 bump has not landed. tzap is 0.1.1 at HEAD. A dispatch, 42049519894, has been queued on a side branch since 14:54Z, and no repo record names it. (4) M18.277 is done, with three follow-ups. (5) M18.157 is open at 621 s at fdc3dda, with no attempt 4. (6)-(8) are not due."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "docs/backlog/current.md",
+      "line": 282,
+      "summary": "M18.282 is held 'until M18.281's settle and M18.283's idle report have named what stalls Windows verify ... and it is not Media Foundation'. The evidence on record already rules Media Foundation out. 42092624276's cli-mcp stalled in the build before any browser install ran. 42159843232's Windows verify stalled in Vitest with --with-deps installed. The cause of the stalls is unknown and was not reproduced locally, so it may never be named. The hold therefore rests on the cause M18.279 assumed, which M18.281 and M18.283 later showed was wrong. It blocks m18-complete's all-rows-done leg, and meanwhile every Windows verify run pays 182-208 s for the install. M18.277 closed on M18.279's narrowed target. The row text says so honestly, but the closeout subject 'the Windows Chromium steps stay under 60 s' overstates it: the Windows verify Chromium step takes 208 s.",
+      "evidence": "M18.282 row (backlog line 282). progress.md M18.281: '42092624276 ... no browser install had run (it comes after the build)'. progress.md M18.283: 'with --with-deps installed ... so it is not the cause of either'. ca15330 progress: 'Windows verify keeps --with-deps (208 s at fdc3dda, job 127739033750)'. M18.277 row: '(M18.279: for the cli-mcp and harness-windows Windows steps ...)'.",
+      "failure_scenario": "No fourth stall happens, or one happens without a named cause, and M18.282 stays todo. The completion gate then cannot go green unless the row is rewritten at closeout. Or M18 closes with M18.282 handed off, and Windows verify keeps paying about 200 s a run for a dependency that no evidence connects to the stalls."
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "file": "specs/M18.157-cold-setup-coverage/proposal.md",
+      "line": 1,
+      "summary": "cp46 F1 required that 'the next commit that touches specs/M18.157-cold-setup-coverage records an independent plan review of the folder (code-review --kind plan) and names the diagnostic review's reviewer in progress.md'. a84deec touched proposal.md and did neither. The delegation now covers the decision itself. The plan review, though, is the spec skill's only independent check of a change to an M-priority requirement, NFR-DX-001, and it has now been skipped at two touches of the folder.",
+      "evidence": "`git show a84deec --stat` includes specs/M18.157-cold-setup-coverage/proposal.md. `grep M18.157 .harness/reviews/digest.log` -> r1 changes-requested, r2 pass, r3 pass (code rounds only). The ffc9fec..HEAD diff of progress.md names no diagnostic reviewer.",
+      "failure_scenario": "M18.157 closes after three in-limit cold-setup runs, and NFR-DX-001's narrowed measure enters M19 with no independent review of the spec that changed it. That sets a precedent: a delegation stands in for the spec skill's review step, not only for the decision."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": ".harness/state.json",
+      "line": 7,
+      "summary": "blockedReason is stale at ca15330, which touched state.json. (a) It says nightly 42003285284 'holds group nightly' and that stream 2 may cancel it at 'about 14:09Z'. The run completed as failure at 2026-11-06T01:33:13Z, and its per-job final state is not recorded. (b) A nightly workflow_dispatch, 42049519894 on branch claude/project-thread-l8lomq, has been queued since 2026-11-05T14:54:11Z, and no repo record names it. tzap is still 0.1.1. (c) The only cold-setup reading it names for M18.157 is 612 s. The latest is 621 s at fdc3dda (42171158023), still over. (d) cp41 F3 says this container cannot download artifacts. That is true, but Huy's Windows session read artifacts 13423305413 and 13477718614 for M18.281 and M18.283. The same route would serve M18.245's artifact 13195593788 before it expires on 2026-11-17, and blockedReason does not say so. A stale blockedReason clause has now been found at eight checkpoints.",
+      "evidence": "state.json:7 at ca15330. `gh run view 42003285284` -> completed/failure, updated 2026-11-06T01:33:13Z. `gh run view 42049519894` -> queued, headBranch claude/project-thread-l8lomq, created 2026-11-05T14:54:11Z. last-ci: 'cold-setup over budget at fdc3dda (run 42171158023): 621 s > 600 s'. progress.md M18.281 and M18.283 cite Huy's Windows session's artifact reads.",
+      "failure_scenario": "The next session waits to cancel a nightly that has already finished. Or it dispatches a second 0.1.2 run, which replaces the queued 42049519894 in the group and loses its place. Or the M18.245 artifact expires on 2026-11-17 while blockedReason still says only that the container cannot download it."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "scripts/gates/precommit.mjs",
+      "line": 57,
+      "summary": "M18.283 set the 8-minute idle limit (TEST_IDLE_MS) without recording its margin against the longest silent gap in a green run. Three kinds of gap print nothing: one file's run (the node project uses one worker on Windows, under coverage), the pause between the node and browser groups, and the v8 coverage report after the last 'end' line. Only one green run with the watchdog exists (42171158023). The step fails loudly with a report, so a spurious failure would be diagnosable, not hidden. The watchdog detects stalls robustly and does not weaken a gate.",
+      "evidence": "precommit.mjs:57 TEST_IDLE_MS = 8 * 60_000. progress-reporter.mjs prints only module queued/start/end lines. M18.283's progress entry measures no gap. Earlier macOS verify runs took 17.8-20 min under capacity contention (progress.md, 2026-11-04 entries).",
+      "failure_scenario": "On a contended macOS or Windows runner, the coverage remap or one slow node file takes more than 8 min. Main goes red with an ::error:: that names no file in flight, and a stream reads it as a fourth stall."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "scripts/gates/lib.mjs",
+      "line": 92,
+      "summary": "M18.281's settle cannot pass a real build failure today. The root build is exactly `turbo run build`. TURBO_ALL_SUCCESSFUL needs 'N successful, N total' at the start of a line, and turbo's stream UI prefixes task output, so no task can forge the summary. A failure before the summary keeps its status. But this rests on package.json's build script, and no test pins it. If the script gained a step after turbo ('turbo run build && node x'), that step would be killed after 60 s and the build would pass.",
+      "evidence": "package.json:14 \"build\": \"turbo run build\". build-settle.test.mjs never reads package.json. In lib.mjs, settleWatch resolves status 0 after settle.ms.",
+      "failure_scenario": "A later row appends a post-build check to the root build script. On a slow runner the check is still running 60 s after turbo's summary, so it is killed, and the ladder reports the build green with only a ::warning::."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.282",
+      "note": "Fixed in the record commit by amending M18.282's acceptance. The new condition is the evidence already on record, which excludes Media Foundation: 42092624276 stalled before any browser install, and 42159843232 stalled with --with-deps installed. M18.283's watchdog and M18.281's settle are in place to name any further stall. The row then lands when a stream is free, closing on three consecutive main runs with the Windows verify install under 60 s, and it no longer waits for a cause to be named. The amended row SHALL note that ca15330's subject covers only the cli-mcp and harness-windows steps. The M18.182 argued line SHALL say 'drops --with-deps for cli-mcp and harness-windows on Windows; verify and visual-xos are M18.282'."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "| M18.284 | An independent plan review of specs/M18.157-cold-setup-coverage, and the diagnostic reviewer named (cp46 F1, cp47 F2) | HARNESS, NFR-DX-001 | WHEN M18.157 is closed THE SYSTEM SHALL have a code-review --kind plan verdict on specs/M18.157-cold-setup-coverage (ADR-0216 and NFR-DX-001's `pnpm verify --no-coverage` wording) from an agent that did not write it, recorded as a digest line for this row; progress.md SHALL name the reviewer of M18.157's attempt-3 diagnostic review, or say no record names one; a changes-requested plan verdict SHALL reopen M18.157 rather than be argued | M18.157 | todo | |",
+      "note": "New row, touching harness and docs paths only. M18.157 does not close before it lands."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.43",
+      "note": "Fixed in the record commit. blockedReason SHALL say: 42003285284 completed as failure at 2026-11-06T01:33:13Z, and its per-job final state is recorded in progress.md for M18.10; dispatch 42049519894 (claude/project-thread-l8lomq) has been queued since 2026-11-05T14:54:11Z, with the stream that owns it named; tzap is still 0.1.1 at HEAD; M18.157's readings are 612 s (42006964451) and 621 s (42171158023); and Huy's Windows session can read M18.245's artifact 13195593788, as it read 13423305413 and 13477718614, before 2026-11-17. Asking Huy for that is a permission-access request, which the 11:04:52Z delegation still allows."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "Line for review-argued.txt: 'M18.43 cp47 F4: M18.283's 8-minute TEST_IDLE_MS has no recorded margin against a green run's longest silent gap (one slow file, the node-to-browser group gap, the v8 coverage report); accepted, since the step fails loudly with a report naming what was in flight rather than passing a stall, and one green run with it exists (42171158023); the next edit of TEST_IDLE_MS, or M18.43's final review, records the largest gap from the progress lines of three green main runs per OS.'"
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "note": "Line for review-argued.txt: 'M18.43 cp47 F5: M18.281's settle passes a build 60 s after turbo's N-of-N summary, which is sound only while package.json's build is exactly `turbo run build`; accepted, since that holds at ca15330 and no failure can print the summary; the next edit of build-settle.test.mjs pins the root build script to `turbo run build`.'"
+    }
+  ],
+  "questions": {
+    "coherence": "Coherent, but the Windows work went back and forth. M18.277 cut --with-deps. M18.279 restored it on the strength of one run, and M18.280 reworded that. M18.281 and M18.283 then found the real stalls: a build that did not exit, and a stall inside Vitest. Neither involved Media Foundation, yet M18.282 is still holding the restore (F1). The settle and idle watchdogs share runAsync, endTree and processTable, and each has stand-in tests. ProgressReporter fits beside DurationsReporter.",
+    "specFidelity": "No M18 FR changed. NFR-PORT-005 gains build-settle and test-idle evidence in the traceability table. M18.278 keeps NFR-SEC-001's scaling bound (SCALING_MAX 3, no retry). M18.277 meets its acceptance as amended. The amendment narrowed the 60 s target away from verify, it is disclosed, and M18.282 holds the remainder (F1). NFR-DX-001's wording is now final under the delegation, but its spec has had no plan review (F2).",
+    "standardsDrift": "Two drifts. A commit touched state.json and left a blockedReason clause stale, as at seven earlier checkpoints (F3). A sub-clause of a checkpoint disposition was skipped at the commit it named (F2). The conventions held otherwise: Fixes-ci trailers, Removes-test trailers with reasons, every review round in the digest, and each Commit cell filled one commit later as usual. M18.278's reviewer id 'claude:opus-5.5-subagent' is recorded as a known minor in M18.280.",
+    "gateHonesty": "No gate was weakened. M18.278 does not loosen its gate. Load only adds time, so each side's fastest read is its least noisy estimate. The bound is unchanged, and the recorded mutants read 12.2 and 10.0 against 3. M18.281 cannot pass a failed build (F5 is only latent). M18.283 turns a silent timeout into an earlier failure and never passes a stalled run (F4 is a spurious-failure risk only). Mutant spot-checks by reading: (1) if settleWatch resolved with the child's status, build-settle's stuck case would fail; (2) if idleWatch dropped `fired`, the r1 F3 case would fail; (3) if cli-mcp's Windows install got --with-deps back, ci-workflow.test's [1,1,2] count would fail. The completion gate cannot go green with 6 open rows, the mutation evidence and the final review missing.",
+    "architecture": "Clean. The only package source that changed is one editor test. The new code is in scripts/gates/lib.mjs, scripts/ci/build-settled.mjs and tools/vitest/progress-reporter.mjs. No dependency was added, and actions/upload-artifact is SHA-pinned. ADR-0217 is still free.",
+    "planHealth": "268 rows against 43 planned (6.2x). The delta added six rows, all for Windows CI recovery. Left: M18.10 (the bump has been overdue since 2026-11-05T14:09Z, and a dispatch is queued on a side branch), M18.236 after it, M18.157 (621 s; attempt 4 needs a diagnostic review), M18.245 (the artifact expires on 2026-11-17), M18.282 (F1), M18.284 (F2) and M18.43. The critical path is M18.10's nightly wall-clock plus the 21 s M18.157 still has to cut. Huy is now needed only for permission access (the M18.245 artifact)."
+  },
+  "planDelta": "Add M18.284: an independent plan review of specs/M18.157-cold-setup-coverage, with the diagnostic reviewer named (F2). Amend M18.282's hold condition to the evidence already on record, and reword the M18.182 argued line (F1). Rewrite blockedReason (F3). Argue F4 and F5. The header goes from 268 to 269. Order: (1) This cp47 record (harness and backlog paths): the M18.282 amendment, M18.284, the two argued lines, the reworded M18.182 line, and blockedReason per F3. (2) M18.10: record 42003285284's per-job final state, settle who owns 42049519894, then land the tzap 0.1.2 bump. (3) M18.282, in parallel with (2), on harness and workflow paths. (4) M18.284, before M18.157 can close. (5) M18.157 reads each cold-setup run; attempt 4 needs a fresh diagnostic review. (6) Ask Huy, as a permission-access request, to read artifact 13195593788 for M18.245 before 2026-11-17. (7) M18.236 after M18.10. (8) M18.43 closeout. Learned: \"cp47 (through `ca15330`): Huy's full delegation settled four open cards, and each use is logged. But one run's correlation brought back a dependency, and once that cause was disproven, its removal stayed held behind a cause that may never be named. A hold must name a condition the evidence can meet, and a delegated decision still takes the review its spec route requires.\""
+}
