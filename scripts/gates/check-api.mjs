@@ -18,7 +18,7 @@ const update = argv.includes('--update');
 const dirArg = argv.indexOf('--dir');
 const root = dirArg >= 0 ? resolve(argv[dirArg + 1]) : REPO_ROOT;
 const tools = process.env.FLUXION_TOOLS_ROOT ?? REPO_ROOT;
-const { Extractor, ExtractorConfig } = createRequire(join(tools, 'package.json'))('@microsoft/api-extractor');
+const { CompilerState, Extractor, ExtractorConfig } = createRequire(join(tools, 'package.json'))('@microsoft/api-extractor');
 
 const { workspaces } = JSON.parse(readFileSync(join(root, 'tools/gen/workspaces.json'), 'utf8'));
 const only = argv.includes('--package') ? argv[argv.indexOf('--package') + 1] : undefined;
@@ -110,6 +110,8 @@ const failures = [];
 let reports = 0;
 if (!only)
   for (const dir of unlisted()) failures.push(`${dir}: has committed API reports but is not a library in tools/gen/workspaces.json, so they are not checked`);
+/** Every entry to report, with its prepared config. */
+const jobs = [];
 for (const w of libraries) {
   const folder = join(root, w.dir);
   mkdirSync(join(folder, 'api'), { recursive: true });
@@ -119,27 +121,37 @@ for (const w of libraries) {
     for (const f of unproduced(folder, entries))
       problems.push(`api/${f} is committed but no entry of the package reports it: delete a stale report, or restore the entry it belongs to`);
   if (problems.length > 0) failures.push(`${w.dir}:\n  ${problems.join('\n  ')}`);
-  for (const entry of entries) {
-    reports += 1;
-    const config = ExtractorConfig.prepare({
-      configObject: configFor(folder, entry),
-      configObjectFullPath: undefined,
-      packageJsonFullPath: join(folder, 'package.json'),
+  for (const entry of entries)
+    jobs.push({
+      w,
+      entry,
+      config: ExtractorConfig.prepare({
+        configObject: configFor(folder, entry),
+        configObjectFullPath: undefined,
+        packageJsonFullPath: join(folder, 'package.json'),
+      }),
     });
-    const messages = [];
-    const result = Extractor.invoke(config, {
-      localBuild: update,
-      messageCallback: (m) => {
-        // in --update, API Extractor reports writing or creating the report as a warning; that is the point of the run
-        const expected = update && ['console-api-report-copied', 'console-api-report-created'].includes(m.messageId);
-        if ((m.logLevel === 'error' || m.logLevel === 'warning') && !expected) messages.push(`${m.messageId}: ${m.text}`);
-        m.handled = true;
-      },
-    });
-    if (!result.succeeded || messages.length > 0 || (!update && result.apiReportChanged)) {
-      const why = result.apiReportChanged && !update ? ['public API changed: update the report (check-api.mjs --update) in a reviewed contract change'] : [];
-      failures.push(`${w.dir}${entry.name === undefined ? '' : ` (${entry.name})`}:\n  ${[...why, ...messages].join('\n  ') || 'API Extractor failed'}`);
-    }
+}
+// one compiler program over every entry, so the standard library and the shared declarations are parsed once, not once per
+// entry (M18.157 attempt 4); every config has the same compiler options, and each entry is still its own report
+const compilerState =
+  jobs.length > 0 ? CompilerState.create(jobs[0].config, { additionalEntryPoints: jobs.map((j) => j.config.mainEntryPointFilePath) }) : undefined;
+for (const { w, entry, config } of jobs) {
+  reports += 1;
+  const messages = [];
+  const result = Extractor.invoke(config, {
+    localBuild: update,
+    compilerState,
+    messageCallback: (m) => {
+      // in --update, API Extractor reports writing or creating the report as a warning; that is the point of the run
+      const expected = update && ['console-api-report-copied', 'console-api-report-created'].includes(m.messageId);
+      if ((m.logLevel === 'error' || m.logLevel === 'warning') && !expected) messages.push(`${m.messageId}: ${m.text}`);
+      m.handled = true;
+    },
+  });
+  if (!result.succeeded || messages.length > 0 || (!update && result.apiReportChanged)) {
+    const why = result.apiReportChanged && !update ? ['public API changed: update the report (check-api.mjs --update) in a reviewed contract change'] : [];
+    failures.push(`${w.dir}${entry.name === undefined ? '' : ` (${entry.name})`}:\n  ${[...why, ...messages].join('\n  ') || 'API Extractor failed'}`);
   }
 }
 

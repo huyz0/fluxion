@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-import { readdirSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { advisoryAnnotation, advisoryLines, failureAnnotation, failureLines, writeFailureLog } from './failure-report.mjs';
 // The single definition of the pre-commit ladder. Used by .githooks/pre-commit (--staged),
 // by `pnpm verify` / CI (--all), and by agents (--quick while iterating).
@@ -112,6 +114,18 @@ const packagingArgs = () => {
   const dirs = mode === 'staged' ? packagingDirs(stagedPaths(), packagingOptions()) : undefined;
   return dirs === undefined ? [] : ['--dirs', dirs.join(',')];
 };
+// publint and attw read one packing of each library (M18.157 attempt 4): whichever step starts first packs, the other waits for it
+let packing;
+const packOnce = () =>
+  (packing ??= (async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'fluxion-pack-'));
+    return { dir, result: await node('scripts/gates/check-packages.mjs', ['--pack-to', dir, ...packagingArgs()]) };
+  })());
+async function packageCheck(tool) {
+  const { dir, result } = await packOnce();
+  if (result.status !== 0) return result;
+  return node('scripts/gates/check-packages.mjs', ['--tool', tool, '--tarballs', dir, ...packagingArgs()]);
+}
 // a staged commit checks the API reports of the libraries it touches, and TypeDoc when a library source changed (CI's --all checks everything)
 const apiScope = () => (mode === 'staged' ? stagedApiScope(stagedPaths()) : undefined);
 const apiOrSkip = () => {
@@ -245,18 +259,8 @@ const STEPS = [
   ['workflows', (m) => m !== 'quick', () => true, () => node('scripts/gates/check-workflows.mjs')],
   ['knip', (m) => m !== 'quick', () => (hasPkg && exists('knip.json')) || 'knip not configured', () => pnpm('exec', 'knip', '--no-progress')],
   // a staged commit of sources, reports, specs and docs changes no manifest, export or build setting: CI's --all runs both
-  [
-    'publint',
-    (m) => m !== 'quick',
-    () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'),
-    () => node('scripts/gates/check-packages.mjs', ['--tool', 'publint', ...packagingArgs()]),
-  ],
-  [
-    'attw',
-    (m) => m !== 'quick',
-    () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'),
-    () => node('scripts/gates/check-packages.mjs', ['--tool', 'attw', ...packagingArgs()]),
-  ],
+  ['publint', (m) => m !== 'quick', () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'), () => packageCheck('publint')],
+  ['attw', (m) => m !== 'quick', () => (hasPkg ? packagingOrSkip() : 'no workspace yet (M1)'), () => packageCheck('attw')],
   [
     'size-limit',
     (m) => m !== 'quick',
@@ -378,6 +382,7 @@ const cut = barrier < 0 ? applicable.length : barrier + 1;
 const results = [];
 for (const step of applicable.slice(0, cut)) results.push(await runStep(step));
 results.push(...(await Promise.all(applicable.slice(cut).map(runStep))));
+if (packing !== undefined) rmSync((await packing).dir, { recursive: true, force: true });
 const lines = results.flatMap((r) => r.lines);
 const total = Date.now() - started;
 const timing = gateLatency(
