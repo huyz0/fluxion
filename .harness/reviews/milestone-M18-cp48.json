@@ -1,0 +1,102 @@
+{
+  "milestone": "M18",
+  "checkpoint": "cp48",
+  "range": "7545e708f15f184487b905dbc329378547dfa705..c8d8792c8f430d05c2b13770ddab2aeff2e00339",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "changes-requested",
+  "reviewedDelta": "Delta ca15330..c8d8792 has eight commits, and I read every one in full. 255243b M18.43: the cp47 record; M18.282 amended, M18.284 added, F4 and F5 argued, the M18.182 argued line reworded, blockedReason rewritten. e1e9666 M18.245: closed on the trace in artifact 13195593788 (read from Huy's download): clicks at x 668 and 1628 are the unfitted 1920 px frame that M18.258 removed. 6ed0efb M18.282: verify and visual-xos use the matrix form `${{ runner.os != 'Windows' && '--with-deps ' || '' }}chromium`; ci-workflow.test pins [windows 1, matrix 3], with a Removes-test trailer for the retitled case. c0993e0 M18.285 (ADR-0217, Fixes-ci 42178991600): pack-import marks `witness-start` before the first witness session, and the e2e bound is `end - start` less `witness-ready - witness-start`; the 10 s bound is unchanged, and a unit case pins that the interval holds only the first session's start, with every paint and the second session (member 129) after it. 9e0f2e0 M18.284: a kind-plan review of specs/M18.157-cold-setup-coverage, r1 pass, with F1 argued; the attempt-3 diagnostic reviewer is named as far as any record does. 7cc2243: M18.282 closes on 1 s, 1 s and 2 s Windows verify installs at 6ed0efb, c0993e0 and 9e0f2e0. b464d73 M18.236: specs/M18-packs is archived, testing.md section 6 gains the partition paragraph, and the guide's gaps are closed; its acceptance drops M18.10 as a precondition, under the delegation. c8d8792 M18.157 attempt 4: a fresh diagnostic review, then R1 (pnpm pack once per library, with attw on the tarball and publint's API with strict on the same tarball, shared by the ladder's two steps) and R2 (one API Extractor CompilerState over all 44 entries). Every entry's overrideTsconfig has identical compiler options (check-api.mjs configFor), so sharing a program changes no option. Checks at c8d8792, all exit 0: `node scripts/gates/check-commits.mjs --range ca15330..HEAD` -> 'check-commits: 8/8 commits pass (ca15330..HEAD)'. `node scripts/gates/check-checkpoint.mjs --commit HEAD` -> 'checkpoint: M18 has 7/8 preceding unreviewed task commits'. `node scripts/harness/last-ci.mjs` -> 'ci green at c8d8792 (run 42289205270)', 'gates green at c8d8792 (run 42289204994)', 'cold-setup green at c8d8792 (run 42289205270) (512 s)', 'nightly RED failure at 67b35b3 (run 42003285284); not a verdict'. `node --test tests/harness/packages.test.mjs tests/harness/ci-workflow.test.mjs` -> tests 37, pass 37, fail 0. `node --test tests/harness/api.test.mjs` (check-api changed, test not touched) -> tests 14, pass 14, fail 0. gh: dispatch 42049519894 (claude/project-thread-l8lomq, b8a3a3b) completed as failure, updated 2026-11-06T18:40:19Z; scheduled nightly 42195174441 at c0993e0 has been queued since 2026-11-06T09:27:21Z. Per-job detail of 42049519894 could not be read from this container (REST jobs endpoint refused). `git cat-file -t 70cfd60` -> 'Not a valid object name'. Packet gate: 61/76 legs; the firefox e2e reds come from the packet host, as at cp46 and cp47; 'no open M18 spec folders' is red on specs/M18.157-cold-setup-coverage; the open-row leg lists M18.157, M18.10 and M18.43. Backlog header 270 = 270 rows (267 done, 3 todo), and the next free id is M18.286. I did not run m18-complete or a full verify.",
+  "cp47DispositionsCheck": {
+    "F1": "Carried out. 255243b amended M18.282's hold to the evidence on record and reworded the M18.182 argued line as specified. 6ed0efb landed it (r1 changes-requested, r2 pass), and M18.182's and M18.277's rows and ci-cd.md now say that ca15330's subject covers only cli-mcp and harness-windows. 7cc2243 closed it on three consecutive main runs at 1, 1 and 2 s against 208 s before. visual-xos on Windows without --with-deps has not run yet, because no nightly has run since 42003285284.",
+    "F2": "Carried out as M18.284 (9e0f2e0): a kind-plan verdict, r1 pass, from an isolated subagent, with its digest line; F1 argued. progress.md names the attempt-3 diagnostic reviewer as an isolated subagent dispatched by stream 3's session, and says no record names it more specifically, which the acceptance allows. M18.284 landed before M18.157 was touched again.",
+    "F3": "Mostly carried out in 255243b. blockedReason says 42003285284 completed as failure at 01:33:13Z, names stream 2 as owner of 42049519894, says tzap is 0.1.1, gives the 612 s and 621 s readings, and M18.245's artifact was read through Huy (e1e9666). One clause was not done: the disposition said 42003285284's per-job final state 'is recorded in progress.md for M18.10', and blockedReason instead says 'M18.10 records its per-job final state'; no progress.md entry records it at c8d8792. The record has drifted again since (cp48 F2).",
+    "F4": "The argued line is in review-argued.txt (255243b).",
+    "F5": "The argued line is in review-argued.txt (255243b).",
+    "order": "(1) 255243b came first. (2) Not done: no M18.10 commit is in the delta. 42049519894 completed as failure at 18:40:19Z, with no record, and the tzap bump has not landed (cp48 F1). (3) M18.282 is done (6ed0efb, 7cc2243). (4) M18.284 is done (9e0f2e0), before M18.157 was touched. (5) M18.157 attempt 4 landed (c8d8792) after a fresh diagnostic review, and its first reading after is 512 s. (6) Done: M18.245 closed at e1e9666 from Huy's download. (7) M18.236 landed (b464d73) before M18.10, on an acceptance amended under the delegation to drop M18.10. (8) Not due."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "docs/backlog/current.md",
+      "line": 251,
+      "summary": "M18.10 is the milestone's critical path, and the delta did nothing for it, although cp47 order (2) put it next. Its owning dispatch, 42049519894 (tzap 0.1.2), completed as failure at 2026-11-06T18:40:19Z, and no record says which shards failed or were cancelled. The last record says core-3 (svg-geometry, 352 mutants) still hit the 60-minute limit on 0.1.2. So the bump alone cannot meet the row's 'previously cancelled shards finishing within the 60-minute limit under 0.1.2', and the row's other route, re-partitioning them, has not been started. Meanwhile scheduled nightly 42195174441 at c0993e0, on tzap 0.1.1, has been queued since 09:27:21Z and now holds nightly.yml's group. On the evidence of 41806720128 and 42003285284, it will run for hours and cancel the same shards. No record names it.",
+      "evidence": "`git log --oneline ca15330..c8d8792` has no M18.10 commit. `gh run view 42049519894` -> completed/failure, updatedAt 2026-11-06T18:40:19Z. `gh run list --workflow nightly.yml` -> 42195174441 schedule at c0993e04, status queued, created 2026-11-06T09:27:21Z. state.json:7 at c8d8792: 'mutation shard core-3 (svg-geometry, 352 mutants) still hit 60 min on 0.1.2, so stream 2 diagnoses it before the bump lands; tzap is still 0.1.1 at HEAD'. M18.10 row: 'Before the tzap bump is counted as the fix, the commit SHALL show the previously cancelled schema and core shards finishing within the 60-minute limit under 0.1.2 ... or re-partition them'. pnpm-workspace.yaml still pins tzap 0.1.1.",
+      "failure_scenario": "42195174441 runs on 0.1.1 and fails as the last three did, holding the group for most of a day. Stream 2 lands the bump after that, with core-3 still over 60 minutes. The next nightly then cancels core-3, so it cannot qualify, and the mutation-evidence leg stays red. M18 stalls another two or three nightly cycles, with every other row done."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": ".harness/state.json",
+      "line": 7,
+      "summary": "blockedReason was rewritten at c8d8792 (updated 20:08:29Z) and is already stale. (a) It says dispatch 42049519894 'runs since 01:33Z'. The run had completed as failure at 18:40:19Z, 88 minutes earlier. (b) It does not name scheduled nightly 42195174441, which has been queued since 09:27Z at c0993e0 on tzap 0.1.1 and now holds the group. M18.10's acceptance requires the bump commit to name that run. (c) It says 'M18.10 records its per-job final state' for 42003285284, but nothing records it, which cp47 F3's disposition required. A stale blockedReason clause has now been found at nine checkpoints.",
+      "evidence": "state.json:7 at c8d8792 ('runs since 01:33Z', 'M18.10 records its per-job final state'). `gh run view 42049519894` -> completed/failure, updatedAt 2026-11-06T18:40:19Z. `gh run list --workflow nightly.yml` -> 42195174441 queued since 2026-11-06T09:27:21Z. `grep -n 42003285284 .harness/progress.md` -> only the install-time line (4409) and the cp47 order line (4450).",
+      "failure_scenario": "The next session reads that 42049519894 is still running and waits for its shard timings. Or it dispatches a new 0.1.2 run that replaces nothing, because 42195174441 holds the group, and the run queues behind a 0.1.1 nightly, which M18.10's acceptance forbids as evidence."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "line": 163,
+      "summary": "m18-complete's 'no open M18 spec folders' leg is still red at c8d8792, on specs/M18.157-cold-setup-coverage. M18.236 closed on an acceptance that reads 'so m18-complete's ... leg passes'. Its progress entry discloses that the remaining folder is M18.157's. But no row archives that folder: M18.157's acceptance ends with the three readings and budget.json, and M18.43's closeout does not name it. When M18.157 closes, the leg stays red, and nothing in the plan turns it green.",
+      "evidence": "Packet gate: 'FAIL no open M18 spec folders — archive completed M18 specs into living docs'. `ls specs` -> M18.157-cold-setup-coverage, archive, format, import, schema, security. The M18.157 row's acceptance has no archive clause. progress.md (b464d73): '(specs/M18.157-cold-setup-coverage is M18.157's)'.",
+      "failure_scenario": "M18.157 closes after three readings within the limit. The final review then finds the leg red, and a bookkeeping row has to be added and reviewed after closeout, or the folder is moved in the final record without a review of what it merged into the living docs (ADR-0216's coverage wording and the attempt-4 ruling)."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "scripts/gates/precommit.mjs",
+      "line": 118,
+      "summary": "M18.157 attempt 4's shared packing in the ladder has no harness case. packOnce and packageCheck make publint and attw await one --pack-to run, pass --tarballs, and remove the folder after the ladder. packages.test covers check-packages' flags only. No case shows that the ladder packs once, that both steps read the shared folder, that a failed pack fails both steps, or that the folder is removed. The code fails safe: a missing tarball or a failed pack is a failure, not a pass. The gap is in time accounting and cleanup, not in gate honesty.",
+      "evidence": "`grep -n 'pack-to\\|tarballs\\|packOnce' tests/harness/*.mjs` -> packages.test.mjs only. precommit.mjs:117-128 packOnce and packageCheck; precommit.mjs:391 rmSync after Promise.all.",
+      "failure_scenario": "A later edit drops `--tarballs dir` from packageCheck. Both steps then pack again. Every test still passes, and the cold-setup reading quietly loses the CPU saving that attempt 4 counts toward M18.157's three readings."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "line": 285,
+      "summary": "9e0f2e0's body says 'Fills M18.285's Commit cell (70cfd60)', but the diff fills it with c0993e0, the landed commit, and 70cfd60 is not an object in the repo. It is presumably the pre-land sha. The cell is right, and check-digest validates cells, so only the message is wrong.",
+      "evidence": "`git show 9e0f2e0` body: 'Fills M18.285's Commit cell (70cfd60)'. Diff: '| done | c0993e0 |'. `git cat-file -t 70cfd60` -> 'fatal: Not a valid object name 70cfd60'.",
+      "failure_scenario": "A reader tracing M18.285 from the commit log finds a sha that does not exist, and suspects a lost commit."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M18.10",
+      "note": "Next slot after the cp48 record, by stream 2. Record in progress.md, by job, 42049519894's final state (which shards finished, failed or were cancelled on 0.1.2, with core-3's time) and 42003285284's per-job final state. Decide under the 2026-11-04T13:34:57Z run-cancellation delegation, and log it, whether to cancel 42195174441 (tzap 0.1.1), since that run cannot qualify. Re-partition core-3, and any other shard still over 60 minutes on 0.1.2, using the row's own 're-partition them' route, before the bump lands. The bump commit names the run holding the group at its push."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M18.43",
+      "note": "Fixed in the cp48 record. blockedReason SHALL say that 42049519894 completed as failure at 2026-11-06T18:40:19Z, that 42195174441 (c0993e0, tzap 0.1.1) has held the group since 09:27:21Z, with the decision on it, and whether 42003285284's per-job state is recorded, and where."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M18.157",
+      "note": "Amend M18.157's acceptance in the cp48 record. When it closes, specs/M18.157-cold-setup-coverage SHALL be merged into the living docs (ADR-0216, NFR-DX-001, docs/standards/ci-cd.md, and the attempt-4 ruling: R1 and R2 taken, A declined, B needing Huy's access) and moved to specs/archive/, so that the 'no open M18 spec folders' leg passes."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "Line for review-argued.txt: 'M18.43 cp48 F4: M18.157 attempt 4's shared packing in precommit.mjs (packOnce, packageCheck) has no harness case showing one packing read by both steps and removed afterwards; accepted, since a failed pack or a missing tarball fails both steps rather than passing them, and losing the sharing costs only time; the next edit of precommit.mjs packaging adds a ladder case that counts --pack-to runs and checks the folder is removed.'"
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "note": "Line for review-argued.txt: 'M18.43 cp48 F5: 9e0f2e0's body names M18.285's cell as 70cfd60, a pre-land sha, while the cell holds the landed c0993e0; accepted, since commit messages are immutable on main and check-digest validates the cell itself.'"
+    }
+  ],
+  "questions": {
+    "coherence": "Coherent, and the Windows work has settled. M18.282 dropped --with-deps from the last Windows installs on the recorded evidence, and three green runs read 1-2 s. M18.285 is a narrow, well-argued exclusion: the browser start is marked just before the first session, and a unit case pins that nothing input-driven falls inside it. M18.157 attempt 4 removes duplicated CPU (a second packing, 43 redundant compiler programs) and does not cut any check. The weak part is M18.10, which moved backwards: its dispatch failed, and a 0.1.1 nightly holds the group (F1).",
+    "specFidelity": "No FR or NFR text changed. ADR-0217 narrows ADR-0206's 10 s refusal bound to exclude the first witness session's browser start. ADR-0206's Confirmation and M18.229's row point to it, and NFR-SEC-001's own text has no time bound, so no requirement edit was needed. ADR-0216 is unchanged, and attempt 4 changes no part of NFR-DX-001's measure. M18.236 met its acceptance as amended. The amendment dropped M18.10 in the closing commit, under the delegation, and it is logged and reasoned: the spec held only design that ADR-0173/ADR-0198 and testing.md carry. But its purpose clause ('so the leg passes') is still unmet because of M18.157's folder (F3). M18.245, M18.282, M18.284 and M18.285 each meet their acceptance cells.",
+    "standardsDrift": "Two drifts. blockedReason went stale within the commit that wrote it (F2, the ninth checkpoint in a row). One commit body names a pre-land sha (F5). Otherwise the conventions held: Fixes-ci and Removes-test trailers, every review round in the digest (M18.282 r1-r2, M18.285 r1, M18.284 r1 plan, M18.236 r1-r2, M18.157 r1), argued lines for each argued review finding, and Commit cells naming landed commits of their own rows. M18.245's cell names 26f5138, an earlier M18.245 commit, rather than the closing e1e9666; that is valid under M18.207.",
+    "gateHonesty": "No gate was weakened. No change touches thresholds.mjs, and COLD_SETUP_MAX_MS is still 600 s. publint still runs with strict, now through its API on the same pnpm-pack tarball that its CLI would have built. attw keeps --profile esm-only. Both still cover all 32 libraries in --all. check-api compares every one of the 44 reports. M18.285 keeps the 10 s bound and every exit, message and empty-output assertion. A start that fails without witness-ready makes the subtraction NaN, so the bound fails. Mutant spot-checks by reading: (1) if packageCheck ignored a failed pack's status, the tarball lookup would still throw 'expected one tarball', which packages.test's 'none' case pins; (2) if pack-import marked witness-start after importSvgBatch began, the unit case's slice ['witness-start','session','witness-ready'] would fail; (3) if visual-xos regained --with-deps on Windows, ci-workflow.test's [1, 3] would fail. The completion gate cannot go green with 3 open rows, the mutation evidence and the final review missing.",
+    "architecture": "Clean. The only package source changed is packages/cli/src/pack-import.ts (one phase mark and its type), and it stays outside the pure core. The new harness code uses already-installed tools (publint's API, API Extractor's CompilerState) and adds no dependency. ADR-0217 is used, and the next free ADR is 0218.",
+    "planHealth": "270 rows against 43 planned (6.3x). The delta added one row (M18.285, a ci red) and closed five (M18.245, M18.282, M18.284, M18.285, M18.236). Three rows are left. M18.10 is the critical path, and it is stuck (F1). M18.157 needs two more readings within 600 s after 512 s at c8d8792, plus its spec archive (F3). If the slow runner class still reads over 600 s, option B needs Huy's access. M18.43's closeout is last. Huy is needed only for permission access."
+  },
+  "planDelta": "No new rows. The header stays at 270, and the next free id is M18.286. Amend M18.157's acceptance to archive its spec folder on close (F3). Rewrite blockedReason (F2). Argue F4 and F5. Order: (1) This cp48 record (harness and backlog paths): the M18.157 amendment, blockedReason per F2, and the two argued lines. (2) M18.10, by stream 2: record 42049519894's and 42003285284's per-job final states; decide, logged, on cancelling 42195174441; re-partition core-3 and any other over-limit shard on 0.1.2; then the bump, naming the run that holds the group. (3) M18.157 reads each main cold-setup run (512 s at c8d8792 is the first after attempt 4); on the third reading within the limit, it archives its spec and records budget.json with --cold-from-ci; if a slow-class run reads over 600 s, it stops for option B (Huy's access). (4) M18.43 closeout. Learned: \"cp48 (through `c8d8792`): the Windows and cold-setup threads converged on evidence, but the one row on the critical path got no slot. Its dispatch failed unrecorded, while a run that could not qualify took the group. A row whose evidence takes a day of wall-clock time needs its runs watched, and recorded when they finish.\""
+}
