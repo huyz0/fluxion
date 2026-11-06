@@ -83,3 +83,8 @@ Option 1, with the review's cuts:
   number is then recorded with `--cold-from-ci` (ADR-0145), which ends M18.159's exemption.
 - cp25 F4 and cp46 F1 are decided under Huy's 2026-11-05 11:04:52Z delegation; NFR-DX-001's wording is
   no longer provisional.
+- Closed (M18.157): attempt 3 alone left the slow runner class at 612–621 s. Attempt 4 (c8d8792), after a fresh diagnostic
+  review, packs each library once for publint and attw and builds one API Extractor program over every entry, every check
+  kept. Main then read 512 s, 581 s (the slow class) and 434 s; budget.json records 442 s from ci 42306748397 (f91d02d).
+  Stream 1 ruled, under Huy's delegation, that harness tests stay in the cold ladder; a slow-class overrun now goes to a
+  fixed reference runner (docs/standards/ci-cd.md §4).
