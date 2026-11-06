@@ -30,7 +30,7 @@ import {
   workspaceCatalogOnly,
 } from './ladder-scope.mjs';
 import { listFlag, splitLadder } from './ladder-split.mjs';
-import { exists, git, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync, TURBO_ALL_SUCCESSFUL, testStepEnv } from './lib.mjs';
+import { exists, git, inFlight, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync, TURBO_ALL_SUCCESSFUL, testStepEnv } from './lib.mjs';
 import { withLiveStepLog } from './live-step-log.mjs';
 
 const argv = new Set(process.argv.slice(2));
@@ -49,6 +49,12 @@ const pnpm = (...a) => runAsync('pnpm', a);
  * limit (ci 42038170007, 42092624276). After the summary the build is done; 60 s later its tree is ended and the run goes on.
  */
 const BUILD_SETTLE = { done: TURBO_ALL_SUCCESSFUL, ms: 60_000, reportDir: repoPath('.harness/tmp/stuck-build'), label: 'build' };
+/**
+ * M18.283: CI's Vitest run logs every file's start and end (tools/vitest/progress-reporter.mjs), so 8 silent minutes is a stall:
+ * ci 42159843232's Windows verify went quiet after 56 browser files and held the step to its 25-minute limit. The run fails then,
+ * naming the files in flight, with the process table in the job log.
+ */
+const TEST_IDLE_MS = 8 * 60_000;
 // --staged-paths a,b,c: scope the staged ladder as if these were staged (check-budget --record times the worst-case commit)
 const pretended = process.argv.includes('--staged-paths')
   ? (process.argv[process.argv.indexOf('--staged-paths') + 1] ?? '').split(',').filter(Boolean)
@@ -177,7 +183,11 @@ const STEPS = [
     async () => {
       // CI's verify job names a durations file (M18.222); only this run writes it
       const durations = process.env.FLUXION_TEST_DURATIONS ? { FLUXION_TEST_DURATIONS: process.env.FLUXION_TEST_DURATIONS } : {};
-      const vitest = (...a) => runAsync('pnpm', a, { env: { ...testStepEnv(), ...durations } });
+      // CI's verify (the durations file) also logs each file's start and end, and fails a run silent for TEST_IDLE_MS (M18.283)
+      const idle = process.env.FLUXION_TEST_DURATIONS
+        ? { idle: { ms: TEST_IDLE_MS, reportDir: repoPath('.harness/tmp/verify-logs'), label: 'test', inFlight } }
+        : {};
+      const vitest = (...a) => runAsync('pnpm', a, { env: { ...testStepEnv(), ...durations }, ...idle });
       if (mode === 'quick') return vitest('exec', 'vitest', 'run', '--changed');
       const plan = testPlan();
       if (noCoverage) console.log('test: without coverage (--no-coverage: the cold setup); the verify jobs gate the coverage floors (ADR-0216)');

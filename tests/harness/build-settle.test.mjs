@@ -30,7 +30,7 @@ const standIn = ({ out, code = 0, waitMs = 0, grandchild = false }) => [
 ];
 
 describe('a build that reported success and does not exit is ended (M18.281, NFR-PORT-005)', () => {
-  const settled = (dir, ms = 400) => ({ done: TURBO_ALL_SUCCESSFUL, ms, reportDir: dir, label: 'build' });
+  const settled = (dir, ms = 400) => ({ done: TURBO_ALL_SUCCESSFUL, ms, reportDir: dir, label: 'build', print: false });
   const withDir = async (work) => {
     const dir = mkdtempSync(join(tmpdir(), 'fluxion-settle-'));
     try {

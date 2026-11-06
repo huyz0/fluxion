@@ -55,7 +55,7 @@ export const withProcessOutput = (sink, work) => processOutput.run(sink, work);
  * fails, or never prints `done`, keeps its own result.
  */
 export function runAsync(cmd, args = [], opts = {}) {
-  const { settle, ...spawnOpts } = opts;
+  const { settle, idle, ...spawnOpts } = opts;
   const needsShell = process.platform === 'win32' && !cmd.endsWith('.exe') && cmd !== process.execPath && cmd !== 'git';
   const [file, argv] = needsShell ? [[cmd, ...args].map(quoteWin).join(' '), []] : [cmd, args];
   return new Promise((resolve) => {
@@ -63,6 +63,7 @@ export function runAsync(cmd, args = [], opts = {}) {
     const child = spawn(file, argv, { cwd: REPO_ROOT, shell: needsShell, ...spawnOpts });
     const out = { stdout: '', stderr: '' };
     const watchdog = settle ? settleWatch(child, settle, out, resolve) : undefined;
+    const quiet = idle ? idleWatch(child, idle, out, resolve) : undefined;
     // decode the stream, not each chunk: a multi-byte character may straddle two chunks (M1.28 review F1)
     child.stdout?.setEncoding('utf8');
     child.stderr?.setEncoding('utf8');
@@ -70,15 +71,18 @@ export function runAsync(cmd, args = [], opts = {}) {
       out.stdout += d;
       processOutput.getStore()?.('stdout', d);
       watchdog?.saw(d);
+      quiet?.saw();
     });
     child.stderr?.on('data', (d) => {
       out.stderr += d;
       processOutput.getStore()?.('stderr', d);
       watchdog?.saw(d);
+      quiet?.saw();
     });
     child.on('error', (e) => resolve({ status: 1, stdout: out.stdout, stderr: `${out.stderr}${e.message}` }));
     child.on('close', (code) => {
       watchdog?.stop();
+      quiet?.stop();
       resolve({ status: code ?? 1, ...out });
     });
   });
@@ -138,6 +142,45 @@ function endTree(child) {
   }
 }
 
+/**
+ * `idle` (M18.283) fails a command that prints nothing for `idle.ms`: a Windows verify's Vitest run went silent mid-way and held
+ * its step to the 25-minute limit (ci 42159843232). The report (`idle.inFlight(output)` names what was running, then the process
+ * table) is saved under `idle.reportDir` and printed to the job log, the tree is ended, and the result is status 1.
+ */
+function idleWatch(child, idle, out, resolve) {
+  let timer;
+  let fired = false;
+  const stalled = () => {
+    fired = true;
+    const all = `${out.stdout}\n${out.stderr}`;
+    const running = idle.inFlight?.(all) ?? [];
+    const table = processTable();
+    mkdirSync(idle.reportDir, { recursive: true });
+    const report = join(idle.reportDir, `${idle.label ?? 'command'}-stalled-${Date.now()}.txt`);
+    writeFileSync(report, `in flight:\n${running.join('\n') || '(none named)'}\n\nlast output:\n${all.slice(-4000)}\n\n${table}`);
+    // the job log is readable without an artifact download: name the files and the processes there too
+    // Windows' Format-List gives one blank-line-separated block per process, ps one line each
+    const blocks = table.split(/\r?\n\s*\r?\n/);
+    const relevant = (blocks.length > 1 ? blocks : table.split('\n'))
+      .filter((b) => /node|chrom|pnpm|vitest/i.test(b))
+      .join('\n')
+      .slice(0, 20_000);
+    const line = `::error::${idle.label ?? 'the command'} printed nothing for ${Math.round(idle.ms / 1000)} s; in flight: ${running.join(', ') || 'none named'}; ended its process tree, report in ${rel(report)} (M18.283)\n`;
+    // print: false keeps a harness test's stand-in from annotating the job that runs the test
+    if (idle.print !== false) process.stdout.write(`${line}${relevant}\n`);
+    endTree(child);
+    resolve({ status: 1, stdout: out.stdout, stderr: `${out.stderr}${line}`, stalled: report });
+  };
+  const arm = () => {
+    // once fired, output from a process the tree kill missed must not re-arm a second report (M18.283 r1 F3)
+    if (fired) return;
+    clearTimeout(timer);
+    timer = setTimeout(stalled, idle.ms);
+  };
+  arm();
+  return { saw: arm, stop: () => clearTimeout(timer) };
+}
+
 function settleWatch(child, settle, out, resolve) {
   const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
   let tail = '';
@@ -147,7 +190,7 @@ function settleWatch(child, settle, out, resolve) {
     const report = join(settle.reportDir, `stuck-${Date.now()}.txt`);
     writeFileSync(report, `${settle.label ?? 'command'} printed its done line and had not exited ${settle.ms} ms later\n\n${processTable()}`);
     const line = `::warning::${settle.label ?? 'the command'} reported success but had not exited after ${Math.round(settle.ms / 1000)} s; ended its process tree, process table in ${rel(report)} (M18.281)\n`;
-    process.stdout.write(line);
+    if (settle.print !== false) process.stdout.write(line);
     endTree(child);
     resolve({ status: 0, stdout: `${out.stdout}${line}`, stderr: out.stderr, stuck: report });
   };
@@ -253,4 +296,18 @@ export async function runLegs(title) {
   if (!summaryOnly) for (const l of lines) console.log(l);
   console.log(`GATE ${title}: ${green}/${legs.length} legs green${firstRed ? ` — next red leg: ${firstRed.slice(5).split(' — ')[0]}` : ''}`);
   process.exit(green === legs.length ? 0 : 1);
+}
+
+/**
+ * The files a Vitest progress log (tools/vitest/progress-reporter.mjs) started and has not ended, oldest first: the test step's
+ * idle report (M18.283). It lives here, not beside the reporter, because the harness sandboxes copy scripts/ only.
+ */
+export function inFlight(log) {
+  const open = new Map();
+  for (const m of log.matchAll(/^vitest-progress: (queued|start|end) (.+)$/gm)) {
+    if (m[1] === 'end') open.delete(m[2]);
+    else open.set(m[2], m[1]);
+  }
+  // a file queued and never started was still loading (imported, transformed, collected): say so (M18.283 r1 F1)
+  return [...open].map(([file, event]) => (event === 'queued' ? `${file} (loading)` : file));
 }
