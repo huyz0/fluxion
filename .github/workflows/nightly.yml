@@ -289,9 +289,10 @@ jobs:
         with:
           path: ${{ runner.os == 'Windows' && '~/AppData/Local/ms-playwright' || runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
           key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/browsers.json') }}
-      # M18.279: --with-deps on every OS; the one Windows verify run without it (same browser suites) hung to its 25-minute limit (ci 42038170007, cause unconfirmed)
+      # M18.277, M18.282: on Windows, --with-deps only enables Server-Media-Foundation (~190 s); Chromium delay-loads it for media we never play.
+      # M18.279 had put it back here after a Windows hang; none of the three was this: two build stalls (M18.281) and one Vitest stall with it installed (M18.283)
       - if: ${{ matrix.image == '' }}
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install ${{ runner.os != 'Windows' && '--with-deps ' || '' }}chromium
       # the specs render through the built packages (the CLI), so the build comes first
       - run: pnpm run build
       # NFR-PORT-006: the visual suite on every OS, Chromium only
