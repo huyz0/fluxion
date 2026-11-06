@@ -264,7 +264,7 @@ carry only used definitions and attribution, pinned by a data-only manifest lock
 The loader must never execute that data; code-plugin activation remains M27.
 M18.12–14 implemented it; the sections below give the current contracts.
 
-[ADR-0050](decisions/ADR-0050-pack-license-attribution.md) supplements that pending format
+[ADR-0050](decisions/ADR-0050-pack-license-attribution.md) supplements that format
 with source credits and used-subset attribution. Content-asset permissions never authorize
 code dependencies; current code/font policy stays unchanged. M18.12/14/33 implement
 validation, portable credits and the license gate (`check-licenses --packs`); M18.143 shows the
@@ -462,8 +462,11 @@ sdk's `loadPackConnectors(bytes, pack, maxBytes)` reads it capped and strict, an
 nothing (`FLX_PACK_INVALID`, `FLX_REGISTRY_DUPLICATE`). A connector names the type as `route.type`;
 the document schema is unchanged. A save embeds `connectors/<pack>.json` with the used types, the
 studio registers them again on open, and the connector inspector lists registered pack types.
-Not yet wired: loading a pack directory's own `connectors.json` in the studio and CLI (M18.233)
-and the player's worker routing (M18.147).
+A declarative pack's `connectors` are written as its `pack/connectors.json` (M18.250; arrows ships
+five). The studio's catalog reads each loaded pack's file and registers its types into every open
+document, except a namespace the file embeds (M18.251), so a type can be picked before any save
+(M18.233). The CLI host registers a pack's types and a file's embedded ones before it routes
+(M18.252), and the player registers embedded types in its routers and routing worker (M18.147).
 
 ### My shapes and replace shape (M18.34–37)
 

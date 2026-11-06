@@ -106,6 +106,10 @@ seed and counterexample lines in its FAIL detail, so a local failure can be repl
 
 Mutation is nightly/final qualification, not an artificial dependency of unrelated feature rows (ADR-0176).
 Incomplete execution or failed floors remain red and tracked; never qualify partial reports.
+The nightly partitions each package's complete inventory into whole-source-file groups (ADR-0173): a plan job fixes
+the partition set, every partition (up to two chained matrices, ADR-0198) runs all test projects under the unchanged 60-minute timeout with no retries, and an
+aggregate derives package scores only once every partition's report validates. A missing, duplicate, failed or
+incomplete partition fails the aggregate, and a partial-source score is never a package score.
 
 ## 7. E2E conventions
 

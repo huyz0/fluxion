@@ -69,8 +69,10 @@ guide is the order to do things in. Executable plugins are M27 and are not cover
   drawn and credited without the pack; a missing or changed font refuses the file rather than substituting a face.
 - A namespace the opened file embeds stays the file's: an installed pack of the same id never replaces it.
 - Pack connector types (`connectors.json`, ADR-0048 amendments M18.38, M18.111, M18.112) are saved the same way, one
-  `connectors/<pack>.json` entry with the used types, and registered again on open. Gap: the studio and CLI do not yet
-  load a pack directory's own `connectors.json` (row M18.233); no first-party pack ships one today.
+  `connectors/<pack>.json` entry with the used types, and registered again on open. A declarative pack's `connectors`
+  are written as its `pack/connectors.json` (arrows ships five, M18.250). The studio registers a loaded pack's types
+  before any save (M18.251, M18.233). The CLI host registers the types of the packs it bundles and of a file's embedded
+  entries before it routes (M18.252), and the player registers a file's embedded entries (M18.147).
 
 ## 6. Fonts (ADR-0051, ADR-0192, ADR-0201)
 
@@ -84,9 +86,10 @@ guide is the order to do things in. Executable plugins are M27 and are not cover
 ## 7. AI catalog (ADR-0211, ADR-0212)
 
 `buildCatalog` lists the host's `core` registrants entry by entry and every other pack as one summary line naming the
-`pack` to ask for; `buildCatalog(registries, { detail: 'full', pack })` lists one pack. Gap: `fluxion catalog --pack`
-and MCP `list_catalog({ pack })` (ADR-0212, row M18.218) are not on main yet; today the CLI and MCP bundle only
-`basic`, so their catalogs carry no summary lines.
+`pack` to ask for; `buildCatalog(registries, { detail: 'full', pack })` lists one pack. A model expands a summarized
+pack with `fluxion catalog --pack <id>` or MCP `list_catalog({ pack })` (ADR-0212): the reply holds only that pack's
+entries in full and names the pack, and an unregistered id is refused with FLX_CLI_USAGE naming the registered packs.
+The CLI and MCP bundle only `basic`, so their catalogs carry no summary lines.
 
 ## Checklist before a commit
 
