@@ -565,7 +565,7 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     assert.deepEqual(await restSource({ fetch }).completed('main', 'ci.yml'), [
       { databaseId: 31, workflowName: 'ci', headSha: 'c'.repeat(40), status: 'completed', conclusion: 'failure', createdAt: 'T' },
     ]);
-    assert.equal(calls[0], 'https://api.github.com/repos/huyz0/fluxion/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&per_page=1');
+    assert.equal(calls[0], 'https://api.github.com/repos/huyz0/fluxion/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&per_page=10'); // ten: replaced runs never hide the last one that ran (M18.188)
     const spawned = [];
     await ghSource((cmd, args) => {
       spawned.push([cmd, ...args]);
@@ -584,7 +584,7 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
       '--status',
       'completed',
       '--limit',
-      '1',
+      '10',
     ]);
   });
 

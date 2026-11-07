@@ -42,7 +42,7 @@
 // (M18.228), pending runs with a failed job, and the failed runs of an intermittent tree.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
+import { COMPLETED_RUNS, PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
 import { blockingRows } from '../gates/landing-block.mjs';
 import { repoPath } from '../gates/lib.mjs';
 import { describe, intermittent, pagedTreeRuns, productPath, shaTreeRuns } from '../gates/same-tree.mjs';
@@ -77,6 +77,12 @@ function messageOf(r) {
 }
 /** The run ids a message's `Fixes-ci:` trailers name. */
 const declared = (message) => [...message.matchAll(/^Fixes-ci:\s*(.+)$/gim)].flatMap((m) => m[1].split(/[\s,]+/).filter(Boolean));
+/**
+ * The runs whose heads run `r` tests: `r`, then the queued runs a newer push replaced before `r` (ci keeps one
+ * pending run on main, M18.188), oldest last. Main is linear, so `r`'s tree holds each of their commits and a
+ * `Fixes-ci:` one of them declares stays pending with `r`.
+ */
+const heads = (r) => [r, ...(r.replaced ?? [])];
 
 /** The paths a run's head changes: its `paths` (--runs-file), else the local clone's; [] when unknown. */
 function pathsOf(r) {
@@ -98,12 +104,21 @@ async function failedJobs(id) {
 async function sameJobFix(jobs, newer) {
   if (jobs.length === 0) return undefined;
   for (const r of [...newer].reverse()) {
-    const ids = declared(messageOf(r));
-    if (ids.length === 0 || !pathsOf(r).some(productPath)) continue;
-    for (const named of ids) {
-      const job = await namedFailedJob(named, jobs);
-      if (job !== undefined) return { fix: r, job, named };
+    for (const h of heads(r).reverse()) {
+      const found = await headFix(h, jobs);
+      // the wait is bounded from the declaring push, so replacing its run never extends it
+      if (found !== undefined) return { fix: { ...r, createdAt: h.createdAt }, ...found };
     }
+  }
+  return undefined;
+}
+/** `{ job, named }` when head `h` changes a product path and declares Fixes-ci for a ci run that failed one of `jobs`. */
+async function headFix(h, jobs) {
+  const ids = declared(messageOf(h));
+  if (ids.length === 0 || !pathsOf(h).some(productPath)) return undefined;
+  for (const named of ids) {
+    const job = await namedFailedJob(named, jobs);
+    if (job !== undefined) return { job, named };
   }
   return undefined;
 }
@@ -133,7 +148,10 @@ function boundedWait(head, fix, newer, wait) {
 async function redWithPending(workflow, done, newer, jobs) {
   const sha = String(done.headSha).slice(0, 7);
   const head = `last-ci: RED ${workflow} ${done.conclusion} at ${sha} (run ${done.databaseId}) (${newer.length} newer run${newer.length === 1 ? '' : 's'} pending)`;
-  const fix = newer.findLast((r) => declared(messageOf(r)).includes(String(done.databaseId)));
+  const declares = (h) => declared(messageOf(h)).includes(String(done.databaseId));
+  const run = newer.findLast((r) => heads(r).some(declares));
+  // bounded from the oldest declaring push: a replaced run's declaration waits no longer than its own would (M18.188)
+  const fix = run && { ...run, createdAt: heads(run).findLast(declares).createdAt };
   if (fix !== undefined) return boundedWait(head, fix, newer, `wait for the declared fix (run ${fix.databaseId})`);
   const same = await sameJobFix(jobs ?? (await failedJobs(done.databaseId)), newer);
   if (same === undefined) return { verdict: 1, line: `${head}: none declares Fixes-ci: ${done.databaseId}; fix main's CI before the next task` };
@@ -253,7 +271,6 @@ async function intermittentWithPending(tree, newer) {
   return { verdict: waited.verdict, lines: tree.lines.map((line) => `${line}${waited.line}`) };
 }
 
-const newest = (list) => [...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0];
 /** The window plus each workflow's newest completed run, once each. */
 const withNewestCompleted = (window, completed) => [...window, ...completed.filter((c) => !window.some((r) => r.databaseId === c.databaseId))];
 
@@ -276,7 +293,11 @@ function fileSource(all) {
     completed: async (_, file) => {
       const workflow = file.replace(/\.yml$/, '');
       if (all.some((r) => r.queryFails && r.workflowName === workflow)) throw new Error('query failed');
-      return [newest(pushes.filter((r) => r.workflowName === workflow && r.status === 'completed'))].filter(Boolean);
+      // as GitHub's query: the newest COMPLETED_RUNS, so a few replaced runs (M18.188) never hide the last one that ran
+      return pushes
+        .filter((r) => r.workflowName === workflow && r.status === 'completed')
+        .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+        .slice(0, COMPLETED_RUNS);
     },
     // a run of the file by id, on the branch unless it says otherwise (M18.200)
     view: async (id) => {
@@ -335,18 +356,30 @@ const newestFirst = [...runs].sort((a, b) => String(b.createdAt).localeCompare(S
 let verdict = 0;
 /** Red outranks unknown, unknown outranks a wait (M18.128). */
 const worst = (a, b) => [1, UNKNOWN, 2, 0].find((code) => code === a || code === b);
+// a cancelled run none of whose jobs failed is neither red nor a stop on the walk back to the newest green, so no
+// Fixes-ci names one (M18.232); one with a failed job, or whose jobs cannot be read, is red as before (r1 F1). With no
+// other completed run in view it is still the verdict, never green
+const clean = new Set();
+for (const r of newestFirst) {
+  if (!WORKFLOWS.includes(r.workflowName) || r.status !== 'completed' || r.conclusion !== 'cancelled') continue;
+  const jobs = await Promise.resolve(source.jobs?.(r.databaseId)).catch(() => null);
+  if (Array.isArray(jobs) && !jobs.some((j) => FAILED_JOB.has(j.conclusion) && j.name !== 'ci-ok')) clean.add(r);
+}
+const cancelled = (r) => clean.has(r);
+// each run carries the cleanly cancelled runs older than it, back to the next run that is not: the queued runs a newer
+// push replaced (M18.188), whose Fixes-ci declarations it now tests
 for (const workflow of WORKFLOWS) {
-  // a cancelled run none of whose jobs failed is neither red nor a stop on the walk back to the newest green, so no
-  // Fixes-ci names one (M18.232); one with a failed job, or whose jobs cannot be read, is red as before (r1 F1). With no
-  // other completed run in view it is still the verdict, never green
-  const ofWorkflow = newestFirst.filter((r) => r.workflowName === workflow);
-  const clean = new Set();
-  for (const r of ofWorkflow) {
-    if (r.status !== 'completed' || r.conclusion !== 'cancelled') continue;
-    const jobs = await Promise.resolve(source.jobs?.(r.databaseId)).catch(() => null);
-    if (Array.isArray(jobs) && !jobs.some((j) => FAILED_JOB.has(j.conclusion) && j.name !== 'ci-ok')) clean.add(r);
+  let replaced = [];
+  for (const r of [...newestFirst].reverse().filter((x) => x.workflowName === workflow)) {
+    if (cancelled(r)) replaced.unshift(r);
+    else {
+      r.replaced = replaced;
+      replaced = [];
+    }
   }
-  const cancelled = (r) => clean.has(r);
+}
+for (const workflow of WORKFLOWS) {
+  const ofWorkflow = newestFirst.filter((r) => r.workflowName === workflow);
   const mine = ofWorkflow.some((r) => r.status === 'completed' && !cancelled(r)) ? ofWorkflow.filter((r) => !cancelled(r)) : ofWorkflow;
   const done = mine.find((r) => r.status === 'completed');
   // only runs started after that one can carry a fix: in newest-first order they come before it (review r2 F1)
@@ -457,7 +490,9 @@ function coldSuccess(cold, where) {
   const why = typeof cold.log === 'string' ? 'no step time, no budget line in the log' : 'no step time, log unreadable';
   return { verdict: 0, line: `last-ci: cold-setup success ${where}; duration UNKNOWN (${why}); check it by hand` };
 }
-const ciRuns = newestFirst.filter((r) => r.workflowName === 'ci');
+// a cleanly cancelled ci run (a replaced queued run, M18.188) ran no cold-setup: the newest other completed run reports it
+const ciAll = newestFirst.filter((r) => r.workflowName === 'ci');
+const ciRuns = ciAll.some((r) => r.status === 'completed' && !cancelled(r)) ? ciAll.filter((r) => !cancelled(r)) : ciAll;
 const ciDone = ciRuns.find((r) => r.status === 'completed');
 if (ciDone) {
   const cold = await coldSetupReport(ciDone, ciRuns.slice(0, ciRuns.indexOf(ciDone)));

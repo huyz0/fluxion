@@ -355,6 +355,17 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.deepEqual([seen.windows, seen.matrix], [1, 3]);
     assert.ok(seen.other >= 5, String(seen.other));
   });
+  it('HARNESS (ADR-0208, M18.188): push runs on main share one group that never cancels a running run; PRs cancel, merge-group runs keep their sha', () => {
+    const block = /^concurrency:\n((?: {2}.*\n)+)/m.exec(ci)?.[1] ?? '';
+    // GitHub keeps one queued run per group and a newer one replaces it; with cancel-in-progress false a running run finishes
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal GitHub Actions expression, not a JS template
+    const group = "ci-${{ github.event_name == 'pull_request' && github.ref || github.event_name == 'push' && 'push-main' || github.sha }}";
+    assert.equal(/^ {2}group:\s*(.+)$/m.exec(block)?.[1].trim(), group);
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: literal GitHub Actions expression, not a JS template
+    assert.equal(/^ {2}cancel-in-progress:\s*(.+)$/m.exec(block)?.[1].trim(), "${{ github.event_name == 'pull_request' }}");
+    // push triggers only main, so one fixed group name covers every push run
+    assert.match(ci, /^ {2}push:\n {4}branches: \[main\]$/m);
+  });
 });
 
 describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', () => {

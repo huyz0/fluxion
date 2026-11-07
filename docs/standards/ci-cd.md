@@ -41,7 +41,7 @@ performance, lazy-loading, correctness, coverage, security and license gates rem
 | 3 | Triggers: `pull_request`, `merge_group`, `push: main`. No gate may run *only* on PRs; the merge queue runs the same set. | `check-drift.mjs` (trigger lists) |
 | 4 | Every third-party action is **pinned by full commit SHA** with a `# vX.Y.Z` comment; Renovate updates them. | `zizmor` in `security.yml` |
 | 5 | Top-level `permissions: contents: read`. Jobs widen only what they need; only `release.yml`'s publish job gets `id-token: write`. | `zizmor` |
-| 6 | `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: ${{ github.event_name == 'pull_request' }} }`. Never cancel `main` or release runs. | review |
+| 6 | Concurrency: PR runs share their ref's group and `cancel-in-progress: ${{ github.event_name == 'pull_request' }}` (see section 3). Never cancel a running `main` or release run. ci's pushes to main share one group, so GitHub keeps one queued run and a newer push replaces it (ADR-0208); gates.yml keeps one run per push. | `ci-workflow.test.mjs` (ci, gates); review (release) |
 | 7 | No retries for unit/component tests. Playwright may retry once **only to detect** flakes: a test that passed on retry fails the `flake-report` step (see [testing.md](testing.md) §8). | `playwright.config.ts` + `scripts/ci/flake-report.mjs` |
 | 8 | Caches are keyed on lockfile hash and tool version; a cache miss must only cost time, never change results. | review |
 | 9 | Secrets never reach PR jobs from forks. `pull_request_target` is banned. | `zizmor` |
@@ -55,7 +55,7 @@ performance, lazy-loading, correctness, coverage, security and license gates rem
 ```yaml
 on: { pull_request: {}, merge_group: {}, push: { branches: [main] } }
 permissions: { contents: read }
-concurrency: { group: ci-${{ github.ref }}, cancel-in-progress: ${{ github.event_name == 'pull_request' }} }
+concurrency: { group: ci-<PR ref | push-main | sha>, cancel-in-progress: ${{ github.event_name == 'pull_request' }} }  # ADR-0208
 
 jobs:
   verify:            # matrix os: [ubuntu, windows, macos]

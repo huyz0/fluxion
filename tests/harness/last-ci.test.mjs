@@ -530,6 +530,66 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.match(r.out, /cannot be read \(page 3 of the runs file failed\)/);
   });
 
+  it('M18.188: ci keeps one queued run on main; a replaced run is skipped and its Fixes-ci declaration waits with the run that replaced it', () => {
+    const gates = run('gates', 'success', '2026-11-07T00:30:00Z', { databaseId: 39 });
+    const windows = (conclusion) => [
+      { name: 'verify (ubuntu-latest)', conclusion: 'success' },
+      { name: 'verify (windows-latest)', conclusion },
+      { name: 'ci-ok', conclusion: conclusion === 'failure' ? 'failure' : conclusion },
+    ];
+    const red = run('ci', 'failure', '2026-11-07T01:00:00Z', { databaseId: 60, headSha: 'sha60000000', jobs: windows('failure') });
+    // 61 was queued when 62 was pushed, so GitHub cancelled it before any job ran
+    const replaced = (message, at = '02:50', paths = ['packages/cli/src/x.ts']) =>
+      run('ci', 'cancelled', `2026-11-07T${at}:00Z`, { databaseId: 61, headSha: 'sha61000000', jobs: [], message, paths });
+    const newest = run('ci', 'queued', '2026-11-07T03:00:00Z', {
+      databaseId: 62,
+      headSha: 'sha62000000',
+      jobs: [],
+      message: 'M18.43: chore(harness): x',
+      paths: ['.harness/progress.md'],
+    });
+    const now = '2026-11-07T03:30:00Z';
+    // the replaced run declared the fix: the run that replaced it tests that commit, so wait for it
+    let r = lastCi([newest, replaced('M18.1: fix(cli): y\n\nFixes-ci: 60\n'), red, gates], now);
+    assert.equal(r.status, 2, r.out);
+    assert.match(r.out, /RED ci failure at sha6000 \(run 60\) \(1 newer run pending\): wait for the declared fix \(run 62\)/);
+    // no declaration in either push: red, and the cancelled run is no pending run of its own
+    r = lastCi([newest, replaced('M18.1: feat(cli): y'), red, gates], now);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /\(1 newer run pending\): none declares Fixes-ci: 60/);
+    // the wait is bounded from the declaring push, so replacing its run never extends it
+    r = lastCi([newest, replaced('M18.1: fix(cli): y\n\nFixes-ci: 60\n', '01:20'), red, gates], now);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /the declared fix \(run 62\) has been pending over 120 min/);
+    // a replaced product fix of the same failed job is still that fix pending (M18.200)
+    const named = run('ci', 'cancelled', '2026-11-06T08:00:00Z', { databaseId: 50, headSha: 'sha50000000', outsideWindow: true, jobs: windows('failure') });
+    r = lastCi([newest, replaced('M18.1: fix(cli): y\n\nFixes-ci: 50\n'), red, gates, named], now);
+    assert.equal(r.status, 2, r.out);
+    assert.match(r.out, /wait for the pending fix of job verify \(windows-latest\) \(run 62, Fixes-ci: 50\)/);
+    // and its wait too is bounded from the replaced push, not from the run that replaced it (r1 F1)
+    r = lastCi([newest, replaced('M18.1: fix(cli): y\n\nFixes-ci: 50\n', '01:20'), red, gates, named], now);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /the declared fix \(run 62\) has been pending over 120 min/);
+    // replaced runs are the newest completed ones and the last run that ran is out of the branch window: it is still the
+    // verdict, and no replaced run is read as red or asked for in a Fixes-ci (r1 F2)
+    const old = run('ci', 'failure', '2026-11-07T01:00:00Z', { databaseId: 60, headSha: 'sha60000000', jobs: windows('failure'), outsideWindow: true });
+    const cancelledAt = (id, at) =>
+      run('ci', 'cancelled', `2026-11-07T${at}:00Z`, { databaseId: id, headSha: `sha${id}000000`, jobs: [], message: 'M18.1: feat(cli): y' });
+    const pendingAt = (id, at, state) =>
+      run('ci', state, `2026-11-07T${at}:00Z`, { databaseId: id, headSha: `sha${id}000000`, jobs: [], message: 'M18.1: feat(cli): y' });
+    r = lastCi([pendingAt(64, '03:10', 'queued'), cancelledAt(63, '03:05'), pendingAt(62, '02:30', 'in_progress'), cancelledAt(61, '02:00'), gates, old], now);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /RED ci failure at sha6000 \(run 60\) \(2 newer runs pending\): none declares Fixes-ci: 60/);
+    assert.doesNotMatch(r.out, /run 6[13]\b/);
+    // the newest completed ci run is a replaced one: cold-setup is read from the newest run that ran
+    const cold = { conclusion: 'success', ms: 400_000, log: '2026-11-07T02:10:00Z budget: cold setup 400000 ms <= 600000 ms\n' };
+    const green = run('ci', 'success', '2026-11-07T01:00:00Z', { databaseId: 60, headSha: 'sha60000000', jobs: windows('success'), coldSetup: cold });
+    r = lastCi([replaced('M18.1: feat(cli): y'), green, gates], now);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /ci green at sha6000 \(run 60\)/);
+    assert.match(r.out, /cold-setup green at sha6000 \(run 60\) \(400 s\)/);
+  });
+
   it('M18.200: a pending product fix of the same failed job is a fix pending (exit 2), a harness-only or other-job fix is not (cp26 F2)', () => {
     const gates = run('gates', 'success', '2026-10-30T01:00:00Z', { databaseId: 39 });
     const windows = (conclusion) => [
