@@ -13,9 +13,11 @@ on:
 permissions:
   contents: read
 
-# PR runs share a group and cancel; each push has its own group so no push run is replaced (as gates.yml)
+# PR runs share a group and cancel. Push runs on main share one group that never cancels a running run: GitHub keeps
+# one queued run and a newer push replaces it, so the newest push always runs (ADR-0208, M18.188). Merge-group runs
+# keep a group per sha; gates.yml keeps one run per push
 concurrency:
-  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.event_name == 'push' && 'push-main' || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:

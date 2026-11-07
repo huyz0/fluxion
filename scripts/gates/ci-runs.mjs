@@ -8,6 +8,8 @@ const API = 'https://api.github.com';
 const FIELDS = 'databaseId,workflowName,headSha,headBranch,conclusion,jobs';
 const RUN_FIELDS = 'databaseId,workflowName,headSha,status,conclusion,createdAt';
 /** Runs per page when ci's runs are paged (GitHub's maximum). */
+/** How many of a workflow's newest completed push runs `completed` reads (M18.188). */
+export const COMPLETED_RUNS = 10;
 export const PAGE_SIZE = 100;
 /** The REST path of page `page` of ci's push runs on branch `name`; gh reads the same path through `gh api`. */
 const ciPagePath = (name, page, size) => `actions/workflows/ci.yml/runs?branch=${encodeURIComponent(name)}&event=push&per_page=${size}&page=${page}`;
@@ -70,11 +72,13 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
     branch: async (name) => ((await get(`actions/runs?branch=${encodeURIComponent(name)}&event=push&per_page=30`)).workflow_runs ?? []).map(listed),
     // one page of ci's push runs, newest first: the same-tree reads page back to a tree's start (M18.199, cp26 F1)
     ciPage: async (name, page, size = PAGE_SIZE) => ((await get(ciPagePath(name, page, size))).workflow_runs ?? []).map(listed),
-    // a workflow's newest completed push run: no fixed-size window of mixed workflows can hide it (M18.134, cp14 F1)
+    // a workflow's newest completed push runs: no fixed-size window of mixed workflows can hide them (M18.134, cp14 F1). Ten,
+    // not one: the newest may be queued runs a newer push replaced (ADR-0208, M18.188), and last-ci skips those
     completed: async (name, file) =>
-      ((await get(`actions/workflows/${file}/runs?branch=${encodeURIComponent(name)}&event=push&status=completed&per_page=1`)).workflow_runs ?? []).map(
-        (r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at }),
-      ),
+      (
+        (await get(`actions/workflows/${file}/runs?branch=${encodeURIComponent(name)}&event=push&status=completed&per_page=${COMPLETED_RUNS}`)).workflow_runs ??
+        []
+      ).map((r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at })),
     // a run's jobs and their conclusions, read while it is still pending: last-ci sees a failed job early (M18.191)
     jobs: async (id) => ((await get(`actions/runs/${id}/jobs?per_page=100`)).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
     // a run's cold-setup job, its cold step's duration and its log text (null when unknown): last-ci reports them (M18.161, M18.164)
@@ -138,7 +142,22 @@ export function ghSource(spawn = spawnSync) {
     branch: async (name) =>
       gh(['run', 'list', '--branch', name, '--event', 'push', '--limit', '30', '--json', 'databaseId,workflowName,headSha,status,conclusion,createdAt']),
     completed: async (name, file) =>
-      gh(['run', 'list', '--workflow', file, '--branch', name, '--event', 'push', '--status', 'completed', '--limit', '1', '--json', RUN_FIELDS]),
+      gh([
+        'run',
+        'list',
+        '--workflow',
+        file,
+        '--branch',
+        name,
+        '--event',
+        'push',
+        '--status',
+        'completed',
+        '--limit',
+        String(COMPLETED_RUNS),
+        '--json',
+        RUN_FIELDS,
+      ]),
     jobs: async (id) => (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
     // gh run list cannot page, so the REST path is read through gh api, as the REST source reads it (M18.199)
     ciPage: async (name, page, size = PAGE_SIZE) => (gh(['api', `repos/${REPO}/${ciPagePath(name, page, size)}`]).workflow_runs ?? []).map(listed),

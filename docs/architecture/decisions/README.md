@@ -130,6 +130,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0205](ADR-0205-budget-commit-is-bookkeeping.md) | The budget record's `commit` follows landing, outside the review identity | accepted | 2026-10-28 |
 | [0206](ADR-0206-svg-pack-import-command.md) | `fluxion pack-import`: a folder or ZIP of SVGs becomes one checked pack directory, or nothing | accepted | 2026-10-29 |
 | [0207](ADR-0207-a11y-gate-is-the-chromium-e2e-shards.md) | The a11y gate is the chromium e2e shards; ci has no duplicate a11y job | accepted | 2026-10-29 |
+| [0208](ADR-0208-one-queued-ci-run-on-main.md) | ci keeps one queued run on main; a newer push replaces it, a running run is never cancelled | accepted | 2026-11-07 |
 | [0209](ADR-0209-macos-verify-envelope.md) | macOS verification gets its own CI envelope (20 of 40 minutes) | accepted | 2026-10-29 |
 | [0210](ADR-0210-pack-category-names.md) | Shape pack format 1.2: category display names, as 1.1 plus `name` | accepted | 2026-11-02 |
 | [0211](ADR-0211-catalog-summarizes-packs.md) | The AI catalog lists core entries in full and every other pack as one line; a pack's entries come with `pack` | accepted | 2026-11-02 |
