@@ -249,7 +249,7 @@ jobs:
 
   # every chromium spec runs here, axe included (expectAccessible): this is the a11y gate (ADR-0207, M18.184)
   e2e:
-    name: e2e (${{ matrix.browser }} ${{ matrix.shard }}/4)
+    name: e2e (${{ matrix.browser }} ${{ matrix.shard }}/3)
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -262,7 +262,7 @@ jobs:
       fail-fast: false
       matrix:
         browser: [chromium, firefox, webkit]
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3]
         include:
           # each desktop engine also runs its mobile preset; firefox has none (--project is a filter, so
           # naming it twice runs it once)
@@ -286,7 +286,7 @@ jobs:
         with:
           name: dist
       # a shard can be empty while the suite is small; e2e-report fails when no test ran at all
-      - run: pnpm test:e2e --project="$BROWSER" --project="$MOBILE" --shard="$SHARD/4" --reporter=blob --pass-with-no-tests
+      - run: pnpm test:e2e --project="$BROWSER" --project="$MOBILE" --shard="$SHARD/3" --reporter=blob --pass-with-no-tests
         env:
           BROWSER: ${{ matrix.browser }}
           MOBILE: ${{ matrix.mobile }}

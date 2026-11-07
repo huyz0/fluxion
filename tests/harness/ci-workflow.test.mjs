@@ -251,9 +251,12 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
     assert.match(/^ {2}ci-ok:[\s\S]*?(?=^ {2}\S|(?![\s\S]))/m.exec(ci)[0], /needs: \[verify,/);
   });
 
-  it('verifies on three OSes and shards e2e over three engines x 4 in the pinned image (NFR-PORT-005)', () => {
+  it('verifies on three OSes and shards e2e over three engines x 3 in the pinned image (NFR-PORT-005, M18.183)', () => {
     assert.match(ci, /os: \[ubuntu-latest, windows-latest, macos-latest\]/);
-    assert.match(ci, /browser: \[chromium, firefox, webkit\]\n\s+shard: \[1, 2, 3, 4\]/);
+    assert.match(ci, /browser: \[chromium, firefox, webkit\]\n\s+shard: \[1, 2, 3\]/);
+    // the shard count in the job name and in --shard follows the matrix (M18.183)
+    assert.match(ci, /name: e2e \(\$\{\{ matrix\.browser \}\} \$\{\{ matrix\.shard \}\}\/3\)/);
+    assert.match(ci, /--shard="\$SHARD\/3"/);
     const images = [...ci.matchAll(/image:\s*(\S+)/g)].map((m) => m[1]);
     assert.ok(images.length >= 3, 'e2e, visual and lighthouse run in the Playwright image');
     const pw = JSON.parse(readFileSync(join(REPO, 'node_modules/@playwright/test/package.json'), 'utf8')).version;

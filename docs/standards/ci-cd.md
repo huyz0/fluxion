@@ -66,7 +66,7 @@ jobs:
                      # coverage, ADR-0216); in CI it, not the committed
                      # budget.json, answers for a changed lockfile (ADR-0143)
   build:             # turbo run build --affected; uploads dist/ artifact
-  e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/4..4/4]; the chromium
+  e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/3..3/3]; the chromium
                      # shards are the a11y gate: every spec, axe (0 serious/critical) included (ADR-0207)
     container: mcr.microsoft.com/playwright:v1.62.0-noble
     steps: [... , pnpm test:e2e --project=$browser --shard=$shard, upload blob-report]
@@ -140,7 +140,7 @@ jobs:
 | Windows browser deps | no `--with-deps` on windows-latest: there it only runs `Install-WindowsFeature Server-Media-Foundation` (about 190 s a job, the cost the M18.182 cache did not cut); Chromium delay-loads mf.dll, so every Windows install drops it. M18.277 cut cli-mcp and harness-windows (ca15330's subject covers only those steps); M18.279 put it back on verify and visual-xos after a Windows hang, and M18.282 removed it there: the hangs were two build stalls (M18.281) and a Vitest stall with it installed (ci 42159843232, M18.283) |
 | Windows build stall | turbo has twice printed every task successful and then not exited on windows-latest (ci 42038170007, 42092624276); the ladder's build step and cli-mcp's build end such a build 60 s after its summary, save the process table to `.harness/tmp/stuck-build/` (uploaded as `stuck-build-*`), warn and go on. A failed build, or one without an all-successful summary, keeps its status (M18.281) |
 | Cold setup | `cold-setup` measures a fresh clone's `pnpm i`, `pnpm run setup` and `pnpm verify --no-coverage` against COLD_SETUP_MAX_MS (NFR-DX-001, ADR-0216). Its critical path is install, setup, typecheck, build, then the test step; the harness tests are the second leg, and the single-threaded attw, api and publint lanes share the CPU with both. The runner class moves the number about 1.5x with no code change (397 s to 621 s on the same ladder), so a cut has to hold on the slow class. M18.157 attempt 4 packs each library once for publint and attw and builds one API Extractor program over every entry; main then read 512 s, 581 s (slow class) and 434 s. Ruled under Huy's delegation (2026-11-06): the cold ladder keeps every step, harness tests included; if the slow class reads over the limit again, the next step is a fixed reference runner (it needs Huy's access), not a narrower ladder |
-| E2E sharding | 4 shards per browser; blob reports merged in `e2e-report`; raise shard count when a shard exceeds 6 min |
+| E2E sharding | 3 shards per browser (M18.183: at 4, the slowest test step was 217 s and each job spent about 60 s on setup); blob reports merged in `e2e-report`; raise shard count when a shard exceeds 6 min |
 
 ## 5. Changing CI
 
