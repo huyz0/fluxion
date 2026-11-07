@@ -39,9 +39,14 @@ test.describe('the keyboard shortcuts', { tag: '@desktop' }, () => {
     await page.keyboard.press('Control+u');
     await expect(editor.elements).toHaveCount(0);
 
-    // the rebinding is kept across a reload
+    // the rebinding is kept across a reload. The edits above are journalled, so once autosave has kept them the reload
+    // offers to recover them; waiting for that makes the prompt certain, and Not now leaves it out of the way (ci 42363757886)
+    await expect(page.getByTestId('autosave-status')).toContainText('kept on this device', { timeout: 5000 });
     await page.reload();
     await editor.screens.first().waitFor();
+    const recover = page.getByRole('dialog', { name: 'Recover unsaved changes' });
+    await recover.getByRole('button', { name: 'Not now' }).click();
+    await expect(recover).toHaveCount(0);
     await dragOut(page, editor, 'Shape');
     await expect(editor.elements).toHaveCount(1);
     await page.keyboard.press('Control+z');
