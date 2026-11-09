@@ -26,10 +26,10 @@ two milestones is delivered in parts (see the milestone plans for the split).
 
 | ID | Pri | Inc | Milestone(s) | Source | Tests |
 |---|---|---|---|---|---|
-| FR-DOC-001 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +8 |
+| FR-DOC-001 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +11 |
 | FR-DOC-002 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/ids.test.ts` |
 | FR-DOC-003 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/migrate.test.ts`, `packages/schema/src/repair.test.ts` |
-| FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/document-file.test.ts` +5 |
+| FR-DOC-004 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/schema/src/diagnostics.test.ts` +7 |
 | FR-DOC-005 | M | R0 | M2 | [10-document-and-file.md](10-document-and-file.md) | `packages/editor/src/pm-json.test.ts` +14 |
 | FR-DOC-006 | M | R1 | M9 | [10-document-and-file.md](10-document-and-file.md) | `e2e/document.metadata.spec.ts` +5 |
 | FR-DOC-007 | S | R2 | M13 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/screens/screen-duplicate.test.ts` +2 |
@@ -66,7 +66,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-003 | M | R1 | M5, M7 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/shapes.param-handle.spec.ts` +11 |
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/round.test.ts` +7 |
 | FR-SHP-005 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/hit.test.ts`, `packs/basic/src/hit.test.ts` |
-| FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/text.inline-edit.spec.ts` +8 |
+| FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/text.inline-edit.spec.ts` +9 |
 | FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-008 | M | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-009 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
@@ -80,7 +80,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +4 |
 | FR-LIB-002 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/library.drag-insert.spec.ts`, `packages/editor/src/library/library-insert.test.ts` |
 | FR-LIB-003 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/cli/src/e2e/cli.pack-import.test.ts` +20 |
-| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/artwork-fonts.test.ts` +53 |
+| FR-LIB-004 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/artwork-fonts.test.ts` +56 |
 | FR-LIB-005 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/library-import.browser.test.ts` +11 |
 | FR-LIB-006 | S | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/library-import.browser.test.ts` +8 |
 | FR-LIB-007 | M | R3 | M18 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +27 |
@@ -96,7 +96,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ANC-006 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/anchors.snap-and-custom.spec.ts` +4 |
 | FR-ANC-007 | S | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/connector-route.test.ts`, `packages/routing/src/distribution.test.ts` |
 | FR-ANC-008 | S | R6 | M27 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | — |
-| FR-CON-001 | M | R0 | M2 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/screens.duplicate-ends.spec.ts` +10 |
+| FR-CON-001 | M | R0 | M2 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `e2e/screens.duplicate-ends.spec.ts` +12 |
 | FR-CON-002 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/curved.test.ts`, `packages/routing/src/orthogonal.test.ts` |
 | FR-CON-003 | M | R1 | M5 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/cli/src/e2e/cli.markers.test.ts` +6 |
 | FR-CON-004 | M | R3 | M16 | [12-connectors-anchors-routing.md](12-connectors-anchors-routing.md) | `packages/routing/src/orthogonal/grid.test.ts` +2 |
@@ -140,7 +140,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ARR-006 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-ARR-008 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
-| FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +5 |
+| FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +6 |
 | FR-THM-002 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/derive.test.ts` |
 | FR-THM-003 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/sdk/src/pack.test.ts` +2 |
 | FR-THM-004 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/theme.switch-and-override.spec.ts` +6 |
@@ -166,7 +166,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EDT-005 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/move.nudge-and-duplicate.spec.ts` +5 |
 | FR-EDT-006 | M | R1 | M3, M7 | [15-editor.md](15-editor.md) | `e2e/undo.across-screens.spec.ts` +8 |
 | FR-EDT-007 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/clipboard.chord-fallback.spec.ts` +15 |
-| FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/inspector.mixed-fill.spec.ts` +4 |
+| FR-EDT-008 | M | R1 | M7 | [15-editor.md](15-editor.md) | `e2e/inspector.mixed-fill.spec.ts` +5 |
 | FR-EDT-009 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/present.mode-switch.spec.ts` +3 |
 | FR-EDT-010 | M | R1 | M6 | [15-editor.md](15-editor.md) | `e2e/artwork.spec.ts` +5 |
 | FR-EDT-011 | M | R1 | M7 | [15-editor.md](15-editor.md) | `packages/editor/src/command-palette.browser.test.tsx` +2 |
@@ -266,10 +266,10 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-DSL-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/import/mermaid-lists.test.ts`, `packages/dsl/src/import/mermaid/mermaid.test.ts` |
 | FR-DSL-008 | S | R3 | M20 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-009 | S | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/read/key-table.test.ts` +6 |
-| FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/catalog/format.test.ts` +4 |
+| FR-AI-001 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/catalog/format.test.ts` +5 |
 | FR-AI-002 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/cli/src/catalog.builtins.test.ts` +4 |
-| FR-AI-003 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/store.test.ts` +5 |
-| FR-AI-004 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/diagnostics-format.test.ts`, `packages/dsl/src/generate/orchestrate.test.ts` |
+| FR-AI-003 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/store.test.ts` +6 |
+| FR-AI-004 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/diagnostics-format.test.ts` +2 |
 | FR-AI-005 | M | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/generate/orchestrate.test.ts`, `packages/dsl/src/lint/lint.test.ts` |
 | FR-AI-006 | S | R2 | M14 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/studio/src/png-export.browser.test.ts` +2 |
 | FR-AI-007 | S | R2 | M15 | [20-ai-authoring.md](20-ai-authoring.md) | `apps/studio/src/ai/adapters.test.ts` +4 |
@@ -327,7 +327,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +12 |
-| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +82 |
+| NFR-SEC-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/clipboard.system-paste.spec.ts` +86 |
 | NFR-SEC-002 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `e2e/file.offline-file-protocol.spec.ts` +3 |
 | NFR-SEC-003 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-SEC-004 | M | R2 | M15 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/ai/adapters.test.ts` +5 |

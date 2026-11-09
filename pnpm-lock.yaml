@@ -46,8 +46,8 @@ catalogs:
       specifier: 3.1.1
       version: 3.1.1
     '@huyz0/tzap':
-      specifier: 0.1.1
-      version: 0.1.1
+      specifier: 0.1.4
+      version: 0.1.4
     '@lhci/cli':
       specifier: 0.14.0
       version: 0.14.0
@@ -267,7 +267,7 @@ importers:
         version: 3.0.3
       '@huyz0/tzap':
         specifier: 'catalog:'
-        version: 0.1.1
+        version: 0.1.4
       '@lhci/cli':
         specifier: 'catalog:'
         version: 0.14.0(supports-color@8.1.1)
@@ -1624,8 +1624,8 @@ packages:
     peerDependencies:
       hono: ^4 || ^5.0.0-0
 
-  '@huyz0/tzap@0.1.1':
-    resolution: {integrity: sha512-Nlpawt8YQfgD6OVZb4RfPw8+cc7IABv9HyBtJ8Fi/GfHzOekQOKVuQEig97RKs7IluyB2VzARMNvUye0307wpQ==}
+  '@huyz0/tzap@0.1.4':
+    resolution: {integrity: sha512-XWE9xfLJa/jYXVIB+Ao5DqwWqUeTLHpRA9NK8EZRyLd2b7nokdWPl+1N60FBMYdOzxiszCmkPRKSd69/SQ9T7g==}
     engines: {node: '>=22.12'}
     hasBin: true
 
@@ -8041,7 +8041,7 @@ snapshots:
     dependencies:
       hono: 4.13.13
 
-  '@huyz0/tzap@0.1.1':
+  '@huyz0/tzap@0.1.4':
     dependencies:
       magic-string: 1.4.2
       mutation-testing-elements: 3.9.0
