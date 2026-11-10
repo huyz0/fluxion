@@ -51,7 +51,7 @@ export const SOURCE_HARNESS = [
  * configs, licences): a manifest change runs them through MANIFEST_HARNESS, any other non-source
  * path runs the whole harness (adapters, licenses, turbo). --all runs them all.
  */
-// mutation-runner constructs miniature workspaces; it does not copy real package sources.
+// mutation-runner and mutation-red-baseline construct miniature workspaces; it does not copy real package sources.
 export const SAMPLE_HARNESS = [
   'adapters',
   'api',
@@ -65,6 +65,7 @@ export const SAMPLE_HARNESS = [
   'mutation-runner',
   'mutation-nightly',
   'mutation-evidence-gate',
+  'mutation-red-baseline',
   'packages',
   'turbo',
 ];

@@ -9,6 +9,39 @@ import { DEFAULT_PARTITION_TARGET, partitionManifest, validatePartition } from '
 import { buildPlan, samePlan } from './mutation-plan.mjs';
 import { aggregateShards } from './mutation-shards.mjs';
 
+/** Lines of a red baseline test's failure output the job log keeps: its last ones, where TAP puts the assertion and stack (M18.286). */
+export const RED_TEST_LINES = 200;
+
+/** A red test's heading: its id, then its name and file when the report has them. */
+function redTestHeading(test) {
+  const where = test?.name ? ` (${[test.name, test.file].filter(Boolean).join(', ')})` : '';
+  return `mutation shard: baseline test failed with no mutant applied: ${test?.id ?? '(no id)'}${where}`;
+}
+
+/** A red test's failure output without trailing blank lines, or [] when the report holds none. */
+function redTestOutput(test) {
+  const output = typeof test?.message === 'string' ? test.message.split(/\r?\n/) : [];
+  while (output.length > 0 && output.at(-1) === '') output.pop();
+  return output;
+}
+
+/**
+ * Each baseline test the report names red (it failed with no mutant applied), with its id and the end of its failure output.
+ * tzap's own summary prints only the first line of that output, which for a node:test file is "TAP version 13" (M18.286).
+ */
+export function redTestLines(report) {
+  const red = Array.isArray(report?.redTests) ? report.redTests : [];
+  return red.flatMap((test) => {
+    const output = redTestOutput(test);
+    const kept = output.slice(-RED_TEST_LINES);
+    return [
+      redTestHeading(test),
+      ...(output.length > kept.length ? [`  [${output.length - kept.length} earlier lines; last ${RED_TEST_LINES} follow]`] : []),
+      ...(kept.length > 0 ? kept.map((line) => `  ${line}`) : ['  (the report holds no failure output for it)']),
+    ];
+  });
+}
+
 function forPackage(plan, name) {
   if (!plan.packages.includes(name)) throw new Error(`unexpected package ${name}`);
   return {
@@ -65,6 +98,12 @@ export function runPackage({ manifestPath, packageName, partitionId, target = DE
     shard.exitCode = result.status;
     const report = join(outDir, 'tzap.json');
     if (existsSync(report)) shard.report = JSON.parse(readFileSync(report, 'utf8'));
+    // a red baseline fails the shard below (failed baseline tests); its output goes to the log first, in full up to RED_TEST_LINES
+    const red = redTestLines(shard.report);
+    if (red.length > 0) {
+      console.error(red.join('\n'));
+      details.push(...red);
+    }
     if (result.status !== 0) throw new Error(`package execution exited ${result.status}`);
     if (!samePlan(plan, buildPlan(root))) throw new Error('checkout changed during mutation execution');
     validateExecution(plan, execution, shard);
