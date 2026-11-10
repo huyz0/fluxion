@@ -26,10 +26,12 @@ class CleanupCoordinator implements WitnessCleanup {
   private unsubscribe = () => {};
   /** When the owned termination first started (`resource.close()`, or `kill()` when it comes first), for the cleanup-failure trace (M18.195). */
   private terminationStartedAt: number | undefined;
-  /** How an `immediate` owned termination stands: a failed one ends the wait for exit two seconds after it failed. */
+  /** How the owned termination (`kill()`) stands: a failed one ends the wait for exit after its failure window (2 s on Windows, none elsewhere). */
   private termination: 'none' | 'running' | 'done' | 'failed' = 'none';
   private failedAt: number | undefined;
-  /** Whether the two-second reserve has passed and the verdict now waits for the owned exit (an `immediate` termination only). */
+  /** How long after a failed owned termination the exit may still be observed: 2 s for Windows' taskkill, 0 for a kill elsewhere. */
+  private failureWindow = RESERVE_MS;
+  /** Whether the two-second reserve has passed and the verdict now waits for the owned exit (an owned termination has started). */
   private waiting = false;
   /** The end of the session's lifecycle (ADR-0189: 120 s from creation, its final 2 s reserved for cleanup). */
   private readonly lifecycleEnd: number;
@@ -53,7 +55,7 @@ class CleanupCoordinator implements WitnessCleanup {
   }
   /**
    * One line on stderr naming why the reserve ended in a cleanup failure, and when (M18.195: diagnose before attempt 3), or that a
-   * Windows close succeeded only after the reserve (M18.201), so each slow close shows in the ci log.
+   * close succeeded only after the reserve (M18.201, every platform since M18.287), so each slow close shows in the ci log.
    */
   private trace(after?: 'exited-after-reserve') {
     const now = performance.now();
@@ -75,23 +77,24 @@ class CleanupCoordinator implements WitnessCleanup {
     this.forced = true;
     void Promise.resolve()
       .then(() => {
-        if (!this.resource || this.resource.hasExited()) return undefined;
+        const resource = this.resource;
+        if (!resource || resource.hasExited()) return undefined;
         // Windows' owned taskkill starts here (`immediate`), elsewhere the grace's kill follows an earlier close
         this.terminationStartedAt ??= performance.now();
-        const immediate = this.resource.immediate === true;
-        if (immediate) this.termination = 'running';
-        return this.resource.kill().then(
+        this.termination = 'running';
+        // a failed taskkill may still have ended the tree, so Windows gives the exit two seconds; a kill that throws elsewhere decides
+        this.failureWindow = resource.immediate === true ? RESERVE_MS : 0;
+        return new Promise<void>((resolve) => resolve(resource.kill())).then(
           () => {
-            if (immediate) this.termination = 'done';
+            this.termination = 'done';
           },
-          (cause: unknown) => {
-            if (!immediate) throw cause;
+          () => {
             // a settled cleanup's `stop()` ends a running taskkill: its rejection decides nothing and arms no timer (M18.198)
             if (this.settled) return;
             this.termination = 'failed';
             this.failedAt = performance.now();
-            // past the reserve, a failed termination gives the owned exit two seconds from the failure, not the lifecycle's end
-            if (this.waiting) this.waitUntil(this.failedAt + RESERVE_MS);
+            // past the reserve, a failed termination gives the owned exit its failure window, not the lifecycle's end
+            if (this.waiting) this.waitUntil(this.failedAt + this.failureWindow);
           },
         );
       })
@@ -108,16 +111,20 @@ class CleanupCoordinator implements WitnessCleanup {
     this.finish(exited);
   };
   /**
-   * At the two-second reserve: an `immediate` (Windows) owned termination still running or done waits for the owned exit until
-   * the session's lifecycle ends, since a starved host can take longer than the reserve to end the tree and report its exit
-   * (ci 40905801401); a failed one waits two seconds from its failure; every other case is decided now.
+   * At the two-second reserve: an owned termination that has started (Windows' taskkill, or elsewhere the grace's kill after close)
+   * and is still running or done waits for the owned exit until the session's lifecycle ends, since a starved host can take longer
+   * than the reserve to end the process and report its exit (ci 40905801401 on Windows, nightly 42596642542 on Linux: M18.287); a
+   * failed one waits its failure window (two seconds from the failure on Windows, none elsewhere); no termination started, or the
+   * exit already observed, is decided now.
    */
   private atReserve = () => {
     if (this.settled) return;
-    if (!this.resource?.immediate || this.resource.hasExited()) return this.decide();
+    if (!this.resource || this.resource.hasExited() || this.termination === 'none') return this.decide();
+    // a kill that failed elsewhere than Windows leaves nothing to wait for
+    if (this.termination === 'failed' && this.failureWindow === 0) return this.decide();
     this.waiting = true;
-    // a termination that failed may still have ended the tree (taskkill's 255 with the exit just behind): two seconds from the failure
-    this.waitUntil(this.failedAt === undefined ? this.lifecycleEnd : this.failedAt + RESERVE_MS);
+    // a termination that failed may still have ended the process (taskkill's 255 with the exit just behind): two seconds from the failure
+    this.waitUntil(this.failedAt === undefined ? this.lifecycleEnd : this.failedAt + this.failureWindow);
   };
   /** Decides at `at` (never past the lifecycle's end), after that turn's I/O, or now when `at` has passed. */
   private waitUntil(at: number) {
@@ -199,7 +206,8 @@ class CleanupCoordinator implements WitnessCleanup {
 
 /**
  * One exit-based outcome and deadline include ownership arriving during cancelled startup. `lifecycleMs` is the session's lifetime
- * from now (ADR-0189: 120 s), which bounds the wait for an owned Windows termination.
+ * from now (ADR-0189: 120 s), which bounds the wait for the observed exit once an owned termination has started, on every platform
+ * (M18.195 Windows, M18.287 elsewhere).
  */
 export function createWitnessCleanup(options: { readonly lifecycleMs?: number } = {}): WitnessCleanup {
   return new CleanupCoordinator(options.lifecycleMs ?? 120000);

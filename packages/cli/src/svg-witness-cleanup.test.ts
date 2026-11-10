@@ -50,6 +50,9 @@ it('NFR-SEC-001: late launch ownership cannot reset the two-second cleanup reser
   const closed = cleanup.close();
   await vi.advanceTimersByTimeAsync(1500);
   const f = resource();
+  // a kill that throws leaves nothing to wait for (M18.287), so the verdict is the reserve's own: due at 2 s from close, never
+  // 2 s from the late launch at 1.5 s
+  vi.mocked(f.port.kill).mockRejectedValue(Error('cannot kill'));
   const owner = ownBrowserProcess(f.port, cleanup);
   cleanup.launchFinished();
   await vi.advanceTimersByTimeAsync(500);
@@ -59,6 +62,25 @@ it('NFR-SEC-001: late launch ownership cannot reset the two-second cleanup reser
   f.exit();
   expect(await owner.close()).toBe(false);
   expect(f.listeners.size).toBe(0);
+  expect(vi.getTimerCount()).toBe(0);
+});
+it('NFR-SEC-001: a late-launched process whose kill succeeds is waited for until the lifecycle end, counted from creation', async () => {
+  const cleanup = createWitnessCleanup({ lifecycleMs: 5000 });
+  cleanup.launchStarted();
+  const closed = cleanup.close();
+  await vi.advanceTimersByTimeAsync(1500);
+  const f = resource();
+  ownBrowserProcess(f.port, cleanup);
+  cleanup.launchFinished();
+  let verdict: boolean | undefined;
+  void closed.then((value) => {
+    verdict = value;
+  });
+  await vi.advanceTimersByTimeAsync(3499);
+  expect(verdict).toBeUndefined();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(await closed).toBe(false);
+  expect(f.port.kill).toHaveBeenCalledTimes(1);
   expect(vi.getTimerCount()).toBe(0);
 });
 it('NFR-SEC-001: launch arriving within the reserve succeeds only on actual exit', async () => {

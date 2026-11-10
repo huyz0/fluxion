@@ -45,7 +45,9 @@ it('NFR-SEC-001: a process still running when the held loop resumes past the res
   const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], { stdio: 'ignore' });
   await new Promise((resolve) => child.once('spawn', resolve));
   try {
-    const cleanup = createWitnessCleanup();
+    // closed at the session's lifecycle end, where the reserve is all that is left: a kill that has not ended the process by then
+    // is not waited for any longer (M18.287), so the verdict is due as soon as the held loop resumes
+    const cleanup = createWitnessCleanup({ lifecycleMs: 2000 });
     ownBrowserProcess(
       {
         hasExited: () => child.exitCode !== null || child.signalCode !== null,

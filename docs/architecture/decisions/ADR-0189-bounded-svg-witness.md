@@ -99,3 +99,29 @@ Unchanged: non-Windows close, then kill after the grace, within two seconds; one
 
 `svg-witness-cleanup-trace.test.ts` pins that the two seconds after a failed termination never run past the lifecycle end.
 The installed probe (`svg-witness.test.ts`) passes unchanged. M18.195 closes on three consecutive green Windows verify runs on main.
+
+## Amendment M18.287 (2026-11-10): a non-Windows close whose kill was sent waits for the observed exit
+
+Status: accepted 2026-11-10 by stream 1, deciding under Huy's delegation of 2026-11-05T11:04:52Z ("you decide for me and unblock anything, don't ask me unless it is permission access"); recorded as the ADR-0176 decision for a lengthened wait. Decision-makers: stream 1 for Huy.
+
+**Context.** Nightly 42596642542 failed dsl-19's mutation baseline on the installed probe's abort case, on Linux (M18.286). The abort closed the session at once (293 ms). The owned chromium answered neither the graceful close nor, one second later, Playwright's `server.kill()` (`process.kill(-pid, 'SIGKILL')` on the owned process group) with an observed exit inside the 2 s reserve, so the session read `cleanup`, not `cancelled`. The verdict ran 1 ms after the reserve expired, so the host's loop was not starved: the process was slow to die on a loaded runner, as M18.195 found for Windows' taskkill. The "Unchanged: non-Windows close, then kill after the grace, within two seconds" line above is what this amends.
+
+**Options.** 1. Keep the 2 s verdict: a slow but certain SIGKILL fails the session and the nightly. 2. Retry or lengthen the reserve: a raised fixed timeout, open to the same race. 3. As Windows: once the owned termination has been sent, decide from evidence within the lifecycle already documented. Chosen.
+
+**Decision.** Away from Windows, once the grace's kill has been sent and has not thrown, the reserve lasts until the owned browser's exit is observed or the session's lifecycle (120 s from creation) ends, whichever is first.
+- A kill that throws (before or after the reserve) is a cleanup failure at the reserve, or at once when the reserve has passed. Unlike taskkill, a kill that throws has ended nothing, so it gets no two seconds.
+- A process not seen exiting by the lifecycle end is a cleanup failure.
+- A close that started no kill before the reserve (the exit observed, or no termination begun) is decided at the reserve as before.
+- An exit observed after the reserve is a clean close and prints its `exited-after-reserve` WITNESS_CLEANUP line (M18.201), now on every platform.
+
+Unchanged: graceful close then kill after the 1 s grace; Windows' `immediate` taskkill path and its two seconds after a failure; one owned termination path only; the probe's injected-failure contract; no retry and no alternative browser.
+
+**Consequences.** On a loaded Linux or macOS host a close can take longer than two seconds and up to the session's lifecycle end; it is never open-ended. A kill that throws fails no later than before.
+
+**Confirmation.** `packages/cli/src/svg-witness-cleanup-posix.test.ts` covers these cases with fake timers:
+- a process that exits 1.5 s after its kill, past the reserve, is a clean close with one `exited-after-reserve` trace;
+- a process never seen exiting fails at the 120 s lifecycle end, not before;
+- a kill that throws fails at the reserve with no wait;
+- a kill that throws after the reserve fails at once.
+
+`svg-witness-cleanup-trace.test.ts`, `svg-witness-cleanup.test.ts` and `svg-witness-cleanup-loop.test.ts` read the new verdict for a process whose kill succeeded but which never exits. The installed probe (`svg-witness.test.ts`) passes unchanged.
