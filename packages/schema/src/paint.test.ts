@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { colorValueSchema, paintSchema, tokenRefSchema } from './paint.js';
+import { colorSchema, colorValueSchema, paintSchema, tokenRefSchema } from './paint.js';
 
 describe('paint values', () => {
   it('FR-SCR-001: token references are {dot.separated} names', () => {
@@ -52,5 +52,38 @@ describe('paint values', () => {
       }).success,
     ).toBe(false);
     expect(paintSchema.safeParse({ type: 'pattern' }).success).toBe(false);
+  });
+
+  // The regex anchors, channel parsing and messages are checked directly, so a loosened anchor or a
+  // dropped filter changes a verdict here rather than only in a style test further downstream.
+  const color = (v: string) => colorValueSchema.safeParse(v).success;
+
+  it('FR-SCR-001: token references and literal colours are anchored at both ends', () => {
+    for (const bad of ['x{a}', '{a}x', ' {a}']) expect(tokenRefSchema.safeParse(bad).success, bad).toBe(false);
+    for (const bad of ['x#fff', 'xrgb(1 2 3)', 'rgb(1 2 3)x', 'rgb(x1 2 3)', 'rgb(1x 2 3)']) expect(color(bad), bad).toBe(false);
+  });
+
+  it('FR-SCR-001: channels are numbers with an optional sign, fraction, exponent and unit, or none', () => {
+    for (const ok of ['rgb(+1 -2 3)', 'rgb(.55 1 2)', 'rgb(12.5 1 2)', 'rgb(1e5 2 3)', 'rgb(1e10 2 3)', 'rgb(1e+5 2e-3 3E2)', 'hsl(1turn 2% 3%)'])
+      expect(color(ok), ok).toBe(true);
+    for (const bad of ['rgb(1 2 x)', 'rgb(none none foo)', 'rgb(1e 2 3)', 'rgb(1 2 3px)', 'rgb(. 2 3)']) expect(color(bad), bad).toBe(false);
+  });
+
+  it('FR-SCR-001: surrounding space and empty separators do not count as channels', () => {
+    for (const ok of [' rgb(1 2 3) ', 'rgb( 1 2 3)', 'rgb(1 2 3 )', 'rgb(1, 2 , 3)', 'rgb(1 2 3 / 50%)']) expect(color(ok), ok).toBe(true);
+  });
+
+  it('FR-SCR-001: a color() colour space is a name starting with a letter, anchored at both ends', () => {
+    for (const ok of ['color(srgb 1 0 0)', 'color(display-p3 1 0 0 / 0.5)', 'color(xyz-d65 0.1 0.2 0.3)']) expect(color(ok), ok).toBe(true);
+    for (const bad of ['color(1display 1 0 0)', 'color(p3% 1 0 0)', 'color(-p3 1 0 0)']) expect(color(bad), bad).toBe(false);
+  });
+
+  it('reports what a token reference and a colour must look like', () => {
+    const token = tokenRefSchema.safeParse('nope');
+    expect(token.success).toBe(false);
+    expect(token.error?.issues[0]?.message).toBe('expected a token reference such as "{color.primary}"');
+    const literal = colorSchema.safeParse('nope');
+    expect(literal.success).toBe(false);
+    expect(literal.error?.issues[0]?.message).toBe('expected a CSS colour (#hex, a colour function or a named colour)');
   });
 });
