@@ -45,7 +45,7 @@ filters cover every spec the job ran.
 ### Consequences
 
 - Good: one fewer job per ci run (about 7 runner-minutes and one queue slot).
-- Bad: a failed axe check is reported under `e2e (chromium n/4)` rather than `a11y`; the failing
+- Bad: a failed axe check is reported under `e2e (chromium n/3)` rather than `a11y`; the failing
   spec and its axe message are the same.
 - If an a11y-only project is ever added (another browser, a different viewport), it needs its own
   job or shard again.
