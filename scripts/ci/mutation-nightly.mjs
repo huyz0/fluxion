@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { failureAnnotation } from '../gates/failure-report.mjs';
 import { matrixChains, partitionManifest } from '../harness/mutation-partitions.mjs';
 import { buildPlan, samePlan } from '../harness/mutation-plan.mjs';
-import { MUTATION_EVIDENCE_PREFIX, mutationReceipt } from './mutation-evidence.mjs';
+import { evidenceNotice, mutationReceipt } from './mutation-evidence.mjs';
 
 const [command, ...args] = process.argv.slice(2);
 const option = (flag) => {
@@ -45,10 +45,11 @@ function aggregate(output) {
     return json(join(resolve(reports), entry.name, 'shard.json'));
   });
   const receipt = mutationReceipt(plan, shards);
+  const notice = evidenceNotice(receipt);
   write(output, receipt);
   for (const score of receipt.scores)
     console.log(`${score.package}: ${score.score.toFixed(1)} % of ${score.valid} valid / ${score.total} total, floor ${score.floor} %`);
-  if (process.env.GITHUB_ACTIONS === 'true') console.log(`::notice::${escapeCommandData(MUTATION_EVIDENCE_PREFIX + JSON.stringify(receipt))}`);
+  if (process.env.GITHUB_ACTIONS === 'true') console.log(`::notice::${escapeCommandData(notice)}`);
 }
 
 const output = option('--out');

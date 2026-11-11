@@ -8,6 +8,10 @@ const sha = (value, size) => typeof value === 'string' && new RegExp(`^[a-f0-9]{
 const requireValue = (value, message) => {
   if (!value) throw new Error(message);
 };
+// GitHub cuts a workflow notice at 4096 characters, so the receipt names its partitions by count and
+// digest rather than listing them: its size no longer grows with the plan (M18.10).
+export const NOTICE_MAX_CHARS = 4096;
+const partitionDigest = (ids) => ({ count: ids.length, sha256: createHash('sha256').update(JSON.stringify(ids)).digest('hex') });
 const duration = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 3600000;
 
 /** Source/test inputs, engine and floors; bookkeeping revisions and host-specific runner hashes differ. */
@@ -39,14 +43,21 @@ export function mutationReceipt(manifest, shards) {
     'missing or excessive partition execution duration',
   );
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     revision: plan.revision,
     runner: plan.runner,
     scope: mutationScopeHash(plan),
-    partitions: partitionManifest(plan).map((p) => p.id),
+    partitions: partitionDigest(partitionManifest(plan).map((p) => p.id)),
     scores: result.scores,
     maxElapsedMs: Math.max(...shards.map((s) => s.elapsedMs)),
   };
+}
+
+/** The notice text that carries a receipt; refuses one GitHub would cut, so evidence is never lost silently. */
+export function evidenceNotice(receipt) {
+  const message = MUTATION_EVIDENCE_PREFIX + JSON.stringify(receipt);
+  requireValue(message.length <= NOTICE_MAX_CHARS, `mutation evidence notice is ${message.length} characters, over GitHub's ${NOTICE_MAX_CHARS}`);
+  return message;
 }
 
 function receiptFrom(annotations) {
@@ -57,10 +68,10 @@ function receiptFrom(annotations) {
 }
 
 function validateReceipt(receipt, plan, revision) {
-  requireValue(receipt?.schemaVersion === 1 && receipt.revision === revision && sha(receipt.runner, 64), 'invalid receipt identity');
+  requireValue(receipt?.schemaVersion === 2 && receipt.revision === revision && sha(receipt.runner, 64), 'invalid receipt identity');
   requireValue(receipt.scope === mutationScopeHash(plan), 'mutation scope differs from current checkout');
   const parts = partitionManifest(plan).map((p) => p.id);
-  requireValue(JSON.stringify(receipt.partitions) === JSON.stringify(parts), 'incomplete partition list');
+  requireValue(JSON.stringify(receipt.partitions) === JSON.stringify(partitionDigest(parts)), 'incomplete partition list');
   requireValue(duration(receipt.maxElapsedMs), 'invalid execution duration');
   requireValue(Array.isArray(receipt.scores) && receipt.scores.length === plan.packages.length, 'missing package scores');
   const seen = new Set();
@@ -107,7 +118,10 @@ export function validateMutationEvidence(evidence, manifest, revision) {
     );
     const receipt = receiptFrom(evidence.annotations);
     validateReceipt(receipt, plan, revision);
-    validateJobs(evidence.jobs, receipt.partitions);
+    validateJobs(
+      evidence.jobs,
+      partitionManifest(plan).map((p) => p.id),
+    );
     return { ok: true, receipt, errors: [] };
   } catch (error) {
     return { ok: false, errors: [error.message] };

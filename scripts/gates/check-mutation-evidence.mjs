@@ -35,8 +35,12 @@ async function main(argv) {
   }
   const result = await checkMutationRecord(record, milestone);
   if (argv.includes('--record')) writeFileSync(file, `${JSON.stringify(record, null, 2)}\n`);
-  console.log(`mutation-evidence: ${record.sha} run ${record.run}; ${result.receipt.partitions.length} complete partitions, all package floors passed`);
+  console.log(evidenceLine(record, result.receipt));
 }
+
+/** The success line a closing commit cites; a schemaVersion 2 receipt names its partitions by count. */
+export const evidenceLine = (record, receipt) =>
+  `mutation-evidence: ${record.sha} run ${record.run}; ${receipt.partitions.count} complete partitions, all package floors passed`;
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main(process.argv.slice(2)).catch((error) => {
     console.error(`mutation-evidence: ${error.message}`);

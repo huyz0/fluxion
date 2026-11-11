@@ -1,8 +1,9 @@
 // NFR-MNT-005: live execution evidence cannot be substituted by a partial score or a stale run.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { mutationReceipt, mutationScopeHash, validateMutationEvidence } from '../../scripts/ci/mutation-evidence.mjs';
-import { checkMutationRecord } from '../../scripts/gates/check-mutation-evidence.mjs';
+import { evidenceNotice, mutationReceipt, mutationScopeHash, NOTICE_MAX_CHARS, validateMutationEvidence } from '../../scripts/ci/mutation-evidence.mjs';
+import { checkMutationRecord, evidenceLine } from '../../scripts/gates/check-mutation-evidence.mjs';
+import { partitionManifest } from '../../scripts/harness/mutation-partitions.mjs';
 import { createManifest } from '../../scripts/harness/mutation-shards.mjs';
 
 const hash = 'a'.repeat(64),
@@ -149,10 +150,16 @@ describe('mutation evidence (NFR-MNT-005)', () => {
         r.scope = 'c'.repeat(64);
       },
       (r) => {
-        r.partitions = [];
+        r.partitions = ['core-1'];
       },
       (r) => {
-        r.partitions.push('core-1');
+        r.partitions.count = 2;
+      },
+      (r) => {
+        r.partitions.sha256 = 'c'.repeat(64);
+      },
+      (r) => {
+        r.schemaVersion = 1;
       },
       (r) => {
         r.scores[0].total = 2;
@@ -191,9 +198,10 @@ it('NFR-MNT-005: the gate re-reads live status and rejects missing records, chan
       return evidence();
     },
   };
-  await checkMutationRecord(record, 'M18', deps);
+  const checked = await checkMutationRecord(record, 'M18', deps);
   await checkMutationRecord(record, 'M18', deps);
   assert.equal(reads, 2);
+  assert.equal(evidenceLine(record, checked.receipt), `mutation-evidence: ${sha} run 123; 1 complete partitions, all package floors passed`);
   await assert.rejects(checkMutationRecord(null, 'M18', deps), /invalid/);
   await assert.rejects(checkMutationRecord({ ...record, run: 456 }, 'M18', deps), /ID differs/);
   let calls = 0;
@@ -218,4 +226,49 @@ it('NFR-MNT-005: the gate re-reads live status and rejects missing records, chan
     }),
     /failed/,
   );
+});
+
+describe('mutation evidence notice size (NFR-MNT-005, M18.10)', () => {
+  it("keeps the evidence notice within GitHub's 4096 characters however many partitions run (M18.10)", () => {
+    // nightly 42794721908 listed 288 partition ids and GitHub cut its notice at 4096 characters
+    const files = Array.from({ length: 400 }, (_, i) => `packages/core/src/f${i}.ts`);
+    const mutants = files.flatMap((file, i) =>
+      Array.from({ length: 50 }, (_, k) => ({
+        ...mutant,
+        id: `m${i}-${k}`,
+        file,
+        location: { start: { line: k + 1, column: 1 }, end: { line: k + 1, column: 5 } },
+      })),
+    );
+    const big = createManifest({
+      revision: sha,
+      runner: hash,
+      version: '0.1.1',
+      packages: ['packages/core'],
+      files: Object.fromEntries(files.map((f) => [f, hash])),
+      mutants,
+      floors: { 'packages/core': { score: 100 } },
+    });
+    const parts = partitionManifest(big);
+    assert.equal(parts.length, 400);
+    const shards = parts.map((p) => {
+      const own = new Set(p.files);
+      const mine = mutants.filter((m) => own.has(m.file));
+      return {
+        ...shard(),
+        partition: p.id,
+        files: Object.fromEntries(files.map((f) => [f, hash])),
+        report: { ...shard().report, mutants: mine.map((m) => ({ ...m, status: 'Killed' })) },
+      };
+    });
+    const receipt = mutationReceipt(big, shards);
+    assert.equal(receipt.partitions.count, 400);
+    assert.ok(evidenceNotice(receipt).length <= NOTICE_MAX_CHARS);
+  });
+
+  it('refuses to emit a notice GitHub would cut, so the evidence is never lost silently', () => {
+    const receipt = mutationReceipt(plan(), [shard()]);
+    assert.ok(evidenceNotice(receipt).startsWith('FLUXION_MUTATION_EVIDENCE {'));
+    assert.throws(() => evidenceNotice({ ...receipt, padding: 'x'.repeat(NOTICE_MAX_CHARS) }), /over GitHub's 4096/);
+  });
 });
