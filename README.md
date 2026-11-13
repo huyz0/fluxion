@@ -17,7 +17,7 @@ presents in any browser; `.flux` is the compact editable package).
 
 ## Quickstart
 
-Needs Node ≥ 22.19 and pnpm 11 (`corepack enable` picks the version pinned in `package.json`).
+Needs Node ≥ 22.23.4 and pnpm 11 (`corepack enable` picks the version pinned in `package.json`).
 Windows, macOS and Linux are all supported.
 
 ```bash

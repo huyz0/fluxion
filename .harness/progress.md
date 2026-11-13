@@ -4677,3 +4677,12 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - Order: (1) M18.296 lands with Fixes-ci: 43505770693 (astro catalog bump at or after 7.4.7, older than minimumReleaseAge); main's next ci green with osv-scanner. (2) The first nightly at or after the new freeze sha: check-mutation-evidence --record, check-ci-evidence --record <new sha> --perf-run <id>, first render under the cp51 M18.288 rule, no re-run counted. (3) Browser legs re-run at the new sha in the pinned image. (4) A final-review delta over ffc89e8..<new sha>, recorded as milestone-M18-final.json with range 7545e708..<new sha>. (5) last-ci read right before M18.43's close, then m18-complete 76/76 in one run on one tree and the roadmap advance.
 - state.json `updated` is the wall-clock time of this record.
 
+
+## 2026-11-13 M18.296: astro 7.4.11 for GHSA-mh32-jxcr-mh9f and GHSA-r3h5-4585-7x3w; Node 22.23.5
+
+- ci 43505770693 at f6aeace failed security / osv-scanner on astro 7.3.5 (fixed in 7.4.5 and 7.4.7). The catalog pin moves to 7.4.11 (published 2026-11-11T17:35Z, older than minimumReleaseAge; 7.4.12 is not). No osv exemption: a fixed version exists.
+- Every astro 7.4.x declares engines.node >=22.23.4, and astro refuses to build on 22.22: "Node.js v22.22.0 is not supported by Astro!". .node-version moves from 22.19.0 to 22.23.5 (2026-11-11, the current 22 LTS patch, SHA256 checked from nodejs.org SHASUMS256.txt). CI reads .node-version through setup-node; the pinned Playwright image (Node 24.20.0) is unchanged.
+- Local, under Node 22.23.5: `pnpm --filter @fluxion/docs build` built 222 pages; `check-licenses` 1106 dependencies checked, every licence allowed.
+- The commit carries Fixes-ci: 43505770693 and is the new M18 freeze sha (final review ffc89e8 F1). The row closes when main's next ci is green with osv-scanner.
+- r1 F1 (changes-requested): the root engines.node floor said >=22.19, so setup.mjs passed on 22.22 and the docs build failed late. The floor is now >=22.23.4, with README.md and docs/standards/tech-stack.md saying the same; published packages' own engines are unchanged (astro is docs tooling only).
+- The workspace-shape test that pins the floor now asserts >=22.23.4; its title is renamed with it (Removes-test trailer).
