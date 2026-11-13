@@ -52,7 +52,7 @@ describe('m18-complete library search leg (M18.244, cp36 F3)', () => {
       assert.equal(r.status, 0, out(r));
       const [args] = readFileSync(sb.path('calls.jsonl'), 'utf8').trim().split('\n').map(JSON.parse);
       assert.equal(args.at(-1), SUITE);
-      assert.equal(args[args.indexOf('--project') + 1], 'node');
+      assert.equal(args[args.indexOf('--project') + 1], 'node*');
     } finally {
       sb.cleanup();
     }

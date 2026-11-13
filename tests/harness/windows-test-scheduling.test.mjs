@@ -27,10 +27,14 @@ test('HARNESS: Windows serializes existing test projects without changing invent
       assert.equal(browser.fileParallelism, false);
       assert.ok(node.sequence.groupOrder < browser.sequence.groupOrder);
       for (const key of ['coverage', 'testTimeout', 'hookTimeout', 'setupFiles', 'env']) assert.deepEqual(windows.test[key], linux.test[key]);
-      for (let i = 0; i < 2; i++) for (const key of ['name', 'include', 'exclude', 'environment']) assert.deepEqual(windows.test.projects[i].test[key], linux.test.projects[i].test[key]);
+      // every project, node-isolated too (ADR-0218): the same inventory on every OS, and on Windows one file at a time
+      assert.equal(windows.test.projects.length, linux.test.projects.length);
+      for (let i = 0; i < linux.test.projects.length; i++) for (const key of ['name', 'include', 'exclude', 'environment', 'isolate']) assert.deepEqual(windows.test.projects[i].test[key], linux.test.projects[i].test[key]);
+      const isolated = windows.test.projects.find((p) => p.test.name === 'node-isolated').test;
+      assert.equal(isolated.fileParallelism, false);
       assert.equal(linux.test.projects[0].test.fileParallelism, undefined);
       // the same groupOrder on every OS (M18.157); on Windows, where the node project has one worker too, Vitest runs it last (M18.276)
-      for (let i = 0; i < 2; i++) assert.deepEqual(windows.test.projects[i].test.sequence, linux.test.projects[i].test.sequence);
+      for (let i = 0; i < linux.test.projects.length; i++) assert.deepEqual(windows.test.projects[i].test.sequence, linux.test.projects[i].test.sequence);
     } finally { Object.defineProperty(process, 'platform', platform); }
   `,
     ],

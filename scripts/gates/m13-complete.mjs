@@ -232,7 +232,7 @@ leg('FR-LAY-007: aborting a layout job rejects with AbortError and a stale revis
 );
 leg('the no-overlap property and the determinism harness pass at the CI seed', () => {
   const file = 'packages/layout/src/no-overlap.prop.test.ts';
-  return exists(file) ? ok(run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', file])) : `missing ${file}`;
+  return exists(file) ? ok(run('pnpm', ['exec', 'vitest', 'run', '--project', 'node*', file])) : `missing ${file}`;
 });
 const UNTITLED_ROWS = {
   'M13.21': 'the golden test runs in the examples runner (scripts/dsl/examples.test.ts), a Vitest config of its own, under GOLDEN_TITLE in the golden leg',

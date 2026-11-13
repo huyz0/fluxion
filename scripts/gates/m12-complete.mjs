@@ -87,7 +87,7 @@ leg('every example compiles with 0 errors, twice to the same bytes; checkout.flu
 );
 leg('the round-trip property compile(decompile(compile(src))) = compile(src) passes at the CI seed', () => {
   if (!exists(ROUNDTRIP)) return `missing ${ROUNDTRIP}`;
-  const r = ok(pnpm('exec', 'vitest', 'run', '--project', 'node', ROUNDTRIP));
+  const r = ok(pnpm('exec', 'vitest', 'run', '--project', 'node*', ROUNDTRIP));
   if (r !== true) return r;
   // the property's own title: a bare requirement id matched no test, so the run count was never read (M12.16)
   const runs = propertyRuns(readText(ROUNDTRIP), ROUNDTRIP_TITLE);

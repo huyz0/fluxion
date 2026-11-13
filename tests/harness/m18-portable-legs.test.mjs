@@ -57,8 +57,8 @@ describe('portable-shape completion acceptance (HARNESS, FR-LIB-009, NFR-LIC-003
       assert.deepEqual(
         calls.map((args) => [args.at(-1), args[args.indexOf('--project') + 1]]).sort(),
         [
-          [USED, 'node'],
-          [CREDITS, 'node'],
+          [USED, 'node*'],
+          [CREDITS, 'node*'],
         ].sort(),
       );
       assert.deepEqual(JSON.parse(readFileSync(sb.path('browser.json'), 'utf8')), {

@@ -38,7 +38,7 @@ function failedTest(out) {
 
 // A nonempty report, successful process, and every assertion passed are all required; with `named`, a passed
 // case whose full name holds that text is required too, so the leg judges the case it names (M18.244, cp36 F3).
-function tests(file, { project = 'node', config, named } = {}) {
+function tests(file, { project = 'node*', config, named } = {}) {
   if (!exists(file)) return `missing ${file}`;
   const dir = mkdtempSync(join(tmpdir(), 'm18-tests-'));
   try {

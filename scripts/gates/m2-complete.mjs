@@ -22,7 +22,7 @@ function vitestNamed(pattern, paths, { env = {}, min = 1 } = {}) {
     const out = join(dir, 'report.json');
     // -t takes a regular expression; the pattern is a literal test title (M2 cp1 F1)
     const literal = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', '--reporter=json', `--outputFile=${out}`, '-t', literal, ...paths], {
+    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node*', '--reporter=json', `--outputFile=${out}`, '-t', literal, ...paths], {
       env: { ...process.env, ...env },
     });
     if (!existsSync(out)) return `vitest wrote no report: ${ok(r)}`;

@@ -57,8 +57,8 @@ describe('artwork-font retention completion acceptance (HARNESS, FR-LIB-004, FR-
       assert.deepEqual(
         calls.map((args) => [args.at(-1), args[args.indexOf('--project') + 1]]).sort(),
         [
-          [USED, 'node'],
-          [CREDITS, 'node'],
+          [USED, 'node*'],
+          [CREDITS, 'node*'],
         ].sort(),
       );
       assert.deepEqual(JSON.parse(readFileSync(sb.path('browser.json'), 'utf8')), {

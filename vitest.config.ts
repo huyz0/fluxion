@@ -1,8 +1,10 @@
 // One Vitest run for the whole repo (NFR-MNT-004, testing.md §1–§6).
-//   node    — T0: `*.test.ts(x)` in Node, no DOM
+//   node          — T0: `*.test.ts(x)` in Node, no DOM, one module registry per worker (ADR-0218)
+//   node-isolated — T0: the node files that change process-wide state, each in a fresh registry (ADR-0218)
 //   browser — T1: `*.browser.test.ts(x)` in Chromium through Playwright
 // Coverage floors per package come from scripts/gates/thresholds.mjs (check-drift guards them).
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 import { t } from './scripts/gates/thresholds.mjs';
@@ -10,6 +12,7 @@ import { domFreeAliases } from './tools/vite-dom-free/index.mjs';
 import { i18nCatalogs } from './tools/vite-lingui/catalogs.mjs';
 import { lingui } from './tools/vite-lingui/index.mjs';
 import { DurationsReporter } from './tools/vitest/durations-reporter.mjs';
+import { isolatedFiles } from './tools/vitest/isolation.mjs';
 import { ProgressReporter } from './tools/vitest/progress-reporter.mjs';
 
 interface Workspace {
@@ -35,6 +38,8 @@ const floors = Object.fromEntries(
 );
 
 const SRC = '{packages,packs,apps}/*/src/**';
+// ADR-0218 (M18.290): node files that mock modules, stub globals or env, fake timers or spy on process-wide objects
+const ISOLATED = isolatedFiles(fileURLToPath(new URL('.', import.meta.url)));
 // fast-check seed used in CI (tools/vitest/fast-check.setup.ts); FC_SEED overrides it
 const CI_SEED = 20_260_926;
 // fast-check runs per property, as the nightly sets it (FC_RUNS); 200, fast-check.setup.ts's default, when unset or not a number
@@ -70,13 +75,18 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'node',
-          // Native browser-owning E2E files share this project; preserve every --project node selector.
+          // Native browser-owning E2E files share this project; select node files with --project 'node*' (node + node-isolated, ADR-0218).
           ...(process.platform === 'win32' ? { fileParallelism: false } : {}),
           // the node project first, then the browser one: Chromium never runs beside node's bounded-time tests (M18.117)
           sequence: { groupOrder: 0 },
           environment: 'node',
           include: [`${SRC}/*.test.{ts,tsx}`, 'scripts/examples/*.test.ts'],
-          exclude: [`${SRC}/*.browser.test.{ts,tsx}`],
+          exclude: [`${SRC}/*.browser.test.{ts,tsx}`, ...ISOLATED],
+          // ADR-0218: files in one worker share the module registry, so a file's imports load once per worker, not once per file
+          // (39 % of the project's time); the files that change process-wide state run in node-isolated. Select both as `node*`.
+          // Mutation runs (scripts/harness/mutate.mjs sets FLUXION_TEST_ISOLATE) keep one registry per file, so a mutant's
+          // per-test coverage and verdicts are read as before
+          isolate: process.env['FLUXION_TEST_ISOLATE'] === '1',
         },
       },
       {
@@ -93,6 +103,16 @@ export default defineConfig({
           sequence: { groupOrder: 1 },
           include: [`${SRC}/*.browser.test.{ts,tsx}`],
           browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: 'chromium' }] },
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'node-isolated',
+          ...(process.platform === 'win32' ? { fileParallelism: false } : {}),
+          sequence: { groupOrder: 0 },
+          environment: 'node',
+          include: ISOLATED,
         },
       },
     ],

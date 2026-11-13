@@ -527,7 +527,7 @@ jobs:
       - name: chromium for the PNG render tests
         run: pnpm exec playwright install ${{ runner.os != 'Windows' && '--with-deps ' || '' }}chromium
       - name: e2e of @fluxion/cli and @fluxion/mcp
-        run: pnpm exec vitest run --project node packages/cli/src/e2e packages/mcp/src/e2e
+        run: pnpm exec vitest run --project 'node*' packages/cli/src/e2e packages/mcp/src/e2e
       # M18.281: a build that printed turbo's all-successful summary and did not exit leaves its process table here
       - name: stuck build reports
         if: always()

@@ -52,7 +52,7 @@ function coverage(tests, include) {
   // runs every test with coverage, so a whole-suite run here repeated it twice per verify.
   return sb.node(
     'node_modules/vitest/vitest.mjs',
-    ['run', '--coverage', '--project', 'node', ...include.map((d) => `--coverage.include=${d}/src/**`), ...tests],
+    ['run', '--coverage', '--project', 'node*', ...include.map((d) => `--coverage.include=${d}/src/**`), ...tests],
     {
       env: cleanEnv({ ...process.env, FC_RUNS: '10', FC_SEED: '1' }),
     },
@@ -165,7 +165,7 @@ describe('coverage floors (NFR-MNT-004)', () => {
       "import fc from 'fast-check';\nimport { expect, it } from 'vitest';\n\nit('seed probe', () => {\n  expect(fc.readConfigureGlobal()).toMatchObject({ seed: 4242, numRuns: 7 });\n});\n",
     );
     try {
-      const r = sb.node('node_modules/vitest/vitest.mjs', ['run', '--project', 'node', probe], {
+      const r = sb.node('node_modules/vitest/vitest.mjs', ['run', '--project', 'node*', probe], {
         env: cleanEnv({ ...process.env, FC_SEED: '4242', FC_RUNS: '7' }),
       });
       assert.equal(r.status, 0, out(r));

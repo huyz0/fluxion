@@ -584,7 +584,7 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.equal(calls.length, 2);
     assert.deepEqual(
       calls.map((a) => a[a.indexOf('--project') + 1]),
-      ['node', 'browser'],
+      ['node*', 'browser'],
     );
     assert.ok(calls[0].includes('packages/theme') && calls[0].includes('packages/core'));
     // a title the run did not pass is reported with its row

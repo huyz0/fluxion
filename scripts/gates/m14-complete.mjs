@@ -21,7 +21,7 @@ const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().spli
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
 
 /** A Vitest run of `files` (node project; `project` picks another) whose JSON report shows tests passed and none failed, skipped or todo. */
-function vitestReport(files, project = 'node') {
+function vitestReport(files, project = 'node*') {
   const missing = files.filter((f) => !exists(f));
   if (missing.length) return `missing ${missing.join(', ')}`;
   const dir = mkdtempSync(join(tmpdir(), 'm14-vt-'));
@@ -41,7 +41,7 @@ function vitestReport(files, project = 'node') {
   }
 }
 /** A Vitest file that exists and whose tests all pass: none skipped or todo, at least one run. */
-const vitestFile = (file, project = 'node') => {
+const vitestFile = (file, project = 'node*') => {
   const r = vitestReport([file], project);
   return typeof r === 'string' ? r : true;
 };

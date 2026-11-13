@@ -24,7 +24,7 @@ const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().spli
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
 
 /** A Vitest file that exists and whose tests all pass: none skipped or todo, at least one run. */
-function vitestFile(file, project = 'node', config = undefined) {
+function vitestFile(file, project = 'node*', config = undefined) {
   if (!exists(file)) return `missing ${file}`;
   const dir = mkdtempSync(join(tmpdir(), 'm17-vt-'));
   try {
@@ -194,7 +194,7 @@ leg('check-licenses passes with elkjs only in packs/layouts-elk', () => {
 
 // ── coverage, changesets, quarantines ──────────────────────────────────────────────────────────────
 leg('packages/layout coverage is at least 90 % lines and 85 % branches', () => {
-  const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', '--coverage', '--coverage.include=packages/layout/src/**', 'packages/layout']);
+  const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node*', '--coverage', '--coverage.include=packages/layout/src/**', 'packages/layout']);
   if (r.status !== 0) return `layout tests failed: ${ok(r)}`;
   const s = json('coverage/coverage-summary.json')?.total;
   if (!s) return 'no coverage summary written';

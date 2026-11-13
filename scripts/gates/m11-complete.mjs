@@ -25,7 +25,7 @@ const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(
 const DEMO = 'examples/r1-mvp-deck.flux.html';
 
 /** Every title in `ids` (the exact titles the backlog rows quote, not a bare requirement id that older tests already carry) names at least one executed, passing Vitest test in `project`. */
-function byId(ids, paths, project = 'node') {
+function byId(ids, paths, project = 'node*') {
   const verdicts = vitestTitles(ids, paths, { project });
   const bad = verdicts.map((v, i) => (v === true ? null : `${ids[i]}: ${v}`)).filter(Boolean);
   return bad.length === 0 || bad.join('; ');

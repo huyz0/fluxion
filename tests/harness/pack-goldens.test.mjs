@@ -30,7 +30,7 @@ function packSandbox() {
     return { ...env, ...extra };
   };
   const run = (extra) =>
-    spawnSync(process.execPath, [join(REPO, 'node_modules/vitest/vitest.mjs'), 'run', '--project', 'node', SUITE], {
+    spawnSync(process.execPath, [join(REPO, 'node_modules/vitest/vitest.mjs'), 'run', '--project', 'node*', SUITE], {
       cwd: dir,
       encoding: 'utf8',
       env: clean(extra),

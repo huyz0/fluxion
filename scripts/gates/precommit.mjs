@@ -209,7 +209,7 @@ const STEPS = [
         ? vitest('exec', 'vitest', 'run')
         : plan.browser
           ? vitest('run', 'test:coverage')
-          : vitest('exec', 'vitest', 'run', '--coverage', '--project', 'node', ...plan.include.map((g) => `--coverage.include=${g}`)));
+          : vitest('exec', 'vitest', 'run', '--coverage', '--project', 'node*', ...plan.include.map((g) => `--coverage.include=${g}`)));
       // a fast-check seed that refused this run is recorded, for the fc-replay step of every later staged run (M18.275)
       if (mode === 'staged' && result.status !== 0) {
         try {

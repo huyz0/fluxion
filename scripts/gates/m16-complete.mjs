@@ -23,7 +23,7 @@ const ok = (r) => (r.status === 0 ? true : `${(r.stderr || r.stdout).trim().spli
 const json = (p) => (existsSync(repoPath(p)) ? JSON.parse(readFileSync(repoPath(p), 'utf8')) : null);
 
 /** A Vitest file that exists and whose tests all pass: none skipped or todo, at least one run. */
-function vitestFile(file, project = 'node', config = undefined) {
+function vitestFile(file, project = 'node*', config = undefined) {
   if (!exists(file)) return `missing ${file}`;
   const dir = mkdtempSync(join(tmpdir(), 'm16-vt-'));
   try {
@@ -134,7 +134,7 @@ leg("the R3 exit checklist lists M16's criteria (rows 1-11) with evidence, every
 
 // ── coverage, changesets, quarantines ──────────────────────────────────────────────────────────────
 leg('packages/routing coverage is at least 90 % lines and 85 % branches', () => {
-  const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', '--coverage', '--coverage.include=packages/routing/src/**', 'packages/routing']);
+  const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node*', '--coverage', '--coverage.include=packages/routing/src/**', 'packages/routing']);
   if (r.status !== 0) return `routing tests failed: ${ok(r)}`;
   const s = json('coverage/coverage-summary.json')?.total;
   if (!s) return 'no coverage summary written';

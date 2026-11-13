@@ -32,13 +32,13 @@ describe('pnpm mutate (NFR-MNT-005, ADR-0146)', () => {
   it('tzap runs get their own Vite cache, apart from the one a concurrent browser run serves (M5.29)', () => {
     // Vitest honours FLUXION_VITEST_CACHE ...
     const cache = join(fresh(), 'vite');
-    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node', 'packages/schema/src/ids.test.ts'], {
+    const r = run('pnpm', ['exec', 'vitest', 'run', '--project', 'node*', 'packages/schema/src/ids.test.ts'], {
       env: { ...process.env, FLUXION_VITEST_CACHE: cache },
     });
     assert.equal(r.status, 0, out(r));
     assert.ok(existsSync(cache), 'Vitest did not write the cache it was given');
     // ... and pnpm mutate hands tzap one next to its report
-    assert.match(readFileSync(join(REPO, 'scripts/harness/mutate.mjs'), 'utf8'), /env: \{ \.\.\.process\.env, FLUXION_VITEST_CACHE: viteCache \}/);
+    assert.match(readFileSync(join(REPO, 'scripts/harness/mutate.mjs'), 'utf8'), /env: \{ \.\.\.process\.env, FLUXION_VITEST_CACHE: viteCache[,} ]/);
   });
 
   it('a failing tzap run exits non-zero and leaves no stale report', () => {

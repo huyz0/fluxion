@@ -333,7 +333,7 @@ const tail = (r) => (r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(
  * tests whose full name contains the title must pass and none may fail. A comment or a skipped test
  * cannot satisfy it (shared from m4-complete on; written for m3).
  */
-export function vitestNamed(title, paths, { env = {}, min = 1, project = 'node' } = {}) {
+export function vitestNamed(title, paths, { env = {}, min = 1, project = 'node*' } = {}) {
   return vitestTitles([title], paths, { env, min, project })[0];
 }
 
@@ -342,7 +342,7 @@ export function vitestNamed(title, paths, { env = {}, min = 1, project = 'node' 
  * joined as alternatives), then judge each title as {@link vitestNamed} does: true | '<reason>' per
  * title, in order. `runner(args, env)` is injectable for tests (M4 cp1 F3).
  */
-export function vitestTitles(titles, paths, { env = {}, min = 1, project = 'node', runner = runVitest, exact = false } = {}) {
+export function vitestTitles(titles, paths, { env = {}, min = 1, project = 'node*', runner = runVitest, exact = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'gate-vitest-'));
   try {
     const out = join(dir, 'report.json');
@@ -382,7 +382,7 @@ export function namedCases(file, patterns) {
 export function titled(list, { runner, exact = false } = {}) {
   // one Vitest run per project and environment, over every package the titles name (M4 cp1 F3)
   const groups = new Map();
-  for (const [row, title, pkg, env = {}, project = 'node'] of list) {
+  for (const [row, title, pkg, env = {}, project = 'node*'] of list) {
     const key = `${project} ${JSON.stringify(env)}`;
     const g = groups.get(key) ?? { project, env, entries: [] };
     g.entries.push({ row, title, pkg });

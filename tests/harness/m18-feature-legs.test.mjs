@@ -60,7 +60,7 @@ describe('M18 feature completion wiring (HARNESS, FR-LIB-004, FR-LIB-009)', () =
         [
           [ART, 'browser'],
           [LEGACY, 'browser'],
-          [LOADER, 'node'],
+          [LOADER, 'node*'],
         ].sort(),
       );
     } finally {

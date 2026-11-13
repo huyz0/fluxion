@@ -81,7 +81,7 @@ describe('a test run that goes silent fails and names what was running (M18.283,
 
   test("NFR-PORT-005: Vitest calls the reporter: a CI-configured run logs a file's start and end", () =>
     withDir(async (dir) => {
-      const res = await runAsync('pnpm', ['exec', 'vitest', 'run', '--project', 'node', 'packages/geometry/src/index.test.ts'], {
+      const res = await runAsync('pnpm', ['exec', 'vitest', 'run', '--project', 'node*', 'packages/geometry/src/index.test.ts'], {
         env: { ...process.env, FLUXION_TEST_DURATIONS: join(dir, 'durations.json'), GITHUB_ACTIONS: '' },
       });
       assert.equal(res.status, 0, res.stderr.slice(-2000));

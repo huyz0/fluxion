@@ -72,7 +72,8 @@ const tzap = (args, opts = {}) =>
     cwd: REPO_ROOT,
     encoding: 'utf8',
     maxBuffer: 256 * 1024 * 1024,
-    env: { ...process.env, FLUXION_VITEST_CACHE: viteCache },
+    // one module registry per test file, as before ADR-0218: tzap's per-test coverage reads each file's own module loads
+    env: { ...process.env, FLUXION_VITEST_CACHE: viteCache, FLUXION_TEST_ISOLATE: '1' },
     ...opts,
   });
 const discovered = tzap(['model']);

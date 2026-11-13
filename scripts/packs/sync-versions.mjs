@@ -29,9 +29,9 @@ for (const pack of packs) {
   writeFileSync(index, text.replace(VERSION, `export const VERSION: string = '${version}';`));
   const env = { ...process.env, VITE_FLUXION_WRITE_PACK: '1' };
   const vitest = join(ROOT, 'node_modules/vitest/vitest.mjs');
-  const write = spawnSync(process.execPath, [vitest, 'run', '-u', '--project', 'node', `${pack}/src/pack.test.ts`], { cwd: ROOT, env, stdio: 'inherit' });
+  const write = spawnSync(process.execPath, [vitest, 'run', '-u', '--project', 'node*', `${pack}/src/pack.test.ts`], { cwd: ROOT, env, stdio: 'inherit' });
   delete env.VITE_FLUXION_WRITE_PACK;
-  const check = write.status === 0 && spawnSync(process.execPath, [vitest, 'run', '--project', 'node', pack], { cwd: ROOT, env, stdio: 'inherit' });
+  const check = write.status === 0 && spawnSync(process.execPath, [vitest, 'run', '--project', 'node*', pack], { cwd: ROOT, env, stdio: 'inherit' });
   const ok = check !== false && check.status === 0;
   if (!ok) failed = true;
   console.log(`${pack}: ${version}${ok ? '' : ' FAILED'}`);
