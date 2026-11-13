@@ -336,8 +336,8 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
         );
       });
     }
-    // ci: verify, harness-windows (ADR-0214) and cli-mcp; nightly: both mutation chains, properties, perf, visual-xos and previous-playwright
-    assert.equal(installs, 9);
+    // ci: verify, harness-windows (ADR-0214) and cli-mcp; nightly: both mutation chains, properties, node-shuffle (M18.291), perf, visual-xos and previous-playwright
+    assert.equal(installs, 10);
     const cold = /^ {2}cold-setup:[\s\S]*?(?=^ {2}\S)/m.exec(ci)[0];
     assert.doesNotMatch(cold, /actions\/cache|^ +cache: |playwright install/m, 'the cold setup measures an empty store and browser cache (NFR-DX-001)');
   });
@@ -442,6 +442,26 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(ci, /^ {2}security:\n[\s\S]*?uses: \.\/\.github\/workflows\/security\.yml/m);
   });
 
+  it('HARNESS (M18.291, ADR-0218): the nightly runs the node tests in a shuffled file order, keeps the seed in its summary and names it on failure', () => {
+    const nightly = workflow('nightly.yml');
+    const job = /^ {2}node-shuffle:[\s\S]*?(?=^ {2}\S)/m.exec(nightly)?.[0] ?? '';
+    // the node project holds the CLI e2e files that drive Chromium (M18.291 r2 F1): the browser is installed before the build
+    assert.match(job, /- name: playwright browsers cache\n[\s\S]*?- run: pnpm exec playwright install --with-deps chromium\n\s+- run: pnpm run build\n/);
+    // a fresh seed each night, printed and kept in the job summary with the command that replays it
+    assert.match(job, /SEED=\$\(node -e "console\.log\(require\('node:crypto'\)\.randomInt\(1, 2 \*\* 31\)\)"\)/);
+    assert.match(job, /REPLAY="pnpm exec vitest run --project 'node\*' --sequence\.shuffle\.files --maxWorkers=1 --sequence\.seed=\$SEED"/);
+    assert.match(job, /echo "node-shuffle seed: \$SEED"\n/);
+    assert.match(job, />> "\$GITHUB_STEP_SUMMARY"/);
+    // every node file (node and node-isolated) in one worker, so the seed alone decides which files share a registry (M18.291 r1 F1); a failure fails the job and names the seed
+    assert.match(
+      job,
+      /pnpm exec vitest run --project 'node\*' --sequence\.shuffle\.files --maxWorkers=1 --sequence\.seed="\$SEED" \|\| \{\n\s+echo "::error title=node-shuffle::[^"]*seed \$SEED; replay: \$REPLAY"\n\s+exit 1\n\s+\}/,
+    );
+    assert.doesNotMatch(job, /continue-on-error/);
+    // the failure report covers it
+    assert.match(/^ {2}report:[\s\S]*?needs: \[([^\]]*)\]/m.exec(nightly)[1], /\bnode-shuffle\b/);
+  });
+
   it('nightly.yml has the planned jobs and reports failures as one issue (NFR-SEC-005)', () => {
     const nightly = workflow('nightly.yml');
     assert.deepEqual(jobsOf(nightly), [
@@ -450,6 +470,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
       'mutation-partitions-2',
       'mutation',
       'properties',
+      'node-shuffle',
       'perf',
       'eval-live',
       'visual-xos',
@@ -484,7 +505,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(aggregate, /merge-multiple: false/);
 
     const report = /^ {2}report:[\s\S]*/m.exec(nightly)[0];
-    assert.match(report, /needs: \[mutation, properties, perf, eval-live, visual-xos, previous-playwright\]/);
+    assert.match(report, /needs: \[mutation, properties, node-shuffle, perf, eval-live, visual-xos, previous-playwright\]/);
     // NFR-PORT-001 (M11.23): the previous-major job points the catalog at the older Playwright, runs all five projects (three engines and their mobile presets), and commits nothing
     const previous = /^ {2}previous-playwright:[\s\S]*?(?=^ {2}report:)/m.exec(nightly)[0];
     assert.match(previous, /node scripts\/ci\/previous-playwright\.mjs/);

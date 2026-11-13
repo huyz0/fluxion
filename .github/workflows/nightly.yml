@@ -202,6 +202,42 @@ jobs:
       - run: pnpm run build
       - run: pnpm test
 
+  # M18.291 (ADR-0218): the node tests in a shuffled file order, so an order dependence between files that share
+  # a module registry, which isolation.mjs's markers miss, shows here before it reaches main; the seed replays it
+  # one worker: with several, which files share a worker's registry depends on timing and core count, not on the seed alone
+  node-shuffle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # the node project holds the CLI e2e files that drive Chromium (svg-witness, artwork fonts, render-png), as in properties
+      # M18.182: the locked Playwright release's browsers restored, not downloaded; keyed on its browsers.json, so a miss only costs time
+      - name: playwright browsers cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.os == 'Windows' && '~/AppData/Local/ms-playwright' || runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
+          key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/browsers.json') }}
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm run build
+      - name: node tests in a shuffled file order
+        run: |
+          SEED=$(node -e "console.log(require('node:crypto').randomInt(1, 2 ** 31))")
+          REPLAY="pnpm exec vitest run --project 'node*' --sequence.shuffle.files --maxWorkers=1 --sequence.seed=$SEED"
+          echo "node-shuffle seed: $SEED"
+          echo "node-shuffle seed: \`$SEED\` (replay: \`$REPLAY\`)" >> "$GITHUB_STEP_SUMMARY"
+          pnpm exec vitest run --project 'node*' --sequence.shuffle.files --maxWorkers=1 --sequence.seed="$SEED" || {
+            echo "::error title=node-shuffle::node tests failed in a shuffled file order, seed $SEED; replay: $REPLAY"
+            exit 1
+          }
+
   perf:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -363,7 +399,7 @@ jobs:
         run: node scripts/ci/clipboard-events-probe.mjs
 
   report:
-    needs: [mutation, properties, perf, eval-live, visual-xos, previous-playwright]
+    needs: [mutation, properties, node-shuffle, perf, eval-live, visual-xos, previous-playwright]
     if: failure()
     runs-on: ubuntu-latest
     timeout-minutes: 5
