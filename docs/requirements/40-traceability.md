@@ -61,7 +61,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-AST-004 | S | R4 | M23 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-AST-005 | M | R1 | M10 | [10-document-and-file.md](10-document-and-file.md) | `e2e/assets.remove-unused.spec.ts` +3 |
 | FR-AST-006 | S | R2 | M15 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/file-session.test.ts` +3 |
-| FR-SHP-001 | M | R0 | M2 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/box.test.ts` +6 |
+| FR-SHP-001 | M | R0 | M2 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/box.test.ts` +7 |
 | FR-SHP-002 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/render.shapes-gallery.spec.ts` +3 |
 | FR-SHP-003 | M | R1 | M5, M7 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/shapes.param-handle.spec.ts` +11 |
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/round.test.ts` +7 |
@@ -304,7 +304,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SITE-004 | S | R7 | M31 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-SITE-005 | C | R8 | M33 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | NFR-PERF-001 | M | R1 | M6 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.drag-500.spec.ts` +19 |
-| NFR-PERF-002 | M | R3 | M16 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.big-screen.spec.ts` +8 |
+| NFR-PERF-002 | M | R3 | M16 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.big-screen.spec.ts` +10 |
 | NFR-PERF-003 | M | R1 | M11 | [30-non-functional.md](30-non-functional.md) | `e2e/perf.open-50.spec.ts` |
 | NFR-PERF-004 | M | R4 | M21 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-PERF-005 | M | R2 | M13 | [30-non-functional.md](30-non-functional.md) | `packages/layout/bench/calibration.bench.ts` +7 |

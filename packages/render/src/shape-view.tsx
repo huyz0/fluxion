@@ -3,17 +3,7 @@
 // path filling the wrapper's box, filled and stroked with the resolved style; its text is a centred
 // plain-text label. An unknown `defId`, or an outline that does not evaluate, renders the placeholder.
 
-import {
-  evaluateOutline,
-  fitShapeText,
-  growsText,
-  type ShapeDef,
-  type StyledBlock,
-  shrinksText,
-  TEXT_FIT_DEFAULTS,
-  type TextMeasurer,
-  textRegion,
-} from '@fluxion/core';
+import { fitShapeText, growsText, type ShapeDef, type StyledBlock, shrinksText, TEXT_FIT_DEFAULTS, type TextMeasurer, textRegion } from '@fluxion/core';
 import { roundCorners } from '@fluxion/geometry';
 import type { ShapeElement, TextElement } from '@fluxion/schema';
 import { type ResolvedFont, type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
@@ -28,6 +18,7 @@ import { pathData, segmentsData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
 import { styledBlocks } from './rich-layout.js';
 import { RichText } from './rich-text.js';
+import { outlineOf, shapeStyle, viewStyle } from './shape-style.js';
 import { browserMeasurer, concreteFont, MeasurerContext, useFontGeneration } from './text-measurer.js';
 
 const stops = (paint: { readonly stops: ReadonlyArray<{ readonly offset: number; readonly css: string }> }) =>
@@ -226,13 +217,6 @@ function ShapePaint(
   );
 }
 
-/** The style of a shape: the definition's defaults sit under the element's own (02 §2). */
-function shapeStyle(element: ShapeElement, def: ShapeDef | undefined, theme: Theme): ReturnType<typeof resolveStyle> {
-  const defaults = def?.defaultStyle;
-  const of = defaults === undefined ? 'shape' : { kind: 'shape', defaults, defaultsAt: ['shapeDefs', element.defId, 'defaultStyle'] };
-  return resolveStyle(element.style, of, theme, ['records', element.id, 'style']);
-}
-
 /**
  * The height a `grow` shape needs for `text` (ADR-0018 item 4, FR-SHP-006), laid out as the view draws it;
  * undefined when the shape does not grow, has no definition, no measurer is at hand (server rendering), or
@@ -309,13 +293,13 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const ids = useId().replace(/[^\w-]/g, '');
   const fillId = `fx-fill-${ids}`;
   const def = registries.shapeDefs.get(element.defId);
-  const { style } = useMemo(() => shapeStyle(element, def, theme), [element, def, theme]);
+  const style = useMemo(() => viewStyle(element, def, theme), [element, def, theme]);
   const image = useImage(store, style.fill.type === 'image' ? style.fill.assetId : undefined);
   const measurer = useContext(MeasurerContext) ?? browserMeasurer();
   const fonts = useFontGeneration();
   const { w, h } = element.transform;
   const artwork = useArtwork(def, { w, h }, { prefix: `fx-art-${ids}`, theme, fonts: registries.artworkFonts?.get(element.defId) });
-  const outlined = useMemo(() => (def === undefined ? undefined : evaluateOutline(def, { w, h }, element.params)), [def, w, h, element.params]);
+  const outlined = useMemo(() => (def === undefined ? undefined : outlineOf(def, { w, h }, element.params)), [def, w, h, element.params]);
   const paragraphs = useMemo(() => plainParagraphs(element.text), [element.text]);
   // the text as it is drawn (sizes, headings, spacing, indents), which the fit measures
   // tzap disable next-line ArrayDeclaration: the list only re-runs the memo

@@ -119,6 +119,32 @@ describe('shape view (FR-SHP-001)', () => {
     expect(unknown.core.store.get(unknown.id)).toMatchObject({ defId: 'acme:star' });
   });
 
+  it('FR-SHP-001, NFR-PERF-002: shapes of one definition share outlines and styles only where they draw the same (M18.288)', async () => {
+    const b = documentBuilder({ seed: 288 });
+    const screenId = b.screen({ size: { w: 800, h: 600 } });
+    const a = b.rect(screenId, { x: 0, y: 0, w: 100, h: 50 });
+    const same = b.rect(screenId, { x: 200, y: 0, w: 100, h: 50 });
+    const wider = b.rect(screenId, { x: 400, y: 0, w: 160, h: 50 });
+    const red = b.rect(screenId, { x: 0, y: 200, w: 100, h: 50, style: { fill: '#ff0000' } });
+    const core = createCore(b.build());
+    await act(async () =>
+      root.render(<ScreenView registries={registries} store={core.store} screenId={screenId} mode="present" view={{ kind: 'fit', box: { w: 800, h: 600 } }} />),
+    );
+    const outline = (id: string) => host.querySelector(`.fx-el[data-el-id="${id}"] path.fx-outline`) as Element;
+    expect([a, same, wider].map((id) => outline(id).getAttribute('d'))).toEqual([
+      'M0 0 L100 0 L100 50 L0 50 Z',
+      'M0 0 L100 0 L100 50 L0 50 Z',
+      'M0 0 L160 0 L160 50 L0 50 Z',
+    ]);
+    expect([a, same, red].map((id) => getComputedStyle(outline(id)).fill)).toEqual(['rgb(248, 250, 252)', 'rgb(248, 250, 252)', 'rgb(255, 0, 0)']);
+    // a resize draws the new size, and the shape still at the old one keeps it
+    act(() => void core.store.transact('resize', (tx) => tx.patch(same, { transform: { x: 200, y: 0, w: 120, h: 70, rot: 0 } })));
+    expect([a, same].map((id) => outline(id).getAttribute('d'))).toEqual(['M0 0 L100 0 L100 50 L0 50 Z', 'M0 0 L120 0 L120 70 L0 70 Z']);
+    // a style given later is drawn, and the unstyled shapes keep the theme's
+    act(() => void core.store.transact('fill', (tx) => tx.patch(a, { style: { fill: '#00ff00' } })));
+    expect([a, wider].map((id) => getComputedStyle(outline(id)).fill)).toEqual(['rgb(0, 255, 0)', 'rgb(248, 250, 252)']);
+  });
+
   it('FR-SHP-001: one record drawn twice on a page gets a gradient id per view', async () => {
     const b = documentBuilder({ seed: 415 });
     const screenId = b.screen({ size: { w: 200, h: 100 } });
