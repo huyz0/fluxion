@@ -126,6 +126,15 @@ console.log(JSON.stringify({ task: 'M0.13', kind: 'code', diff_sha256: hash, rev
     }
   });
 
+  it('HARNESS: hands over the manual packet whole and takes the manual verdict only once it parses (M18.292)', () => {
+    const src = readFileSync(join(REPO, 'scripts/harness/kits/smoke.mjs'), 'utf8');
+    // the packet is written beside its path and renamed into place, so a reader that sees it sees all of it
+    assert.match(src, /writeFileSync\(`\$\{packetOut\}\.tmp`, packetText\);\s*renameSync\(`\$\{packetOut\}\.tmp`, packetOut\);/);
+    assert.doesNotMatch(src, /writeFileSync\(packetOut,/);
+    // a verdict still being written is waited on, not copied half done
+    assert.match(src, /let verdictText = completeJson\(verdictIn\);\s*while \(verdictText === undefined\) \{[\s\S]*?verdictText = completeJson\(verdictIn\);/);
+  });
+
   it('cleans up and copies nothing back when a reviewer fails mid-run', () => {
     const sb = sandbox(['scripts', 'docs/backlog', '.harness/reviews'], { git: true });
     try {

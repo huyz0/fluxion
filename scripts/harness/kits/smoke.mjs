@@ -10,7 +10,7 @@
 // Test hook: FLUXION_SMOKE_FAKE_REVIEWER=<script> runs `node <script> <packet> <vendor>` instead of
 // the real CLI (tests/harness/kits.test.mjs).
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { git, repoPath } from '../../gates/lib.mjs';
@@ -48,6 +48,18 @@ const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.st
 const inWt = (cmd, args, input) => spawnSync(cmd, args, { cwd: wt, encoding: 'utf8', input, env, maxBuffer: 64 * 1024 * 1024 });
 const nodeWt = (script, args) => inWt(process.execPath, [join(wt, script), ...args]);
 
+/** The file's text once it exists and parses as JSON, else undefined. */
+function completeJson(file) {
+  if (!existsSync(file)) return undefined;
+  const text = readFileSync(file, 'utf8');
+  try {
+    JSON.parse(text);
+    return text;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * FLUXION_SMOKE_MANUAL=<vendor>[,…]: write the packet to .harness/tmp/smoke-packet-<vendor>.md in
  * the main checkout and wait (≤ 30 min) for .harness/tmp/smoke-verdict-<vendor>.json.
@@ -57,17 +69,22 @@ async function awaitManualVerdict(vendor, packetText) {
   const verdictIn = repoPath('.harness', 'tmp', `smoke-verdict-${vendor}.json`);
   mkdirSync(repoPath('.harness', 'tmp'), { recursive: true });
   rmSync(verdictIn, { force: true });
-  writeFileSync(packetOut, packetText);
+  // whole or absent: a reader that sees the file never sees it half written (M18.292)
+  writeFileSync(`${packetOut}.tmp`, packetText);
+  renameSync(`${packetOut}.tmp`, packetOut);
   console.log(`smoke: waiting for ${vendor} verdict — give ${packetOut} to an isolated ${vendor} reviewer; write its JSON to ${verdictIn}`);
   const requested = Number(process.env.FLUXION_SMOKE_MANUAL_TIMEOUT_MS);
   // a non-numeric override must not disable the timeout (the seeded worktree would never be removed)
   const deadline = Date.now() + (Number.isFinite(requested) && requested > 0 ? requested : 30 * 60_000);
-  while (!existsSync(verdictIn)) {
+  // the reviewer may still be writing the verdict: take it once it parses (M18.292)
+  let verdictText = completeJson(verdictIn);
+  while (verdictText === undefined) {
     if (Date.now() > deadline) die(`timed out waiting for ${verdictIn}`);
     await new Promise((res) => setTimeout(res, 2000));
+    verdictText = completeJson(verdictIn);
   }
   const local = join(wt, '.harness', 'tmp', `smoke-verdict-${vendor}.json`);
-  writeFileSync(local, readFileSync(verdictIn, 'utf8'));
+  writeFileSync(local, verdictText);
   rmSync(verdictIn, { force: true });
   return local;
 }
