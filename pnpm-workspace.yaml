@@ -25,7 +25,8 @@ overrides:
   "postcss-selector-parser@<7.1.6": 7.1.6
   source-map-js: 1.2.2
   # GHSA-c475-qrg2-pj4r, GHSA-pxg6-pf52-xh8x, GHSA-52f5-9888-hmc6, GHSA-ph9p-34f9-6g65, GHSA-w5hq-g745-h8pq, GHSA-7c78-jf6q-g5cm: all reached only through @lhci/cli (M11.54, M11.77)
-  basic-ftp: 6.2.1
+  # M18.289: GHSA-5pm8-86m8-9m6r and GHSA-r4jh-29pc-gfqr (red osv-scanner on main at f996d15) are fixed in 6.2.4.
+  basic-ftp: 6.2.4
   cookie@<0.7.0: 0.7.2
   tmp@<0.2.7: 0.2.7
   uuid@<11.1.1: 11.1.1
@@ -45,6 +46,10 @@ overrides:
   "fast-uri@>=3 <3.1.9": 3.1.9
   # GHSA-6pq8-jhm2-2vcw (qs, via body-parser 1 in @lhci/cli and express 5 in @modelcontextprotocol/sdk): M18.117, red osv-scanner on main
   "qs@<6.16.1": 6.16.1
+  # M18.289: GHSA-3gg2-335m-rxc6, GHSA-46wx-v44x-9hh2, GHSA-4h7h-rv7c-7m2v, GHSA-4m76-xfj5-7975, GHSA-h7mg-cq63-vhpq (hono) and GHSA-jpvv-r467-5p4w,
+  # GHSA-qv5m-9pm6-hqp3 (@hono/node-server), both via @modelcontextprotocol/sdk in @fluxion/mcp: red osv-scanner on main at f996d15.
+  "hono@<4.13.16": 4.13.16
+  "@hono/node-server@<2.1.6": 2.1.6
   # M18.217: GHSA-3g3m-2fjr-6pw4 (glob, via Storybook's react-docgen plugin): development tooling only. GHSA-g3hv-75wg-m249 (minimatch) is
   # excused by version in osv-scanner.toml: no 3.x or 10.x fix exists, and typedoc and glob 7 both fail on minimatch 11.
   "glob@>=13 <14.0.2": 14.0.3
