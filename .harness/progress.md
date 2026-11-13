@@ -4655,3 +4655,16 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - F5 corrections: nightly 42596642542 ran 287 mutation shards (285 success, schema-31 cancelled, dsl-19 failed), not 288 as the 2026-11-09 entry says. Digest reviewer labels from here on are claude:independent-subagent or claude:isolated-subagent; existing lines stay as written. Huy's 2026-11-13 test-speed ask allowed cutting low-risk tests; no test was cut in M18 (M18.290 and M18.294 kept every test), and the remaining items are M19 row 21.
 - state.json `updated` is the wall-clock time of this record.
 - Order: (1) The cp51 record, confined to AFTER_REVIEW_PATHS and landed before the 2026-11-13 nightly starts if possible. It names ffc89e8 as the freeze sha, marks M18.43 `blocks-landing` with the bookkeeping-only rule, logs M18.288's outcome rule and the node-shuffle-red rule, closes M18.290 with its readings and budget.json --cold-from-ci 50caef4, records the ffc89e8 browser legs in the repo, fills the Commit cells, rewrites blockedReason, and adds the M19 hand-offs. If stream 2 can land a further ShapeView cut before the nightly starts, it lands first and becomes the freeze sha instead. (2) The first nightly at or after the freeze: check-mutation-evidence --record, check-ci-evidence --record ffc89e8 --perf-run <id>, M18.288's 'first render ms' and its close per the logged rule, and node-shuffle's seed and result. No job re-run is counted. (3) M18.43: the final review over 7545e708..<freeze sha>, m18-complete 76/76 in one run on one tree, then the roadmap advance. Any non-bookkeeping commit before (3) restarts at (1) with a new freeze sha.
+
+## 2026-11-13 M18.43: evidence nightly at the freeze
+
+- Nightly 43402604695 (scheduled, 2eb3d4f, whose product tree is ffc89e8's; 09:35:34Z to 20:36:31Z). 297 of 300 jobs green on their first attempt; none cancelled or re-run.
+- Mutation: 287 partitions, mutation-plan and the aggregate green. Scores against unchanged floors: core 90.8 % (90), dsl 78.9 %, format 71.5 %, geometry 85.1 %, schema 89.9 % (70). `check-mutation-evidence.mjs --record 43402604695` passed.
+- CI evidence: `check-ci-evidence.mjs --record ffc89e8 --perf-run 43402604695` passed (gates 43387832113, ci 43387832078; green on ubuntu, windows and macos). Through the proxy it needs gh off PATH with NODE_USE_ENV_PROXY=1 and NODE_EXTRA_CA_CERTS, because `gh run view` pages by numeric repository id, which the proxy refuses.
+- M18.288 closes under the cp51 outcome rule: perf job 131808921703 (--retries=0) read 'first render ms 747', at or under 950. BIG_SCREEN_FIRST_RENDER_MS, the fixture and retries unchanged. Commit cell 3a49253.
+- node-shuffle (job 131808921412): seed 85419471, 523 files and 3362 tests passed; no order dependence found.
+- Red jobs, all known: visual-xos (macos-latest) and (windows-latest) (ADR-0202), previous-playwright (webkit) job 131808921830 failing only clipboard.copy-paste.spec.ts:58 (ADR-0215, roadmap Deferred).
+- No code fix was needed, so the freeze at ffc89e8 holds. The cp51 review's open minor (how a forced code fix would pass the mark) did not arise.
+- Next: the final review over 7545e708..ffc89e8, then m18-complete 76/76 in one run and the roadmap advance to M19.
+- state.json `updated` is the wall-clock time of this record.
+
