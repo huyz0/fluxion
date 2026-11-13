@@ -4633,3 +4633,7 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - Seen on the M18.290 commit's staged ladder: kits.test.mjs:107 threw `Cannot read properties of null (reading '1')`, and the test passed when run alone. smoke.mjs wrote the packet with writeFileSync, which creates the file before it fills it, and the test reads it as soon as existsSync is true. The verdict side had the same race the other way round: smoke copied the verdict as soon as it existed.
 - smoke.mjs writes the packet to `<packet>.tmp` and renames it into place, and waits until the verdict parses as JSON before copying it. kits.test pins both by source; the race itself is load-dependent and not reproduced on demand. `node --test tests/harness/kits.test.mjs`: the new case fails on the old smoke.mjs and passes after, 7/7.
 
+## 2026-11-13 M18.293: the Windows test order after ADR-0218 (stream 6)
+- M18.290 r3 F1, checked against vitest 5.0.5 groupSpecs (dist/chunks/index.1TqnEahn.js:6276): only a spec whose project has `isolate === true`, groupOrder 0 and maxWorkers 1 goes to the trailing sequential group. On Windows the node project (isolate false since ADR-0218) now runs in group 0 before browser; node-isolated runs last.
+- ADR-0218 states that order; ADR-0216's two Windows passages point to it; the windows-test-scheduling.test comment says it. Wording only; no config or assertion changed.
+

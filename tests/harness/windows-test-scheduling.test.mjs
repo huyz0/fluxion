@@ -33,7 +33,7 @@ test('HARNESS: Windows serializes existing test projects without changing invent
       const isolated = windows.test.projects.find((p) => p.test.name === 'node-isolated').test;
       assert.equal(isolated.fileParallelism, false);
       assert.equal(linux.test.projects[0].test.fileParallelism, undefined);
-      // the same groupOrder on every OS (M18.157); on Windows, where the node project has one worker too, Vitest runs it last (M18.276)
+      // the same groupOrder on every OS (M18.157); on Windows, of the one-worker projects Vitest runs only isolate:true node-isolated last, in its sequential group, and node, isolate:false, runs first (M18.293, ADR-0218)
       for (let i = 0; i < linux.test.projects.length; i++) assert.deepEqual(windows.test.projects[i].test.sequence, linux.test.projects[i].test.sequence);
     } finally { Object.defineProperty(process, 'platform', platform); }
   `,

@@ -57,7 +57,9 @@ Option 1, with the review's cuts:
 - On Linux and macOS the browser project runs after the node project (`sequence.groupOrder`),
   three files at a time on Linux; macOS stays one at a time (M18.44). On Windows both projects
   run one file at a time, and Vitest runs the one-worker node project last, after the browser one,
-  as before (M18.276 corrects this ADR's first wording, which said every OS).
+  as before (M18.276 corrects this ADR's first wording, which said every OS). Since ADR-0218 the
+  node project shares a module registry and runs first on Windows too; only `node-isolated` runs
+  last (M18.293).
 - Harness cases that repeated a ladder leg on the real repo share or drop that work: the licences
   gate's real-repo runs (the ladder's licenses step runs the same gate on the repo) give way to a
   fixture that keeps the pack-index count, workspace-shape's two type-check cases share one
@@ -78,7 +80,8 @@ Option 1, with the review's cuts:
   Vitest 5's sequential group, which runs after the ordered ones (groupSpecs): on macOS that was
   and is the browser project, after the node one, so the explicit groupOrder adds no time to macOS
   verify's 20 minutes (ADR-0209); on Windows it is the node project, which runs last, after the
-  browser one, as before this change.
+  browser one, as before this change. ADR-0218 changes the Windows order: there only
+  `node-isolated` is in the sequential group (M18.293).
 - M18.157 closes only after three consecutive main runs within the limit; budget.json's cold
   number is then recorded with `--cold-from-ci` (ADR-0145), which ends M18.159's exemption.
 - cp25 F4 and cp46 F1 are decided under Huy's 2026-11-05 11:04:52Z delegation; NFR-DX-001's wording is

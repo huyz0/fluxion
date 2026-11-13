@@ -40,8 +40,11 @@ node test file at config load. A file that calls `vi.mock`, `vi.doMock`, `vi.res
 `process`, `console` or a built-in global (`JSON`, `Math`, `Date`, …), assigns to `globalThis`,
 `process.env` or a built-in's member (`Math.random = …`),
 changes the cwd, or adds a process-level error or signal handler leaves the node project. It runs
-in `node-isolated`, with the default isolation, the same environment, the same group order and, on
-Windows, one file at a time. That is 26 files today. Being computed rather than listed, the set
+in `node-isolated`, with the default isolation, the same environment, the same groupOrder and, on
+Windows, one file at a time. On Linux and macOS both node projects run before the browser one. On
+Windows Vitest's groupSpecs moves only a project with `isolate: true`, groupOrder 0 and one worker
+into its trailing sequential group, so the node project now runs in group 0, before the browser
+project, and `node-isolated` runs last (M18.293; before this ADR the whole node project ran last). That is 26 files today. Being computed rather than listed, the set
 follows new files without a hand-kept list.
 
 Commands that ran `--project node` now run `--project 'node*'`: precommit's staged coverage run,
