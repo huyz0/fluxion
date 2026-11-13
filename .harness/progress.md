@@ -4668,3 +4668,12 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - Next: the final review over 7545e708..ffc89e8, then m18-complete 76/76 in one run and the roadmap advance to M19.
 - state.json `updated` is the wall-clock time of this record.
 
+## 2026-11-13 M18.43: final review through ffc89e8 (changes-requested); main red after the freeze
+
+- Independent final review over 7545e708..ffc89e8 recorded as .harness/reviews/milestone-M18-finalffc.json (changes-requested, F1 major, F2 minor). It is not the closing final record: that one's range must end at the new freeze sha.
+- F1 (reopen, M18.296): ci 43505770693 at f6aeace (product tree of ffc89e8) failed security / osv-scanner and ci-ok at 2026-11-13T20:54Z. astro 7.3.5 (catalog pin, apps/docs) now carries GHSA-mh32-jxcr-mh9f (fixed in 7.4.5) and GHSA-r3h5-4585-7x3w (fixed in 7.4.7); ffc89e8's ci 43387832078 and 2eb3d4f's 43394380743 were green, so the advisories are new. The ci-evidence leg refuses ffc89e8 ("green in 0 later run(s) of 2 needed"). Any fix is code under the cp51 freeze rule, so the freeze restarts at M18.296's commit.
+- F2 (hand-off, M19 row 22): the gate accepts 'hand-off' while the skill and earlier records write 'hand off', and hand-off targets are not checked. Every M18 hand-off target exists today.
+- The review found the delta 2eb3d4f and f6aeace bookkeeping-only and matching cp51's dispositions; every earlier reopen row done; the evidence of nightly 43402604695 and ci 43387832078 as recorded; m18-complete honest.
+- Order: (1) M18.296 lands with Fixes-ci: 43505770693 (astro catalog bump at or after 7.4.7, older than minimumReleaseAge); main's next ci green with osv-scanner. (2) The first nightly at or after the new freeze sha: check-mutation-evidence --record, check-ci-evidence --record <new sha> --perf-run <id>, first render under the cp51 M18.288 rule, no re-run counted. (3) Browser legs re-run at the new sha in the pinned image. (4) A final-review delta over ffc89e8..<new sha>, recorded as milestone-M18-final.json with range 7545e708..<new sha>. (5) last-ci read right before M18.43's close, then m18-complete 76/76 in one run on one tree and the roadmap advance.
+- state.json `updated` is the wall-clock time of this record.
+
