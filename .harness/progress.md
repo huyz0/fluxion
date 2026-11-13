@@ -4619,3 +4619,6 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - Seen in both A and B full runs, not caused by this change: webkit file.open-save "FR-FIL-006: a file dropped on the page opens" stayed at / after 5 s; it passed in the earlier baseline.
 - Deferred to M19 (fewer moving parts before the M18 freeze): batching svg-import's 52 cases, chromium-only fidelity/parity on PRs, chromium-only a11y scans, building once for the 8 gate browser legs. Splitting cli.pack-import.test.ts (27 s, vitest's long pole) goes to the CI-time stream if the cold setup stays tight.
 - Re-checked in the cloud container at 50caef4 + this change: FLUXION_PNG_CHECK=1, --retries=0, chromium: the 7 specs 70/70 passed (2.7 min).
+
+## 2026-11-13 — M18.295: clipboard-share StrictMode test waits for its message
+- ci 43375429362 at ccfa9eb (M18.294, an e2e helper change that verify does not run) was red on verify (ubuntu-latest), job 131720701054: FR-EDT-007's StrictMode clipboard test read `heard` after a fixed 50 ms and the BroadcastChannel message had not arrived. The test now waits for the message with vi.waitFor and asserts the same payload. Local: the file passes 7/7.

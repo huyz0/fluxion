@@ -6,7 +6,7 @@ import { createCore } from '@fluxion/core';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { act, type JSX, StrictMode, useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type ClipboardPayload, copyPayload, createClipboard } from './clipboard.js';
 import { CHORD_WAIT_MS } from './clipboard-chord.js';
 import { payloadJson, payloadText } from './clipboard-format.js';
@@ -262,8 +262,8 @@ describe('a paste that carries only text/plain (FR-EDT-007, NFR-PORT-001, M18.24
     (host.querySelector('[data-testid="canvas"]') as HTMLElement).focus();
     // not prevented would mean the browser's own copy replaced the payload
     expect(event('copy', new DataTransfer())).toBe(false);
-    await new Promise((done) => setTimeout(done, 50));
+    // the share is a BroadcastChannel message, delivered a task later: wait for it rather than a fixed 50 ms a loaded runner can outlast
+    await vi.waitFor(() => expect(heard).toContainEqual({ copy: { json: payloadJson(copied), text: payloadText(copied), at: expect.any(Number) } }));
     other.close();
-    expect(heard).toContainEqual({ copy: { json: payloadJson(copied), text: payloadText(copied), at: expect.any(Number) } });
   });
 });
