@@ -4686,3 +4686,11 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - The commit carries Fixes-ci: 43505770693 and is the new M18 freeze sha (final review ffc89e8 F1). The row closes when main's next ci is green with osv-scanner.
 - r1 F1 (changes-requested): the root engines.node floor said >=22.19, so setup.mjs passed on 22.22 and the docs build failed late. The floor is now >=22.23.4, with README.md and docs/standards/tech-stack.md saying the same; published packages' own engines are unchanged (astro is docs tooling only).
 - The workspace-shape test that pins the floor now asserts >=22.23.4; its title is renamed with it (Removes-test trailer).
+
+## 2026-11-14 M18.296 closes; new M18 freeze at 906923d
+
+- ci 43522273560 at 906923d succeeded, security / osv-scanner included; gates 43522273566 green; cold setup 472 s. M18.296 is done (906923d). budget.json recorded with `check-budget.mjs --record --cold-from-ci 906923d`.
+- 906923d is the new freeze sha: only commits confined to AFTER_REVIEW_PATHS land until the evidence is recorded. Next: the first nightly at or after 906923d (mutation evidence, ci evidence with --perf-run, first render under the cp51 M18.288 rule, node-shuffle seed and result); the browser legs at 906923d; a final-review delta over ffc89e8..906923d recorded as milestone-M18-final.json; last-ci read right before M18.43's close; m18-complete 76/76 in one run.
+- Browser legs at the new freeze, run on Huy's Windows machine DESKTOP-3QR6E1Q at 906923d4, clean detached checkout, image mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27 (node v24.20.0, pnpm 11.28.0), flow as scripts/e2e/in-image.sh, --retries=0: L30 file.used-shapes 1/1 on each of 5 projects; L31 svg-import 54/54, artwork.viewport 2/2, svg-witness-corpus 2/2 on each of chromium/firefox/webkit; L33 artwork.font-retention 2/2; L59 library.import-svg 3/3; L60 library.my-shapes 1/1; L61 library.replace-shape 1/1; L62 library.pack-credits 1/1; L63 library.font-subset 2/2 (each on the 3 desktop projects). 209 passed, 0 failed, 0 flaky, 0 skipped; 146 s.
+- state.json `updated` is the wall-clock time of this record.
+
