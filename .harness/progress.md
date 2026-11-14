@@ -4705,3 +4705,15 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - state.json `updated` is the wall-clock time of this record.
 
 - r1 F1: blockedReason's Next clause now lists only what is left (mutation and ci/perf evidence from 43578498688, last-ci, m18-complete 76/76, roadmap advance).
+
+## 2026-11-14 M18.43: M18 closes; roadmap advances to M19
+
+- Nightly 43578498688 (scheduled, 30caa1d, product tree of the freeze 906923d; 09:00:58Z to 19:31:23Z): 297 of 300 jobs green on their first attempt, none cancelled or re-run. Mutation: 287 partitions, mutation-plan and the aggregate green; scores against unchanged floors: core 90.8 % (90), anim 100.0 %, dsl 78.9 %, format 71.5 %, geometry 85.1 %, layout 81.4 %, routing 81.1 %, schema 89.9 %, theme 88.0 % (70). `check-mutation-evidence.mjs --record 43578498688` passed.
+- Perf job 132397942687 (--retries=0): 'first render ms 652', under the cp51 M18.288 rule. node-shuffle job 132397942430: seed 526367330, 3362 tests passed. Red jobs, all known: visual-xos (macos-latest) and (windows-latest) (ADR-0202), previous-playwright (webkit) job 132397942487 failing only clipboard.copy-paste.spec.ts:58 (ADR-0215).
+- CI evidence: `check-ci-evidence.mjs --record d11305c --perf-run 43578498688` (gates 43589682568, ci 43589682567, green on ubuntu, windows and macos; d11305c is this close's parent and carries 906923d's product tree). `check-ci-evidence --milestone M18 --perf` passes.
+- An extra browser-leg run at 30caa1d on Huy's machine (2026-11-14, not the evidence of record) passed 208/209: library.pack-credits on Firefox timed out at EditorPage.open while the host was loaded (259 s against 146 s); three solo re-runs passed, which count for nothing. The evidence of record is the 209/209 run at 906923d. The timeout is M19 row 23.
+- M18.43 is done. M18: 284 rows against 43 planned. The roadmap's current milestone is M19; m18-complete runs on all three engines in the pinned image (milestone-gate) at this commit, and its leg list is recorded in M19's first entry.
+- state.json `updated` is the wall-clock time of this record.
+
+- M18.43's Commit cell names d11305c, its last landed commit before this close (no commit can name itself).
+- r1 F1: the row count is 284 (M18.1 to M18.296 with 12 ids unused), not 297; corrected here and in the roadmap.
