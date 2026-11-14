@@ -91,20 +91,30 @@ export function runAsync(cmd, args = [], opts = {}) {
 /** turbo's closing summary when every task succeeded: `Tasks:    37 successful, 37 total` (M18.281). */
 export const TURBO_ALL_SUCCESSFUL = /^\s*Tasks:\s+(\d+) successful, \1 total\s*$/m;
 
-/** The table of running processes with their command lines, for a stuck command's report (M18.281). */
-export function processTable() {
-  const res =
-    process.platform === 'win32'
-      ? spawnSync(
+/** How long a stuck or silent command's report waits for the process table before ending the tree anyway (M19.32). */
+export const PROCESS_TABLE_MAX_MS = 5000;
+
+/**
+ * The table of running processes with their command lines, for a stuck command's report (M18.281). It waits at most
+ * `timeoutMs` for it: on a loaded Windows runner PowerShell's Get-CimInstance took long enough that ending a settled build
+ * outran its test's bound (ci 43647069961, build-settle 22.8 s), and the tree kill must not wait on a report (M19.32).
+ * `command` is injectable for tests.
+ */
+export function processTable({ timeoutMs = PROCESS_TABLE_MAX_MS, command } = {}) {
+  const [cmd, args] =
+    command ??
+    (process.platform === 'win32'
+      ? [
           'powershell.exe',
           [
             '-NoProfile',
             '-Command',
             'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CreationDate,CommandLine | Format-List | Out-String -Width 4096',
           ],
-          { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
-        )
-      : spawnSync('ps', ['-eo', 'pid,ppid,pgid,etime,args'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+        ]
+      : ['ps', ['-eo', 'pid,ppid,pgid,etime,args']]);
+  const res = spawnSync(cmd, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: timeoutMs, killSignal: 'SIGKILL' });
+  if (res.error?.code === 'ETIMEDOUT') return `no process table: ${cmd} did not answer within ${timeoutMs} ms${res.stdout ? `; partial:\n${res.stdout}` : ''}`;
   return res.stdout || res.stderr || String(res.error?.message ?? 'no process table');
 }
 

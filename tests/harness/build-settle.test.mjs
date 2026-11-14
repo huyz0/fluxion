@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { pathToFileURL } from 'node:url';
-import { descendants, REPO_ROOT, runAsync, TURBO_ALL_SUCCESSFUL } from '../../scripts/gates/lib.mjs';
+import { descendants, PROCESS_TABLE_MAX_MS, processTable, REPO_ROOT, runAsync, TURBO_ALL_SUCCESSFUL } from '../../scripts/gates/lib.mjs';
 
 // M18.281: a Windows CI build twice printed turbo's all-successful summary and then did not exit until its step's limit
 // (ci 42038170007 verify, 42092624276 cli-mcp). runAsync's `settle` ends such a command; the stand-ins below are node scripts.
@@ -54,6 +54,17 @@ describe('a build that reported success and does not exit is ended (M18.281, NFR
       for (let i = 0; i < 50 && alive(grandchild); i++) await new Promise((r) => setTimeout(r, 100));
       assert.equal(alive(grandchild), false, `grandchild ${grandchild} outlived the tree kill`);
     }));
+
+  test('NFR-PORT-005: the process table is waited for at most its bound, so a slow table cannot hold the tree kill (M19.32)', () => {
+    // ci 43647069961: on a loaded Windows runner the ended-tree case took 22.8 s against 20 s; PowerShell's table is the slow part
+    assert.ok(PROCESS_TABLE_MAX_MS <= 5000);
+    const started = Date.now();
+    const table = processTable({ timeoutMs: 300, command: [process.execPath, ['-e', "process.stdout.write('pid 1'); setTimeout(() => {}, 30000)"]] });
+    assert.ok(Date.now() - started < 10_000, `waited ${Date.now() - started} ms`);
+    assert.match(table, /^no process table: .* did not answer within 300 ms/);
+    // a table that answers in time is returned whole
+    assert.equal(processTable({ command: [process.execPath, ['-e', "process.stdout.write('  PID  PPID\\n    1     0\\n')"]] }), '  PID  PPID\n    1     0\n');
+  });
 
   test('NFR-PORT-005: a build that fails, exits cleanly, or never prints an all-successful summary keeps its own status', () =>
     withDir(async (dir) => {

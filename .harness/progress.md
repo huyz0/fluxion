@@ -4761,3 +4761,10 @@ round-allowance: M19.4 a fourth review round under Huy's 2026-11-05T11:04:52Z de
 - M19.2 evidence: milestone-gate run 43646666929 at 9ac09ab uploaded its gate-log artifact (2283 B) from /tmp/gate.log; the gate step was red as expected (M19 is in progress).
 - M19.4's Commit cell: d6a2b11.
 - r1 pass with F1 (minor): a trailing '**' matched nothing; '**' now spans segments and '**/' any directory prefix, with cases for both. Re-reviewed as r2.
+
+## 2026-11-14 M19.32: main green again: the tree kill does not wait on a slow process table
+
+- ci 43647069961 at c71285b: harness tests (windows-latest) job 132607564437 failed build-settle.test.mjs 'after the summary and the grace, the tree is ended…' at 22.8 s against its 20 s bound, the harness-tests step at 1043 s (a loaded runner). The next run, 43650494988 at d6a2b11, was green on the same product tree; last-ci reads INTERMITTENT and holds feature commits.
+- Cause read from the code: after the 400 ms grace, settleWatch writes its report with processTable() before endTree(); on Windows that spawns PowerShell's Get-CimInstance with no bound, the only step whose cost grows without limit under load.
+- Fix: processTable waits at most PROCESS_TABLE_MAX_MS (5 s, SIGKILL on expiry) and reports that the table did not answer; idleWatch's report gets the same bound. build-settle.test.mjs's 20 s and 5 s bounds are unchanged; a new case shows a table command that never answers is cut at 300 ms and one that answers is returned whole. 7/7.
+- M19.6 (f7df5c8) and M19.7 (a6476fe), committed and reviewed, land after this.
