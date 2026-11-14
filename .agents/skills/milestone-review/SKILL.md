@@ -1,6 +1,6 @@
 ---
 name: milestone-review
-description: Review a milestone's commits as a whole with a fresh agent, turn findings into dispositions (reopen, hand off, argue), and re-plan. Use at checkpoints (~every 8 commits) and always before declaring a milestone complete. Catches drift, contradictions between commits, abandoned conventions, and a wrong spec — which per-commit review cannot see.
+description: Review a milestone's commits as a whole with a fresh agent, turn findings into dispositions (reopen, hand-off, argue), and re-plan. Use at checkpoints (~every 8 commits) and always before declaring a milestone complete. Catches drift, contradictions between commits, abandoned conventions, and a wrong spec — which per-commit review cannot see.
 ---
 
 # Milestone review (outer loop)
@@ -33,12 +33,13 @@ commits with stats, the completion gate's current output, requirement IDs covere
 | Disposition | When | Action |
 |---|---|---|
 | **reopen** | Affects a requirement of *this* milestone or makes its gate dishonest | New row in current backlog |
-| **hand off** | Real, but belongs to a later milestone | Row in the receiving `M<k>.md` + roadmap "Deferred" table |
+| **hand-off** | Real, but belongs to a later milestone | Row in the receiving `M<k>.md` citing `M<N> <checkpoint> <finding>` + roadmap "Deferred" row citing `<checkpoint> <finding>` and naming `M<N>` and `M<k>` (checked from M19 on) |
 | **argue** | Not a defect, or a decision | Line in `.harness/baselines/review-argued.txt` |
 
 ## Record
 
 Write `.harness/reviews/milestone-M<N>-<checkpoint>.json`
-(`{milestone, range, reviewer, findings[], dispositions[], planDelta}`) and **stage it**
+(`{milestone, range, reviewer, findings[], dispositions[], planDelta}`; each disposition's
+`disposition` is exactly `reopen`, `hand-off`, `argue` or `supersede`, the strings the gates read) and **stage it**
 (tracked). The completion gate checks a final-checkpoint verdict exists covering HEAD's
 milestone range. Update `docs/milestones/M<N>.md` "Learned" section with 1–3 lines.

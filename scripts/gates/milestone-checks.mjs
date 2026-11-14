@@ -132,7 +132,11 @@ function onlyBookkeepingAfter(end, milestone) {
  * Every row of the milestone's backlog is `done`, and every `reopen` disposition in the given
  * reviews targets an existing row of the backlog that is `done` (M0 cp2 F1).
  */
-export function checkBacklogDone(backlogText, milestone, reviews = []) {
+// Hand-off targets are checked from M19 on (M19.4): M17's closed record hands final-delta D1 to M18, which M18.md
+// records as reopened (M17.44) instead, and a closed gate is not re-judged by a later rule.
+const HAND_OFF_CHECK_FROM = 19;
+
+export function checkBacklogDone(backlogText, milestone, reviews = [], { read = readRepoFile, handOffsFrom = HAND_OFF_CHECK_FROM } = {}) {
   const rows = backlogText
     .split(/\r?\n/)
     .filter((l) => new RegExp(`^\\| ${milestone}\\.\\d+ \\|`).test(l))
@@ -156,7 +160,52 @@ export function checkBacklogDone(backlogText, milestone, reviews = []) {
     const problem = reopenProblem(d, milestone, state);
     if (problem) return `${r.checkpoint ?? 'review'} ${d.finding}: ${problem}`;
   }
+  return handOffsProblem(reviews, milestone, { read, handOffsFrom });
+}
+
+/** From M19.4: every disposition spelled as the gates read it, and every hand-off's target rows present; true when none fails. */
+function handOffsProblem(reviews, milestone, { read, handOffsFrom }) {
+  if (Number(milestone.slice(1)) < handOffsFrom) return true;
+  const all = reviews.flatMap((r) => (r?.dispositions ?? []).map((d) => [`${r.checkpoint ?? 'review'} ${d.finding}`, d]));
+  // one spelling in every review record, not only the final's (r1 F1): an old 'hand off' would skip the target check
+  const odd = all.find(([, d]) => !DISPOSITIONS.includes(d.disposition));
+  if (odd) return `${odd[0]}: disposition '${odd[1].disposition}' is not one of ${DISPOSITIONS.join('/')}`;
+  for (const [citation, d] of all.filter(([, x]) => x.disposition === 'hand-off')) {
+    const problem = handOffProblem(citation, d, milestone, read);
+    if (problem) return `${citation}: ${problem}`;
+  }
   return true;
+}
+
+/** A repository file's text, or null when it does not exist. */
+function readRepoFile(path) {
+  return existsSync(repoPath(path)) ? readFileSync(repoPath(path), 'utf8') : null;
+}
+
+/**
+ * A hand-off whose target names a later milestone M<k> needs, for each such k, a row of
+ * docs/milestones/M<k>.md citing '<milestone> <checkpoint> <finding>' and a row of the roadmap's
+ * Deferred table citing '<checkpoint> <finding>' and naming both milestones (milestone-review skill;
+ * M18 final F2). A target naming no later milestone (the human, an ADR, an earlier milestone it follows
+ * up) is not checked here (r1 F2).
+ */
+function handOffProblem(citation, d, milestone, read) {
+  const n = Number(milestone.slice(1));
+  const targets = [...new Set(String(d.target ?? '').match(/\bM\d+\b/g) ?? [])].filter((m) => Number(m.slice(1)) > n);
+  const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const citing = (text) => (line) => line.startsWith('|') && new RegExp(`(^|[^\\w.])${literal(text)}(?!\\w)`).test(line);
+  const named = (m) => (line) => new RegExp(`\\b${m}\\b`).test(line);
+  const roadmap = read('docs/milestones/roadmap.md') ?? '';
+  const deferred = (/^## Deferred\b[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(roadmap)?.[1] ?? '').split(/\r?\n/);
+  for (const m of targets) {
+    const plan = read(`docs/milestones/${m}.md`);
+    if (plan === null) return `hand-off target ${m} has no docs/milestones/${m}.md`;
+    if (!plan.split(/\r?\n/).some(citing(`${milestone} ${citation}`)))
+      return `hand-off to ${m} has no row in docs/milestones/${m}.md citing '${milestone} ${citation}'`;
+    if (!deferred.some((line) => citing(citation)(line) && named(m)(line) && named(milestone)(line)))
+      return `hand-off to ${m} has no roadmap Deferred row citing '${citation}' and naming ${milestone} and ${m}`;
+  }
+  return null;
 }
 
 /**

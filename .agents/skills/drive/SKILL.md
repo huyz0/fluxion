@@ -65,7 +65,7 @@ One row per commit. If a row turns out to be two commits, split the row first.
 
 Every ~8 commits and always before declaring done: run
 [`milestone-review`](../milestone-review/SKILL.md) **with a fresh agent** (not you). Dispose
-each finding: *reopen* (affects this milestone's requirements) → new row now; *hand off* →
+each finding: *reopen* (affects this milestone's requirements) → new row now; *hand-off* →
 row in next milestone + roadmap "Deferred" table; *argue* → `.harness/baselines/review-argued.txt`.
 The milestone ends by disposition, not by an empty backlog.
 

@@ -12,12 +12,12 @@ const git = (sb, ...args) => {
   assert.equal(result.status, 0, out(result));
   return result.stdout.trim();
 };
-function history(count = 8, { legacy = false } = {}) {
+function history(count = 8, { legacy = false, milestone = 'M18' } = {}) {
   const sb = sandbox(['scripts']);
   const policy = sb.read(POLICY);
   if (legacy) rmSync(sb.path(POLICY));
-  sb.write('docs/milestones/roadmap.md', roadmap('M18'));
-  sb.write('docs/backlog/current.md', Array.from({ length: 20 }, (_, i) => `| M18.${i + 1} | task | HARNESS | acceptance | | done | |`).join('\n'));
+  sb.write('docs/milestones/roadmap.md', roadmap(milestone));
+  sb.write('docs/backlog/current.md', Array.from({ length: 20 }, (_, i) => `| ${milestone}.${i + 1} | task | HARNESS | acceptance | | done | |`).join('\n'));
   sb.write('.gitignore', '.harness/tmp/\n');
   git(sb, 'init', '-q', '-b', 'main');
   git(sb, 'config', 'user.name', 'checkpoint-test');
@@ -32,13 +32,13 @@ function history(count = 8, { legacy = false } = {}) {
   for (let i = 1; i <= count; i++) {
     sb.write('work.txt', `task ${i}\n`);
     git(sb, 'add', 'work.txt');
-    git(sb, 'commit', '-qm', `M18.${i}: test(harness): exercise checkpoint history`);
+    git(sb, 'commit', '-qm', `${milestone}.${i}: test(harness): exercise checkpoint history`);
     commits.push(git(sb, 'rev-parse', 'HEAD'));
   }
   if (legacy) sb.write(POLICY, policy);
-  return { sb, baseline, commits };
+  return { sb, baseline, commits, milestone };
 }
-function record(fixture, { end = fixture.commits.at(-1), milestone = 'M18', stage = true, fields = {} } = {}) {
+function record(fixture, { end = fixture.commits.at(-1), milestone = fixture.milestone, stage = true, fields = {} } = {}) {
   const review = {
     milestone,
     checkpoint: 'cp1',
@@ -49,8 +49,10 @@ function record(fixture, { end = fixture.commits.at(-1), milestone = 'M18', stag
     planDelta: '',
     ...fields,
   };
-  fixture.sb.write(REVIEW, JSON.stringify(review));
-  if (stage) git(fixture.sb, 'add', REVIEW);
+  // the M18 path the other cases use, or the fixture milestone's own
+  const path = fixture.milestone === 'M18' ? REVIEW : `.harness/reviews/milestone-${fixture.milestone}-cp1.json`;
+  fixture.sb.write(path, JSON.stringify(review));
+  if (stage) git(fixture.sb, 'add', path);
 }
 function pending(sb, subject = 'M18.9: test(harness): next task') {
   sb.write('.harness/tmp/message', subject);
@@ -132,6 +134,32 @@ describe('HARNESS NFR-DX-003: checkpoint cadence', () => {
       assert.equal(result.status, 0, out(result));
     } finally {
       f.sb.cleanup();
+    }
+  });
+
+  it("one hand-off spelling from M19 on; closed milestones' records in the old spelling still count (M19.4)", () => {
+    const disposed = (disposition) => ({ findings: [{ id: 'F1' }], dispositions: [{ finding: 'F1', disposition, target: 'M99' }] });
+    const m19 = history(8, { milestone: 'M19' });
+    try {
+      for (const disposition of ['hand off', 'handoff']) {
+        record(m19, { fields: disposed(disposition) });
+        assert.equal(pending(m19.sb, 'M19.9: test(harness): next task').status, 1, disposition);
+      }
+      record(m19, { fields: disposed('hand-off') });
+      const accepted = pending(m19.sb, 'M19.9: test(harness): next task');
+      assert.equal(accepted.status, 0, out(accepted));
+    } finally {
+      m19.sb.cleanup();
+    }
+    // check-commits re-runs this check over all history on a first push: M6, M8 and M18 records say 'hand off' (r3 F1)
+    const m18 = history();
+    try {
+      for (const disposition of ['hand off', 'handoff', 'hand-off']) {
+        record(m18, { fields: disposed(disposition) });
+        assert.equal(pending(m18.sb).status, 0, disposition);
+      }
+    } finally {
+      m18.sb.cleanup();
     }
   });
 

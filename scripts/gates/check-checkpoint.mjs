@@ -52,12 +52,18 @@ function reviewPaths(tree, milestone) {
 }
 function findingsDisposed(review) {
   if (!Array.isArray(review.findings) || !Array.isArray(review.dispositions)) return false;
-  return review.findings.every((finding) => typeof finding?.id === 'string' && review.dispositions.some((d) => dispositionFor(d, finding.id)));
+  return review.findings.every(
+    (finding) => typeof finding?.id === 'string' && review.dispositions.some((d) => dispositionFor(d, finding.id, review.milestone)),
+  );
 }
-function dispositionFor(disposition, id) {
+// One spelling from M19 on, the final review's and the milestone-review skill's: 'hand-off' (M18 final F2, M19.4). Records of
+// earlier milestones keep the spellings they were written in: check-commits re-runs this over all history (M19.4 r3 F1).
+const ONE_SPELLING_FROM = 19;
+function dispositionFor(disposition, id, milestone) {
   if (disposition?.finding !== id) return false;
   if (disposition.disposition === 'argue') return typeof disposition.note === 'string' && disposition.note.trim().length > 0;
-  return ['reopen', 'hand off', 'handoff'].includes(disposition.disposition) && typeof disposition.target === 'string' && disposition.target.trim().length > 0;
+  const actions = Number(String(milestone).slice(1)) >= ONE_SPELLING_FROM ? ['reopen', 'hand-off'] : ['reopen', 'hand-off', 'hand off', 'handoff'];
+  return actions.includes(disposition.disposition) && typeof disposition.target === 'string' && disposition.target.trim().length > 0;
 }
 
 /** A range must cover this milestone from its start and end on the actual parent history. */

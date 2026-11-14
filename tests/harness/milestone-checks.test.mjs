@@ -256,7 +256,72 @@ describe('checkBacklogDone (NFR-DX-003, M0 cp2 F1)', () => {
         ],
       },
     ];
-    assert.equal(checkBacklogDone(backlog(row('M0.1', 'done'), row('M0.2', 'done')), 'M0', reviews), true);
+    const files = {
+      'docs/milestones/M1.md': '# M1\n\n| 9 | the handed-off task (M0 cp1 F2) | HARNESS | x |\n',
+      'docs/milestones/roadmap.md':
+        '# Roadmap\n\n## Deferred into a later milestone\n\n| Item | From | To | Why |\n|---|---|---|---|\n| the task | M0 | M1 | cp1 F2: later |\n',
+    };
+    const read = (path) => files[path] ?? null;
+    assert.equal(checkBacklogDone(backlog(row('M0.1', 'done'), row('M0.2', 'done')), 'M0', reviews, { read, handOffsFrom: 0 }), true);
+  });
+
+  it('a hand-off without a target row is refused, in the receiving plan or the roadmap Deferred table (M18 final F2)', () => {
+    const done = `${backlog(row('M0.1', 'done'))}${row('M1.1', 'done')}\n`;
+    const reviews = [{ checkpoint: 'cp4', dispositions: [{ finding: 'F3', disposition: 'hand-off', target: 'M2' }] }];
+    const plan = '# M2\n\n| 7 | handed-off task (M0 cp4 F3) | HARNESS | x |\n';
+    const roadmap = (row) =>
+      `# Roadmap\n\n## Deferred into a later milestone\n\n| Item | From | To | Why |\n|---|---|---|---|\n${row}\n\n## Later\n\n| cp4 F3 | M2 |\n`;
+    const reader = (files) => (path) => files[path] ?? null;
+    const ok = { 'docs/milestones/M2.md': plan, 'docs/milestones/roadmap.md': roadmap('| the task | M0 | M2 | cp4 F3: later |') };
+    assert.equal(checkBacklogDone(done, 'M0', reviews, { read: reader(ok), handOffsFrom: 0 }), true);
+    // no row in the receiving plan (a prose mention or a different finding does not count)
+    for (const text of ['# M2\n\nM0 cp4 F3 is mentioned in prose only.\n', '# M2\n\n| 7 | other (M0 cp4 F30) | x |\n'])
+      assert.match(
+        String(checkBacklogDone(done, 'M0', reviews, { read: reader({ ...ok, 'docs/milestones/M2.md': text }), handOffsFrom: 0 })),
+        /cp4 F3: hand-off to M2 has no row in docs\/milestones\/M2\.md citing 'M0 cp4 F3'/,
+      );
+    assert.match(
+      String(checkBacklogDone(done, 'M0', reviews, { read: reader({ ...ok, 'docs/milestones/M2.md': undefined }), handOffsFrom: 0 })),
+      /has no docs\/milestones\/M2\.md/,
+    );
+    // no Deferred row: a row outside the Deferred section, or one naming another milestone, does not count
+    for (const deferredRow of ['| unrelated | M0 | M3 | cp9 F1 |', '| the task | M0 | M3 | cp4 F3: later |'])
+      assert.match(
+        String(checkBacklogDone(done, 'M0', reviews, { read: reader({ ...ok, 'docs/milestones/roadmap.md': roadmap(deferredRow) }), handOffsFrom: 0 })),
+        /hand-off to M2 has no roadmap Deferred row citing 'cp4 F3'/,
+      );
+    // a hand-off to the human or an ADR names no milestone and is not checked here; the old spelling is not a hand-off
+    const human = [{ checkpoint: 'cp5', dispositions: [{ finding: 'F1', disposition: 'hand-off', target: 'Huy (decision card) and ADR-0202' }] }];
+    assert.equal(checkBacklogDone(done, 'M0', human, { read: reader({}), handOffsFrom: 0 }), true);
+    // the citation names the reviewing milestone: another milestone's 'cp4 F3' row does not count (r1 F2)
+    assert.match(
+      String(
+        checkBacklogDone(done, 'M0', reviews, { read: reader({ ...ok, 'docs/milestones/M2.md': '# M2\n\n| 7 | other (M1 cp4 F3) | x |\n' }), handOffsFrom: 0 }),
+      ),
+      /no row in docs\/milestones\/M2\.md citing 'M0 cp4 F3'/,
+    );
+    // only later milestones are targets: an earlier one the target follows up is not (r1 F2)
+    const followUp = [{ checkpoint: 'cp4', dispositions: [{ finding: 'F3', disposition: 'hand-off', target: 'M2 (follows up M0 cp1 F1)' }] }];
+    assert.equal(
+      checkBacklogDone(done, 'M1', followUp, {
+        read: reader({ ...ok, 'docs/milestones/M2.md': '# M2\n\n| 7 | x (M1 cp4 F3) |\n', 'docs/milestones/roadmap.md': roadmap('| t | M1 | M2 | cp4 F3 |') }),
+        handOffsFrom: 0,
+      }),
+      true,
+    );
+    // from adoption on, a record in the old spelling is refused rather than skipped (r1 F1)
+    for (const disposition of ['hand off', 'handoff'])
+      assert.match(
+        String(
+          checkBacklogDone(done, 'M0', [{ checkpoint: 'cp1', dispositions: [{ finding: 'F1', disposition, target: 'M20' }] }], {
+            read: reader({}),
+            handOffsFrom: 0,
+          }),
+        ),
+        new RegExp(`cp1 F1: disposition '${disposition}' is not one of`),
+      );
+    // before the adoption milestone (M19 by default) a missing target is not re-judged
+    assert.equal(checkBacklogDone(done, 'M0', reviews, { read: reader({}) }), true);
   });
 
   it('rejects a row that is not done', () => {
