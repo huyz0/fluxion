@@ -4717,3 +4717,12 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 
 - M18.43's Commit cell names d11305c, its last landed commit before this close (no commit can name itself).
 - r1 F1: the row count is 284 (M18.1 to M18.296 with 12 ids unused), not 297; corrected here and in the roadmap.
+
+## 2026-11-14 M19.1: M19 plan and completion gate (red)
+
+- M18's backlog moved whole to docs/backlog/archive/M18.md (final review pass 7545e708..906923d; m18-complete 76/76 at 5a3d0ee in one milestone-gate run on Windows, Huy's machine). The CI milestone-gate run at 5a3d0ee read 74/76 because its gate.log sat in the workspace and precommit --all printed no detail; the first Windows attempt read 75/76 after a Node 24 setup where last-ci.test.mjs:237 expects Node 22's TAP '# pass 1'. Neither counts; both are rows M19.2 and M19.3.
+- docs/backlog/current.md: 31 rows from the plan's 18 tasks, its five M18 handoffs (M19.4, .5, .27, .28, .29) and the two harness defects (M19.2, M19.3). Harness rows first, then ADR-0052/0053/0054 and schema 1.8 before any feature contract.
+- scripts/gates/m19-complete.mjs: 40 legs (trace, three ADRs, the 1.7→1.8 migration, one leg per feature test file, eight e2e specs on three engines with an axe scan, the masters-tables example and parity, editor initial ≤ EDITOR_INITIAL_GZIP, geometry coverage ≥ 90/85, five harness handoffs, the M19.28 cold-setup target (CI reading ≤ 420 s), quarantines, changesets, verify, CI evidence, backlog, final review, roadmap). First run: 2/39 green (no open M19 spec folders, no quarantines); after making the size-limit leg judge only the editor entry and the coverage leg judge the report and summary rather than the exit status (the configured per-glob floors fail packages a geometry-only run does not cover), both pass on their own: editor initial 560655 B, geometry coverage above floor. Everything else is missing work or closeout evidence.
+- state.json `updated` is the wall-clock time of this record.
+
+- Plan review r1 (changes-requested): F1 the parity leg now also requires the masters-tables example to hold a `master:`, a table and a clipping frame, and M19.26 says so; F2 M19.27 puts image-diff.test.ts in a node Vitest project and its leg also requires a workflow setting FLUXION_PNG_CHECK: 1; F3 M19.28 lists its items and targets a CI cold setup ≤ 420 s with a new leg reading .harness/budget.json, and M19.29 says it is checked by review and the e2e legs.

@@ -1,11 +1,11 @@
 {
   "milestone": "M19",
-  "currentTask": "M18.43",
+  "currentTask": "M19.1",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": null,
-  "updated": "2026-11-14T20:35:22.000Z",
+  "updated": "2026-11-14T21:42:45.000Z",
   "rowAttempts": {
     "M18.157": 4,
     "windows-witness-cleanup": 3
