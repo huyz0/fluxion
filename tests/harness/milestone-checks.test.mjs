@@ -515,6 +515,40 @@ describe('changesetGaps (M5.3, M4 final F1)', () => {
     assert.deepEqual(changesetGaps(['packages/layout/src/test-utils.ts'], [], layout), ['@fluxion/layout']);
   });
 
+  // every path a published workspace's files list ships counts besides dist (M19.5, M18 cp45 F5)
+  const shipped = [
+    { dir: 'packs/arrows', name: '@fluxion/pack-arrows', private: false, files: ['dist', 'pack', 'pack-versions.json'] },
+    { dir: 'packages/dsl', name: '@fluxion/dsl', private: false, files: ['dist', 'grammar'] },
+    { dir: 'packages/format', name: '@fluxion/format', private: false, files: ['dist', 'assets/font-engine/*.wasm', 'assets/font-engine/licenses'] },
+    { dir: 'packs/fonts-core', name: '@fluxion/fonts-core', private: false, files: ['dist', 'fonts', 'fonts.json', 'OFL.txt'] },
+  ];
+
+  it('a pack-only change is a gap: a definition under pack/ ships though no src/ file changed (M19.5)', () => {
+    assert.deepEqual(changesetGaps(['packs/arrows/pack/arrows/right.json'], [], shipped), ['@fluxion/pack-arrows']);
+    assert.deepEqual(changesetGaps(['packs/arrows/pack-versions.json'], [], shipped), ['@fluxion/pack-arrows']);
+    // dist is the build's, never a source change; a changeset naming the workspace covers it
+    assert.deepEqual(changesetGaps(['packs/arrows/dist/index.js'], [], shipped), []);
+    assert.deepEqual(changesetGaps(['packs/arrows/pack/arrows/right.json'], ["---\n'@fluxion/pack-arrows': patch\n---\n"], shipped), []);
+  });
+
+  it('a grammar change is a gap, and so are the other listed paths, globs kept within their segment (M19.5)', () => {
+    assert.deepEqual(changesetGaps(['packages/dsl/grammar/fluxscript.ebnf'], [], shipped), ['@fluxion/dsl']);
+    assert.deepEqual(changesetGaps(['packages/format/assets/font-engine/woff2-codec.wasm'], [], shipped), ['@fluxion/format']);
+    assert.deepEqual(changesetGaps(['packages/format/assets/font-engine/build/notes.md', 'packages/format/assets/font-engine/x.wasm.map'], [], shipped), []);
+    assert.deepEqual(changesetGaps(['packages/format/assets/font-engine/licenses/OFL.txt'], [], shipped), ['@fluxion/format']);
+    assert.deepEqual(changesetGaps(['packs/fonts-core/fonts.json', 'packs/fonts-core/OFL.txt.bak'], [], shipped), ['@fluxion/fonts-core']);
+    assert.deepEqual(changesetGaps(['packs/fonts-core/OFL.txt.bak', 'packs/fonts-core/fonts-old/a.woff2'], [], shipped), []);
+    // ** spans segments, trailing or followed by a slash (r1 F1)
+    const globbed = [{ dir: 'p/x', name: 'x', private: false, files: ['tpl/**', 'a/**/b.json'] }];
+    for (const path of ['p/x/tpl/a.json', 'p/x/tpl/b/a.txt', 'p/x/a/b.json', 'p/x/a/c/d/b.json'])
+      assert.deepEqual(changesetGaps([path], [], globbed), ['x'], path);
+    for (const path of ['p/x/tplx/a.json', 'p/x/a/c/b.jsonx']) assert.deepEqual(changesetGaps([path], [], globbed), [], path);
+  });
+
+  it('a test file under src is none, with files lists read (M19.5)', () => {
+    assert.deepEqual(changesetGaps(['packages/dsl/src/grammar.test.ts', 'packs/arrows/src/pack.test.ts'], [], shipped), []);
+  });
+
   it('an older changeset does not cover a change of the range; one the range adds does (review F1)', () => {
     const sb = sandbox(['scripts', 'tools/gen'], { git: true });
     try {

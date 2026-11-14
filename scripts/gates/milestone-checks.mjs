@@ -654,10 +654,28 @@ function screenLacks(screen) {
 /** A test file, `*.test.*` or `*.browser.test.*`, which no package build emits (M18.272). */
 const TEST_FILE = /\.test\.[cm]?[jt]sx?$/;
 
+/** A files-list glob token's regex source. */
+const GLOB_TOKENS = { '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' };
+
 /**
- * The published workspaces whose shipped files (`src/` other than test files, `package.json`) `changed` touches and that no
- * changeset text names (M4 final F1): pure, over repo-relative paths, the changeset file contents
- * and the workspaces as `{ dir, name, private }`.
+ * Whether `entry` of a package.json `files` list (relative to the workspace, `*` within one path
+ * segment, `**` across segments, a directory naming everything under it) covers workspace path `rel`.
+ */
+function filesEntryCovers(entry, rel) {
+  const clean = entry.replace(/^\.\//, '').replace(/\/$/, '');
+  if (!/[*?]/.test(clean)) return rel === clean || rel.startsWith(`${clean}/`);
+  const source = clean
+    .split(/(\*\*\/?|\*|\?)/)
+    .map((part) => GLOB_TOKENS[part] ?? part.replace(/[.+^${}()|[\]\\]/g, '\\$&'))
+    .join('');
+  return new RegExp(`^${source}(?:/.*)?$`).test(rel);
+}
+
+/**
+ * The published workspaces whose shipped files `changed` touches and that no changeset text names (M4 final F1): pure,
+ * over repo-relative paths, the changeset file contents and the workspaces as `{ dir, name, private, files }`. Shipped are
+ * `src/` other than test files, `package.json`, and every path the workspace's `files` list ships besides the built dist
+ * (a pack's pack/ and pack-versions.json, dsl's grammar, format's font-engine assets, fonts, notices; M19.5, cp45 F5).
  */
 export function changesetGaps(changed, changesetTexts, workspaces) {
   // only the release lines of each changeset's frontmatter count, not a name in its prose (review F2)
@@ -670,9 +688,12 @@ export function changesetGaps(changed, changesetTexts, workspaces) {
   const named = (name) => released.has(name);
   // a test file under src/ ships nothing: every published `files` is dist (and assets), and no
   // build emits a `*.test.*` file (M18.272, cp44 F1); src/testing/ is an exported subpath and counts
-  const ships = (dir, p) => (p.startsWith(`${dir}/src/`) && !TEST_FILE.test(p)) || p === `${dir}/package.json`;
-  const touched = (dir) => changed.some((p) => ships(dir, p));
-  return workspaces.filter((w) => !w.private && touched(w.dir) && !named(w.name)).map((w) => w.name);
+  const listed = (w, p) =>
+    p.startsWith(`${w.dir}/`) &&
+    (w.files ?? []).some((entry) => !/^(?:\.\/)?dist(?:\/|$)/.test(entry) && !entry.startsWith('!') && filesEntryCovers(entry, p.slice(w.dir.length + 1)));
+  const ships = (w, p) => (p.startsWith(`${w.dir}/src/`) && !TEST_FILE.test(p)) || p === `${w.dir}/package.json` || listed(w, p);
+  const touched = (w) => changed.some((p) => ships(w, p));
+  return workspaces.filter((w) => !w.private && touched(w) && !named(w.name)).map((w) => w.name);
 }
 
 /**
@@ -691,7 +712,8 @@ export function changesetsCoverRange(base) {
     .map((f) => git(['show', `HEAD:${f}`]).stdout);
   const workspaces = JSON.parse(readFileSync(repoPath('tools/gen/workspaces.json'), 'utf8')).workspaces.map((w) => {
     const pkg = join(repoPath(w.dir), 'package.json');
-    return { dir: w.dir, name: w.name, private: existsSync(pkg) && JSON.parse(readFileSync(pkg, 'utf8')).private === true };
+    const json = existsSync(pkg) ? JSON.parse(readFileSync(pkg, 'utf8')) : {};
+    return { dir: w.dir, name: w.name, private: json.private === true, files: Array.isArray(json.files) ? json.files : [] };
   });
   const gaps = changesetGaps(diff.stdout.split(/\r?\n/).filter(Boolean), texts, workspaces);
   return gaps.length === 0 || `no changeset for ${gaps.join(', ')} (changed since ${base.slice(0, 8)})`;

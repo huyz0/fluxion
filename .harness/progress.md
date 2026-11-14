@@ -4753,3 +4753,11 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - The r2-passed content failed the staged lint (checkBacklogDone's complexity 29 > 12; a helper named 'escape' shadowing the global). The hand-off checks move to handOffsProblem and the helper is 'literal'; behaviour and tests unchanged (78/78), lint clean. Re-reviewed as r3.
 - r3 F1 (blocking): check-commits re-runs check-checkpoint over all history on a first push, and M6, M8 and M18 checkpoint records say 'hand off', so dropping the spelling re-judged closed history (238ee26..910259b would fail at 17-23 unreviewed). check-checkpoint now takes the one spelling from M19 on and keeps the old ones for earlier milestones' records; 910259b and 238ee26 read 7/8 and 1/8 again, as at HEAD. checkpoint.test.mjs's fixture takes a milestone: an M19 record refuses 'hand off'/'handoff' and accepts 'hand-off'; an M18 record accepts all three. 21/21; with the cutoff removed the case fails.
 round-allowance: M19.4 a fourth review round under Huy's 2026-11-05T11:04:52Z delegation ("you decide for me and unblock anything, don't ask me unless it is permission access"); r3 found a real regression the fix addresses, as M18.122's allowance did (cp43 F2)
+
+## 2026-11-14 M19.5: the changesets leg counts every path a workspace ships
+
+- changesetGaps (scripts/gates/milestone-checks.mjs) also counts a published workspace as changed by any path its package.json `files` list ships besides dist: pack/ and pack-versions.json of the packs, dsl's grammar, format's assets/font-engine entries (globs within one segment), fonts-core's fonts, fonts.json and OFL.txt, NOTICE files. changesetsCoverRange reads each workspace's `files`.
+- Tests: three cases in milestone-checks.test.mjs ('a pack-only change is a gap…', 'a grammar change is a gap…', 'a test file under src is none…'); 61/61; with the files lists ignored two fail. M18's range (7545e708..HEAD) still reads covered under the wider rule.
+- M19.2 evidence: milestone-gate run 43646666929 at 9ac09ab uploaded its gate-log artifact (2283 B) from /tmp/gate.log; the gate step was red as expected (M19 is in progress).
+- M19.4's Commit cell: d6a2b11.
+- r1 pass with F1 (minor): a trailing '**' matched nothing; '**' now spans segments and '**/' any directory prefix, with cases for both. Re-reviewed as r2.
