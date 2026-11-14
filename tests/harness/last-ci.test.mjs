@@ -234,7 +234,7 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     }
   });
 
-  it("M18.138: run under a commit hook's git environment, the clone test leaves the hook's repository alone", () => {
+  it("M18.138: run under a commit hook's git environment, the clone test leaves the hook's repository alone, its nested run read on any Node major", () => {
     const decoy = mkdtempSync(join(tmpdir(), 'last-ci-decoy-'));
     try {
       const g = (...args) => spawnSync('git', args, { cwd: decoy, encoding: 'utf8', env: cleanEnv() });
@@ -244,10 +244,15 @@ describe('last-ci (M5.2, M4 final F3)', () => {
       // what pre-commit exports to its children
       const env = { ...process.env, GIT_DIR: join(decoy, '.git'), GIT_INDEX_FILE: join(decoy, '.git', 'index'), GIT_WORK_TREE: decoy };
       delete env.NODE_TEST_CONTEXT; // a nested runner reports to this one otherwise, printing nothing
-      const r = spawnSync(process.execPath, ['--test', '--test-name-pattern', 'M18.118 r1 F1', join(REPO, 'tests/harness/last-ci.test.mjs')], {
-        encoding: 'utf8',
-        env,
-      });
+      // TAP named: without a TTY Node 22 defaults to TAP ('# pass 1') but Node 24 to spec ('ℹ pass 1') (M19.3)
+      const r = spawnSync(
+        process.execPath,
+        ['--test', '--test-reporter=tap', '--test-name-pattern', 'M18.118 r1 F1', join(REPO, 'tests/harness/last-ci.test.mjs')],
+        {
+          encoding: 'utf8',
+          env,
+        },
+      );
       assert.equal(r.status, 0, r.stdout + r.stderr);
       assert.match(r.stdout, /# pass 1/);
       assert.equal(g('rev-parse', 'HEAD').stdout.trim(), before);

@@ -4735,3 +4735,10 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - M19.1's Commit cell: c86770a.
 - r1 F1 (blocking): ${{ runner.temp }} is the host's path in a container job while the steps see /__w/_temp, so the upload would have found nothing; now one literal container path, and the test requires the tee and the upload to name GATE_LOG.
 - r2 F1 (major): failedSteps kept the first 12 lines of precommit's 40-line window; it keeps the last 12, and a case with a 32-line window checks the summary and log path survive. r2 F2: the row names /tmp/gate.log.
+
+## 2026-11-14 M19.3: last-ci's nested test run read on any Node major
+
+- tests/harness/last-ci.test.mjs's M18.138 case spawns a nested node:test run and matched '# pass 1'. Without a TTY Node 22 defaults to the TAP reporter and Node 24 to spec ('ℹ pass 1'), so the case failed under Node 24.20.0 (reproduced locally with the SHA-checked official binary; the M18 closeout's first Windows gate attempt, 75/76). The spawn now names --test-reporter=tap.
+- last-ci.test.mjs and mutation-red-baseline.test.mjs (the only other '# fail' reader): 21/21 under Node 24.20.0 and 21/21 under 22.23.5. No other harness test reads a nested run's summary line.
+- The case's title gains ', its nested run read on any Node major' (m19-complete's leg names it): Removes-test trailer for the old title.
+- M19.2's Commit cell: 9ac09ab. A milestone-gate run for M19 at 9ac09ab is checking that the log uploads from /tmp/gate.log.
