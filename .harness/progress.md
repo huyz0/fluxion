@@ -4689,8 +4689,19 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 
 ## 2026-11-14 M18.296 closes; new M18 freeze at 906923d
 
-- ci 43522273560 at 906923d succeeded, security / osv-scanner included; gates 43522273566 green; cold setup 472 s. M18.296 is done (906923d). budget.json recorded with `check-budget.mjs --record --cold-from-ci 906923d`.
+- ci 43522273560 at 906923d succeeded, security / osv-scanner included; gates 43522273566 green; cold setup 472 s (last-ci's reading; the CI step read 477 s, which budget.json records). M18.296 is done (906923d). budget.json recorded with `check-budget.mjs --record --cold-from-ci 906923d`.
 - 906923d is the new freeze sha: only commits confined to AFTER_REVIEW_PATHS land until the evidence is recorded. Next: the first nightly at or after 906923d (mutation evidence, ci evidence with --perf-run, first render under the cp51 M18.288 rule, node-shuffle seed and result); the browser legs at 906923d; a final-review delta over ffc89e8..906923d recorded as milestone-M18-final.json; last-ci read right before M18.43's close; m18-complete 76/76 in one run.
 - Browser legs at the new freeze, run on Huy's Windows machine DESKTOP-3QR6E1Q at 906923d4, clean detached checkout, image mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27 (node v24.20.0, pnpm 11.28.0), flow as scripts/e2e/in-image.sh, --retries=0: L30 file.used-shapes 1/1 on each of 5 projects; L31 svg-import 54/54, artwork.viewport 2/2, svg-witness-corpus 2/2 on each of chromium/firefox/webkit; L33 artwork.font-retention 2/2; L59 library.import-svg 3/3; L60 library.my-shapes 1/1; L61 library.replace-shape 1/1; L62 library.pack-credits 1/1; L63 library.font-subset 2/2 (each on the 3 desktop projects). 209 passed, 0 failed, 0 flaky, 0 skipped; 146 s.
 - state.json `updated` is the wall-clock time of this record.
 
+## 2026-11-14 M18.43: final review through 906923d (pass)
+
+- Independent final-review delta over ffc89e8..30caa1d recorded as .harness/reviews/milestone-M18-final.json (range 7545e708..906923d, pass, cites milestone-M18-finalffc.json). checkFinalReview accepts its shape.
+- 906923d is the only code commit since ffc89e8; scripts/gates and thresholds.mjs unchanged. The prior record's F1 (M18.296) and F2 (M19 row 22, roadmap Deferred) are carried out.
+- Nightly 43578498688 (30caa1d, product tree 906923d): perf 'first render ms 652' (--retries=0), under the cp51 rule; node-shuffle seed 526367330, 3362 tests passed; red only visual-xos macos/windows (ADR-0202) and previous-playwright webkit on clipboard.copy-paste.spec.ts:58 (ADR-0215). Mutation partitions still running at this record.
+- F1 (minor, argued): budget.json's node field reads 22.22.0, the measuring machine's, below the new floor; no gate reads it. The cold-setup figure is corrected above.
+- Watch in M19: cold setup grew from 395 s to 477 s after the astro 7.4 lockfile (600 s limit).
+- Next: record the mutation and ci/perf evidence from 43578498688, read last-ci, run m18-complete 76/76 in one run on all three engines, close M18.43 and advance the roadmap.
+- state.json `updated` is the wall-clock time of this record.
+
+- r1 F1: blockedReason's Next clause now lists only what is left (mutation and ci/perf evidence from 43578498688, last-ci, m18-complete 76/76, roadmap advance).
