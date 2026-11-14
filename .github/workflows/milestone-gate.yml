@@ -29,6 +29,9 @@ jobs:
     env:
       HOME: /root # Firefox refuses a HOME owned by another user inside the container
       MILESTONE: ${{ inputs.milestone }}
+      # outside the checkout, and one container path for the shell and the upload action alike: in a container job
+      # ${{ runner.temp }} names the host's directory while the steps see /__w/_temp (actions/runner#2185; M19.2 r1)
+      GATE_LOG: /tmp/gate.log
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -48,11 +51,12 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global user.name "ci"
           git config --global user.email "ci@example.invalid"
+      # a gate.log in the workspace is an untracked file the gate's own legs read (M19.2)
       - name: the gate
         shell: bash # pipefail: a crash of the script shows in the job's colour; a gate that ran and is red on a waiting leg does too
-        run: node "scripts/gates/m${MILESTONE}-complete.mjs" 2>&1 | tee gate.log
+        run: node "scripts/gates/m${MILESTONE}-complete.mjs" 2>&1 | tee "$GATE_LOG"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: gate-log
-          path: gate.log
+          path: ${{ env.GATE_LOG }}

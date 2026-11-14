@@ -195,7 +195,10 @@ leg('packages/geometry coverage at or above COVERAGE_PURE_LINES/BRANCHES', () =>
 
 // ── handed-off harness rows (M18) ──────────────────────────────────────────────────────────────────
 leg('milestone-gate keeps gate.log out of the workspace and prints precommit failure detail', () =>
-  namedCases('tests/harness/workflows.test.mjs', ['gate log outside the workspace', 'precommit failure detail']),
+  all(
+    () => namedCases('tests/harness/ci-workflow.test.mjs', ['gate log outside the workspace']),
+    () => namedCases('tests/harness/verify-leg.test.mjs', ['precommit failure detail']),
+  ),
 );
 leg('last-ci tests read node:test output on Node 22 and Node 24', () => namedCases('tests/harness/last-ci.test.mjs', ['any Node major']));
 leg('changesets count every path a published workspace ships (M18 cp45 F5)', () =>

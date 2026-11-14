@@ -652,3 +652,18 @@ describe('ci scripts (NFR-DX-004)', () => {
     }
   });
 });
+
+describe('milestone-gate workflow (M19.2)', () => {
+  const gate = readFileSync(join(REPO, '.github/workflows/milestone-gate.yml'), 'utf8');
+  it('writes its gate log outside the workspace, so no leg sees an untracked file (gate log outside the workspace)', () => {
+    // at 5a3d0ee the log tee'd into the checkout made precommit --all and another leg read an untracked gate.log (74/76)
+    const log = /^ {6}GATE_LOG: (\S+)$/m.exec(gate)?.[1];
+    assert.ok(log, 'the job sets GATE_LOG');
+    // one literal container path: ${{ runner.temp }} is the host's path inside a container job (r1 F1), and the
+    // checkout ($GITHUB_WORKSPACE, /__w/<repo>) must not hold it
+    assert.match(log, /^\/tmp\//);
+    assert.match(gate, /\| tee "\$GATE_LOG"$/m);
+    assert.match(gate, /^ {10}path: \$\{\{ env\.GATE_LOG \}\}$/m);
+    assert.doesNotMatch(gate, /runner\.temp \}\}\/|RUNNER_TEMP\/|tee gate\.log|path: gate\.log/);
+  });
+});

@@ -49,4 +49,39 @@ describe('shared verify leg (NFR-DX-001, ADR-0143)', () => {
     assert.match(String(verifyLeg(['lint', 'test'], { command: script(['PASS lint (1ms)']) })), /test=absent/);
     assert.match(String(verifyLeg(['lint'], { command: script(['PASS lint (1ms)', 'SKIP api — no build']) })), /skipped: SKIP api/);
   });
+
+  it('a failing ladder names each failed step with its output, not only the closing VERIFY line (precommit failure detail, M19.2)', () => {
+    const lines = [
+      'PASS build (1ms)',
+      'FAIL lint (2ms)',
+      '    scripts/x.mjs format',
+      '      × Formatter would have printed the following content:',
+      '    Full failure output: .harness/tmp/verify-logs/1/lint.log',
+      'PASS test (1ms)',
+      'ADVISORY size: 1 byte over',
+      'FAIL api (3ms)',
+      '    api report drift: packages/core',
+      'PASS digest (1ms)',
+      'VERIFY all: FAIL (1.0s)',
+    ];
+    const command = [process.execPath, ['-e', `console.log(${JSON.stringify(lines.join('\n'))}); process.exit(1)`]];
+    const leg = String(verifyLeg(['lint', 'api'], { command }));
+    assert.match(leg, /FAIL lint/);
+    assert.match(leg, /Formatter would have printed/);
+    assert.match(leg, /verify-logs\/1\/lint\.log/);
+    assert.match(leg, /FAIL api.*api report drift/s);
+    assert.doesNotMatch(leg, /PASS test|ADVISORY/);
+    // a step's window longer than the kept lines keeps its end: the summary and the log path (r2 F1)
+    const long = [
+      'FAIL lint (2ms)',
+      ...Array.from({ length: 30 }, (_, i) => `    diagnostic ${i}`),
+      '    ✖ Some errors were emitted',
+      '    Full failure output: .harness/tmp/verify-logs/2/lint.log',
+      'VERIFY all: FAIL (1.0s)',
+    ];
+    const tailed = String(verifyLeg(['lint'], { command: [process.execPath, ['-e', `console.log(${JSON.stringify(long.join('\n'))}); process.exit(1)`]] }));
+    assert.match(tailed, /Some errors were emitted \| Full failure output: \.harness\/tmp\/verify-logs\/2\/lint\.log$/);
+    assert.match(tailed, /diagnostic 29/);
+    assert.doesNotMatch(tailed, /diagnostic 0 /);
+  });
 });

@@ -4726,3 +4726,12 @@ ci 43337696686 at f996d15 (bookkeeping only) was red on two jobs. security / osv
 - state.json `updated` is the wall-clock time of this record.
 
 - Plan review r1 (changes-requested): F1 the parity leg now also requires the masters-tables example to hold a `master:`, a table and a clipping frame, and M19.26 says so; F2 M19.27 puts image-diff.test.ts in a node Vitest project and its leg also requires a workflow setting FLUXION_PNG_CHECK: 1; F3 M19.28 lists its items and targets a CI cold setup ≤ 420 s with a new leg reading .harness/budget.json, and M19.29 says it is checked by review and the e2e legs.
+
+## 2026-11-14 M19.2: milestone-gate log outside the workspace; a failed verify leg names its steps
+
+- .github/workflows/milestone-gate.yml tees the gate to $GATE_LOG (/tmp/gate.log, set on the job) and uploads ${{ env.GATE_LOG }}; at 5a3d0ee the log in the checkout was an untracked file the gate's own legs read (74/76).
+- verifyLeg (scripts/gates/milestone-checks.mjs) returns each FAIL step with the last 12 detail lines under it (the end of precommit's failure window: the cause's summary and its verify-logs path) instead of the ladder's last three lines, which were PASS lines and 'VERIFY all: FAIL'.
+- Tests: ci-workflow.test.mjs 'gate log outside the workspace', verify-leg.test.mjs 'precommit failure detail'; both red before the change, 37/37 after. m19-complete's leg now reads those two files and passes on its own.
+- M19.1's Commit cell: c86770a.
+- r1 F1 (blocking): ${{ runner.temp }} is the host's path in a container job while the steps see /__w/_temp, so the upload would have found nothing; now one literal container path, and the test requires the tee and the upload to name GATE_LOG.
+- r2 F1 (major): failedSteps kept the first 12 lines of precommit's 40-line window; it keeps the last 12, and a case with a 32-line window checks the summary and log path survive. r2 F2: the row names /tmp/gate.log.

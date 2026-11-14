@@ -311,6 +311,29 @@ export function checkHooksExecutable(hooks = ['pre-commit', 'commit-msg']) {
 /** The one tolerated SKIP line of the full ladder: the workflow linters need a Docker engine. */
 const TOLERATED_SKIP = /^SKIP workflows — Docker not available$/;
 
+/** A ladder step's status line: PASS/FAIL/SKIP/ADVISORY name …, or the closing VERIFY line. */
+const STEP_LINE = /^(?:PASS|FAIL|SKIP|ADVISORY|VERIFY) /;
+/**
+ * Each FAIL step of a ladder's output with the last 12 detail lines printed under it (precommit prints a
+ * failure window whose end holds the cause's summary and its 'Full failure output: <log>' path), joined
+ * with ' | '; null when no step failed. A failed ladder's last lines are other steps' PASS lines and the
+ * VERIFY line, which name no cause (M19.2: milestone-gate at 5a3d0ee printed only the command).
+ */
+function failedSteps(stdout) {
+  const lines = stdout.split(/\r?\n/);
+  const out = [];
+  lines.forEach((line, i) => {
+    if (!line.startsWith('FAIL ')) return;
+    const end = lines.findIndex((l, j) => j > i && STEP_LINE.test(l));
+    const detail = lines
+      .slice(i + 1, end === -1 ? undefined : end)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    out.push([line.trim(), ...detail.slice(-12)].join(' | '));
+  });
+  return out.length ? out.join(' || ') : null;
+}
+
 /**
  * Completion-gate leg "pnpm verify exits 0 with every planned step PASS", shared by every gate from
  * m3-complete on (M2.29 review F1/F2). The ladder runs with CI unset: under CI=true the budget step
@@ -320,7 +343,7 @@ const TOLERATED_SKIP = /^SKIP workflows — Docker not available$/;
 export function verifyLeg(required, { command = ['pnpm', ['verify']], cwd } = {}) {
   const env = { ...process.env, CI: '' };
   const r = run(command[0], command[1], { env, ...(cwd ? { cwd } : {}) });
-  if (r.status !== 0) return `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`;
+  if (r.status !== 0) return failedSteps(r.stdout) ?? `${(r.stderr || r.stdout).trim().split(/\r?\n/).slice(-3).join(' | ')}`;
   const skips = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('SKIP') && !TOLERATED_SKIP.test(l.trim()));
   if (skips.length) return `skipped: ${skips.join(' | ')}`;
   return checkVerifyOutput(r.stdout, required);
