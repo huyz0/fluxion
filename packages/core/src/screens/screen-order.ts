@@ -1,6 +1,7 @@
 // Screen order in core (FR-SCR-002, M8.11): where a screen goes, and the next screen presentation shows.
 import { compareKeys, DIAGNOSTIC_CODES, type Diagnostic, err, isIndexKey, jsonPointer, keyBetween, ok, type RecordId, type Result } from '@fluxion/schema';
 import type { CommandContext } from '../commands.js';
+import { isMasterScreen } from '../masters.js';
 import type { ReadView } from '../store.js';
 import type { TxFailure } from '../transaction.js';
 
@@ -13,7 +14,7 @@ function ordered(view: ReadView, except?: string, type = 'screen'): Entry[] {
     .filter((s) => s !== except)
     .map((s) => {
       const r = view.get(s) as { index?: unknown; hidden?: unknown; role?: unknown } | undefined;
-      return { id: s, index: String(r?.index ?? ''), hidden: r?.hidden === true, master: r?.role === 'master' };
+      return { id: s, index: String(r?.index ?? ''), hidden: r?.hidden === true, master: isMasterScreen(r as never) };
     })
     .sort((a, b) => compareKeys(a.index, b.index) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }

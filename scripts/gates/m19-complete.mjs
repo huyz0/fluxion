@@ -187,6 +187,8 @@ leg('FR-SCR-005 a master change updates every dependent screen', () =>
           'unnaming clears its fillers',
           'puts a copy of the placeholder on the screen, on top, filling it',
           'presentation order skips a master',
+          'element.setPlaceholder refuses a group',
+          'element.fillPlaceholder refuses a group placeholder that came in another way',
         ],
       }),
     () =>
@@ -195,10 +197,18 @@ leg('FR-SCR-005 a master change updates every dependent screen', () =>
           'becomes a placeholder named by its name',
           'a double-click inside an unfilled placeholder hint fills it',
           'Edit master shows the shown screen’s master',
+          'Close master shows the screen Edit master was run from',
+          'Close master falls back to the first screen in navigator order using the master',
+          'a group named a placeholder in a loaded file shows no fill hint',
+          'a canvas menu offers each master line only where it acts',
         ],
       }),
     () => tests('packages/editor/src/navigator/master-menu.test.ts', { named: 'each line runs one master command on the screen' }),
-    () => tests('packages/editor/src/present.browser.test.tsx', { project: 'browser', named: 'while a master is shown starts at the first slide' }),
+    () =>
+      tests('packages/editor/src/present.browser.test.tsx', {
+        project: 'browser',
+        named: ['while a master is shown starts at the first slide', 'a document whose every screen is a master presents nothing'],
+      }),
     () => tests('packages/cli/src/ops/outline.test.ts', { named: 'the outline lists the slides and not their master' }),
     () => tests('apps/studio/src/library/thumbnail.test.ts', { named: 'a master is not the thumbnail' }),
   ),

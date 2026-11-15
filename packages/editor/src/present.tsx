@@ -60,11 +60,11 @@ export function useModeSwitch(store: Store, session: Session, edit: ToolDispatch
   return useCallback(
     (from = 'current') => {
       const first = session.mode.get() === 'edit' ? startOf(store, session, from) : undefined;
-      // a document whose every visible screen is a master has nothing to present: it stays in edit mode (M19.23 r1)
-      if (first === null) return false;
+      // a document whose every visible screen is a master has nothing to present: it stays in edit mode (M19.23 r1); the mode
+      // commands notice it by the mode (presentFrom)
+      if (first === null) return;
       if (first !== undefined && first !== session.screen.get()) switchScreen(session, first);
       switchMode(session, session.mode.get() === 'present' ? present : edit, saved);
-      return true;
     },
     [store, session, edit, present],
   );
@@ -72,11 +72,11 @@ export function useModeSwitch(store: Store, session: Session, edit: ToolDispatch
 
 /**
  * Switch between editing and presenting; entering `from` the first visible screen (`start`, F5) or the shown one (`current`).
- * False when it stayed in edit mode: nothing to present, the shown screen a master and no other visible.
+ * With nothing to present (the shown screen a master and no other visible) it stays in edit mode.
  *
  * @public
  */
-export type ModeSwitch = (from?: 'start' | 'current') => boolean;
+export type ModeSwitch = (from?: 'start' | 'current') => void;
 
 /**
  * Switch between editing and presenting: what the leaving mode's tools were doing is cancelled, and

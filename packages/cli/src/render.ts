@@ -8,7 +8,7 @@ import { embeddedConnectors, loadFlux, sha256Hex } from '@fluxion/format';
 import { type AssetUrls, builtinRegistries } from '@fluxion/render';
 import { type EmbeddedShapePacks, embedSavedShapePacks, renderDocumentToHtml } from '@fluxion/render/ssr';
 import { globalRoutes, registerConnectorDefs } from '@fluxion/routing';
-import { type Diagnostic, type DocumentFile, jsonPointer, parseDocument, type RecordId } from '@fluxion/schema';
+import { type Diagnostic, type DocumentFile, isMasterScreen, jsonPointer, parseDocument, type RecordId } from '@fluxion/schema';
 import { allowsShapePackContentLicense } from '@fluxion/sdk';
 import { type Command, internal, io, type Outcome, unsupported, usage } from './command.js';
 import { hostRegistries, hostRouters } from './host.js';
@@ -25,7 +25,7 @@ function screenProblem(document: DocumentFile, wanted: readonly string[], file: 
   const hidden = wanted.filter((id) => (document.records[id] as { readonly hidden?: unknown }).hidden === true);
   if (hidden.length > 0) return `screen ${hidden.map((id) => `"${id}"`).join(', ')} is hidden; show it to render it`;
   // a master is no page: export skips it and draws it behind the screens that use it (ADR-0054)
-  const masters = wanted.filter((id) => (document.records[id] as { readonly role?: unknown }).role === 'master');
+  const masters = wanted.filter((id) => isMasterScreen(document.records[id] as never));
   if (masters.length > 0) return `screen ${masters.map((id) => `"${id}"`).join(', ')} is a master; render a screen that uses it`;
   return undefined;
 }

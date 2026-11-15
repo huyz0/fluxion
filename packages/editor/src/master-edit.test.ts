@@ -1,4 +1,4 @@
-import { createCore } from '@fluxion/core';
+import { createCore, masterLayers } from '@fluxion/core';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
@@ -96,6 +96,42 @@ describe('master editing on the canvas (FR-SCR-005, ADR-0054)', () => {
     t.core.execute('screen.setMaster', { id: t.plain });
     closeMaster(t.ctxOn(t.brand));
     expect(t.session.screen.get()).toBe(t.a);
+  });
+
+  it('FR-SCR-005: Close master falls back to the first screen in navigator order using the master, not the lowest id', () => {
+    const b = documentBuilder({ seed: 1948 });
+    const brand = b.screen({ name: 'Brand' });
+    const screens = [b.screen(), b.screen(), b.screen()];
+    const file = b.build();
+    const records = Object.fromEntries(
+      Object.entries(file.records).map(([id, r]) => [
+        id,
+        { ...r, ...(id === brand ? { role: 'master' } : screens.includes(id as RecordId) ? { masterId: brand } : {}) },
+      ]),
+    );
+    const core = createCore({ ...file, records } as unknown as DocumentFile);
+    const session = createSession('doc');
+    const on = (screen: RecordId): ToolCtx => ({ ...setup().ctxOn(screen), session, view: core.store, execute: core.execute, screen });
+    // the lowest id goes into a section: the navigator lists it after the screens in none
+    const [low, mid, high] = [...screens].sort() as [RecordId, RecordId, RecordId];
+    const section = 'SectionSectionSe' as RecordId;
+    expect(core.execute('section.create', { id: section, name: 'Later' }).ok).toBe(true);
+    expect(core.execute('screen.setSection', { id: low, sectionId: section }).ok).toBe(true);
+    // opened from `high`, which then drops the master: back to `mid`, first in navigator order (id order would pick `low`)
+    openMaster(on(high));
+    core.execute('screen.setMaster', { id: high });
+    closeMaster(on(brand));
+    expect(session.screen.get()).toBe(mid);
+  });
+
+  it('FR-SCR-005: a group named a placeholder in a loaded file shows no fill hint and is not filled', () => {
+    const t = setup();
+    const groupId = 'GroupGroupGroupG' as RecordId;
+    expect(t.core.execute('element.group', { ids: [t.logo], groupId }).ok).toBe(true);
+    // as a file could hold it: the command refuses naming a group, so written straight to the store
+    t.core.store.transact('load', (tx) => tx.patch(groupId, { placeholder: 'brand' }));
+    expect(masterLayers(t.core.store, t.a)?.unfilled ?? []).not.toContain(groupId);
+    expect(fillAt(t.ctxOn(t.a), { x: 50, y: 40 })).toBe(false);
   });
 
   it('FR-SCR-005: the element menu offers the placeholder lines and the screen menu Edit master and Close master', () => {

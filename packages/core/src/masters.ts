@@ -47,7 +47,13 @@ export type MasterLayers = {
   readonly unfilled: readonly RecordId[];
 };
 
-type Placed = { readonly type?: unknown; readonly placeholder?: unknown; readonly fills?: unknown; readonly hidden?: unknown };
+type Placed = { readonly type?: unknown; readonly kind?: unknown; readonly placeholder?: unknown; readonly fills?: unknown; readonly hidden?: unknown };
+
+/**
+ * The element kinds that are never placeholders: a fill copies the placeholder's own record, so a group's or frame's members would
+ * not come (M19.45). One named so elsewhere (a loaded file) draws as an ordinary element of the master.
+ */
+export const UNFILLABLE_KINDS: ReadonlySet<string> = new Set(['group', 'frame']);
 
 const screenOf = (view: ReadView, id: RecordId | undefined): ScreenRecord | undefined => {
   const r = id === undefined ? undefined : view.get(id);
@@ -79,12 +85,15 @@ export function appliedMaster(view: ReadView, screenId: RecordId): AppliedMaster
 }
 
 /**
- * The elements of the master screen `masterId` that are placeholders, at any depth.
+ * The elements of the master screen `masterId` that are placeholders, at any depth; a group or frame never is (its members would not be filled).
  *
  * @public
  */
 export function placeholdersOf(view: ReadView, masterId: RecordId): RecordId[] {
-  return view.members('byScreen', masterId).filter((id) => typeof (view.get(id) as Placed | undefined)?.placeholder === 'string');
+  return view.members('byScreen', masterId).filter((id) => {
+    const r = view.get(id) as Placed | undefined;
+    return typeof r?.placeholder === 'string' && !UNFILLABLE_KINDS.has(String(r.kind));
+  });
 }
 
 /** The placeholders the elements of `screenId` fill. */

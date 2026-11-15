@@ -28,11 +28,7 @@ export function fitCamera(area: Box, box: { readonly w: number; readonly h: numb
   return { x: area.x - f.x / f.scale, y: area.y - f.y / f.scale, z: f.scale };
 }
 
-/**
- * What {@link presentFrom} takes of an editor command's context.
- *
- * @public
- */
+/** What {@link presentFrom} takes of an editor command's context. */
 export type PresentCtx = {
   /** The tools, and through them the session whose mode it reads. */
   readonly tools: { readonly ctx: { readonly session: Session } };
@@ -45,8 +41,6 @@ export type PresentCtx = {
 /**
  * Switch modes, entering `from` the first visible screen or the shown one; with nothing to present (the shown screen a master and
  * no visible screen besides) it stays editing and says so. False without a mode switch.
- *
- * @public
  */
 export function presentFrom(ctx: PresentCtx, from: 'start' | 'current'): boolean {
   if (ctx.switchMode === undefined) return false;

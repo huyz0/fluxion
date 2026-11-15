@@ -4959,3 +4959,8 @@ round-allowance: M19.25 a fourth review round under Huy's 2026-11-05T11:04:52Z d
 - r1 (changes-requested, fixed): F1 a group or frame placeholder that came in another way (a loaded file) could still be filled empty: `element.fillPlaceholder` refuses it too, with a case; F2 the notice is a Lingui message (the mode commands' helper moved to present-mode.ts as `presentFrom`); F3 its text names hidden screens too ("every screen is a master or hidden"); F4 `CONTAINER_KINDS` sits above MASTER_COMMANDS's doc again.
 ## 2026-11-15 M19.31: checkpoint cp5 (through 4042b8b)
 - Independent milestone review of 72aa72b..4042b8b: pass, 6 minors. Reopens F1, F2, F3, F5 into new row M19.48 (M19.45 r2's minors, Close master's navigator-order fallback case, FR-SCR-005 named cases, inline master-role checks); F4 (minors reaching rows a commit late) and F6 (a local build-settle flake, CI green) argued. 48 rows against 31 planned (1.55x). Learned line added.
+## 2026-11-15 M19.48: master and present hygiene (M19.45 r2 minors; cp5 F1, F2, F3, F5)
+- Core `placeholdersOf` leaves out groups and frames (`UNFILLABLE_KINDS` in masters.ts, shared with the two master commands), so one named a placeholder in a file draws as an ordinary master element: no dead fill hint; fillPlaceholder refuses it before the placeholder check.
+- `ModeSwitch` returns void again (presentFrom reads the mode); `PresentCtx` and `presentFrom` lose @public (not exported).
+- Core screen-order.ts, cli render.ts and editor master-problems.ts use `isMasterScreen`.
+- Cases in editor master-edit.test.ts: Close master's navigator-order fallback (the lowest id in a section), a loaded group placeholder with no hint and no fill. m19-complete's FR-SCR-005 leg names M19.45's and M19.46's cases.

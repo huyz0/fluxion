@@ -2,7 +2,7 @@
 // master that does not apply, fill no placeholder, or give two placeholders one name, and still open. The Problems tab says why a
 // screen draws without its master, which `fills` draws as an ordinary element (with a fix that drops it), and which names a master
 // shares.
-import { appliedMaster, type MasterProblemCode, type ReadView, sharedPlaceholderNames, strayFills } from '@fluxion/core';
+import { appliedMaster, isMasterScreen, type MasterProblemCode, type ReadView, sharedPlaceholderNames, strayFills } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import type { Problem } from './problem-types.js';
 
@@ -69,5 +69,5 @@ function shared(view: ReadView, master: RecordId): Problem[] {
 export function masterProblems(view: ReadView): Problem[] {
   return [...view.members('byType', 'screen')]
     .sort()
-    .flatMap((screen) => [...unapplied(view, screen), ...stray(view, screen), ...((view.get(screen) as Named).role === 'master' ? shared(view, screen) : [])]);
+    .flatMap((screen) => [...unapplied(view, screen), ...stray(view, screen), ...(isMasterScreen(view.get(screen) as never) ? shared(view, screen) : [])]);
 }

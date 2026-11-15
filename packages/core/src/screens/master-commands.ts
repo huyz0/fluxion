@@ -7,7 +7,7 @@ import { type AnyRecord, keyBetween, type RecordId, type ScreenRecord, screenKin
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
-import { appliedMaster, isMasterScreen, placeholdersOf } from '../masters.js';
+import { appliedMaster, isMasterScreen, placeholdersOf, UNFILLABLE_KINDS } from '../masters.js';
 import type { ReadView } from '../store.js';
 import type { Tx } from '../transaction.js';
 
@@ -56,9 +56,6 @@ function topIndex(view: ReadView, screen: string): string {
 
 /** The fields of a placeholder that its filler does not copy: it is the screen's own element, not the master's. */
 const NOT_COPIED = new Set(['id', 'screenId', 'parentId', 'index', 'placeholder', 'semantic', 'locks']);
-
-/** The kinds whose members a placeholder's fill would not copy: never placeholders, nor filled. */
-const CONTAINER_KINDS: ReadonlySet<string> = new Set(['group', 'frame']);
 
 /**
  * The master commands (FR-SCR-005).
@@ -121,7 +118,7 @@ export const MASTER_COMMANDS: readonly AnyCommand[] = [
       const screen = rec(ctx.store, String(rec(ctx.store, args.id)?.['screenId']));
       if (!isMasterScreen(screen as never)) return refuse('element.setPlaceholder', ['id'], 'only an element of a master screen is a placeholder');
       // a filler copies the placeholder's own record only, so a group or frame would arrive without its members (M19.23 r1)
-      if (args.name !== undefined && CONTAINER_KINDS.has(String(rec(ctx.store, args.id)?.['kind'])))
+      if (args.name !== undefined && UNFILLABLE_KINDS.has(String(rec(ctx.store, args.id)?.['kind'])))
         return refuse('element.setPlaceholder', ['id'], 'a group or frame cannot be a placeholder: its members would not be filled');
       return write(ctx, 'element.setPlaceholder', (tx) => {
         tx.patch(args.id as RecordId, { placeholder: args.name });
@@ -140,15 +137,15 @@ export const MASTER_COMMANDS: readonly AnyCommand[] = [
         checkIds(ctx, 'element.fillPlaceholder', 'element', [[['placeholderId'], args.placeholderId]]) ??
         checkIds(ctx, 'element.fillPlaceholder', 'new', [[['newId'], args.newId]]);
       if (bad) return bad;
+      // a group or frame named a placeholder elsewhere (a loaded file, a script): its copy would come without its members
+      if (UNFILLABLE_KINDS.has(String(rec(ctx.store, args.placeholderId)?.['kind'])))
+        return refuse('element.fillPlaceholder', ['placeholderId'], 'a group or frame placeholder cannot be filled: its members would not come');
       const { master } = appliedMaster(ctx.store, args.screenId as RecordId);
       if (master === undefined || !placeholdersOf(ctx.store, master).includes(args.placeholderId as RecordId))
         return refuse('element.fillPlaceholder', ['placeholderId'], 'not a placeholder of the screen’s master');
       if (fillersOf(ctx.store, new Set([args.placeholderId])).some((x) => rec(ctx.store, x)?.['screenId'] === args.screenId))
         return refuse('element.fillPlaceholder', ['placeholderId'], 'the placeholder is filled on this screen already');
       const placeholder = rec(ctx.store, args.placeholderId) as Rec;
-      // a group or frame named a placeholder elsewhere (a loaded file, a script): its copy would come without its members
-      if (CONTAINER_KINDS.has(String(placeholder['kind'])))
-        return refuse('element.fillPlaceholder', ['placeholderId'], 'a group or frame placeholder cannot be filled: its members would not come');
       const copy = Object.fromEntries(Object.entries(placeholder).filter(([k]) => !NOT_COPIED.has(k)));
       const index = topIndex(ctx.store, args.screenId);
       return write(ctx, 'element.fillPlaceholder', (tx) => {
