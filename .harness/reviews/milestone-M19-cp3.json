@@ -1,0 +1,73 @@
+{
+  "milestone": "M19",
+  "checkpoint": "cp3",
+  "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..f0f10b942cd3b9d2536019d760269a1fae52cd4d",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "changes-requested",
+  "reviewedDelta": "Each commit after cp2's range read as a diff: 21d90ec M19.13, 83549c0 M19.14, 31d45f9 M19.15, d34a336 M19.16, ec75429 M19.37, 3e11fb6 M19.36, f0f10b9 M19.17; cp2's reopens traced (F1 frameTurned/frameFlipped removed, element.flip the one path; F2 texts-first-region built, M19.18/20/22 amended; F3 matchSize/pasteStyle honour locks; F4-F7 in M19.35). vitest node 12 files 74/74, browser 3 files 8/8; CI read with last-ci: e2e green on all engines at f0f10b9, verify ubuntu red (43700849891).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "summary": "main's ci is red at f0f10b9: verify ubuntu fails the cross-page clipboard case 'a copy made in another page of the origin is pasted from text/plain alone, in a page opened after it', which waits a fixed 50 ms for a BroadcastChannel answer; M18.295 fixed the sibling case with vi.waitFor.",
+      "evidence": "run 43700849891; packages/editor/src/use-system-clipboard.browser.test.tsx:244"
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "summary": "The format painter (core element.pasteStyle) has no editor surface: no command, palette entry, menu item or control runs it; FR-ARR-007 is met in core and dropped in the product.",
+      "evidence": "git grep pasteStyle: core and tests only; M19.12 progress note puts the UI out of that row; no later row."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "M19.17 r2 F1 (the inline editor's aria-label does not name the region) was carried 'to M19.35' in a commit body without amending M19.35; M19.16's acceptance names frameFlipped, which d34a336 removed.",
+      "evidence": "f0f10b9 body; docs/backlog/current.md M19.35, M19.16"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "summary": "element.flip reads no lock and no rule is written (a rotation-locked member of a flipped group has its turn rewritten); elementFlipped lives in frames.ts though it flips any element.",
+      "evidence": "packages/core/src/arrange/flip.ts, frames.ts"
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "summary": "New legs are not named cases: FR-SHP-008 is gated only by e2e/locks.spec.ts; the unit lock cases, the texts-first-region case and the arrange-panel key/centres cases are in files no leg names by case.",
+      "evidence": "scripts/gates/m19-complete.mjs:140-151, SPECS"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "note": "New row M19.39: the case waits with vi.waitFor, same assertions, no retry, no other fixed sleep on a cross-page answer; Fixes-ci: 43700849891.",
+      "target": "M19.39"
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "note": "New row M19.40: Copy style / Paste style on the element menu and in the palette, one undo step, a test naming FR-ARR-007 and the context-menu e2e list updated.",
+      "target": "M19.40"
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "note": "M19.35 amended with a checkable aria-label case naming the open region; M19.16's wording corrected to element.flip/elementFlipped in this record.",
+      "target": "M19.35, M19.16"
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "note": "M19.35 amended: flip's lock rule decided and written with a locks.test.ts case; elementFlipped moved out of frames.ts.",
+      "target": "M19.35"
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "note": "New row M19.42 (split from M19.35 with cp2 F5): an FR-SHP-008 unit leg naming the lock cases, named cases on the FR-SHP-007, arrange-panel, FR-ARR-006 clip and FR-ARR-007 legs.",
+      "target": "M19.42"
+    }
+  ],
+  "planDelta": "42 rows against 31 planned (1.35x; about 1.8x the plan's 23 items). This delta grew by one CI-red row (M19.37), two rows split from M19.17 (M19.36, M19.38), and cp3's four: main green (M19.39), the format painter UI (M19.40), the core:path shape split from M19.18 as its prerequisite (M19.41; booleans and the path tool both need a shape that draws `path`) and the named gate cases split from M19.35 (M19.42). The heavy rows (booleans, path editing, tables, masters, DSL) are ahead: expect growth past 1.5x; split each at its first natural seam rather than after review."
+}
