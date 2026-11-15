@@ -4837,3 +4837,8 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - r1 F1: a turned member of a resized group stretched along the wrong axis; members are now carried as the editor's group resize carries them (centre kept in the box, size along their own axes).
 - r2 F1: every member box a group's match size changes is pinned (ADR-0031), as a move pins it.
 - Registered after `element.align`; the registry, determinism and bench lists (fixture, `BENCH_COMMANDS`) name both; the bench fixture gains one styled shape to paint from. Editor UI for them is not in this row's acceptance.
+
+## 2026-11-15 M19.31: checkpoint cp2 (through db1a566)
+
+- cp2 by an independent subagent over 5a3d0ee..db1a566 (new delta 67bd33c..db1a566): changes-requested, 8 findings. Reopened: F1 into M19.16 (frame flip and turn through core, a rotate-handle case); F2 ADR-0054 outcomes copied as named cases into M19.22, M19.17, M19.20, M19.18; F3 match size in M19.15's locks; F4–F7 into the new M19.35 with M19.12's r3 minors. Argued: F8.
+- M19.13 (arrange panel, reviewed) waits on this record: the hook refused it at 8/8.

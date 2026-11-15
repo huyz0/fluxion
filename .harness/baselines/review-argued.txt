@@ -220,3 +220,4 @@ M18 final F1: .harness/budget.json's node field (22.22.0) is the measuring machi
 M19 cp1 F3: The licence finding (robust-predicates is Unlicense) widened the choice; ADR-0053 records it and the row's intent is met. M19.md's Decide line is corrected in the cp1 record.
 M19 cp1 F5: Real but small: the implementation does check the source milestone; the missing case is added on the next edit of milestone-checks.test.mjs's hand-off block.
 M19 cp1 F7: Under ADR-0176, a build-settle failure on Windows after ac4f2d6 counts as attempt 2 for M19.32's cause and needs timed annotations of each step before attempt 3.
+M19 cp2 F8: M19.33's raised witness timeouts are attempt 1 under ADR-0176 (state.json rowAttempts M19.33: 1); its commit body requires a repeat (attempt 2) to first add the failing stage to the diagnostic, with no second blind raise; the macOS job still needs its two green runs before the final review's ci-evidence leg can pass, so a real failure stays visible.

@@ -1,0 +1,108 @@
+{
+ "milestone": "M19",
+ "checkpoint": "cp2",
+ "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..db1a566c4068de9dd531404753757e16b7a8d461",
+ "reviewer": "claude:independent-subagent",
+ "verdict": "changes-requested",
+ "reviewedDelta": "Each commit after cp1's range read as a diff: 67bd33c, d29b937, f8cfd11, 49d7496, b86ce1d, a39f33b, cfeb787, db1a566; the plan, backlog, gate output (17/40) and argued findings; ADR-0054 and the ADR-0052 amendment. vitest node: frames, match-size, format-painter, select-tool, frame-hit, arrange tests 43/43 pass. Callers of frameTurned, frameFlipped and dropReparents traced with git grep; mutants spot-checked by reading.",
+ "findings": [
+  {
+   "id": "F1",
+   "severity": "major",
+   "summary": "frameTurned and frameFlipped are public core API with no caller; the named 'turn and flip carry members' case runs unused code while the editor's frame turn goes through move.ts reframed via starts() with no frame test; M19.16 does not say a frame flip carries members.",
+   "evidence": "git grep: only frames.test.ts and index.ts use them; select-tool.ts handleUnder; a mutant routing rotate through resizeStarts passes the frames leg."
+  },
+  {
+   "id": "F2",
+   "severity": "major",
+   "summary": "ADR-0054 obligations missing from later rows' acceptance: M19.22 (masters skipped in present/navigation/export/play order, own navigator section, edit-only unfilled placeholder, four no-master cases with problems, fills naming no placeholder), M19.17 (first-region texts key), M19.20 (plain/banded/grid, style precedence), M19.18 (path on non-core:path warned).",
+   "evidence": "ADR-0054 Decision Outcome and Confirmation (f8cfd11) vs backlog rows; FR-SCR-005 leg is whole-file."
+  },
+  {
+   "id": "F3",
+   "severity": "minor",
+   "summary": "element.matchSize and the format painter ignore locks; M19.15 lists tools, nudge, align and layout but not match size.",
+   "evidence": "match.ts sizedTo never reads locks; M19.15 acceptance."
+  },
+  {
+   "id": "F4",
+   "severity": "minor",
+   "summary": "Duplicated logic: frames.ts outermost/below vs translate.ts outermost/withMembers; placed-field carry in frames.ts and match.ts; match.ts scaled copies editor reframedBox; turned-box point test in core frames.ts and editor frame-clip.ts.",
+   "evidence": "a39f33b frames.ts; db1a566 match.ts header; cfeb787 frame-clip.ts."
+  },
+  {
+   "id": "F5",
+   "severity": "minor",
+   "summary": "cp1's 'name the cases' convention dropped for the FR-ARR-006 clip leg and the FR-ARR-007 leg.",
+   "evidence": "scripts/gates/m19-complete.mjs."
+  },
+  {
+   "id": "F6",
+   "severity": "minor",
+   "summary": "db1a566 hands two review minors to M19.35, which does not exist at db1a566.",
+   "evidence": "db1a566 body; backlog at db1a566."
+  },
+  {
+   "id": "F7",
+   "severity": "minor",
+   "summary": "The drop highlight costs O(dragged x screen elements) per pointermove; perf.drag-500 drags one element.",
+   "evidence": "cfeb787 select-tool.ts follow(); frames.ts frameDropTarget; e2e/perf.drag-500.spec.ts."
+  },
+  {
+   "id": "F8",
+   "severity": "minor",
+   "summary": "M19.33 raised witness timeouts 10 s to 30 s without naming the stage; unconfirmed until the macOS job's two green runs.",
+   "evidence": "d29b937 body; packet ci-evidence leg; M19.29."
+  }
+ ],
+ "dispositions": [
+  {
+   "finding": "F1",
+   "disposition": "reopen",
+   "note": "M19.16's acceptance: a frame flip goes through frameFlipped, the editor frame turn through frameTurned (or it is removed), a select-tool named case for the rotate handle on a frame, both in the frames leg.",
+   "target": "M19.16"
+  },
+  {
+   "finding": "F2",
+   "disposition": "reopen",
+   "note": "ADR-0054's outcomes copied as named cases into M19.22, M19.17, M19.20 and M19.18 (each row amended in this record).",
+   "target": "M19.22, M19.17, M19.20, M19.18"
+  },
+  {
+   "finding": "F3",
+   "disposition": "reopen",
+   "note": "M19.15's acceptance names element.matchSize (skips locks.size, keeps the ratio under locks.aspect) and element.pasteStyle (skips an element with locks.edit).",
+   "target": "M19.15"
+  },
+  {
+   "finding": "F4",
+   "disposition": "reopen",
+   "note": "One core placed-field carry helper; frames.ts reuses translate.ts; reframedBox and scaled shared or pinned equal by a test.",
+   "target": "M19.35"
+  },
+  {
+   "finding": "F5",
+   "disposition": "reopen",
+   "note": "Name the cases of the clip and match-size/painter legs.",
+   "target": "M19.35"
+  },
+  {
+   "finding": "F6",
+   "disposition": "reopen",
+   "note": "M19.35 created in this record with both db1a566 minors as checkable cases.",
+   "target": "M19.35"
+  },
+  {
+   "finding": "F7",
+   "disposition": "reopen",
+   "note": "Drop targets found once per move, or a measured multi-select drag on perf-500.",
+   "target": "M19.35"
+  },
+  {
+   "finding": "F8",
+   "disposition": "argue",
+   "note": "M19.33's raised timeouts are attempt 1 under ADR-0176 (state.json rowAttempts M19.33: 1); its commit body requires a repeat (attempt 2) to first add the failing stage to the diagnostic, never a second blind raise; the macOS job still needs its two green runs before the final review's ci-evidence leg passes."
+  }
+ ],
+ "planDelta": "35 rows with M19.35 (36 once M19.13 lands) against 31 planned: about 1.5x the plan's 23 items. Growth from two CI-red rows (M19.32, M19.33), the shape-pack split (M19.34) and a review-minors row (M19.35), not new scope. Contract ADRs set obligations for later rows; amend those rows when the ADR lands. Expect masters and tables to take several review rounds."
+}
