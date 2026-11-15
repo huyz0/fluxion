@@ -68,8 +68,9 @@ export function ContextMenu(props: ContextMenuProps): ReactNode {
       role="menu"
       aria-label={t`Context menu`}
       className="fx-chrome-picker fx-chrome-menu"
-      // a long menu scrolls inside the window rather than running off it; asked for in the lower half it opens upward
-      style={{ left: at.x, transform: 'none', overflowY: 'auto', ...placed(at.y) }}
+      // a long menu scrolls inside the window rather than running off it; asked for in the lower half it opens upward; the max
+      // height holds its padding and border too, so an upward menu never ends above the window
+      style={{ left: at.x, transform: 'none', overflowY: 'auto', boxSizing: 'border-box', ...placed(at.y) }}
       onKeyDown={key}
     >
       {items.map((item) => (

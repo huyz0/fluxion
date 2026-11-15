@@ -4,7 +4,7 @@ import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
 import { menuItems } from './context-menu-model.js';
 import { EDITOR_COMMANDS } from './editor-commands.js';
-import { clearPlaceholder, closeMaster, fillAt, makePlaceholder, openMaster } from './master-edit.js';
+import { clearPlaceholder, closeMaster, fillAt, makePlaceholder, offersMasterLine, openMaster } from './master-edit.js';
 import { createSession } from './session.js';
 import type { ToolCtx } from './tools.js';
 
@@ -88,5 +88,24 @@ describe('master editing on the canvas (FR-SCR-005, ADR-0054)', () => {
     const element = menuItems('element', EDITOR_COMMANDS).map((i) => i.command);
     expect(element).toEqual(expect.arrayContaining(['master.makePlaceholder', 'master.clearPlaceholder']));
     expect(menuItems('screen', EDITOR_COMMANDS).map((i) => i.command)).toEqual(expect.arrayContaining(['master.edit', 'master.close']));
+  });
+
+  it('FR-SCR-005: a canvas menu offers each master line only where it acts; other lines always', () => {
+    const t = setup();
+    const offered = (screen: RecordId) =>
+      ['master.makePlaceholder', 'master.clearPlaceholder', 'master.edit', 'master.close', 'clipboard.copy'].filter((c) =>
+        offersMasterLine(t.ctxOn(screen), c),
+      );
+    // an ordinary screen: none of them
+    t.session.selection.set([t.box]);
+    expect(offered(t.plain)).toEqual(['clipboard.copy']);
+    // a screen using a master: Edit master
+    t.session.selection.set([]);
+    expect(offered(t.a)).toEqual(['master.edit', 'clipboard.copy']);
+    // the master, an element selected: Make placeholder, then Make ordinary element once it is one
+    t.session.selection.set([t.title]);
+    expect(offered(t.brand)).toEqual(['master.makePlaceholder', 'master.close', 'clipboard.copy']);
+    makePlaceholder(t.ctxOn(t.brand));
+    expect(offered(t.brand)).toEqual(['master.clearPlaceholder', 'master.close', 'clipboard.copy']);
   });
 });

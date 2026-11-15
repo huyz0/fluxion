@@ -73,6 +73,25 @@ export function closeMaster(ctx: ToolCtx): boolean {
 }
 
 /**
+ * Whether a menu offers the line `command` here: a master line only where it acts (the placeholder lines on one selected element of a
+ * shown master, Edit master on a screen whose master applies, Close master on a master); any other line always.
+ *
+ * @public
+ */
+export function offersMasterLine(ctx: ToolCtx, command: string): boolean {
+  const screen = ctx.screen === undefined ? undefined : ctx.view.get(ctx.screen);
+  const id = selectedOnMaster(ctx);
+  const named = id !== undefined && typeof placed(ctx, id)?.placeholder === 'string';
+  const offers: { readonly [command: string]: () => boolean } = {
+    'master.makePlaceholder': () => id !== undefined && !named,
+    'master.clearPlaceholder': () => named,
+    'master.edit': () => ctx.screen !== undefined && appliedMaster(ctx.view, ctx.screen).master !== undefined,
+    'master.close': () => isMasterScreen(screen as never),
+  };
+  return offers[command]?.() ?? true;
+}
+
+/**
  * The master commands of the canvas: id, title, and what each does to the tool context (run between gestures of the select tool).
  *
  * @public
