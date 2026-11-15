@@ -17,7 +17,8 @@ import {
 import { entriesOfIndex, entriesOfSubset, type LibraryCatalog, type LibraryEntry } from '@fluxion/editor';
 import type { ShapePackSourceData } from '@fluxion/format';
 import { type Router, registerConnectorDefs } from '@fluxion/routing';
-import { createShapePackLoader, loadPackConnectors, type ShapePackLoader } from '@fluxion/sdk';
+import { err, ok, type Result } from '@fluxion/schema';
+import { type ArtworkShapePackLoader, createArtworkShapePackLoader, loadPackConnectors } from '@fluxion/sdk';
 
 /** A pack file read as text, by its path in the studio's dependencies. */
 type Files = Readonly<Record<string, () => Promise<string>>>;
@@ -49,7 +50,7 @@ const reason = (error: unknown): string => (error instanceof Error ? error.messa
  * The loader of the pack whose index is at `path`, reading its files from `categories`, or why it was refused: an index that
  * fails to read refuses its pack alone, never the catalog (M18.216, cp30 F4).
  */
-async function loaderOf(path: string, read: () => Promise<string>, categories: Files, hasher: Hasher): Promise<ShapePackLoader | string> {
+async function loaderOf(path: string, read: () => Promise<string>, categories: Files, hasher: Hasher): Promise<ArtworkShapePackLoader | string> {
   let text: string;
   try {
     text = await read();
@@ -57,7 +58,7 @@ async function loaderOf(path: string, read: () => Promise<string>, categories: F
     return `${path}: ${reason(error)}`;
   }
   const root = path.slice(0, -'index.json'.length);
-  const loaded = await createShapePackLoader(encoder.encode(text), {
+  const loaded = await createArtworkShapePackLoader(encoder.encode(text), {
     maxBytes: MAX_PACK_FILE_BYTES,
     hasher,
     licensePolicy: allowsShapePackContentLicense,
@@ -85,7 +86,7 @@ export type PackConnectors = {
 };
 
 /** The connector types of `loader`'s pack, read from its `connectors.json` beside the index at `path`; none without one. */
-async function connectorsOf(path: string, loader: ShapePackLoader, connectors: Files): Promise<PackConnectors | string | undefined> {
+async function connectorsOf(path: string, loader: ArtworkShapePackLoader, connectors: Files): Promise<PackConnectors | string | undefined> {
   const file = `${path.slice(0, -'index.json'.length)}connectors.json`;
   const read = connectors[file];
   if (read === undefined) return undefined;
@@ -107,7 +108,7 @@ async function connectorsOf(path: string, loader: ShapePackLoader, connectors: F
  * @public
  */
 export type PackCatalog = {
-  readonly loaders: readonly ShapePackLoader[];
+  readonly loaders: readonly ArtworkShapePackLoader[];
   readonly connectors: readonly PackConnectors[];
   readonly refused: readonly string[];
 };
@@ -157,6 +158,17 @@ export function registerPackConnectors(
       for (const d of done) d.dispose();
     },
   };
+}
+
+/**
+ * The definition `id` read through `loader`: any pack version the loader reads (1.0 to 1.3, M19.17). A definition bound to
+ * artwork fonts is refused: the catalog neither registers nor saves font faces, and drawing it with another face would be silent.
+ */
+async function definitionOf(loader: ArtworkShapePackLoader, id: string): Promise<Result<ShapeDef, string>> {
+  const got = await loader.acquire(id);
+  if (!got.ok) return err(got.error.map((d) => d.message).join('; '));
+  if (got.value.fonts.length > 0) return err('its artwork fonts are not loaded from the bundled catalog');
+  return ok(got.value.definition);
 }
 
 /**
@@ -216,9 +228,9 @@ export function documentCatalog(
       onProblem(`The shape ${id} could not be loaded: the namespace ${pack} is held by another library`);
       return false;
     }
-    const def = await loader.load(id);
+    const def = await definitionOf(loader, id);
     if (!def.ok) {
-      onProblem(`The shape ${id} could not be loaded: ${def.error.map((d) => d.message).join('; ')}`);
+      onProblem(`The shape ${id} could not be loaded: ${def.error}`);
       return false;
     }
     return keep(id, def.value, pack);
@@ -230,7 +242,7 @@ export function documentCatalog(
     sources: () =>
       [...loaded].map(([pack, used]) => ({
         kind: 'distribution' as const,
-        index: (byPack.get(pack) as ShapePackLoader).index,
+        index: (byPack.get(pack) as ArtworkShapePackLoader).index,
         definitions: [...used.values()],
       })),
     async installed(id) {
@@ -238,7 +250,7 @@ export function documentCatalog(
       if (held !== undefined) return held;
       const loader = byPack.get(id.slice(0, id.indexOf(':')));
       if (loader === undefined || heldElsewhere(id.slice(0, id.indexOf(':')))) return undefined;
-      const def = await loader.load(id);
+      const def = await definitionOf(loader, id);
       return def.ok ? def.value : undefined;
     },
     async resolve(defIds) {

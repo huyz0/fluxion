@@ -1,4 +1,4 @@
-import { createCoreRegistries, type ShapeDef } from '@fluxion/core';
+import { allowsShapePackContentLicense, createCoreRegistries, encodeShapePack, type ShapeDef } from '@fluxion/core';
 import { buildLibraryIndex } from '@fluxion/editor';
 import { sha256Hex, writePortableFlux } from '@fluxion/format';
 import { connectorDefOf } from '@fluxion/routing';
@@ -304,5 +304,81 @@ describe("the first-party packs' connector types in the studio (M18.251)", () =>
     registerPackConnectors(catalog, opened.registries.routers, new Set(), (m) => problems.push(m));
     expect(problems).toEqual([expect.stringMatching(/^The connector types of arrows could not be registered: /)]);
     expect(opened.registries.routers.get('arrows:pipe')).toBeUndefined();
+  });
+});
+
+// FR-SHP-007: a first-party pack written at a later format version (1.3 for a definition with icon slots, M19.17) is read like a
+// 1.0 one; a definition bound to artwork fonts is refused, the catalog neither registering nor saving font faces.
+describe('later pack versions in the studio library (M19.36)', () => {
+  const card = {
+    id: 'slotted:card',
+    outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' },
+    iconSlots: [{ name: 'icon', x: 0.05, y: 0.1, w: 0.2, h: 0.8 }],
+    defaultSize: { w: 120, h: 60 },
+  } as ShapeDef;
+  const credit = {
+    id: 'fluxion',
+    license: 'MIT',
+    attribution: 'Fluxion contributors',
+    notice: 'MIT License',
+    source: { kind: 'original', author: 'Fluxion contributors', statement: 'Original artwork.' },
+  } as const;
+  /** A 1.3 pack holding `card`, as the catalog reads a first-party pack's files. */
+  function slottedPack() {
+    const pack = value(
+      encodeShapePack(
+        {
+          id: 'slotted',
+          version: '1.0.0',
+          name: 'Slotted',
+          license: 'MIT',
+          attribution: 'Fluxion contributors',
+          credits: [credit],
+          definitions: [{ name: 'Card', def: card }],
+        },
+        allowsShapePackContentLicense,
+      ),
+    );
+    const root = '../node_modules/@fluxion/pack-slotted/pack/';
+    const text = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
+    const entries = [...pack.files].map(([path, bytes]) => [`${root}${path}`, async () => text(bytes)] as const);
+    return {
+      version: pack.index.formatVersion,
+      indexes: Object.fromEntries(entries.filter(([path]) => path.endsWith('/index.json'))),
+      categories: Object.fromEntries(entries.filter(([path]) => path.includes('/categories/'))),
+    };
+  }
+
+  it('FR-SHP-007, FR-LIB-009: a 1.3 pack is listed, and its definition loads with its icon slots and is saved from its 1.3 index', async () => {
+    const f = slottedPack();
+    expect(f.version).toBe('1.3');
+    const catalog = await loadPackCatalog(hasher, f.indexes, f.categories, {});
+    expect(catalog.refused).toEqual([]);
+    const defs = createCoreRegistries().shapeDefs;
+    const doc = documentCatalog(catalog, defs, new Set(), () => undefined);
+    expect(doc.entries.map((e) => e.id)).toEqual(['slotted:card']);
+    expect(await doc.resolve(['slotted:card'])).toEqual([]);
+    expect(defs.get('slotted:card')?.iconSlots).toEqual(card.iconSlots);
+    expect(doc.sources().map((s) => (s.kind === 'distribution' ? s.index.formatVersion : s.kind))).toEqual(['1.3']);
+  });
+
+  it('FR-LIB-009: a definition bound to artwork fonts is reported and not registered', async () => {
+    const f = slottedPack();
+    const [loader] = (await loadPackCatalog(hasher, f.indexes, f.categories, {})).loaders;
+    if (loader === undefined) throw new Error('the pack was refused');
+    const font = { faceId: 'f', family: 'Inter', weight: 400, style: 'normal', resourceId: 'r', sha256: '0'.repeat(64) };
+    const fonted = {
+      ...loader,
+      index: loader.index,
+      search: loader.search,
+      acquire: async () => ({ ok: true, value: { definition: card, fonts: [font], fontCredits: [] } }),
+    } as unknown as typeof loader;
+    const defs = createCoreRegistries().shapeDefs;
+    const problems: string[] = [];
+    const doc = documentCatalog({ loaders: [fonted], connectors: [], refused: [] }, defs, new Set(), (m) => problems.push(m));
+    expect(await doc.resolve(['slotted:card'])).toEqual(['slotted:card']);
+    expect(problems).toEqual(['The shape slotted:card could not be loaded: its artwork fonts are not loaded from the bundled catalog']);
+    expect(defs.get('slotted:card')).toBeUndefined();
+    expect(await doc.installed('slotted:card')).toBeUndefined();
   });
 });

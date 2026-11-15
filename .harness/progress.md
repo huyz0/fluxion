@@ -4866,3 +4866,7 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - r1 (changes-requested, fixed): `frameFlipped` had no caller but its test; removed, and the frames tests flip a frame through `element.flip` (the menu's path), so "flip carries members" runs what the user runs.
 ## 2026-11-15 M19.37: context menu e2e (Fixes-ci 43691996267)
 - main's ci went red at d34a336 on e2e shard 1/3 of all three engines: e2e/context-menu.element.spec.ts lists the element menu's items exactly, and M19.16 added Flip horizontally and Flip vertically after Send to back. The spec now names them; chromium 3/3 locally. M19.16's own local run covered the palette and arrange specs but not this one.
+## 2026-11-15 M19.36: studio reads later pack versions
+- Split from M19.17: the infographic feature card's icon slot makes the pack 1.3, and the studio catalog's `createShapePackLoader` reads 1.0 only, so it refused the whole infographic pack. The catalog now reads every index through `createArtworkShapePackLoader` (1.0–1.3) and loads a definition with `acquire`.
+- A definition bound to artwork fonts is reported and not registered: the catalog neither registers nor saves font faces, and drawing it with another face would be silent. No first-party pack binds fonts today.
+- Tests: apps/studio/src/pack-catalog.test.ts builds a 1.3 pack with `encodeShapePack` (listed, loaded with its slots, saved from its 1.3 index) and a stub loader for the font refusal.
