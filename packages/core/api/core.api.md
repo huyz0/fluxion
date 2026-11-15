@@ -288,6 +288,9 @@ export type Disposable = {
 };
 
 // @public
+export function dropReparents(view: ReadView, ids: readonly RecordId[]): FrameUpdate[];
+
+// @public
 export type EdgeKey = {
     readonly screen: string;
     readonly from: string;
@@ -439,6 +442,21 @@ export type FontSpec = {
     readonly weight?: number;
     readonly lineHeight?: number;
     readonly style?: string;
+};
+
+// @public
+export function frameDropTarget(view: ReadView, screen: RecordId, p: Vec2, moving: ReadonlySet<RecordId>): RecordId | undefined;
+
+// @public
+export function frameFlipped(view: ReadView, frame: RecordId, axis: "x" | "y"): FrameUpdate[];
+
+// @public
+export function frameTurned(view: ReadView, frame: RecordId, deg: number): FrameUpdate[];
+
+// @public
+export type FrameUpdate = {
+    readonly id: RecordId;
+    readonly fields: Record<string, unknown>;
 };
 
 // @public

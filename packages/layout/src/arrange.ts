@@ -154,10 +154,33 @@ function specOf(record: Rec | undefined): { type: string; options: unknown } | u
   return typeof spec?.type === 'string' ? { type: spec.type, options: spec.options } : undefined;
 }
 
+/** The container a level lays out: `container`, or at the top of a container scope that container. */
+const ownerAt = (args: Args, container: string | undefined): string | undefined =>
+  container ?? (typeof args.scope === 'object' ? args.scope.containerId : undefined);
+
 /** The layout spec that applies at a level: that of the container (the top level of a container scope is that container's own children), if any. */
 export function specAt(args: Args, container: string | undefined, byId: ReadonlyMap<string, Rec>): { type: string; options: unknown } | undefined {
-  const owner = container ?? (typeof args.scope === 'object' ? args.scope.containerId : undefined);
+  const owner = ownerAt(args, container);
   return owner === undefined ? undefined : specOf(byId.get(owner));
+}
+
+/**
+ * `options` with a frame's `padding` as the layout's inset when they name none (ADR-0052): the inset is
+ * `layout.options.padding ?? frame.padding ?? <the algorithm's default>`, applied once. Left as they are when the level's container
+ * is no frame with a padding, or when `algorithm` takes no `padding` option (a plugin layout).
+ */
+export function framePadded(
+  options: unknown,
+  { args, container, byId }: { readonly args: Args; readonly container: string | undefined; readonly byId: ReadonlyMap<string, Rec> },
+  algorithm: Pick<LayoutAlgorithm<never>, 'parseOptions'>,
+): unknown {
+  const owner = ownerAt(args, container);
+  const frame = (owner === undefined ? undefined : byId.get(owner)) as { kind?: unknown; padding?: unknown } | undefined;
+  if (frame?.kind !== 'frame' || typeof frame.padding !== 'number') return options;
+  const own = typeof options === 'object' && options !== null ? (options as Record<string, unknown>) : undefined;
+  if (own !== undefined && own['padding'] !== undefined) return options;
+  const padded = { ...own, padding: frame.padding };
+  return algorithm.parseOptions(padded).ok ? padded : options;
 }
 
 /** The algorithm and options for a level: those of its layout spec when that algorithm is registered, else the request's. */
@@ -177,7 +200,8 @@ function chosenFor(
 function runnerFor(lookup: AlgorithmByName, args: Args, byId: ReadonlyMap<string, Rec>): NestedRunner {
   return (container, input) => {
     const { algorithm, options } = chosenFor(lookup, args, specAt(args, container, byId));
-    const result = layoutSync({ input, algorithm, options, seed: args.seed ?? 0 });
+    const padded = framePadded(options, { args, container, byId }, algorithm);
+    const result = layoutSync({ input, algorithm, options: padded, seed: args.seed ?? 0 });
     if (!result.ok) throw new ArrangeFailure(result.error.message);
     return result.value.boxes as Boxes;
   };

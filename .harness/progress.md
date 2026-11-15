@@ -4817,3 +4817,10 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - r1 F1: `mergeMyShapePacks` merges a 1.2 and a 1.3 subset of one pack version into 1.3 (with the union of category names); test inserts both orders. The merge and the pack types move to `my-shapes-merge.ts` (file size).
 - Fix found on the way: My shapes kept font bytes only for 1.1 subsets (`=== '1.1'`); now `packHasFonts`.
 - Fixture `fixtures/shape-pack/v1.3/subset.json` (v1.2's plus a badge slot); tests in core pack-format, format shape-pack-icon-slots, editor my-shapes-packs.
+
+## 2026-11-15 M19.10: frames carry and reparent their children
+
+- Core `arrange/frames.ts`: `frameTurned` (centre turned about the frame's, rot + θ), `frameFlipped` (mirror across the frame's turned centre line, rot → 2φ − θ, flip toggled), `frameDropTarget` (topmost shown frame holding the point, inside every clipping frame above), `dropReparents` (join the frame under the centre, or leave for the frame's container: next frame, else the group, else the screen; group members and connectors stay; live frame → `placement: 'auto'`). A frame's move already carried members (`movesFor`); the group-bounds hook already stopped at frames.
+- Editor: the resize handle uses `resizeStarts` (a frame's members stay; a group's scale); the drag's pointer-up writes `dropReparents` in the drag's gesture (one undo step).
+- Layout: `framePadded` sets a frame's `padding` as the inset when the layout names none and the algorithm takes `padding`, in the sync and worker paths.
+- ADR-0052 amended (cp1 F1 minors); the drop highlight moves to M19.11's acceptance. m19-complete's frames leg names the cases in core, layout and editor tests.

@@ -117,6 +117,72 @@ describe('resizing and rotating with the select tool (FR-EDT-004)', () => {
   });
 });
 
+/** A frame F (0,0 200x200) holding member m at its right edge, a group G (300,0) holding member n at its right edge, and a rect r. */
+function framed() {
+  const s = setup();
+  const put = (r: Record<string, unknown>) => {
+    const done = s.core.execute('element.createMany', { elements: [{ type: 'element', screenId: s.screen, ...r }] });
+    if (!done.ok) throw new Error(JSON.stringify(done));
+  };
+  put({ id: 'frameframe01', kind: 'frame', index: 'a5', transform: { x: 0, y: 300, w: 200, h: 200, rot: 0 } });
+  put({ id: 'membermember', kind: 'shape', defId: 'basic:rect', index: 'a0', parentId: 'frameframe01', transform: { x: 150, y: 350, w: 50, h: 50, rot: 0 } });
+  put({ id: 'groupgroup01', kind: 'group', index: 'a6', transform: { x: 300, y: 300, w: 200, h: 200, rot: 0 } });
+  put({ id: 'grpmember001', kind: 'shape', defId: 'basic:rect', index: 'a0', parentId: 'groupgroup01', transform: { x: 300, y: 300, w: 200, h: 200, rot: 0 } });
+  const t = (id: string) => (s.core.store.get(id as RecordId) as { transform: { x: number; y: number; w: number; h: number }; parentId?: string }).transform;
+  const parent = (id: string) => (s.core.store.get(id as RecordId) as { parentId?: string }).parentId;
+  return { ...s, t, parent };
+}
+
+describe('frames under the select tool (FR-ARR-006, ADR-0052)', () => {
+  it('FR-ARR-006: the resize handle on a selected frame leaves a member at its edge unchanged; a group resize still scales its member', () => {
+    const s = framed();
+    s.session.selection.set(['frameframe01' as RecordId]);
+    // the frame's se handle at (200, 500), dragged in to (120, 450): the member at its right edge stays where it is
+    s.tools.pointer(at('down', 200, 500));
+    expect(s.tools.current).toBe('select.resizing');
+    s.tools.pointer(at('move', 120, 450));
+    s.tools.pointer(at('up', 120, 450));
+    expect(s.t('frameframe01')).toMatchObject({ x: 0, y: 300, w: 120, h: 150 });
+    expect(s.t('membermember')).toEqual({ x: 150, y: 350, w: 50, h: 50, rot: 0 });
+    // the group's se handle at (500, 500), dragged to (400, 400): its member scales to half
+    s.session.selection.set(['groupgroup01' as RecordId]);
+    s.tools.pointer(at('down', 500, 500));
+    s.tools.pointer(at('move', 400, 400));
+    s.tools.pointer(at('up', 400, 400));
+    expect(s.t('grpmember001')).toMatchObject({ x: 300, y: 300, w: 100, h: 100 });
+  });
+
+  it('FR-ARR-006: a group resize scales a frame inside it together with its own members', () => {
+    const s = framed();
+    const put = (r: Record<string, unknown>) => {
+      const done = s.core.execute('element.createMany', { elements: [{ type: 'element', screenId: s.screen, ...r }] });
+      if (!done.ok) throw new Error(JSON.stringify(done));
+    };
+    put({ id: 'grpframe0001', kind: 'frame', index: 'a1', parentId: 'groupgroup01', transform: { x: 300, y: 300, w: 100, h: 100, rot: 0 } });
+    put({ id: 'grpfrmember1', kind: 'shape', defId: 'basic:rect', index: 'a0', parentId: 'grpframe0001', transform: { x: 350, y: 350, w: 50, h: 50, rot: 0 } });
+    s.session.selection.set(['groupgroup01' as RecordId]);
+    s.tools.pointer(at('down', 500, 500));
+    s.tools.pointer(at('move', 400, 400));
+    s.tools.pointer(at('up', 400, 400));
+    expect(s.t('grpframe0001')).toMatchObject({ x: 300, y: 300, w: 50, h: 50 });
+    expect(s.t('grpfrmember1')).toMatchObject({ x: 325, y: 325, w: 25, h: 25 });
+  });
+
+  it('FR-ARR-006: a drag that drops a shape inside a frame reparents it, and one undo restores its place and its parent', () => {
+    const s = framed();
+    const before = s.core.store.history.undoDepth;
+    // the rect a (0,0 100x100) dragged down into the frame: its centre lands at (100, 400)
+    s.tools.pointer(at('down', 50, 50));
+    s.tools.pointer(at('move', 50, 200));
+    s.tools.pointer(at('move', 100, 400));
+    s.tools.pointer(at('up', 100, 400));
+    expect([s.parent(s.a), s.xy(s.a)]).toEqual(['frameframe01', [50, 350]]);
+    expect(s.core.store.history.undoDepth).toBe(before + 1);
+    s.core.store.history.undo();
+    expect([s.parent(s.a), s.xy(s.a)]).toEqual([undefined, [0, 0]]);
+  });
+});
+
 describe('moving with the select tool (FR-EDT-005)', () => {
   it('FR-EDT-005: a drag moves the element under it with the pointer; the whole drag is one undo step', () => {
     const { core, session, tools, a, c, xy } = setup();

@@ -100,8 +100,22 @@ Option 2.
 - Good: what can be hit matches what is drawn, in edit and present.
 - Bad: a frame's move, turn and flip write every member (O(members) per move, as groups already do); bounded by the 60 Hz drag
   coalescing ADR-0046 relies on.
-- Bad: centre-based reparenting can surprise for an element larger than the frame; the drop highlight (M19.10) shows the target
-  before release.
+- Bad: centre-based reparenting can surprise for an element larger than the frame; a drop highlight showing the target before
+  release (M19.11, with the clip's editor visuals) answers it.
+
+## Amendment (M19.10, M19 cp1 F1: the plan review's r2 minors)
+
+- **Flipping a turned frame.** A frame turned by φ flips across its own turned centre line: a member's centre is mirrored across
+  that line and its `rot` θ maps to `2φ − θ` (with φ = 0 this is the `(360 − θ) % 360` above); the frame keeps φ. Flipping twice
+  restores every member.
+- **Drop targets.** Only a shown frame takes a drop: a frame that is `hidden`, or inside a hidden container, never does, and
+  neither does a frame whose part under the centre is clipped away by a clipping frame above it (what is not drawn is not a
+  target, as for hit-testing).
+- **Leaving a frame inside a group.** A member dragged out of a frame that sits inside a group leaves the frame for the frame's
+  container, the group, and stays a group member (the leave rule above: a frame's container is the next frame up that holds the
+  centre, else the first container above that is no frame, else the screen). The group refits to it.
+- The padding precedence is checked where layouts run (`packages/layout/src/arrange.test.ts`): core may not import the layout
+  package (the layering rule), so `frames.test.ts` holds the rest.
 
 ## Confirmation
 

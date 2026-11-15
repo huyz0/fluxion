@@ -3,10 +3,12 @@
 // a drag from an element moves the selection, alt-drag moves copies of it. The keys (arrows nudge,
 // ctrl/cmd + A selects all, Delete deletes) are keymap bindings whose commands call the functions
 // here while the tool is idle (M7.4). A drag is one gesture, so one undo step.
+
+import { dropReparents } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { adjusting, bending, type ConnectorGrab, connectorHandleUnder, ending, type ParamGrab, paramHandleUnder } from './handle-states.js';
-import { duplicates, moved, reframed, restored, type Start, starts } from './move.js';
+import { duplicates, moved, reframed, resizeStarts, restored, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
@@ -153,7 +155,10 @@ function handleUnder(ctx: ToolCtx, e: PointerInfo): Handle | undefined {
   // a finger reaches a handle further than a mouse (FR-EDT-019)
   const id = handleAt(selectionFrame(placed, ctx.session.camera.get()), e.screen, e.pointerType === 'touch' ? TOUCH.handlePx : HANDLE_PX);
   const box = frameBox(placed);
-  return id === undefined || box === undefined ? undefined : { id, box, page: e.page, from: starts(ctx.view, selected), ...snapping(ctx, selected) };
+  if (id === undefined || box === undefined) return undefined;
+  // a turn carries every member (a frame's too); a resize changes a frame's box alone (ADR-0052)
+  const from = id === 'rotate' ? starts(ctx.view, selected) : resizeStarts(ctx.view, selected);
+  return { id, box, page: e.page, from, ...snapping(ctx, selected) };
 }
 
 /**
@@ -290,7 +295,16 @@ function translating(p: Press): StateNode {
       follow(ctx, drag, e.page, skipsSnap(e, drag));
       return undefined;
     },
-    onPointerUp: () => ({ to: 'idle' }),
+    // the drop: what the drag brought into a frame joins it, what it took out of one leaves it, in the drag's undo step (ADR-0052)
+    onPointerUp: (ctx) => {
+      const drag = p.drag as Drag;
+      const reparents = dropReparents(ctx.view, ctx.session.selection.get());
+      if (reparents.length > 0) {
+        drag.gesture.update('element.updateMany', { updates: reparents });
+        drag.gesture.commit();
+      }
+      return { to: 'idle' };
+    },
     // Esc undoes the drag in the same gesture: things go back where they started, copies away (the
     // history then drops the step, which changed nothing)
     onCancel: (ctx) => {

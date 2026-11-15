@@ -6,6 +6,7 @@ import {
   APPLY_BOXES_COMMAND_ID,
   ARRANGE_COMMAND_ID,
   type Args,
+  framePadded,
   invalid,
   type Prepared,
   parseArgs,
@@ -221,7 +222,10 @@ async function pauseFor(store: Reader, pause: () => Promise<void>, amend: boolea
 /** The registered name and options the top level of a flat plan is laid out with. */
 function chosenName(lookup: AlgorithmByName, args: Args, byId: ReadonlyMap<string, Rec>): Result<{ name: string; options: unknown }> {
   const spec = specAt(args, undefined, byId);
-  if (spec && lookup(spec.type)) return ok({ name: spec.type, options: spec.options });
-  if (!lookup(args.algorithm)) return invalid(`${ARRANGE_COMMAND_ID}: no layout algorithm named "${args.algorithm}"`);
-  return ok({ name: args.algorithm, options: args.options });
+  const own = spec ? lookup(spec.type) : undefined;
+  const where = { args, container: undefined, byId };
+  if (spec && own) return ok({ name: spec.type, options: framePadded(spec.options, where, own) });
+  const algorithm = lookup(args.algorithm);
+  if (!algorithm) return invalid(`${ARRANGE_COMMAND_ID}: no layout algorithm named "${args.algorithm}"`);
+  return ok({ name: args.algorithm, options: framePadded(args.options, where, algorithm) });
 }

@@ -58,7 +58,9 @@ function tests(file, { project = 'node*', config, named } = {}) {
     const assertions = report.testResults.flatMap((suite) => suite.assertionResults);
     if (!(report.numFailedTestSuites === 0 && assertions.length > 0 && assertions.every((a) => a.status === 'passed')))
       return `${file}: empty, failed, skipped or todo tests`;
-    return !named || assertions.some((a) => String(a.fullName ?? a.title ?? '').includes(named)) || `${file}: no passed case named '${named}'`;
+    // `named`: one case name or several, each a passed case's full name must hold
+    const missing = (named === undefined ? [] : [named].flat()).find((n) => !assertions.some((a) => String(a.fullName ?? a.title ?? '').includes(n)));
+    return missing === undefined || `${file}: no passed case named '${missing}'`;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -93,7 +95,33 @@ leg('schema 1.8 minor: the 1.7 fixture migrates, validates and round-trips', () 
 );
 
 // ── features (plan tasks 3-17) ─────────────────────────────────────────────────────────────────────
-leg('FR-ARR-006 frames carry children by the same delta and reparent on drop, undoably', () => tests('packages/core/src/commands/frames.test.ts'));
+// ADR-0052's Confirmation and its cp1 F1 amendment, each a named case (M19 cp1 F2)
+leg('FR-ARR-006 frames carry children by the same delta and reparent on drop, undoably', () =>
+  all(
+    () =>
+      tests('packages/core/src/commands/frames.test.ts', {
+        named: [
+          'a frame move carries its members by the same delta',
+          'a frame resize leaves members unchanged',
+          'turn and flip carry members',
+          'flipping a turned frame (φ) maps a member rot θ to 2φ − θ',
+          'a drop into a live frame adopts the element as auto',
+          'a hidden frame is never a drop target',
+          'leaves the frame and joins the group',
+          'random drags that reparent, each undone, restore the store exactly',
+        ],
+      }),
+    () => tests('packages/layout/src/arrange.test.ts', { named: 'padding precedence layout.options.padding ?? frame.padding ?? default' }),
+    () =>
+      tests('packages/editor/src/select-tool.test.ts', {
+        named: [
+          'the resize handle on a selected frame leaves a member at its edge unchanged; a group resize still scales its member',
+          'a group resize scales a frame inside it together with its own members',
+          'a drag that drops a shape inside a frame reparents it',
+        ],
+      }),
+  ),
+);
 leg('FR-ARR-006 a clipping frame hides and does not hit or marquee an overflowing child', () =>
   all(
     () => tests('packages/editor/src/frame-hit.test.ts'),

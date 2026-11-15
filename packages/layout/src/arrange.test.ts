@@ -101,6 +101,27 @@ describe('arrange command (FR-LAY-005)', () => {
     expect(core.box('out')).toEqual({ x: 900, y: 900, w: 100, h: 50 });
   });
 
+  it('FR-ARR-006, FR-LAY-010: padding precedence layout.options.padding ?? frame.padding ?? default sets a frame layout inset once (ADR-0052)', () => {
+    const kids = [shape('k1', [0, 0], [80, 40], { parentId: 'f' }), shape('k2', [0, 0], [60, 30], { parentId: 'f' })];
+    const at = (frame: Record<string, unknown>, layout: Record<string, unknown>) => {
+      const core = setup([shape('f', [200, 100], [500, 400], { kind: 'frame', ...frame, layout: { type: 'stack', ...layout } }), ...kids]);
+      expect(core.execute('layout.arrange', { screenId: 's1', scope: { containerId: 'f' }, algorithm: 'grid' }).ok).toBe(true);
+      return [core.box('k1').x - 200, core.box('k1').y - 100];
+    };
+    const options = { direction: 'right', gap: 20 };
+    // the layout's own padding wins over the frame's
+    expect(at({ padding: 30 }, { options: { ...options, padding: 10 } })).toEqual([10, 10]);
+    // without one, the frame's padding is the inset, applied once (not added to the stack's default 80)
+    expect(at({ padding: 30 }, { options })).toEqual([30, 30]);
+    expect(at({ padding: 0 }, {})).toEqual([0, 0]);
+    // a frame without padding lays out exactly as before: the stack's default
+    expect(at({}, { options })).toEqual([80, 80]);
+    // a shape holding children is no frame: its padding (a text inset) is not the layout's
+    const core = setup([shape('f', [200, 100], [500, 400], { padding: 30, layout: { type: 'stack', options } }), ...kids]);
+    expect(core.execute('layout.arrange', { screenId: 's1', scope: { containerId: 'f' }, algorithm: 'grid' }).ok).toBe(true);
+    expect(core.box('k1').x - 200).toBe(80);
+  });
+
   it('FR-LAY-001: arrange refuses an unknown algorithm, an option the algorithm rejects, an empty screen and an unknown container, and changes nothing', () => {
     const core = setup([shape('e1', [0, 0]), shape('e2', [10, 10])]);
     const snapshot = JSON.stringify(core.store.toDocument());

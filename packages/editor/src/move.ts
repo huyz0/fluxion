@@ -37,7 +37,11 @@ function withMembers(view: ReadView, id: RecordId): RecordId[] {
  * @public
  */
 export function starts(view: ReadView, ids: readonly RecordId[]): Start[] {
-  const all = [...new Set(ids.flatMap((id) => withMembers(view, id)))];
+  return startsOf(view, [...new Set(ids.flatMap((id) => withMembers(view, id)))]);
+}
+
+/** Where each element of `all` starts. */
+function startsOf(view: ReadView, all: readonly RecordId[]): Start[] {
   return all.flatMap((id) => {
     const r = view.get(id) as (AnyRecord & Omit<Start, 'id'>) | undefined;
     if (r?.type !== 'element') return [];
@@ -53,6 +57,33 @@ export function starts(view: ReadView, ids: readonly RecordId[]): Start[] {
       },
     ];
   });
+}
+
+/** What resizing `id` changes: a frame's box alone (ADR-0052), anything else with its members all the way down (a frame inside a resized group scales with its members). */
+function withResized(view: ReadView, id: RecordId): RecordId[] {
+  return (view.get(id) as { kind?: unknown } | undefined)?.kind === 'frame' ? [id] : withMembers(view, id);
+}
+
+/**
+ * Where what a resize of the elements `ids` changes starts, each once: as {@link starts}, but a resized frame's members stay where
+ * they are (a frame reveals or hides what it holds, it does not scale it, ADR-0052), and a group's members, frames inside it and
+ * their members included, are scaled with it. An element
+ * listed with a container above it goes with that container.
+ *
+ * @public
+ */
+export function resizeStarts(view: ReadView, ids: readonly RecordId[]): Start[] {
+  const listed = new Set(ids);
+  const above = (id: RecordId): boolean => {
+    for (
+      let p = (view.get(id) as { parentId?: RecordId } | undefined)?.parentId;
+      p !== undefined;
+      p = (view.get(p) as { parentId?: RecordId } | undefined)?.parentId
+    )
+      if (listed.has(p)) return true;
+    return false;
+  };
+  return startsOf(view, [...new Set(ids.filter((id) => !above(id)).flatMap((id) => withResized(view, id)))]);
 }
 
 /** `p` moved by `d`, to the precision a gesture writes (the pointer's float noise stays out of the document). */
