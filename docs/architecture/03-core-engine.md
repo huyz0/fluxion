@@ -86,6 +86,7 @@ type CommandDef<A> = {
   element.group / element.ungroup (a container over sibling elements and its dissolving; members keep screen coordinates, M8.4),
   element.align (edges or centres to the selection, the screen or a key element, by drawn bounds; M8.6),
   element.distribute (equal gaps or centre distances, or a fixed gap, along an axis; M8.7),
+  element.matchSize (the key's width, height or both from each element's top-left; a group's members scale, a frame's box alone; M19.12), element.pasteStyle (the format painter: one element's style as written, never its semantic fields; M19.12),
   element.zOrder (front, forward, backward, back among siblings by fractional index: only the moved elements are written; M8.8),
   document.applyRecords (a prepared record set, puts and deletes, in one transaction: a streamed source's screen, FR-AI-010; guards: a put keeps the type of the record it replaces and ids are put once, a delete names an existing record once and never the document record, and no id is both put and deleted),
   screen.rename / screen.setHidden (the hidden mark is removed, not written false) / screen.duplicate (a copy just after the original: its elements and the bindings between them under caller-supplied ids, slugs dropped; timelines and interactions are copied by the animation milestone; M8.11),

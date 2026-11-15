@@ -4830,3 +4830,10 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - Editor `frame-clip.ts`: every clipping frame above an element (`clip` not false) bounds its hittable: bounds cut to the frames, a point outside any misses it (no pick margin past the edge), a marquee touches it only where it overlaps them (a turned frame: touch the frame, then cut to its upright bounds). hit-test wires it after its own geometry; a frame's move, turn or clip change refreshes its members (`affected`).
 - Render already clipped members (overflow hidden on the frame's box); `frame-clip.browser.test.tsx` proves it by what the browser hits, upright, `clip: false` and turned.
 - Drop highlight (moved from M19.10): `session.dropTarget` holds the frame a drag would reparent into; the overlay outlines it (`fx-chrome-drop`); it clears when the drag ends.
+
+## 2026-11-15 M19.12: match size and the format painter
+
+- Core `arrange/match.ts`: `element.matchSize { ids, key, mode: width|height|both }` sizes each other listed element to the key's box from its top-left (turn kept, pinned); a group's members, connectors' free ends and waypoints included, scale about the group's corner (the group-bounds hook refits it); a frame changes its box alone (ADR-0052). `element.pasteStyle { from, ids }` writes the source's `style` as written (tokens kept; none clears it) and nothing else; a group passes it to its members. One transaction each.
+- r1 F1: a turned member of a resized group stretched along the wrong axis; members are now carried as the editor's group resize carries them (centre kept in the box, size along their own axes).
+- r2 F1: every member box a group's match size changes is pinned (ADR-0031), as a move pins it.
+- Registered after `element.align`; the registry, determinism and bench lists (fixture, `BENCH_COMMANDS`) name both; the bench fixture gains one styled shape to paint from. Editor UI for them is not in this row's acceptance.

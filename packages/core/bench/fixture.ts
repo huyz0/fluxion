@@ -43,6 +43,9 @@ export function benchStore(): Bench {
   const built = withAssets(b.build());
   // a group of three shapes of screen 6, for element.ungroup to act on
   const file = withSections(withGroup(built, screens[6] as RecordId, shapes.slice(1500, 1503)), screens[0] as RecordId);
+  // one styled shape of screen 5, for element.pasteStyle to copy from
+  const styled = shapes[1450] as RecordId;
+  (file.records as Record<string, unknown>)[styled] = { ...(file.records[styled] as object), style: { fill: '#ff0000' } };
   const count = Object.keys(file.records).length;
   if (count < RECORDS) throw new Error(`bench document has ${count} records, want ${RECORDS}`);
   const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
@@ -208,6 +211,19 @@ function benchArgs(
     // a copy of screen 4: its 250 shapes and the bindings of its 83 connectors
     'screen.duplicate': { id: screens[4], newId: 'BenchNewScreen002', ids: copies },
     'binding.set': { id: 'BenchNewBinding01', connectorId: lines[500], end: 'target', elementId: shapes[2400], anchor: { kind: 'auto' } },
+    ...arrangeArgs(shapes),
+    // a shape of screen 5 swapped to another definition, its bindings remapped
+    'shape.replace': { id: shapes[1430], defId: 'basic:ellipse' },
+    'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
+    'document.update': { fields: { title: 'bench' } },
+    ...themeArgs(screens[5] as RecordId),
+    ...assetArgs(),
+  };
+}
+
+/** The arguments of the arranging commands, all on screen 5 but the fixture's group (screen 6). */
+function arrangeArgs(shapes: readonly RecordId[]): Record<string, unknown> {
+  return {
     // two siblings of screen 5 grouped, and the fixture's group dissolved
     'element.group': { ids: [shapes[1300], shapes[1301]], groupId: 'BenchNewGroup0001' },
     'element.ungroup': { ids: [BENCH_GROUP] },
@@ -215,14 +231,12 @@ function benchArgs(
     'element.align': { ids: [shapes[1400], shapes[1401]], mode: 'left', to: 'selection' },
     // five shapes of screen 5 spaced evenly; not neighbours (60 apart, already even: a no-op, no history entry)
     'element.distribute': { ids: [1410, 1411, 1413, 1414, 1417].map((i) => shapes[i]), axis: 'horizontal', by: 'gaps' },
+    // a shape of screen 5 (160x80) sized to the fixture's group (200x60)
+    'element.matchSize': { ids: [shapes[1440]], key: BENCH_GROUP, mode: 'both' },
+    // the styled shape's style painted on two of its neighbours
+    'element.pasteStyle': { from: shapes[1450], ids: [shapes[1451], shapes[1452]] },
     // a shape of screen 5 to the front
     'element.zOrder': { ids: [shapes[1420]], to: 'front' },
-    // a shape of screen 5 swapped to another definition, its bindings remapped
-    'shape.replace': { id: shapes[1430], defId: 'basic:ellipse' },
-    'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
-    'document.update': { fields: { title: 'bench' } },
-    ...themeArgs(screens[5] as RecordId),
-    ...assetArgs(),
   };
 }
 
@@ -271,6 +285,8 @@ export const COMMANDS = [
   'element.ungroup',
   'element.align',
   'element.distribute',
+  'element.matchSize',
+  'element.pasteStyle',
   'element.zOrder',
   'shape.replace',
   'document.update',

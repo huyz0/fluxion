@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { ALIGN_COMMANDS } from './arrange/align.js';
 import { DISTRIBUTE_COMMANDS } from './arrange/distribute.js';
 import { GROUP_COMMANDS } from './arrange/group.js';
+import { MATCH_COMMANDS } from './arrange/match.js';
 import { Z_ORDER_COMMANDS } from './arrange/z-order.js';
 import { checkIds, fields, id, recordOf, refuse, repeated, title, write } from './command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
@@ -91,6 +92,7 @@ const endSchema = z.enum(['source', 'target']);
 export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...GROUP_COMMANDS,
   ...ALIGN_COMMANDS,
+  ...MATCH_COMMANDS,
   ...DISTRIBUTE_COMMANDS,
   ...Z_ORDER_COMMANDS,
   ...SCREEN_COMMANDS,

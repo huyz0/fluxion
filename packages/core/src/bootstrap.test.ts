@@ -125,6 +125,8 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'element.ungroup': () => ({ ids: [pick('element', 'group')] }),
     'element.align': () => ({ ids: [pick('element', 'shape')], mode: 'left', to: 'screen' }),
     'element.distribute': () => ({ ids: shapes(), axis: 'horizontal', by: 'gaps', gap: 10 }),
+    'element.matchSize': () => ({ ids: shapes().slice(1), key: shapes()[0] ?? 'none', mode: (['width', 'height', 'both'] as const)[op.value % 3] }),
+    'element.pasteStyle': () => ({ from: shapes()[0] ?? 'none', ids: shapes().slice(1) }),
     'element.zOrder': () => ({ ids: [pick('element', 'shape')], to: op.value % 2 ? 'front' : 'back' }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
     'document.setTheme': () => ({ theme: { name: `T${op.value}`, tokens: { color: { text: { $type: 'color', $value: '#000000' } } } } }),
@@ -176,6 +178,8 @@ const GROUP_THEN_UNGROUP: Op[] = [
   { command: 'element.ungroup', pick: 0, value: 1 },
   { command: 'element.align', pick: 0, value: 1 },
   { command: 'element.distribute', pick: 0, value: 1 },
+  { command: 'element.matchSize', pick: 0, value: 1 },
+  { command: 'element.pasteStyle', pick: 0, value: 1 },
   { command: 'element.zOrder', pick: 0, value: 1 },
   { command: 'screen.rename', pick: 0, value: 1 },
   { command: 'screen.setFormat', pick: 0, value: 1 },
@@ -243,7 +247,7 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
     // the guaranteed example really commits both of its ops
     expect(new Set(play(MISC_EXAMPLE, MISC_OPS).results)).toEqual(new Set(['ok']));
     expect(new Set(play(SECTION_EXAMPLE, SECTION_OPS).results)).toEqual(new Set(['ok']));
-    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(['ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
+    expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(Array.from({ length: GROUP_THEN_UNGROUP.length }, () => 'ok'));
     let committed = 0;
     const committedBy = new Set<string>();
     fc.assert(

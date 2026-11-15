@@ -507,6 +507,8 @@ export const BENCH_COMMANDS = [
   'element.ungroup',
   'element.align',
   'element.distribute',
+  'element.matchSize',
+  'element.pasteStyle',
   'element.zOrder',
   'shape.replace',
   'document.update',
