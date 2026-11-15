@@ -990,7 +990,7 @@ export type MenuItem = {
 export function menuItems(target: MenuTarget, commands: readonly EditorCommand[]): readonly MenuItem[];
 
 // @public
-export type MenuTarget = "canvas" | "element" | "screen";
+export type MenuTarget = "canvas" | "element" | "table" | "screen";
 
 // @public
 export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | undefined): MenuTarget;
@@ -1563,6 +1563,7 @@ export type Session = {
     readonly snap: WritableSignal<boolean>;
     readonly grid: WritableSignal<boolean>;
     readonly pathEdit: WritableSignal<PathEditing | undefined>;
+    readonly tableCells: WritableSignal<TableCellRange | undefined>;
 };
 
 // @public
@@ -1805,6 +1806,15 @@ export type SystemItem = {
 // @public
 export type SystemPasteDeps = PasteDeps & {
     readonly assets: AssetStore;
+};
+
+// @public
+export type TableCellRange = {
+    readonly id: RecordId;
+    readonly row: number;
+    readonly col: number;
+    readonly toRow: number;
+    readonly toCol: number;
 };
 
 // @public

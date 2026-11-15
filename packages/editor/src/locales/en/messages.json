@@ -1437,6 +1437,72 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.table.deleteColumn": {
+    "message": "Delete column",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.deleteRow": {
+    "message": "Delete row",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.insert": {
+    "message": "Insert table",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.insertColumnLeft": {
+    "message": "Insert column left",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.insertColumnRight": {
+    "message": "Insert column right",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.insertRowAbove": {
+    "message": "Insert row above",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.insertRowBelow": {
+    "message": "Insert row below",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.merge": {
+    "message": "Merge cells",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.nextCell": {
+    "message": "Next cell",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.previousCell": {
+    "message": "Previous cell",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.table.split": {
+    "message": "Split cell",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.text.edit": {
     "message": "Edit the text",
     "origin": [

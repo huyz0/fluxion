@@ -16,6 +16,7 @@ import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, fit
 import { deleteSelected, editSelectedPath, leaveEditing } from './path-edit-states.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-actions.js';
 import { selectSame } from './select-same.js';
+import { TABLE_ACTIONS } from './table-commands.js';
 import { editSelectedText } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
 
@@ -354,6 +355,8 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
       return true;
     },
   },
+  // the table commands (FR-SHP-014, M19.21)
+  ...TABLE_ACTIONS.map(([id, title, act]): EditorCommand => ({ id, title, run: (ctx) => selectIdle(ctx) && act(ctx.tools.ctx) })),
 ];
 
 /**

@@ -9,6 +9,7 @@ import { EDITOR_COMMANDS, type EditorCommand } from './editor-commands.js';
 import type { KeyBinding } from './keymap.js';
 import type { KeyOverrides } from './keymap-overrides.js';
 import { shortcutsOf } from './palette-model.js';
+import { pickForMenu } from './table-edit.js';
 import type { ToolDispatcher } from './tools.js';
 
 /** What {@link useCanvasMenu} reads. */
@@ -42,7 +43,9 @@ export function useCanvasMenu(input: CanvasMenuInput): { readonly onMenu: (asked
       const hit = hitTest(asked.page);
       // the right-clicked element is what the menu acts on, unless it is part of the selection already
       if (hit !== undefined && !session.selection.get().includes(hit)) session.selection.set([hit]);
-      setOpen({ at: asked.client, items: menuItems(menuTarget(hit, asked.page, area), all) });
+      // on the one selected table, the table menu, with the cell under the point picked (FR-SHP-014)
+      const table = hit !== undefined && session.selection.get().length === 1 && pickForMenu(tools.ctx, hit, asked.page);
+      setOpen({ at: asked.client, items: menuItems(table ? 'table' : menuTarget(hit, asked.page, area), all) });
     },
     [tools, area, all],
   );

@@ -6,14 +6,15 @@ import { ALIGN_MODES, DISTRIBUTE_AXES, FLIP_AXES, ORDER_MOVES } from './arrange-
 import { BOOLEAN_OPS } from './boolean-edit.js';
 import type { EditorCommand } from './editor-commands.js';
 import { LAYOUT_CHOICES } from './layout-arrange.js';
+import { TABLE_MENU } from './table-commands.js';
 import { commandTitle } from './titles.js';
 
 /**
- * Which menu: on an element, on a screen's own area, or on the canvas around the screens.
+ * Which menu: on an element, on the one selected table, on a screen's own area, or on the canvas around the screens.
  *
  * @public
  */
-export type MenuTarget = 'canvas' | 'element' | 'screen';
+export type MenuTarget = 'canvas' | 'element' | 'table' | 'screen';
 
 /**
  * One line of a context menu: an editor command, titled.
@@ -42,20 +43,25 @@ const ARRANGE = [
   'layout.fit',
 ];
 
+/** The element menu's lines. */
+const ELEMENT = [
+  'clipboard.cut',
+  'clipboard.copy',
+  'clipboard.duplicate',
+  'selection.delete',
+  'selection.sameType',
+  'selection.sameStyle',
+  'selection.group',
+  'selection.ungroup',
+  // the Arrange lines (M8.26)
+  ...ARRANGE,
+];
+
 /** The commands of each menu, in order. */
 const MENUS: { readonly [T in MenuTarget]: readonly string[] } = {
-  element: [
-    'clipboard.cut',
-    'clipboard.copy',
-    'clipboard.duplicate',
-    'selection.delete',
-    'selection.sameType',
-    'selection.sameStyle',
-    'selection.group',
-    'selection.ungroup',
-    // the Arrange lines (M8.26)
-    ...ARRANGE,
-  ],
+  element: ELEMENT,
+  // the table's rows, columns and cells first (FR-SHP-014, M19.21), then the element lines
+  table: [...TABLE_MENU, ...ELEMENT],
   screen: ['clipboard.paste', 'selection.all', 'camera.fitScreen', ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.screen.${n}`), 'layout.tidy', 'layout.fit'],
   canvas: ['clipboard.paste', 'camera.fitScreen', 'camera.zoom100'],
 };
@@ -80,7 +86,7 @@ export function menuTarget(hit: RecordId | undefined, page: Vec2, area: Box | un
 export function menuItems(target: MenuTarget, commands: readonly EditorCommand[]): readonly MenuItem[] {
   const titles = new Map(commands.map((c) => [c.id, commandTitle(c)]));
   // the Arrange lines of registered layouts (a plugin's) follow the built-in ones
-  const prefix = target === 'element' ? 'layout.arrange.selection.' : target === 'screen' ? 'layout.arrange.screen.' : undefined;
+  const prefix = target === 'element' || target === 'table' ? 'layout.arrange.selection.' : target === 'screen' ? 'layout.arrange.screen.' : undefined;
   const added = prefix === undefined ? [] : [...titles.keys()].filter((id) => id.startsWith(prefix) && !MENUS[target].includes(id));
   return [...MENUS[target], ...added].flatMap((command): MenuItem[] => {
     const title = titles.get(command);

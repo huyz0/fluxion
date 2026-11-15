@@ -58,6 +58,26 @@ export type Session = {
   readonly grid: WritableSignal<boolean>;
   /** The path shape whose vertices are being edited (FR-SHP-011; double-click it, Esc leaves), and its selected vertex, if any. */
   readonly pathEdit: WritableSignal<PathEditing | undefined>;
+  /** The selected cells of the one selected table (FR-SHP-014; a click on a selected table picks one, shift-click extends), if any. */
+  readonly tableCells: WritableSignal<TableCellRange | undefined>;
+};
+
+/**
+ * The selected cells of a table: the cell first picked and the one the range reaches (the same cell for one).
+ *
+ * @public
+ */
+export type TableCellRange = {
+  /** The table. */
+  readonly id: RecordId;
+  /** The first picked cell's row. */
+  readonly row: number;
+  /** Its column. */
+  readonly col: number;
+  /** The row the range reaches. */
+  readonly toRow: number;
+  /** The column it reaches. */
+  readonly toCol: number;
 };
 
 /**
@@ -116,12 +136,16 @@ export function createSession(docId: string): Session {
     snap: writable(true),
     grid: writable(false),
     pathEdit: writable<PathEditing | undefined>(undefined),
+    tableCells: writable<TableCellRange | undefined>(undefined),
   };
   // path editing ends when its shape stops being the whole selection, however the selection changed (FR-SHP-011)
+  // so does a table's cell selection (FR-SHP-014)
   effect(() => {
     const [only, ...rest] = session.selection.get();
     const editing = session.pathEdit.get();
     if (editing !== undefined && (only !== editing.id || rest.length > 0)) session.pathEdit.set(undefined);
+    const cells = session.tableCells.get();
+    if (cells !== undefined && (only !== cells.id || rest.length > 0)) session.tableCells.set(undefined);
   });
   return session;
 }

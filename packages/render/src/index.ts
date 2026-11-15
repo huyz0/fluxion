@@ -37,6 +37,8 @@ export { ContentCssContext, ScreenView, type ScreenViewProps, type ScreenViewSpe
 export { createFixedMeasurer, FIXED_ADVANCE_EM, serverMeasurer } from './server-measurer.js';
 export { withSettledRoutes } from './settled-routes.js';
 export { grownHeight, labelBox, ShapeView } from './shape-view.js';
+export { type TableCellBox, tableCellStyle, tableCells } from './table-layout.js';
+export { TableView } from './table-view.js';
 export { browserMeasurer, type CanvasTextMeasurer, createCanvasMeasurer, registerFontMetrics } from './text-measurer.js';
 export { TextView } from './text-view.js';
 export { useValue } from './use-value.js';

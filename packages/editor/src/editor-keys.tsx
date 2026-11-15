@@ -32,11 +32,16 @@ const clipboardChord = (e: KeyboardEvent): boolean => (e.ctrlKey || e.metaKey) &
 
 const clicks = (e: KeyboardEvent): boolean => e.key === 'Enter' && e.target instanceof HTMLElement && /^(BUTTON|A|SUMMARY)$/.test(e.target.tagName);
 
+/** Tab from a control or panel: it moves the focus, not the picked table cell (FR-SHP-014). */
+const tabsFocus = (e: KeyboardEvent): boolean =>
+  e.key === 'Tab' && e.target instanceof Element && e.target.closest('button, a, summary, select, [role="dialog"], [role="menu"], [role="toolbar"]') !== null;
+
 /**
  * Key presses the keymap leaves alone: one taken already, one typed into a field (but F5, which would reload the page and
- * lose the document: M7.4 review F2), a button's Enter, and the clipboard chords.
+ * lose the document: M7.4 review F2), a button's Enter, Tab between controls, and the clipboard chords.
  */
-const notTheKeymaps = (e: KeyboardEvent): boolean => e.defaultPrevented || (isEditable(e.target) && e.key !== 'F5') || clicks(e) || clipboardChord(e);
+const notTheKeymaps = (e: KeyboardEvent): boolean =>
+  e.defaultPrevented || (isEditable(e.target) && e.key !== 'F5') || clicks(e) || tabsFocus(e) || clipboardChord(e);
 
 /**
  * Input of {@link useEditorKeys}.

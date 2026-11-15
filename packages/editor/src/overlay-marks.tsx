@@ -12,6 +12,7 @@ import { HANDLE_PX } from './overlay-geometry.js';
 import { type PlacedParamHandle, paramHandlesOf, type ShapeDefs } from './param-handles.js';
 import { PathMarks } from './path-marks.js';
 import type { Session } from './session.js';
+import { TableMarks } from './table-marks.js';
 
 /** Props of {@link HandleMarks}. */
 export type HandleMarksProps = {
@@ -143,7 +144,7 @@ function ConnectorMarks(props: HandleMarksProps): ReactNode {
   });
 }
 
-/** The parametric handles of the one selected shape, the outline of selected and hovered connectors, the handles of the one selected connector, and those of the path being edited. */
+/** The parametric handles of the one selected shape, the outline of selected and hovered connectors, the handles of the one selected connector, those of the path being edited, and the picked table cells. */
 export function HandleMarks(props: HandleMarksProps): ReactNode {
   return (
     <>
@@ -151,6 +152,7 @@ export function HandleMarks(props: HandleMarksProps): ReactNode {
       <ConnectorMarks {...props} />
       <ParamMarks {...props} />
       <PathMarks store={props.store} session={props.session} />
+      <TableMarks store={props.store} session={props.session} />
     </>
   );
 }

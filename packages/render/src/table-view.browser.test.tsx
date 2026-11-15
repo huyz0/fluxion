@@ -96,6 +96,14 @@ describe('the table view (FR-SHP-014, ADR-0054)', () => {
     expect(Number.parseFloat(css(grid.cell('1:1')).outlineWidth)).toBeGreaterThan(0);
   });
 
+  it('FR-SHP-014: a cell’s opacity fades its fill, border and text together, once', async () => {
+    const two = twoByThree('grid');
+    const { cell } = await show({ ...two, cells: { ...two.cells, '1:1': { text: text('faded'), style: { opacity: 0.4 } } } });
+    expect(css(cell('1:1')).opacity).toBe('0.4');
+    expect(css(cell('1:1').querySelector('.fx-label') as HTMLElement).opacity).toBe('1');
+    expect(css(cell('1:0')).opacity).toBe('1');
+  });
+
   it('FR-SHP-014: a cell’s style wins over its table-style part, which wins over the theme; the theme’s own table style wins over the built-in', async () => {
     const theme = {
       defaults: { ...LIGHT_THEME.defaults, table: { fill: '#00ff00' } },

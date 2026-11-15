@@ -26,6 +26,7 @@ import { RecordId } from '@fluxion/schema';
 import { Rect } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { ResolvedPaint } from '@fluxion/theme';
+import { ResolvedStyle } from '@fluxion/theme';
 import { Result } from '@fluxion/schema';
 import { RichTextDoc } from '@fluxion/schema';
 import { RichTextMark } from '@fluxion/schema';
@@ -37,7 +38,9 @@ import { ShapeDef } from '@fluxion/core';
 import { ShapeElement } from '@fluxion/schema';
 import { ShapePackLicensePolicy } from '@fluxion/core';
 import { Store } from '@fluxion/core';
+import { Style } from '@fluxion/schema';
 import { StyledBlock } from '@fluxion/core';
+import { TableElement } from '@fluxion/schema';
 import { TextElement } from '@fluxion/schema';
 import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
@@ -370,6 +373,31 @@ export function ShapeView(props: ElementViewProps): ReactNode;
 
 // @public
 export function styledBlocks(doc: RichTextDoc | undefined, theme: Theme): StyledBlock[];
+
+// @public
+export type TableCellBox = {
+    readonly key: string;
+    readonly row: number;
+    readonly col: number;
+    readonly rowSpan: number;
+    readonly colSpan: number;
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+};
+
+// @public
+export function tableCells(table: Pick<TableElement, "rows" | "cols" | "cells">, size: {
+    readonly w: number;
+    readonly h: number;
+}): readonly TableCellBox[];
+
+// @public
+export function tableCellStyle(table: Pick<TableElement, "id" | "tableStyle">, row: number, style: Style | undefined, theme: Theme): ResolvedStyle;
+
+// @public
+export function TableView(props: ElementViewProps): ReactNode;
 
 // @public
 export function TextView(props: ElementViewProps): ReactNode;

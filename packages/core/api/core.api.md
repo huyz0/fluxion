@@ -21,6 +21,7 @@ import { Size } from '@fluxion/schema';
 import { Style } from '@fluxion/schema';
 import { SvgArtwork } from '@fluxion/schema';
 import { SvgArtworkNode } from '@fluxion/schema';
+import { TableElement } from '@fluxion/schema';
 import { TextFit } from '@fluxion/schema';
 import { Vec2 } from '@fluxion/geometry';
 import { z } from 'zod';
@@ -136,6 +137,14 @@ export function categoryNameProblem(name: string): string | undefined;
 
 // @public
 export function categoryTitle(slug: string): string;
+
+// @public
+export type CellArea = {
+    readonly row: number;
+    readonly col: number;
+    readonly toRow: number;
+    readonly toCol: number;
+};
 
 // @public
 export function checkVersionedShapePackSubsets(registry: Registry<string, ShapeDef>, inputs: readonly unknown[], policy: ShapePackLicensePolicy): Result<readonly VersionedShapePackSubset[], readonly Diagnostic[]>;
@@ -255,6 +264,9 @@ export type CoreRegistries = { readonly [N in CoreRegistryName]: Registry<string
 
 // @public
 export type CoreRegistryName = (typeof CORE_REGISTRY_NAMES)[number];
+
+// @public
+export function coveringArea(grid: TableGrid, area: CellArea): CellArea;
 
 // @public
 export function createCore(file: DocumentFile, options?: Omit<StoreOptions, "hooks">): Core;
@@ -542,6 +554,9 @@ export const idKeys: {
 export type IndexName = "byScreen" | "byParent" | "byType" | "bindingsByElement";
 
 // @public
+export function insertLine(grid: TableGrid, axis: TableAxis, index: number): TableGrid | undefined;
+
+// @public
 export type IntegrityHook = (context: HookContext) => void;
 
 // @public
@@ -599,6 +614,9 @@ export const markerDefSchema: z.ZodType<MarkerDef>;
 
 // @public
 export function markerTrim(def: MarkerDef | undefined, width: number): number;
+
+// @public
+export function mergeCells(grid: TableGrid, area: CellArea): TableGrid | undefined;
 
 // @public
 export type MessageDescriptor = {
@@ -792,6 +810,9 @@ export interface Registry<K extends string, V> {
 export type RegistryOptions = {
     readonly requireDescribe?: boolean;
 };
+
+// @public
+export function removeLine(grid: TableGrid, axis: TableAxis, index: number): TableGrid | undefined;
 
 // @public
 export function resolveSalt(base: {
@@ -1059,7 +1080,16 @@ export type ShapeTextInput = {
 export function shrinksText(fit: TextFit | undefined): boolean;
 
 // @public
+export function splitCell(grid: TableGrid, row: number, col: number): TableGrid | undefined;
+
+// @public
 export function stableId(hasher: SyncHash128, salt: string, key: string): string;
+
+// @public
+export function stepCell(grid: TableGrid, row: number, col: number, step: 1 | -1): {
+    readonly row: number;
+    readonly col: number;
+} | undefined;
 
 // @public
 export interface Store {
@@ -1136,6 +1166,12 @@ export { SvgArtworkNode }
 export interface SyncHash128 {
     hash128(text: string): Uint8Array;
 }
+
+// @public
+export type TableAxis = "row" | "col";
+
+// @public
+export type TableGrid = Pick<TableElement, "rows" | "cols" | "cells">;
 
 // @public
 export const TEXT_FIT_DEFAULTS: {

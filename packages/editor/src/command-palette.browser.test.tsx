@@ -102,7 +102,8 @@ describe('command palette (FR-EDT-011, FR-EDT-012)', () => {
     expect(document.activeElement).toBe(input());
     // the canvas's keys do not act behind it
     expect(key('Delete', {}, input()).defaultPrevented).toBe(false);
-    type('wbl');
+    // 'wbl' also matches Insert row below (M19.21): a subsequence only Wobble has
+    type('wbbl');
     expect(titles()).toEqual(['Wobble the selection']);
     expect(options()[0]?.getAttribute('aria-selected')).toBe('true');
     expect(input().getAttribute('aria-activedescendant')).toBe(options()[0]?.id);

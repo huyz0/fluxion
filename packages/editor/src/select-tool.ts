@@ -16,6 +16,8 @@ import { pickable } from './select-actions.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
 import { GRID_CELL, snapAngle, snapBox, snapResize } from './snap/snap.js';
 import { boundsOf, snapScreen, snapTargets } from './snap/targets.js';
+import { pickCell } from './table-edit.js';
+import { type BorderGrab, borderUnder, tableResizing } from './table-resize.js';
 import { SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
 import { TOUCH } from './touch.js';
 import { type Box2, EDGES, handlePoint, resize, rotation } from './transform.js';
@@ -195,6 +197,8 @@ type Press = {
   connector?: ConnectorGrab | undefined;
   /** A press on a vertex, bezier handle or segment of the path being edited. */
   path?: PathGrab | undefined;
+  /** A press on a border between two rows or columns of the selected table. */
+  border?: BorderGrab | undefined;
 };
 
 /**
@@ -211,8 +215,11 @@ function pressed(ctx: ToolCtx, e: PointerInfo, p: Press): void {
   if (hit !== ctx.session.pathEdit.get()?.id) leavePathEdit(ctx);
   const kept = hit !== undefined && before.includes(hit);
   if (!kept) ctx.session.selection.set(clickSelection(before, hit, e.shift));
-  p.narrow = kept && !e.shift ? hit : undefined;
-  p.toggle = kept && e.shift ? hit : undefined;
+  // a press on a selected table picks a cell (shift extends the range) rather than narrowing or toggling the selection
+  // (only when the table is the whole selection: in a larger one, the press narrows or toggles as on any element)
+  const cell = kept && hit !== undefined && before.length === 1 && pickCell(ctx, hit, e.page, e.shift);
+  p.narrow = kept && !e.shift && !cell ? hit : undefined;
+  p.toggle = kept && e.shift && !cell ? hit : undefined;
   p.marquee = hit === undefined ? { screen: e.screen, page: e.page, shift: e.shift, before } : undefined;
   // read only when the press was on an element (the marquee is decided first)
   p.grab = { screen: e.screen, page: e.page, alt: e.alt };
@@ -229,7 +236,10 @@ function handlePress(ctx: ToolCtx, e: PointerInfo, p: Press): string | undefined
   p.connector = connectorHandleUnder(ctx, e);
   if (p.connector !== undefined) return p.connector.handle.role === 'end' ? 'ending' : 'bending';
   p.handle = handleUnder(ctx, e);
-  return p.handle === undefined ? undefined : p.handle.id === 'rotate' ? 'rotating' : 'resizing';
+  if (p.handle !== undefined) return p.handle.id === 'rotate' ? 'rotating' : 'resizing';
+  // a table's inner borders after the frame handles, so a border meeting the edge at a handle leaves it the handle's
+  p.border = borderUnder(ctx, e);
+  return p.border === undefined ? undefined : 'tableResizing';
 }
 
 function idle(p: Press): StateNode {
@@ -369,6 +379,7 @@ export function selectTool(): Tool {
       }),
       adjusting: adjusting(p),
       reshaping: reshaping(p),
+      tableResizing: tableResizing(p),
       ending: ending(p),
       bending: bending(p),
       // a free turn snaps to the 15 degree steps when near one (shift always does); Alt and Ctrl/Cmd skip it

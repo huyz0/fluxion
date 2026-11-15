@@ -243,7 +243,7 @@ export { deleteSelection, nudgeSelection, selectAll } from './select-actions.js'
 export { selectSame } from './select-same.js';
 export { selectTool } from './select-tool.js';
 export { clickSelection, DRAG_PX, type Marquee, type MarqueeMode, marquee, sameStyle, sameType, union } from './selection.js';
-export { createSession, createSessions, DEFAULT_CAMERA, type PathEditing, type Session, type Sessions } from './session.js';
+export { createSession, createSessions, DEFAULT_CAMERA, type PathEditing, type Session, type Sessions, type TableCellRange } from './session.js';
 export { memorySettings, type SettingsStore } from './settings.js';
 export {
   GRID_CELL,

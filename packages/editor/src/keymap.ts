@@ -183,6 +183,9 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
   { key: 'mod+{', command: 'selection.order.back', when: 'edit' },
   { key: 'enter', command: 'text.edit', when: 'edit' },
   { key: 'f2', command: 'text.edit', when: 'edit' },
+  // Tab between a table's cells while one is picked (FR-SHP-014); unhandled, Tab still moves the focus
+  { key: 'tab', command: 'table.nextCell', when: 'edit' },
+  { key: 'shift+tab', command: 'table.previousCell', when: 'edit' },
   { key: 'delete', command: 'selection.delete', when: 'edit' },
   { key: 'backspace', command: 'selection.delete', when: 'edit' },
   { key: '?', command: 'help.keys', when: 'edit' },

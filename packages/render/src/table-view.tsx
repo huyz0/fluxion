@@ -44,10 +44,12 @@ export function TableView(props: ElementViewProps): ReactNode {
                 ...paintCss(style.fill),
                 outline: `${border} solid ${style.stroke.color}`,
                 outlineOffset: `calc(${border} / -2)`,
+                // the cell's opacity fades its fill, border and text together, as a shape's does
+                opacity: style.opacity,
               }}
             >
               {cell?.text === undefined ? null : (
-                <div className="fx-label" style={{ ...labelStyle(style.font, style.opacity), padding: CELL_PADDING_PX }}>
+                <div className="fx-label" style={{ ...labelStyle(style.font, '1'), padding: CELL_PADDING_PX }}>
                   <RichText doc={cell.text} />
                 </div>
               )}
