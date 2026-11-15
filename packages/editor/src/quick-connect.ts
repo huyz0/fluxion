@@ -60,15 +60,18 @@ export function quickSource(hover: RecordId | undefined, selection: readonly Rec
 }
 
 /** The "+" of the hovered shape under the pointer, if any. */
-export function quickHandleAt(ctx: ToolCtx, e: PointerInfo): (QuickHandle & { readonly source: RecordId }) | undefined {
+export function quickHandleAt(ctx: ToolCtx, e: PointerInfo): QuickPress | undefined {
   const source = quickSource(ctx.session.hover.get(), ctx.session.selection.get());
   const camera = ctx.session.camera.get();
   const near = quickHandles(ctx.view, source, camera).find((h) => {
     const p = pageToScreen(camera, h.at);
     return Math.hypot(p.x - e.screen.x, p.y - e.screen.y) <= QUICK_RADIUS_PX;
   });
-  return near === undefined || source === undefined ? undefined : { ...near, source };
+  return near === undefined || source === undefined ? undefined : { ...near, source, pressed: e.page };
 }
+
+/** A press on a "+": its handle, the shape it belongs to, and where the pointer went down (page units). */
+export type QuickPress = QuickHandle & { readonly source: RecordId; readonly pressed: Vec2 };
 
 /** Whether page point `p` is within reach of the "+" handles of `id`: in its box grown by their offset and radius. */
 function nearHandles(view: ReadView, id: RecordId, p: Vec2, camera: Camera): boolean {
@@ -85,6 +88,9 @@ function nearHandles(view: ReadView, id: RecordId, p: Vec2, camera: Camera): boo
  * their reach (crossing from the shape to a "+" does not lose them).
  */
 export function hoverAt(ctx: ToolCtx, e: PointerInfo): RecordId | undefined {
+  // a "+" lying over a nearby shape is still the hovered shape's (M19.24 r3)
+  const plus = quickHandleAt(ctx, e);
+  if (plus !== undefined) return plus.source;
   const hit = ctx.hitTest(e.page);
   if (hit !== undefined) return hit;
   const source = quickSource(ctx.session.hover.get(), ctx.session.selection.get());
@@ -103,7 +109,7 @@ const clear = (ctx: ToolCtx) => {
 
 /** The select tool's quick-connect drag, entered from a press on a "+" (its handle as the info). */
 export function quickConnecting(): StateNode {
-  let press: (QuickHandle & { readonly source: RecordId }) | undefined;
+  let press: QuickPress | undefined;
   return {
     id: 'quickConnecting',
     onEnter: (ctx, info) => {
@@ -125,7 +131,8 @@ export function quickConnecting(): StateNode {
       press = undefined;
       if (from === undefined) return { to: 'idle' };
       const z = ctx.session.camera.get().z;
-      if (Math.hypot(e.page.x - from.edge.x, e.page.y - from.edge.y) * z < DRAG_PX) return { to: 'idle' };
+      // a click on the "+" (no drag from where it was pressed) adds nothing
+      if (Math.hypot(e.page.x - from.pressed.x, e.page.y - from.pressed.y) * z < DRAG_PX) return { to: 'idle' };
       const target = endTarget(ctx, e.page);
       const anchors = { source: anchorAt(ctx, from.source, from.edge) };
       if (target !== undefined && target !== from.source)
@@ -137,7 +144,7 @@ export function quickConnecting(): StateNode {
           curved: false,
           anchors: { ...anchors, target: anchorAt(ctx, target, e.page) },
         });
-      // dropped on nothing (or back on the shape): the mini library says what goes there
+      // dropped on nothing: the mini library says what goes there; back on the shape it came from: nothing
       else if (target === undefined) ctx.session.quickDrop.set({ source: from.source, side: from.side, from: from.edge, at: e.page, screen: e.screen });
       return { to: 'idle' };
     },

@@ -212,6 +212,9 @@ leg('FR-EDT-015 quick-connect joins a shape to another or to a new one from the 
       'Same shape adds the source’s shape beyond the drop, joined, one undo step',
       'Connector only leaves the end free at the drop',
       'a press on a nearby selected shape’s handle resizes it',
+      'a click on a "+" without a drag goes back to idle and opens nothing',
+      'a drag dropped back on its own shape adds nothing and opens nothing',
+      'a "+" lying over a nearby shape stays the hovered shape’s',
     ],
   }),
 );

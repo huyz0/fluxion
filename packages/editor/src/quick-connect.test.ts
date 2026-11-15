@@ -163,4 +163,30 @@ describe('quick-connect (FR-EDT-015)', () => {
     t.tools.pointer(at('down', 128, 50));
     expect(t.tools.current).toBe('select.resizing');
   });
+  it('FR-EDT-015: a click on a "+" without a drag goes back to idle and opens nothing', () => {
+    const t = setup();
+    t.tools.pointer(at('move', 50, 50));
+    t.tools.pointer(at('move', t.east.x + 4, t.east.y + 3));
+    t.tools.pointer(at('down', t.east.x + 4, t.east.y + 3));
+    t.tools.pointer(at('up', t.east.x + 5, t.east.y + 3));
+    expect([t.tools.current, t.session.quickDrop.get(), t.kinds('connector')]).toEqual(['select.idle', undefined, []]);
+  });
+
+  it('FR-EDT-015: a drag dropped back on its own shape adds nothing and opens nothing', () => {
+    const t = setup();
+    const depth = t.core.store.history.undoDepth;
+    t.dragFromEast([50, 50]);
+    expect([t.session.quickDrop.get(), t.kinds('connector'), t.core.store.history.undoDepth]).toEqual([undefined, [], depth]);
+  });
+
+  it('FR-EDT-015: a "+" lying over a nearby shape stays the hovered shape’s, and a press on it starts a quick connect', () => {
+    const t = setup();
+    // c moved so that a's east "+" lies over it
+    t.core.execute('element.update', { id: t.c, fields: { transform: { x: 110, y: 0, w: 100, h: 100 } } });
+    t.tools.pointer(at('move', 50, 50));
+    t.tools.pointer(at('move', t.east.x, t.east.y));
+    expect(t.session.hover.get()).toBe(t.a);
+    t.tools.pointer(at('down', t.east.x, t.east.y));
+    expect(t.tools.current).toBe('select.quickConnecting');
+  });
 });

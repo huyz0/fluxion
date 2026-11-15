@@ -4946,3 +4946,8 @@ round-allowance: M19.25 a fourth review round under Huy's 2026-11-05T11:04:52Z d
 - r3 (changes-requested, fixed): F1 while a query was typed every record change gave the find queries a new array, re-rendering the whole Canvas on each drag frame (performance.md rules 7 and 8): the queries now yield `matchKey` strings and the overlay mount a boolean, so they change only when the matches do; a case counts the effect runs across a move and a text change.
 ## 2026-11-15 M19.44: dsl changeset for the catalog's core-shape filter
 - .changeset/dsl-catalog-core-shapes.md (@fluxion/dsl patch) covers f9a6035's packages/dsl/src/catalog/catalog.ts change (M19 cp4 F3); the changesets leg names no M19.41 package now.
+## 2026-11-15 M19.47: quick-connect edge cases (M19.24 r3 minors)
+- A press on a "+" records where it went down (`QuickPress.pressed`); the no-drag test measures from there, so a click returns to idle and opens no mini library (it measured from the side's middle, 12–32 px off, so every click opened it).
+- A drop back on the source adds and opens nothing; the comment said it opened the mini library.
+- `hoverAt` asks for the hovered shape's "+" before hit-testing, so a "+" lying over a nearby shape keeps the hover and can be pressed.
+- Cases in editor quick-connect.test.ts (two fail on the old code; the drop-on-source one pins existing behaviour); the FR-EDT-015 gate leg names them.
