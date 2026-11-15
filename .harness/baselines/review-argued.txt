@@ -217,3 +217,6 @@ M18.43 cp49 F5: the first cold setup after M18.157 closed read 573 s (9b7dafd, c
 
 M18.43 cp49 F6: packages/theme/src/light.test.ts restates every LIGHT_THEME value; accepted, since the light theme is the default every themeless document renders with, so a change to it is a contract change that should be deliberate and reviewed in the test diff; the other M18.10 direct tests assert behaviour (bounds at limit and limit+1, refusal classes, required fields).
 M18 final F1: .harness/budget.json's node field (22.22.0) is the measuring machine's Node, below the new >=22.23.4 floor; no gate reads it, and the next budget record (the first lockfile change in M19) is taken on Node >= 22.23.4.
+M19 cp1 F3: The licence finding (robust-predicates is Unlicense) widened the choice; ADR-0053 records it and the row's intent is met. M19.md's Decide line is corrected in the cp1 record.
+M19 cp1 F5: Real but small: the implementation does check the source milestone; the missing case is added on the next edit of milestone-checks.test.mjs's hand-off block.
+M19 cp1 F7: Under ADR-0176, a build-settle failure on Windows after ac4f2d6 counts as attempt 2 for M19.32's cause and needs timed annotations of each step before attempt 3.

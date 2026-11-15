@@ -1,0 +1,94 @@
+{
+ "milestone": "M19",
+ "checkpoint": "cp1",
+ "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..0dfa6285271816cd44052559034bbd44a508ed7f",
+ "reviewer": "claude:independent-subagent",
+ "verdict": "changes-requested",
+ "reviewedDelta": "Every commit in the range read as a diff (c86770a, 9ac09ab, c71285b, d6a2b11, c0e9330, ac4f2d6, 7db7d25, 94fb564), plus the staged M19.8 for coherence. check-commits --range: 8/8 pass, exit 0. check-trace --milestone M19 --priority M,S: exit 1, all 12 M19 IDs untraced (expected before feature rows). node --test on milestone-checks, verify-leg, build-settle and checkpoint tests: 92/92 pass. Licence allow list (thresholds.mjs:98) confirms robust-predicates (Unlicense) is outside it. ADR-0052/0053/0054 fit: flips in transform since 1.0; ADR-0054 defines core:path's path field.",
+ "findings": [
+  {
+   "id": "F1",
+   "severity": "major",
+   "summary": "ADR-0052's r2 minors (turned-frame flip 2φ−θ, hidden drop targets, leaving a frame nested in a group) are recorded only in 7db7d25's body; the ADR and M19.10 do not carry them.",
+   "evidence": "7db7d25 body; ADR-0052 flip rule and Confirmation pin the unturned case only."
+  },
+  {
+   "id": "F2",
+   "severity": "major",
+   "summary": "M19.10's row and the frames gate leg cover only move and reparent; ADR-0052's resize reversal, turn/flip, padding precedence and live adoption are neither in the row nor gated.",
+   "evidence": "m19-complete frames leg runs frames.test.ts with no named cases; a member-scaling resize mutant passes."
+  },
+  {
+   "id": "F3",
+   "severity": "minor",
+   "summary": "M19.7's acceptance and M19.md's Decide line name polygon-clipping vs paper.js; ADR-0053 chose polybooljs.",
+   "evidence": "backlog M19.7; docs/milestones/M19.md."
+  },
+  {
+   "id": "F4",
+   "severity": "minor",
+   "summary": "ADR-0053 promises the same bytes in every engine but Confirmation checks determinism in Node only; a 10° turn test via atan2/acos can round differently across engines.",
+   "evidence": "ADR-0053 Decision Drivers vs Confirmation."
+  },
+  {
+   "id": "F5",
+   "severity": "minor",
+   "summary": "The hand-off target test does not constrain the Deferred row to name the source milestone.",
+   "evidence": "milestone-checks.test.mjs has no case citing the finding and naming only the target milestone."
+  },
+  {
+   "id": "F6",
+   "severity": "minor",
+   "summary": "progress.md names pre-land shas for M19.6/M19.7; the staged M19.8 bullet says legacy:table and a masterId removal, contrary to ADR-0054.",
+   "evidence": "progress.md:4770; staged M19.8 entry."
+  },
+  {
+   "id": "F7",
+   "severity": "minor",
+   "summary": "M19.32's cause was read from the code, not measured; no Windows run after ac4f2d6 is recorded as confirming it.",
+   "evidence": "progress.md M19.32; run 43650494988 green without the fix."
+  }
+ ],
+ "dispositions": [
+  {
+   "finding": "F1",
+   "disposition": "reopen",
+   "target": "M19.10",
+   "note": "M19.10's acceptance now carries the ADR-0052 amendment for r2 F1–F3 with frames.test.ts cases (turned-frame flip 2φ − θ, hidden frame never a drop target, leaving a frame nested in a group). The nested-group case is decided: the member leaves the frame and joins the group."
+  },
+  {
+   "finding": "F2",
+   "disposition": "reopen",
+   "target": "M19.10",
+   "note": "M19.10's acceptance lists ADR-0052's Confirmation as named cases and the select-tool.test.ts resize-handle cases; the row names the frames gate leg's named cases, written with the feature."
+  },
+  {
+   "finding": "F3",
+   "disposition": "argue",
+   "note": "The licence finding (robust-predicates is Unlicense) widened the choice; ADR-0053 records it and the row's intent (choose the library with precision, bounds, package and licence) is met. M19.md's Decide line is corrected in this record."
+  },
+  {
+   "finding": "F4",
+   "disposition": "reopen",
+   "target": "M19.18",
+   "note": "M19.18's acceptance: the turn limit uses dot and cross products against a constant cos 10°, and a three-engine e2e (Chromium, Firefox, WebKit) shows each golden's bytes, a turned operand included, equal to Node's."
+  },
+  {
+   "finding": "F5",
+   "disposition": "argue",
+   "note": "Real but small: the implementation does check the source milestone; the missing case is added on the next edit of milestone-checks.test.mjs's hand-off block."
+  },
+  {
+   "finding": "F6",
+   "disposition": "reopen",
+   "target": "M19.8",
+   "note": "progress.md shas fixed in this record (7db7d25, 94fb564); M19.8's acceptance now requires its progress entry to agree with ADR-0054 (legacy-table, masterId left alone)."
+  },
+  {
+   "finding": "F7",
+   "disposition": "argue",
+   "note": "Under ADR-0176, a build-settle failure on Windows after ac4f2d6 counts as attempt 2 for M19.32's cause and needs timed annotations of each step before attempt 3."
+  }
+ ],
+ "planDelta": "32 rows against 31 planned (1.39x of the plan's 23 items, under 1.5x); growth from planning splits and one CI-red row (M19.32), no new scope. Expect several review rounds on rows touching ADR-0054 surfaces. Name gate-leg cases as feature rows land."
+}
