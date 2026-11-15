@@ -1,7 +1,8 @@
 // The library's preview (FR-FIL-008): the first screen drawn as its background and the boxes of its elements, small. It is a sketch of the layout, not
 // a render: the studio has no way to rasterise a screen yet, and a sketch is enough to tell documents apart in a list. `thumbnailPlan` is the
 // arithmetic; `renderThumbnail` puts it on a canvas and encodes `preview.webp`.
-import { screenSize } from '@fluxion/schema';
+import { masterLayers, type ReadView } from '@fluxion/core';
+import { type AnyRecord, isMasterScreen, type RecordId, screenSize } from '@fluxion/schema';
 
 /**
  * Width of a thumbnail in pixels.
@@ -62,22 +63,25 @@ function colourOf(paint: unknown, fallback: string): string {
 
 const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 
-/**
- * The thumbnail of the first screen (the lowest index) of `records`, or undefined when there is no screen.
- *
- * @public
- */
-export function thumbnailPlan(records: { readonly [id: string]: unknown }): ThumbPlan | undefined {
+const byIndex = (a: Rec, b: Rec) => ((a.index ?? '') < (b.index ?? '') ? -1 : (a.index ?? '') > (b.index ?? '') ? 1 : 0);
+
+/** `records` read as a store would (the master rules read through one): by id, by type, and by screen. */
+function recordsView(records: { readonly [id: string]: unknown }): ReadView {
   const all = Object.values(records) as Rec[];
-  const screen = all.filter((r) => r.type === 'screen').sort((a, b) => ((a.index ?? '') < (b.index ?? '') ? -1 : (a.index ?? '') > (b.index ?? '') ? 1 : 0))[0];
-  if (screen === undefined) return undefined;
-  const size = screenSize(screen as { size?: { w: number; h: number } });
-  const scale = THUMBNAIL_WIDTH / size.w;
+  return {
+    get: (id) => records[id] as AnyRecord | undefined,
+    has: (id) => id in records,
+    ids: () => Object.keys(records) as RecordId[],
+    size: all.length,
+    members: (index, key) =>
+      all.filter((r) => (index === 'byType' ? r.type === key : index === 'byScreen' ? r['screenId'] === key : false)).map((r) => r.id as RecordId),
+  };
+}
+
+/** The boxes of `elements` (top level, visible, in order) at `scale`. */
+function boxesOf(elements: readonly Rec[], scale: number): ThumbBox[] {
   const boxes: ThumbBox[] = [];
-  const onScreen = all
-    .filter((r) => r.type === 'element' && r['screenId'] === screen.id && r['parentId'] === undefined && r['hidden'] !== true)
-    .sort((a, b) => ((a.index ?? '') < (b.index ?? '') ? -1 : (a.index ?? '') > (b.index ?? '') ? 1 : 0));
-  for (const el of onScreen) {
+  for (const el of [...elements].sort(byIndex)) {
     const t = el['transform'] as { x?: unknown; y?: unknown; w?: unknown; h?: unknown } | undefined;
     const [x, y, w, h] = [num(t?.x), num(t?.y), num(t?.w), num(t?.h)];
     if (x === undefined || y === undefined || w === undefined || h === undefined) continue;
@@ -85,7 +89,34 @@ export function thumbnailPlan(records: { readonly [id: string]: unknown }): Thum
     const text = el.kind === 'text';
     boxes.push({ x: x * scale, y: y * scale, w: w * scale, h: h * scale, color: text ? '#94a3b8' : colourOf(style?.fill, NEUTRAL), text });
   }
-  return { w: THUMBNAIL_WIDTH, h: Math.max(1, Math.round(size.h * scale)), background: colourOf(screen['background'], PAPER), boxes };
+  return boxes;
+}
+
+/**
+ * The thumbnail of the first screen (the lowest index) of `records` that is not a master, or undefined when there is none. A
+ * screen's master is drawn behind it as the player draws it (FR-SCR-005): its background when the screen has none, and its
+ * elements other than placeholders unless the screen hides them.
+ *
+ * @public
+ */
+export function thumbnailPlan(records: { readonly [id: string]: unknown }): ThumbPlan | undefined {
+  const all = Object.values(records) as Rec[];
+  const screen = all.filter((r) => r.type === 'screen' && !isMasterScreen(r)).sort(byIndex)[0];
+  if (screen === undefined) return undefined;
+  const size = screenSize(screen as { size?: { w: number; h: number } });
+  const scale = THUMBNAIL_WIDTH / size.w;
+  const layers = masterLayers(recordsView(records), screen.id as RecordId);
+  const shown = (r: Rec, on: unknown) => r.type === 'element' && r['screenId'] === on && r['parentId'] === undefined && r['hidden'] !== true;
+  const behind = layers?.elements === true ? all.filter((r) => shown(r, layers.master) && !layers.placeholders.has(r.id as RecordId)) : [];
+  const boxes = [
+    ...boxesOf(behind, scale),
+    ...boxesOf(
+      all.filter((r) => shown(r, screen.id)),
+      scale,
+    ),
+  ];
+  const background = colourOf(screen['background'] ?? layers?.background, PAPER);
+  return { w: THUMBNAIL_WIDTH, h: Math.max(1, Math.round(size.h * scale)), background, boxes };
 }
 
 /**

@@ -53,6 +53,9 @@ const ELEMENT = [
   'selection.sameStyle',
   'selection.group',
   'selection.ungroup',
+  // a master's element made a placeholder or an ordinary element again (FR-SCR-005)
+  'master.makePlaceholder',
+  'master.clearPlaceholder',
   // the Arrange lines (M8.26)
   ...ARRANGE,
 ];
@@ -62,7 +65,16 @@ const MENUS: { readonly [T in MenuTarget]: readonly string[] } = {
   element: ELEMENT,
   // the table's rows, columns and cells first (FR-SHP-014, M19.21), then the element lines
   table: [...TABLE_MENU, ...ELEMENT],
-  screen: ['clipboard.paste', 'selection.all', 'camera.fitScreen', ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.screen.${n}`), 'layout.tidy', 'layout.fit'],
+  screen: [
+    'clipboard.paste',
+    'selection.all',
+    'camera.fitScreen',
+    'master.edit',
+    'master.close',
+    ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.screen.${n}`),
+    'layout.tidy',
+    'layout.fit',
+  ],
   canvas: ['clipboard.paste', 'camera.fitScreen', 'camera.zoom100'],
 };
 

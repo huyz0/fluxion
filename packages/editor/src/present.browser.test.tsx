@@ -85,6 +85,32 @@ describe('present in place (FR-EDT-009)', () => {
     expect(session.mode.get()).toBe('present');
   });
 
+  it('FR-SCR-005: presenting from the shown screen while a master is shown starts at the first slide: a master is never presented', async () => {
+    const b = documentBuilder({ seed: 191 });
+    const master = b.screen({ name: 'Brand' });
+    const slide = b.screen();
+    const built = b.build();
+    const records = {
+      ...built.records,
+      [master]: { ...(built.records[master] as object), role: 'master' },
+      [slide]: { ...(built.records[slide] as object), masterId: master },
+    };
+    const core = createCore({ ...built, records } as typeof built);
+    const session = createSession('doc');
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />),
+    );
+    await act(frame);
+    act(() => session.screen.set(master));
+    key('F5', { shiftKey: true });
+    await act(frame);
+    expect([session.mode.get(), session.screen.get()]).toEqual(['present', slide]);
+    // from a slide, the shown screen stays shown
+    key('Escape');
+    key('F5', { shiftKey: true });
+    expect(session.screen.get()).toBe(slide);
+  });
+
   it('FR-EDT-003: while presenting, the pointer draws the laser trail over the screen and leaving the stage clears it', async () => {
     const { session } = await mount();
     key('F5');

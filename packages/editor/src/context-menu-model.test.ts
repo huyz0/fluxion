@@ -30,6 +30,9 @@ describe('context menu model (FR-EDT-013)', () => {
       'Select same style',
       'Group',
       'Ungroup',
+      // a master's element as a placeholder (FR-SCR-005)
+      'Make placeholder',
+      'Make ordinary element',
       // the Arrange lines (M8.26)
       'Align left',
       'Align centre',
@@ -61,6 +64,8 @@ describe('context menu model (FR-EDT-013)', () => {
       'Paste',
       'Select all',
       'Zoom to fit the screen',
+      'Edit master',
+      'Close master',
       'Arrange the screen (layered)',
       'Arrange the screen (grid)',
       'Arrange the screen (stack)',
@@ -72,6 +77,8 @@ describe('context menu model (FR-EDT-013)', () => {
       'clipboard.paste',
       'selection.all',
       'camera.fitScreen',
+      'master.edit',
+      'master.close',
       'layout.arrange.screen.layered',
       'layout.arrange.screen.grid',
       'layout.arrange.screen.stack',

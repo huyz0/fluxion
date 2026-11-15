@@ -7,6 +7,7 @@ import type { MenuItem } from '../context-menu-model.js';
 import type { Execute } from '../pointer.js';
 import { switchScreen } from '../screen-switch.js';
 import type { Session } from '../session.js';
+import { masterCommand } from './master-menu.js';
 import { dropMove, duplicateArgs, FORMAT_PREFIX, formatArgs, newScreen, type Row, SECTION_PREFIX } from './navigator-model.js';
 import type { RowActions } from './screen-row.js';
 
@@ -46,6 +47,10 @@ function runMenuItem(command: string, target: RecordId, ctx: MenuCtx): void {
     if (execute(command, args).ok) switchScreen(session, args.newId);
   } else if (command === 'screen.delete' && rows.length > 1) execute(command, { id: target });
   else if (command.startsWith(SECTION_PREFIX) || command.startsWith(FORMAT_PREFIX)) runPlacement(command, target, ctx);
+  else {
+    const master = masterCommand(command, target);
+    if (master !== undefined) execute(master.id, master.args);
+  }
 }
 
 /** What the hook gives the panel. */

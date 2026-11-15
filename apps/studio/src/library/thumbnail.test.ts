@@ -63,4 +63,26 @@ describe('the library thumbnail (FR-FIL-008)', () => {
     expect(thumbnailPlan({})).toBeUndefined();
     expect(thumbnailPlan(byId(el('lonely', ['s1', 'a'], [0, 0, 10, 10])))).toBeUndefined();
   });
+
+  it('FR-SCR-005: a master is not the thumbnail; the first slide is, with its master drawn behind it, placeholders left out', () => {
+    const plan = thumbnailPlan(
+      byId(
+        screen('m', 'a', { role: 'master', background: '#223344' }),
+        screen('s1', 'b', { masterId: 'm' }),
+        el('logo', ['m', 'a'], [0, 0, 192, 108], { style: { fill: '#00ff00' } }),
+        el('title', ['m', 'b'], [0, 540, 192, 108], { placeholder: 'title' }),
+        el('own', ['s1', 'a'], [960, 540, 960, 540], { style: { fill: '#ff0000' } }),
+      ),
+    );
+    expect(plan?.background).toBe('#223344');
+    expect(plan?.boxes.map((b) => [b.x, b.y, b.color])).toEqual([
+      [0, 0, '#00ff00'],
+      [160, 90, '#ff0000'],
+    ]);
+    // a screen hiding its master's elements keeps its background only
+    const bare = thumbnailPlan(
+      byId(screen('m', 'a', { role: 'master' }), screen('s1', 'b', { masterId: 'm', hideMasterElements: true }), el('logo', ['m', 'a'], [0, 0, 10, 10])),
+    );
+    expect(bare?.boxes).toEqual([]);
+  });
 });

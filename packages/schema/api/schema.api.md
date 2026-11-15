@@ -423,6 +423,12 @@ export function isGeneratedId(value: unknown): value is RecordId;
 export function isIndexKey(key: unknown): key is IndexKey;
 
 // @public
+export function isMasterScreen(record: {
+    readonly type?: unknown;
+    readonly role?: unknown;
+} | undefined): boolean;
+
+// @public
 export function isRecordId(value: unknown): value is RecordId;
 
 // @public

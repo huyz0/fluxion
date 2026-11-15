@@ -10,6 +10,7 @@ import { AnyRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
+import { isMasterScreen } from '@fluxion/schema';
 import { Paint } from '@fluxion/schema';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
@@ -578,11 +579,7 @@ export function isArtworkFontAlias(family: string): boolean;
 // @public
 export const isFontFormat: (version: unknown) => version is ShapePackFontFormat;
 
-// @public
-export function isMasterScreen(record: {
-    readonly type?: unknown;
-    readonly role?: unknown;
-} | undefined): boolean;
+export { isMasterScreen }
 
 // @public
 export function lockedWithin(view: ReadView, id: RecordId, lock: LockName): boolean;

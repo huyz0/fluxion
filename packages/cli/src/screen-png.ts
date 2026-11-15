@@ -1,5 +1,5 @@
 // One screen of a document as PNG bytes (FR-AI-006, ADR-0038): what the MCP `render_screen_png` tool returns.
-import { type Diagnostic, type DocumentFile, type RecordId, screenSize } from '@fluxion/schema';
+import { type Diagnostic, type DocumentFile, isMasterScreen, type RecordId, screenSize } from '@fluxion/schema';
 import { staticPage } from './render.js';
 import { type Launcher, playwrightLauncher, renderPngBytes } from './render-png.js';
 
@@ -54,7 +54,7 @@ function firstScreen(document: DocumentFile): string | undefined {
   return (
     Object.values(document.records)
       // a master is no page (ADR-0054): the first visible screen that is not one
-      .filter((r) => r.type === 'screen' && (r as { hidden?: unknown }).hidden !== true && (r as { role?: unknown }).role !== 'master')
+      .filter((r) => r.type === 'screen' && (r as { hidden?: unknown }).hidden !== true && !isMasterScreen(r))
       .sort((a, b) => ((a as { index: string }).index < (b as { index: string }).index ? -1 : 1))[0]?.id
   );
 }

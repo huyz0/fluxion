@@ -1269,6 +1269,30 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.master.clearPlaceholder": {
+    "message": "Make ordinary element",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.master.close": {
+    "message": "Close master",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.master.edit": {
+    "message": "Edit master",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.master.makePlaceholder": {
+    "message": "Make placeholder",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.mode.present": {
     "message": "Present from the first visible screen",
     "origin": [

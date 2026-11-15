@@ -138,6 +138,9 @@ export type Row = {
   readonly size: { readonly w: number; readonly h: number };
   /** The section it is in, if one that exists. */
   readonly sectionId?: RecordId | undefined;
+  /** Whether it is a master screen (FR-SCR-005), and the master it names. */
+  readonly master?: boolean | undefined;
+  readonly masterId?: RecordId | undefined;
 };
 
 /** A section as the navigator lists it. */

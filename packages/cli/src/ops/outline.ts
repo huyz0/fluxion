@@ -1,6 +1,6 @@
 // The `outline` and `screen` operations: what an agent reads before it edits (FR-MCP-001, ADR-0038).
 import { decompileScreen } from '@fluxion/dsl';
-import { compareKeys, type Diagnostic, type DocumentRecord, parseDocument, type RecordId, type ScreenRecord } from '@fluxion/schema';
+import { compareKeys, type Diagnostic, type DocumentRecord, isMasterScreen, parseDocument, type RecordId, type ScreenRecord } from '@fluxion/schema';
 import type { CoreRegistries } from '@fluxion/sdk';
 import { type OpResult, opFail, opOk } from './result.js';
 
@@ -50,7 +50,8 @@ export function outlineDocument(text: string): OpResult<Outline> {
   const counts = new Map<string, number>();
   for (const r of records) if ('screenId' in r) counts.set(String(r.screenId), (counts.get(String(r.screenId)) ?? 0) + 1);
   const screens = records
-    .filter((r): r is ScreenRecord => r.type === 'screen')
+    // a master is no slide (ADR-0054): the outline lists the screens it draws behind
+    .filter((r): r is ScreenRecord => r.type === 'screen' && !isMasterScreen(r))
     .sort((a, b) => compareKeys(a.index, b.index))
     .map((s) => ({ id: s.id, name: s.name ?? '', elements: counts.get(s.id) ?? 0 }));
   const doc = records.find((r): r is DocumentRecord => r.type === 'document');
@@ -58,7 +59,7 @@ export function outlineDocument(text: string): OpResult<Outline> {
 }
 
 /**
- * One screen of the document in `text` as FluxScript; the first screen when `screenId` is omitted.
+ * One screen of the document in `text` as FluxScript (a master too, by its id); the first screen when `screenId` is omitted.
  *
  * @public
  */
@@ -69,10 +70,11 @@ export function screenText(
 ): OpResult<{ readonly screen: string; readonly text: string; readonly kept: number }> {
   const outline = outlineDocument(text);
   if (!outline.ok) return outline;
-  const wanted = screenId ?? outline.value.screens[0]?.id;
-  if (wanted === undefined || !outline.value.screens.some((s) => s.id === wanted)) return opFail([notFound(wanted ?? '(none)')]);
   const parsed = parseDocument(text);
   if (!parsed.ok) return opFail(parsed.error.diagnostics);
+  // a master is not in the outline, but asked for by id its text is given (FR-SCR-005)
+  const wanted = screenId ?? outline.value.screens[0]?.id;
+  if (wanted === undefined || parsed.value.document.records[wanted]?.type !== 'screen') return opFail([notFound(wanted ?? '(none)')]);
   const r = decompileScreen(parsed.value.document, wanted as RecordId, { registries });
   return opOk({ screen: wanted, text: r.text, kept: r.kept }, outline.diagnostics);
 }

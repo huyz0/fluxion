@@ -4,7 +4,7 @@
 // draws without it and the problem says why. A screen's own background and theme win over the master's; the master's elements
 // draw beneath the screen's own, its placeholders only where a screen element does not fill them (and then in edit mode alone,
 // which render decides). Pure.
-import { type Paint, type RecordId, type ScreenRecord, screenKind, screenSize } from '@fluxion/schema';
+import { isMasterScreen, type Paint, type RecordId, type ScreenRecord, screenKind, screenSize } from '@fluxion/schema';
 import type { ReadView } from './store.js';
 
 /**
@@ -54,14 +54,8 @@ const screenOf = (view: ReadView, id: RecordId | undefined): ScreenRecord | unde
   return r?.type === 'screen' ? (r as ScreenRecord) : undefined;
 };
 
-/**
- * Whether `record` is a master screen.
- *
- * @public
- */
-export function isMasterScreen(record: { readonly type?: unknown; readonly role?: unknown } | undefined): boolean {
-  return record?.type === 'screen' && record.role === 'master';
-}
+// a master screen: the schema's predicate, here with the master rules that use it
+export { isMasterScreen } from '@fluxion/schema';
 
 /** Why `target` cannot be `screen`'s master, if it cannot. */
 function refusal(screen: ScreenRecord, target: ScreenRecord | undefined): MasterProblemCode | undefined {

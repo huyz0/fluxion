@@ -46,6 +46,7 @@ export function benchStore(): Bench {
   // one styled shape of screen 5, for element.pasteStyle to copy from
   const styled = shapes[1450] as RecordId;
   (file.records as Record<string, unknown>)[styled] = { ...(file.records[styled] as object), style: { fill: '#ff0000' } };
+  withMaster(file, screens, shapes);
   const count = Object.keys(file.records).length;
   if (count < RECORDS) throw new Error(`bench document has ${count} records, want ${RECORDS}`);
   const hooks = createRegistry<string, IntegrityHook>('integrityHooks');
@@ -107,6 +108,23 @@ function copyIds(file: ReturnType<ReturnType<typeof documentBuilder>['build']>, 
   const owned = records.filter((r) => elements.has(r.id) || (r.type === 'binding' && elements.has(String(r.connectorId))));
   return Object.fromEntries(owned.map((r, i) => [r.id, `BenchCopy${String(i).padStart(8, '0')}`]));
 }
+
+/** In `file`: screen 9 a master whose shape 2300 is the placeholder "title", and screen 8 naming it as its master (FR-SCR-005). */
+function withMaster(file: { readonly records: Record<string, unknown> }, screens: readonly RecordId[], shapes: readonly RecordId[]): void {
+  const records = file.records as Record<string, unknown>;
+  const [master, dependent, placeholder] = [screens[9], screens[8], shapes[2300]] as RecordId[];
+  records[master] = { ...(records[master] as object), role: 'master' };
+  records[dependent] = { ...(records[dependent] as object), masterId: master };
+  records[placeholder] = { ...(records[placeholder] as object), placeholder: 'title' };
+}
+
+/** Arguments of the master commands (M19.23): a screen made a master, given one, a placeholder named and one filled. */
+const masterArgs = (screens: readonly RecordId[], shapes: readonly RecordId[]) => ({
+  'screen.setRole': { id: screens[1], master: true },
+  'screen.setMaster': { id: screens[6], masterId: screens[9] },
+  'element.setPlaceholder': { id: shapes[2310], name: 'body' },
+  'element.fillPlaceholder': { screenId: screens[8], placeholderId: shapes[2300], newId: 'BenchNewFill00001' },
+});
 
 /** The group the fixture holds. */
 const BENCH_GROUP = 'BenchGroup0000001' as RecordId;
@@ -210,6 +228,7 @@ function benchArgs(
     ...screenFieldArgs(screens),
     // a copy of screen 4: its 250 shapes and the bindings of its 83 connectors
     'screen.duplicate': { id: screens[4], newId: 'BenchNewScreen002', ids: copies },
+    ...masterArgs(screens, shapes),
     'binding.set': { id: 'BenchNewBinding01', connectorId: lines[500], end: 'target', elementId: shapes[2400], anchor: { kind: 'auto' } },
     ...arrangeArgs(shapes),
     // a shape of screen 5 swapped to another definition, its bindings remapped
@@ -291,6 +310,10 @@ export const COMMANDS = [
   'section.reorder',
   'section.delete',
   'screen.duplicate',
+  'screen.setRole',
+  'screen.setMaster',
+  'element.setPlaceholder',
+  'element.fillPlaceholder',
   'binding.set',
   'connector.freeEnd',
   'element.group',

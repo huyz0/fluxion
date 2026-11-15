@@ -7,7 +7,7 @@ import type { Store } from '@fluxion/core';
 import type { Box } from '@fluxion/geometry';
 import { LaserTrail, useElementBox } from '@fluxion/player';
 import { type AssetUrls, presentationOrder, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
-import type { RecordId } from '@fluxion/schema';
+import { isMasterScreen, type RecordId } from '@fluxion/schema';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { usePointerInput } from './pointer-input.js';
 import { fitCamera } from './present-mode.js';
@@ -45,8 +45,11 @@ export function useModeSwitch(store: Store, session: Session, edit: ToolDispatch
   const saved = useRef(session.tool.get());
   return useCallback(
     (from = 'current') => {
-      // F5 starts from the first visible screen; shift+F5, and the way out, leave the shown screen as it is (FR-EDT-009)
-      const first = from === 'start' && session.mode.get() === 'edit' ? presentationOrder(store, false)[0] : undefined;
+      // F5 starts from the first visible screen; shift+F5, and the way out, leave the shown screen as it is (FR-EDT-009), unless it
+      // is a master, which is never presented: then from the first visible screen too (FR-SCR-005)
+      const shown = session.screen.get();
+      const onMaster = shown !== undefined && isMasterScreen(store.get(shown));
+      const first = (from === 'start' || onMaster) && session.mode.get() === 'edit' ? presentationOrder(store, false)[0] : undefined;
       if (first !== undefined && first !== session.screen.get()) switchScreen(session, first);
       switchMode(session, session.mode.get() === 'present' ? present : edit, saved);
     },

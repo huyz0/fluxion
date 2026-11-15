@@ -4,7 +4,7 @@ import type { CommandContext } from '../commands.js';
 import type { ReadView } from '../store.js';
 import type { TxFailure } from '../transaction.js';
 
-type Entry = { readonly id: RecordId; readonly index: string; readonly hidden: boolean };
+type Entry = { readonly id: RecordId; readonly index: string; readonly hidden: boolean; readonly master: boolean };
 
 /** The records of `type` (`screen` or `section`) in order (index, then id), hidden screens included, without `except`. */
 function ordered(view: ReadView, except?: string, type = 'screen'): Entry[] {
@@ -12,15 +12,15 @@ function ordered(view: ReadView, except?: string, type = 'screen'): Entry[] {
     .members('byType', type)
     .filter((s) => s !== except)
     .map((s) => {
-      const r = view.get(s) as { index?: unknown; hidden?: unknown } | undefined;
-      return { id: s, index: String(r?.index ?? ''), hidden: r?.hidden === true };
+      const r = view.get(s) as { index?: unknown; hidden?: unknown; role?: unknown } | undefined;
+      return { id: s, index: String(r?.index ?? ''), hidden: r?.hidden === true, master: r?.role === 'master' };
     })
     .sort((a, b) => compareKeys(a.index, b.index) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
 /**
- * The screen presentation shows after `from` (or before it, with `step` -1): the next in order that is not hidden;
- * undefined at the end. `from` may itself be hidden.
+ * The screen presentation shows after `from` (or before it, with `step` -1): the next in order that is not hidden and
+ * not a master (FR-SCR-005: a master is never presented); undefined at the end. `from` may itself be hidden or a master.
  *
  * @public
  */
@@ -29,7 +29,7 @@ export function nextVisibleScreen(view: ReadView, from: RecordId, step: 1 | -1 =
   const at = all.findIndex((s) => s.id === from);
   if (at < 0) return undefined;
   const rest = step === 1 ? all.slice(at + 1) : all.slice(0, at).reverse();
-  return rest.find((s) => !s.hidden)?.id;
+  return rest.find((s) => !(s.hidden || s.master))?.id;
 }
 
 /**

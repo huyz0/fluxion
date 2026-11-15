@@ -76,6 +76,7 @@ export { type LayoutSpec, layoutSpecSchema, MAX_TEMPLATE_DEPTH, type TemplateIte
 export type { AssetRecord, PluginRefRecord, ResourceRecord, TableStyle, ThemeRecord } from './records/resources.js';
 export {
   DEFAULT_SCREEN_SIZE,
+  isMasterScreen,
   presetOf,
   type Rect,
   SCREEN_PRESETS,

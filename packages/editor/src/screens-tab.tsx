@@ -11,6 +11,7 @@ import './i18n.js';
 import { type ReactNode, useMemo } from 'react';
 import { ContextMenu } from './context-menu.js';
 import type { MenuItem } from './context-menu-model.js';
+import { masterLines } from './navigator/master-menu.js';
 import { FORMAT_ITEMS, formatLabel, navigatorItems, type Row, type SectionRow, sectionMoves, shownSize } from './navigator/navigator-model.js';
 import { ScreenRow } from './navigator/screen-row.js';
 import { SectionHeader } from './navigator/section-header.js';
@@ -47,6 +48,8 @@ const rowOf = (view: ReadView, id: RecordId, label: (name: string | undefined) =
     size: shownSize(r ?? {}),
     // a master belongs to no section: it is listed apart
     sectionId: master ? undefined : r?.sectionId,
+    master,
+    masterId: r?.masterId as RecordId | undefined,
   };
 };
 
@@ -71,12 +74,17 @@ const sectionsOf = (store: Store) =>
 
 const NO_KEYS = (): readonly string[] => [];
 
-/** The menu of a screen's row. */
-const itemsOf = (row: Row | undefined, sections: readonly SectionRow[]): readonly MenuItem[] => [
+/** The menu of a screen's row; a master's has no format, section or presentation lines (it is never presented). */
+const itemsOf = (row: Row | undefined, sections: readonly SectionRow[], masters: readonly Row[]): readonly MenuItem[] => [
   { command: 'screen.rename', title: 'Rename' },
-  ...FORMAT_ITEMS,
-  ...sectionMoves(sections, row?.sectionId),
-  { command: 'screen.setHidden', title: row?.hidden ? 'Show in presentation' : 'Hide from presentation' },
+  ...(row?.master === true
+    ? []
+    : [
+        ...FORMAT_ITEMS,
+        ...sectionMoves(sections, row?.sectionId),
+        { command: 'screen.setHidden', title: row?.hidden ? 'Show in presentation' : 'Hide from presentation' },
+      ]),
+  ...masterLines(row, masters),
   { command: 'screen.duplicate', title: 'Duplicate' },
   { command: 'screen.delete', title: 'Delete' },
 ];
@@ -171,6 +179,7 @@ export function ScreensTab(props: ScreensTabProps): ReactNode {
           items={itemsOf(
             [...rows, ...masters].find((r) => r.id === nav.menu?.id),
             sections,
+            masters,
           )}
           at={{ x: nav.menu.x, y: nav.menu.y }}
           keysOf={NO_KEYS}

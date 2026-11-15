@@ -1,4 +1,4 @@
-import { type DocumentFile, validate } from '@fluxion/schema';
+import { type DocumentFile, type RecordId, validate } from '@fluxion/schema';
 import { arbDocument, documentBuilder } from '@fluxion/schema/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
@@ -53,9 +53,13 @@ const arbOps = fc.array(fc.record({ command: fc.constantFrom(...COMMANDS), pick:
 const newId = (n: number) => `Det${String(n).padStart(13, '0')}`;
 
 /** The arguments of one generated op against the current state (refusals are part of the model). */
-function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string, shapes: () => string[]): unknown {
+function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string, all: (type: string, kind?: string) => string[]): unknown {
+  const shapes = () => all('element', 'shape');
+  const screens = () => all('screen');
   const screen = pick('screen');
   const element = pick('element');
+  // the screen after the picked one: a master's dependent when the picked one is the master
+  const next = () => screens()[(op.pick + 1) % Math.max(1, screens().length)] ?? 'none';
   const build: { readonly [id: string]: () => unknown } = {
     'element.create': () => ({
       element: {
@@ -137,6 +141,10 @@ function argsOf(op: Op, n: number, pick: (type: string, kind?: string) => string
     'element.zOrder': () => ({ ids: [pick('element', 'shape')], to: op.value % 2 ? 'front' : 'back' }),
     'element.reorder': () => ({ id: pick('element', 'shape') }),
     'element.flip': () => ({ ids: [pick('element', 'shape')], axis: op.value % 2 ? 'x' : 'y' }),
+    'screen.setRole': () => ({ id: screen, master: op.value % 2 === 1 }),
+    'screen.setMaster': () => ({ id: next(), masterId: op.value % 2 ? screen : undefined }),
+    'element.setPlaceholder': () => ({ id: element, name: op.value % 2 ? `p${op.value}` : undefined }),
+    'element.fillPlaceholder': () => ({ screenId: next(), placeholderId: element, newId: newId(n + 400) }),
     'document.update': () => ({ fields: { title: `t${op.value}` } }),
     'document.setTheme': () => ({ theme: { name: `T${op.value}`, tokens: { color: { text: { $type: 'color', $value: '#000000' } } } } }),
     'screen.setThemeOverride': () => ({ id: screen, theme: { name: `T${op.value}`, tokens: { color: { text: { $type: 'color', $value: '#000000' } } } } }),
@@ -156,19 +164,16 @@ function play(file: DocumentFile, ops: readonly Op[]) {
   const diffs: unknown[] = [];
   core.store.subscribe((d, m) => diffs.push([ordered(d), m.label, m.origin]));
   const results = ops.map((op, n) => {
-    const pick = (type: string, kind?: string) => {
-      const ids = core.store
+    const all = (type: string, kind?: string) =>
+      core.store
         .members('byType', type)
         .filter((id) => kind === undefined || (core.store.get(id) as { kind?: string } | undefined)?.kind === kind)
         .sort();
+    const pick = (type: string, kind?: string) => {
+      const ids = all(type, kind);
       return ids[op.pick % Math.max(1, ids.length)] ?? 'none';
     };
-    const shapes = () =>
-      core.store
-        .members('byType', 'element')
-        .filter((id) => (core.store.get(id) as { kind?: string } | undefined)?.kind === 'shape')
-        .sort();
-    const r = core.execute(op.command, argsOf(op, n, pick, shapes));
+    const r = core.execute(op.command, argsOf(op, n, pick, all));
     return r.ok ? 'ok' : r.error.code;
   });
   return { diffs, results, depth: core.store.history.undoDepth, doc: core.store.toDocument() };
@@ -231,6 +236,18 @@ const SECTION_OPS: Op[] = [
   pick: 0,
   value: 1,
 }));
+/** Two screens and a shape on the first (by id), and the ops that make it a master with a placeholder filled on the other (FR-SCR-005). */
+const MASTER_EXAMPLE: DocumentFile = (() => {
+  const b = documentBuilder({ seed: 95 });
+  const [first] = [b.screen(), b.screen()].sort();
+  b.rect(first as RecordId);
+  return b.build();
+})();
+const MASTER_OPS: Op[] = ['screen.setRole', 'element.setPlaceholder', 'screen.setMaster', 'element.fillPlaceholder'].map((command) => ({
+  command,
+  pick: 0,
+  value: 1,
+}));
 const MISC_OPS: Op[] = [
   'element.create',
   'element.createMany',
@@ -259,6 +276,7 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
     // the guaranteed example really commits both of its ops
     expect(new Set(play(MISC_EXAMPLE, MISC_OPS).results)).toEqual(new Set(['ok']));
     expect(new Set(play(SECTION_EXAMPLE, SECTION_OPS).results)).toEqual(new Set(['ok']));
+    expect(play(MASTER_EXAMPLE, MASTER_OPS).results).toEqual(['ok', 'ok', 'ok', 'ok']);
     expect(play(GROUPED_EXAMPLE, GROUP_THEN_UNGROUP).results).toEqual(Array.from({ length: GROUP_THEN_UNGROUP.length }, () => 'ok'));
     let committed = 0;
     const committedBy = new Set<string>();
@@ -279,6 +297,7 @@ describe('core determinism (NFR-REL-005, M3 final F4)', () => {
           [GROUPED_EXAMPLE, GROUP_THEN_UNGROUP],
           [MISC_EXAMPLE, MISC_OPS],
           [SECTION_EXAMPLE, SECTION_OPS],
+          [MASTER_EXAMPLE, MASTER_OPS],
         ],
       },
     );

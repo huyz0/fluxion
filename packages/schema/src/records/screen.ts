@@ -137,6 +137,15 @@ export function screenKind(screen: Pick<ScreenRecord, 'kind'>): 'fixed' | 'infin
 }
 
 /**
+ * Whether `record` is a master screen (ADR-0054): one other screens draw behind them, never a page or a slide of its own.
+ *
+ * @public
+ */
+export function isMasterScreen(record: { readonly type?: unknown; readonly role?: unknown } | undefined): boolean {
+  return record?.type === 'screen' && record.role === 'master';
+}
+
+/**
  * A screen shape people pick by name (FR-SCR-003): its id and label, and the logical size it gives a fixed screen.
  *
  * @public

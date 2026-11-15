@@ -34,6 +34,7 @@ import {
   UPDATE_ELEMENTS,
 } from './record-commands.js';
 import type { Registry } from './registry.js';
+import { MASTER_COMMANDS } from './screens/master-commands.js';
 import { SCREEN_COMMANDS } from './screens/screen-commands.js';
 import { screenIndexAfter } from './screens/screen-order.js';
 import { SECTION_COMMANDS } from './screens/section-commands.js';
@@ -99,6 +100,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...Z_ORDER_COMMANDS,
   ...FLIP_COMMANDS,
   ...SCREEN_COMMANDS,
+  ...MASTER_COMMANDS,
   ...SECTION_COMMANDS,
   ...THEME_COMMANDS,
   ...REPLACE_SHAPE_COMMANDS,

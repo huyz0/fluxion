@@ -13,6 +13,7 @@ import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboar
 import { groupSelection, ungroupSelection } from './group-edit.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
 import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, fitToScreen, LAYOUT_CHOICES, tidyUp } from './layout-arrange.js';
+import { MASTER_ACTIONS } from './master-edit.js';
 import { deleteSelected, editSelectedPath, leaveEditing } from './path-edit-states.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-actions.js';
 import { selectSame } from './select-same.js';
@@ -356,7 +357,7 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
     },
   },
   // the table commands (FR-SHP-014, M19.21)
-  ...TABLE_ACTIONS.map(([id, title, act]): EditorCommand => ({ id, title, run: (ctx) => selectIdle(ctx) && act(ctx.tools.ctx) })),
+  ...[...TABLE_ACTIONS, ...MASTER_ACTIONS].map(([id, title, act]): EditorCommand => ({ id, title, run: (ctx) => selectIdle(ctx) && act(ctx.tools.ctx) })),
 ];
 
 /**

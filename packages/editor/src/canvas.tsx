@@ -19,6 +19,7 @@ import { isEditable } from './editor-keys.js';
 import { enterGroup } from './group-edit.js';
 import { InlineTextEditor } from './inline-text-editor.js';
 import { LIBRARY_DRAG_TYPE } from './library/library-insert.js';
+import { fillAt } from './master-edit.js';
 import { Overlay, useOverlayShown } from './overlay.js';
 import { placements, selectionBounds } from './overlay-geometry.js';
 import { isImageFile } from './place-images.js';
@@ -213,7 +214,8 @@ function canvasConsumer(session: Session, space: RefObject<boolean>, drag: RefOb
 
 /**
  * A double-click on a group enters it, to edit its members (Esc leaves it); on a path shape it edits its vertices (FR-SHP-011);
- * on an element with text it opens the text for editing in place (the select tool, between gestures).
+ * on an element with text it opens the text for editing in place; on a master's placeholder hint it fills the placeholder (the select
+ * tool, between gestures).
  */
 function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatcher | undefined): void {
   if (tools === undefined || tools.current !== `${SELECT_TOOL}.idle`) return;
@@ -221,6 +223,8 @@ function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatc
   const at = screenToPage(session.camera.get(), { x: e.clientX - r.left, y: e.clientY - r.top });
   const hit = tools.ctx.hitTest(at);
   if (hit !== undefined && (enterGroup(tools.ctx, hit, at) || enterPathEdit(tools.ctx, hit))) return;
+  // on no element of the screen, a master's placeholder hint is filled (FR-SCR-005)
+  if (hit === undefined && fillAt(tools.ctx, at)) return;
   const element = hit === undefined ? undefined : textElement(tools.ctx.view, hit);
   if (hit === undefined || element === undefined) return;
   session.selection.set([hit]);

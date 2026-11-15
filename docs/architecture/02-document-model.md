@@ -113,6 +113,12 @@ master of its own, both fixed and the same size) is a drawing rule the problems 
 migration removes a new field a 1.7 file may carry that does not conform, a `fills` or icon `assetId` naming no record of the right type, and
 renames a 1.7 `table` that is not a valid 1.8 table or that holds elements to the unknown kind `legacy-table`; it leaves `masterId` alone.
 
+Masters are edited through four core commands (M19.23), none of which writes a state the drawing rules refuse: `screen.setRole` (a
+master, refused for a screen with a master or an infinite one; ordinary again, its screens lose their `masterId` and the `fills` of its
+placeholders), `screen.setMaster` (a master given, with its size; taken away, that screen's fills cleared), `element.setPlaceholder` (only
+on a master; unnamed, its fillers fill nothing) and `element.fillPlaceholder` (a copy of the placeholder on the screen, on top, filling it;
+once per screen).
+
 ### Anchors
 
 ```ts
