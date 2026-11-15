@@ -83,9 +83,12 @@ export function Overlay(props: OverlayProps): ReactNode {
   const anchors = useValue(session.anchors.get);
   const entered = useValue(session.entered.get);
   const guides = useValue(session.guides.get);
+  const dropTarget = useValue(session.dropTarget.get);
   // the group entered to edit its members is outlined dashed (M8.5)
   const enteredPlaced = useValue(useMemo(() => store.query((view) => (entered === undefined ? [] : placements(view, [entered]))), [store, entered]));
   const placed = useValue(useMemo(() => store.query((view) => placements(view, selection)), [store, selection]));
+  // the frame a drag would drop into is outlined (ADR-0052)
+  const dropPlaced = useValue(useMemo(() => store.query((view) => (dropTarget === undefined ? [] : placements(view, [dropTarget]))), [store, dropTarget]));
   // a selected element is outlined by its frame already
   const hovered = useValue(
     useMemo(() => store.query((view) => (hover === undefined || selection.includes(hover) ? [] : placements(view, [hover]))), [store, hover, selection]),
@@ -93,6 +96,7 @@ export function Overlay(props: OverlayProps): ReactNode {
   const frame = selectionFrame(placed, camera);
   const outline = selectionFrame(hovered, camera);
   const inside = selectionFrame(enteredPlaced, camera);
+  const drop = selectionFrame(dropPlaced, camera);
   const band = marquee === undefined ? undefined : screenBox(marquee, camera);
   const drafted = draft === undefined ? undefined : screenBox(draft, camera);
   const line = sketch?.map((p) => pageToScreen(camera, p));
@@ -101,6 +105,7 @@ export function Overlay(props: OverlayProps): ReactNode {
     <svg className="fx-chrome-overlay" width={box.w} height={box.h} aria-hidden="true" data-testid="overlay">
       {inside === undefined ? null : <polygon className="fx-chrome-entered" data-entered="true" points={points(inside.corners)} />}
       {outline === undefined ? null : <polygon className="fx-chrome-hover" points={points(outline.corners)} />}
+      {drop === undefined ? null : <polygon className="fx-chrome-drop" data-drop-target={dropTarget} points={points(drop.corners)} />}
       {frame === undefined ? null : (
         <g className="fx-chrome-selection">
           <polygon className="fx-chrome-frame" points={points(frame.corners)} />

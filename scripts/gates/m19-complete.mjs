@@ -125,6 +125,7 @@ leg('FR-ARR-006 frames carry children by the same delta and reparent on drop, un
 leg('FR-ARR-006 a clipping frame hides and does not hit or marquee an overflowing child', () =>
   all(
     () => tests('packages/editor/src/frame-hit.test.ts'),
+    () => tests('packages/editor/src/overlay.browser.test.tsx', { project: 'browser', named: 'the frame a drag would drop into is outlined' }),
     () => tests('packages/render/src/frame-clip.browser.test.tsx', { project: 'browser' }),
   ),
 );

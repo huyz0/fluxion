@@ -174,8 +174,12 @@ describe('frames under the select tool (FR-ARR-006, ADR-0052)', () => {
     // the rect a (0,0 100x100) dragged down into the frame: its centre lands at (100, 400)
     s.tools.pointer(at('down', 50, 50));
     s.tools.pointer(at('move', 50, 200));
+    expect(s.session.dropTarget.get()).toBeUndefined();
     s.tools.pointer(at('move', 100, 400));
+    // while the drop would reparent, the target frame is outlined; the outline goes with the drag
+    expect(s.session.dropTarget.get()).toBe('frameframe01');
     s.tools.pointer(at('up', 100, 400));
+    expect(s.session.dropTarget.get()).toBeUndefined();
     expect([s.parent(s.a), s.xy(s.a)]).toEqual(['frameframe01', [50, 350]]);
     expect(s.core.store.history.undoDepth).toBe(before + 1);
     s.core.store.history.undo();

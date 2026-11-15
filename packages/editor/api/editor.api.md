@@ -1548,6 +1548,7 @@ export type Session = {
     readonly editing: WritableSignal<RecordId | undefined>;
     readonly entered: WritableSignal<RecordId | undefined>;
     readonly guides: WritableSignal<readonly SnapGuide[]>;
+    readonly dropTarget: WritableSignal<RecordId | undefined>;
     readonly library: WritableSignal<string>;
     readonly snap: WritableSignal<boolean>;
     readonly grid: WritableSignal<boolean>;

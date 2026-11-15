@@ -22,6 +22,7 @@ import { type AnyRecord, type ElementRecord, type RecordId, type RichTextDoc, tr
 import { resolveStyle, toCssVars } from '@fluxion/theme';
 import { boxTouches, rectOutline } from './box-touch.js';
 import { connectorHittable } from './connector-hit.js';
+import { clippedByFrames } from './frame-clip.js';
 import { type HitContext, type Hittable, inBox, type Resolving } from './hittable.js';
 import { affected, paintOrder } from './paint-order.js';
 import { grow, onStroked, reachOf, stroked, strokedBounds } from './stroke-band.js';
@@ -131,6 +132,13 @@ function hittableOf(store: Store, ctx: Resolving, id: RecordId): Hittable | unde
   if (got?.type !== 'element') return undefined;
   const r = got as ElementRecord;
   if (!drawn(store, r)) return undefined;
+  const h = ownHittable(store, ctx, r);
+  // a clipping frame shows its members only inside its box: they are hit there alone (ADR-0052)
+  return h === undefined ? undefined : clippedByFrames(store, r, h);
+}
+
+/** The hittable of drawn element `r` by its own geometry. */
+function ownHittable(store: Store, ctx: Resolving, r: ElementRecord): Hittable | undefined {
   const own = OWN_GEOMETRY.get(r.kind);
   if (own !== undefined) return own(store, ctx, r);
   const t = (r as { transform?: Transform }).transform;

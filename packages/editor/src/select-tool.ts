@@ -115,6 +115,9 @@ function follow(ctx: ToolCtx, drag: Drag, page: Vec2, bypass = false): void {
   // nothing of its own to move: the command refuses the empty list, and nothing changes
   drag.gesture.update('element.updateMany', { updates: moved(drag.from, d) });
   drag.gesture.commit();
+  // the frame a drop here would put an element into is outlined (ADR-0052)
+  const into = dropReparents(ctx.view, ctx.session.selection.get()).map((u) => u.fields['parentId'] as RecordId | undefined);
+  ctx.session.dropTarget.set(into.find((id) => (ctx.view.get(id as RecordId) as { kind?: unknown } | undefined)?.kind === 'frame'));
 }
 
 /** Whether the pointer `e` skips snapping: Alt after the press (one that made copies is a duplicate, not a bypass) or Ctrl/Cmd. */
@@ -324,6 +327,7 @@ function translating(p: Press): StateNode {
       p.drag?.gesture.end();
       p.drag = undefined;
       ctx.session.guides.set([]);
+      ctx.session.dropTarget.set(undefined);
     },
   };
 }

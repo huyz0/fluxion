@@ -117,6 +117,19 @@ describe('edit overlay (FR-EDT-004)', () => {
     expect(host.querySelector('.fx-chrome-entered')).toBeNull();
   });
 
+  it('FR-ARR-006: the frame a drag would drop into is outlined through the camera, and the outline goes with the target', async () => {
+    const { core, square, turned } = setup();
+    act(() => session.camera.set({ x: 0, y: 0, z: 2 }));
+    act(() => session.selection.set([turned]));
+    await mount(core);
+    expect(host.querySelector('.fx-chrome-drop')).toBeNull();
+    act(() => session.dropTarget.set(square));
+    const outline = host.querySelector('polygon.fx-chrome-drop') as SVGPolygonElement;
+    expect([outline.dataset['dropTarget'], Math.round(outline.getBoundingClientRect().width)]).toEqual([square, 400]);
+    act(() => session.dropTarget.set(undefined));
+    expect(host.querySelector('.fx-chrome-drop')).toBeNull();
+  });
+
   it('FR-ARR-005: a guide is drawn through the camera, an equal-gap guide with its distance, and two alike are told apart', async () => {
     const { core } = setup();
     act(() => session.camera.set({ x: 10, y: 20, z: 2 }));

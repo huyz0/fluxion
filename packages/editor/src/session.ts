@@ -46,6 +46,8 @@ export type Session = {
   readonly entered: WritableSignal<RecordId | undefined>;
   /** The smart guides of a drag under way, page units (empty outside one). */
   readonly guides: WritableSignal<readonly SnapGuide[]>;
+  /** The frame a drag under way would drop an element into, outlined while it would (ADR-0052); undefined otherwise. */
+  readonly dropTarget: WritableSignal<RecordId | undefined>;
   /** The library's current item, a shape definition id: what the shape tool places (starts as `basic:rect`). */
   readonly library: WritableSignal<string>;
   /** Whether a drag snaps (the toolbar toggle, FR-ARR-005). */
@@ -85,6 +87,7 @@ export function createSession(docId: string): Session {
     editing: writable<RecordId | undefined>(undefined),
     entered: writable<RecordId | undefined>(undefined),
     guides: writable<readonly SnapGuide[]>([]),
+    dropTarget: writable<RecordId | undefined>(undefined),
     library: writable('basic:rect'),
     snap: writable(true),
     grid: writable(false),

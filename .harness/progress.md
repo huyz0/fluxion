@@ -4824,3 +4824,9 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - Editor: the resize handle uses `resizeStarts` (a frame's members stay; a group's scale); the drag's pointer-up writes `dropReparents` in the drag's gesture (one undo step).
 - Layout: `framePadded` sets a frame's `padding` as the inset when the layout names none and the algorithm takes `padding`, in the sync and worker paths.
 - ADR-0052 amended (cp1 F1 minors); the drop highlight moves to M19.11's acceptance. m19-complete's frames leg names the cases in core, layout and editor tests.
+
+## 2026-11-15 M19.11: clipping frames hide, and do not hit or marquee, overflowing children
+
+- Editor `frame-clip.ts`: every clipping frame above an element (`clip` not false) bounds its hittable: bounds cut to the frames, a point outside any misses it (no pick margin past the edge), a marquee touches it only where it overlaps them (a turned frame: touch the frame, then cut to its upright bounds). hit-test wires it after its own geometry; a frame's move, turn or clip change refreshes its members (`affected`).
+- Render already clipped members (overflow hidden on the frame's box); `frame-clip.browser.test.tsx` proves it by what the browser hits, upright, `clip: false` and turned.
+- Drop highlight (moved from M19.10): `session.dropTarget` holds the frame a drag would reparent into; the overlay outlines it (`fx-chrome-drop`); it clears when the drag ends.
