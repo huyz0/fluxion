@@ -12,6 +12,7 @@ import { duplicates, moved, reframed, resizeStarts, restored, type Start, starts
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { isPathEditing, leavePathEdit, type PathGrab, pathPressUnder, reshaping } from './path-edit-states.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
+import { hoverAt, quickConnecting, quickHandleAt } from './quick-connect.js';
 import { pickable } from './select-actions.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
 import { GRID_CELL, snapAngle, snapBox, snapResize } from './snap/snap.js';
@@ -246,7 +247,7 @@ function idle(p: Press): StateNode {
   return {
     id: 'idle',
     onPointerMove: (ctx, e) => {
-      ctx.session.hover.set(ctx.hitTest(e.page));
+      ctx.session.hover.set(hoverAt(ctx, e));
       return undefined;
     },
     onPointerDown: (ctx, e) => {
@@ -254,6 +255,9 @@ function idle(p: Press): StateNode {
       // a handle of the selected shape or connector first, then one of the selection's frame: all lie over what they frame
       const handled = handlePress(ctx, e, p);
       if (handled !== undefined) return { to: handled };
+      // then a "+" of the hovered shape starts a quick connect (FR-EDT-015): a nearby selected shape's handle wins over it
+      const quick = quickHandleAt(ctx, e);
+      if (quick !== undefined) return { to: 'quickConnecting', info: quick };
       pressed(ctx, e, p);
       return { to: 'pointing' };
     },
@@ -380,6 +384,7 @@ export function selectTool(): Tool {
       adjusting: adjusting(p),
       reshaping: reshaping(p),
       tableResizing: tableResizing(p),
+      quickConnecting: quickConnecting(),
       ending: ending(p),
       bending: bending(p),
       // a free turn snaps to the 15 degree steps when near one (shift always does); Alt and Ctrl/Cmd skip it

@@ -25,6 +25,7 @@ import { placements, selectionBounds } from './overlay-geometry.js';
 import { isImageFile } from './place-images.js';
 import type { Execute, PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
+import { QuickConnectMenu } from './quick-connect-menu.js';
 import type { Session } from './session.js';
 import { regionAt, textElement } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
@@ -320,6 +321,7 @@ export function Canvas(props: CanvasProps): ReactNode {
           />
           {overlay ? <Overlay store={store} session={session} box={box} shapeDefs={registries.shapeDefs} routes={registries} /> : null}
           {execute === undefined ? null : <InlineTextEditor store={store} registries={registries} session={session} execute={execute} />}
+          {tools === undefined ? null : <QuickConnectMenu tools={tools} shapeDefs={registries.shapeDefs} canvas={ref} />}
         </>
       )}
     </main>

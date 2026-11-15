@@ -48,6 +48,8 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-overlay .fx-chrome-path-vertex { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1.5; }
 .fx-chrome-overlay .fx-chrome-path-vertex-selected { fill: var(--ui-accent); }
 .fx-chrome-overlay .fx-chrome-table-cells { fill: none; stroke: var(--ui-accent); stroke-width: 2; }
+.fx-chrome-overlay .fx-chrome-quick-connect-dot { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1.5; }
+.fx-chrome-overlay .fx-chrome-quick-connect-plus { stroke: var(--ui-accent); stroke-width: 2; stroke-linecap: round; }
 .fx-chrome-overlay .fx-chrome-route { fill: none; stroke: var(--ui-accent); stroke-width: 1; opacity: 0.5; }
 .fx-chrome-overlay .fx-chrome-route-selected { stroke-width: 2; opacity: 0.9; }
 .fx-chrome-overlay .fx-chrome-connector-end { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 2; }

@@ -11,6 +11,7 @@ import { type Camera, pageToScreen } from './camera.js';
 import { HANDLE_PX, placements, screenBox, selectionFrame } from './overlay-geometry.js';
 import { HandleMarks } from './overlay-marks.js';
 import type { ShapeDefs } from './param-handles.js';
+import { QuickConnectMarks } from './quick-connect-marks.js';
 import type { Session } from './session.js';
 import type { SnapGuide } from './snap/snap.js';
 
@@ -139,6 +140,7 @@ export function Overlay(props: OverlayProps): ReactNode {
         </g>
       )}
       <HandleMarks store={store} session={session} shapeDefs={shapeDefs} routes={routes} />
+      <QuickConnectMarks store={store} session={session} />
       {guides.map((g) => (
         <GuideMark key={`${g.axis}:${g.kind}:${g.at}:${g.distance}`} guide={g} camera={camera} />
       ))}

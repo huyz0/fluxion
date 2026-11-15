@@ -1429,6 +1429,15 @@ export type ProblemFix = {
 export function problemsOf(doc: DocumentFile, shapeDefs?: ShapeDefLookup): readonly Problem[];
 
 // @public
+export type QuickDrop = {
+    readonly source: RecordId;
+    readonly side: "n" | "e" | "s" | "w";
+    readonly from: Vec2;
+    readonly at: Vec2;
+    readonly screen: Vec2;
+};
+
+// @public
 export function readOption(field: OptionField, entry: string | boolean): OptionEntry;
 
 // @public
@@ -1564,6 +1573,7 @@ export type Session = {
     readonly grid: WritableSignal<boolean>;
     readonly pathEdit: WritableSignal<PathEditing | undefined>;
     readonly tableCells: WritableSignal<TableCellRange | undefined>;
+    readonly quickDrop: WritableSignal<QuickDrop | undefined>;
 };
 
 // @public

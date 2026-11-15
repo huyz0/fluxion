@@ -203,6 +203,18 @@ leg('FR-SCR-005 a master change updates every dependent screen', () =>
     () => tests('apps/studio/src/library/thumbnail.test.ts', { named: 'a master is not the thumbnail' }),
   ),
 );
+// quick-connect's outcomes, each a named case (M19.24)
+leg('FR-EDT-015 quick-connect joins a shape to another or to a new one from the mini library', () =>
+  tests('packages/editor/src/quick-connect.test.ts', {
+    named: [
+      'a hovered shape has a "+" beyond the middle of each side; a selected one has none',
+      'dragged onto another shape joins the two with a bound connector in one undo step',
+      'Same shape adds the source’s shape beyond the drop, joined, one undo step',
+      'Connector only leaves the end free at the drop',
+      'a press on a nearby selected shape’s handle resizes it',
+    ],
+  }),
+);
 const SPECS = ['layers.reorder', 'locks', 'text-regions.edit', 'path.edit-vertex', 'table.edit', 'masters.propagate', 'quick-connect', 'search.find-element'];
 for (const spec of SPECS) leg(`${spec}: Chromium, Firefox, WebKit; axe clean; no retries`, () => e2e([`e2e/${spec}.spec.ts`]));
 leg('FluxScript table, frame and master: examples/dsl/masters-tables.flux.yaml renders to its golden', () => {

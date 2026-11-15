@@ -11,6 +11,12 @@
       "packages/editor/src/inspector.tsx"
     ]
   },
+  "-oE-Ym": {
+    "message": "Rounded rectangle",
+    "origin": [
+      "packages/editor/src/quick-connect-menu.tsx"
+    ]
+  },
   "05McJv": {
     "message": "{0} (unavailable)",
     "origin": [
@@ -105,6 +111,12 @@
     "message": "The layers of this screen will be listed here.",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "30KLDI": {
+    "message": "Rectangle",
+    "origin": [
+      "packages/editor/src/quick-connect-menu.tsx"
     ]
   },
   "3nLdaX": {
@@ -250,6 +262,12 @@
     "message": "Hide {0} from presentation",
     "origin": [
       "packages/editor/src/navigator/screen-row.tsx"
+    ]
+  },
+  "9QURTo": {
+    "message": "Add a shape",
+    "origin": [
+      "packages/editor/src/quick-connect-menu.tsx"
     ]
   },
   "9Qtk7A": {
@@ -635,6 +653,12 @@
       "packages/editor/src/layers-tab.tsx"
     ]
   },
+  "JsJ25P": {
+    "message": "Connector only",
+    "origin": [
+      "packages/editor/src/quick-connect-menu.tsx"
+    ]
+  },
   "JxPdar": {
     "message": "Choose the license of the SVGs.",
     "origin": [
@@ -882,6 +906,12 @@
     "origin": [
       "packages/editor/src/problems-tab.tsx",
       "packages/editor/src/source-view/source-view.tsx"
+    ]
+  },
+  "T-jTW_": {
+    "message": "Diamond",
+    "origin": [
+      "packages/editor/src/quick-connect-menu.tsx"
     ]
   },
   "TJ5XC0": {
@@ -1891,6 +1921,12 @@
       "packages/editor/src/canvas.tsx"
     ]
   },
+  "pCotA7": {
+    "message": "Same shape",
+    "origin": [
+      "packages/editor/src/quick-connect-menu.tsx"
+    ]
+  },
   "pKmrF6": {
     "message": "The screens of this document will be listed here.",
     "origin": [
@@ -1968,6 +2004,12 @@
     "message": "Layout",
     "origin": [
       "packages/editor/src/layout-picker-section.tsx"
+    ]
+  },
+  "rp5GhR": {
+    "message": "Ellipse",
+    "origin": [
+      "packages/editor/src/quick-connect-menu.tsx"
     ]
   },
   "rvRcE_": {

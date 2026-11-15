@@ -17,6 +17,8 @@ export type ContextMenuProps = {
   readonly onPick: (item: MenuItem) => void;
   /** Close it. */
   readonly onClose: () => void;
+  /** Its accessible name (absent: "Context menu"). */
+  readonly label?: string | undefined;
 };
 
 /** The index after `at` going `step` through `count` items, wrapping. */
@@ -30,7 +32,7 @@ const placed = (y: number): CSSProperties =>
 
 /** The menu. */
 export function ContextMenu(props: ContextMenuProps): ReactNode {
-  const { items, at, keysOf, onPick, onClose } = props;
+  const { items, at, keysOf, onPick, onClose, label } = props;
   const menu = useRef<HTMLDivElement>(null);
   const buttons = () => [...(menu.current?.querySelectorAll('button') ?? [])];
   useEffect(() => {
@@ -66,7 +68,7 @@ export function ContextMenu(props: ContextMenuProps): ReactNode {
     <div
       ref={menu}
       role="menu"
-      aria-label={t`Context menu`}
+      aria-label={label ?? t`Context menu`}
       className="fx-chrome-picker fx-chrome-menu"
       // a long menu scrolls inside the window rather than running off it; asked for in the lower half it opens upward; the max
       // height holds its padding and border too, so an upward menu never ends above the window

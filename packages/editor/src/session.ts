@@ -60,6 +60,26 @@ export type Session = {
   readonly pathEdit: WritableSignal<PathEditing | undefined>;
   /** The selected cells of the one selected table (FR-SHP-014; a click on a selected table picks one, shift-click extends), if any. */
   readonly tableCells: WritableSignal<TableCellRange | undefined>;
+  /** A quick-connect drag dropped on nothing (FR-EDT-015): where, waiting for the mini library's choice; undefined otherwise. */
+  readonly quickDrop: WritableSignal<QuickDrop | undefined>;
+};
+
+/**
+ * A quick-connect drag dropped on nothing (FR-EDT-015): the connector to add, and the shape the mini library may add with it.
+ *
+ * @public
+ */
+export type QuickDrop = {
+  /** The shape the drag started from. */
+  readonly source: RecordId;
+  /** The side of it the "+" was on. */
+  readonly side: 'n' | 'e' | 's' | 'w';
+  /** Where the connector starts: that side's middle, page units. */
+  readonly from: Vec2;
+  /** Where it was dropped, page units. */
+  readonly at: Vec2;
+  /** The same point on the canvas, px from its top-left (where the mini library opens). */
+  readonly screen: Vec2;
 };
 
 /**
@@ -137,6 +157,7 @@ export function createSession(docId: string): Session {
     grid: writable(false),
     pathEdit: writable<PathEditing | undefined>(undefined),
     tableCells: writable<TableCellRange | undefined>(undefined),
+    quickDrop: writable<QuickDrop | undefined>(undefined),
   };
   // path editing ends when its shape stops being the whole selection, however the selection changed (FR-SHP-011)
   // so does a table's cell selection (FR-SHP-014)
