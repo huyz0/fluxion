@@ -32,7 +32,7 @@ async function fluxWithFont(source: string, artwork = false): Promise<string> {
     f1: { id: 'f1', type: 'asset', hash, mime: 'font/ttf', size: FIRA.length, name: 'FiraSans-Regular.ttf', font },
   };
   const label = { id: 'l1', type: 'element', kind: 'shape', screenId: 's1', index: 'a1', defId: 'sample:label', transform: { x: 40, y: 80, w: 320, h: 160 } };
-  const document = { schemaVersion: '1.7', records: artwork ? { ...records, l1: label } : records } as unknown as DocumentFile;
+  const document = { schemaVersion: '1.8', records: artwork ? { ...records, l1: label } : records } as unknown as DocumentFile;
   const assets = new Map([[hash, { bytes: FIRA, mime: 'font/ttf' }]]);
   const path = join(dir, `${source}${artwork ? '-artwork' : ''}.flux`);
   if (!artwork) {

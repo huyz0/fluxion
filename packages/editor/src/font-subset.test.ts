@@ -301,7 +301,7 @@ const t = (s: string) => ({ type: 'text', text: s });
 const f = (name: string) => ({ type: 'field', attrs: { name } });
 const doc = (...records: ({ id: string } & Record<string, unknown>)[]): DocumentFile =>
   ({
-    schemaVersion: '1.7',
+    schemaVersion: '1.8',
     records: Object.fromEntries(
       [{ id: 'd', type: 'document', title: 'Ünïcode' }, { id: 's1', type: 'screen', name: 'Intro', index: 'a0' }, ...records].map((r) => [r.id, r]),
     ),

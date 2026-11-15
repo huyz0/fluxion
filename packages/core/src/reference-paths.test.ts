@@ -37,6 +37,8 @@ const RECORDS: Record<string, Record<string, unknown>> = {
     style: { fill: { assetId: 'asset', color: '#fff' }, stroke: { width: 1 } },
     semantic: { slug: 'one', label: 'L' },
     name: 'shape',
+    fills: 'group',
+    icons: { logo: { assetId: 'asset' }, star: { defId: 'basic:star' } },
   },
   other: { id: 'other', type: 'element', kind: 'shape', screenId: 'screen', index: 'a1', semantic: { slug: 'one' }, parentId: 'missing' },
   line: {

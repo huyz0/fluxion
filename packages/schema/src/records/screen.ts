@@ -67,8 +67,12 @@ export type ScreenRecord = Extensible<{
   readonly viewport?: Rect;
   /** Background paint: colour, gradient, image or token. */
   readonly background?: Paint;
-  /** Master screen whose elements show behind this one. */
+  /** Master screen whose elements show behind this one; it applies only when its rules hold (ADR-0054). */
   readonly masterId?: RecordId;
+  /** `master`: a master screen, not a slide; other screens name it in `masterId` (schema 1.8, ADR-0054). */
+  readonly role?: 'master';
+  /** Hide the master's elements (not its background) on this screen (schema 1.8). */
+  readonly hideMasterElements?: boolean;
   /** Element this screen is a sub-screen of (drill-down). */
   readonly parentElementId?: RecordId;
   /** Section (group of screens) this screen belongs to. */
@@ -101,6 +105,8 @@ export const screenRecordSchema: z.ZodType<ScreenRecord> = checkedSchema<ScreenR
       viewport: rectSchema.optional(),
       background: paintSchema.optional(),
       masterId: recordIdSchema.optional(),
+      role: z.literal('master').optional(),
+      hideMasterElements: z.boolean().optional(),
       parentElementId: recordIdSchema.optional(),
       sectionId: recordIdSchema.optional(),
       themeId: recordIdSchema.optional(),

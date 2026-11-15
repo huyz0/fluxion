@@ -43,7 +43,7 @@ const font = (id: string, source: string, extra: Record<string, unknown> = {}) =
 });
 const docOf = (text: string, ...fonts: { id: string }[]): DocumentFile =>
   ({
-    schemaVersion: '1.7',
+    schemaVersion: '1.8',
     records: Object.fromEntries(
       [
         { id: 'd', type: 'document', title: 'T' },

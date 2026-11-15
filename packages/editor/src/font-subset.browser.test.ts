@@ -46,7 +46,7 @@ describe('subset rendering parity (FR-AST-003, ADR-0051)', () => {
     const source = await bytesOf(FIRA);
     const engines = await instantiateFontEngines({ harfbuzz: await bytesOf(HARFBUZZ), codec: await bytesOf(CODEC) }, { sha256, instantiate });
     const doc = {
-      schemaVersion: '1.7',
+      schemaVersion: '1.8',
       records: {
         e1: {
           id: 'e1',

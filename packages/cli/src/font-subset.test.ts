@@ -19,7 +19,7 @@ async function flux(): Promise<Uint8Array> {
     e1: { id: 'e1', type: 'element', kind: 'text', screenId: 's1', index: 'a0', transform: { x: 0, y: 0, w: 400, h: 60, rotation: 0 }, text },
     f1: { id: 'f1', type: 'asset', hash, mime: 'font/ttf', size: FIRA.length, name: 'FiraSans-Regular.ttf', font },
   };
-  const document = { schemaVersion: '1.7', records } as unknown as DocumentFile;
+  const document = { schemaVersion: '1.8', records } as unknown as DocumentFile;
   const written = await writeFlux({ document, assets: new Map([[hash, { bytes: FIRA, mime: 'font/ttf' }]]), appVersion: '1.0.0', hasher });
   if (!written.ok) throw new Error(written.error.reason);
   return written.value;

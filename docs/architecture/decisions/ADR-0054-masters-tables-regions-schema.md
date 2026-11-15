@@ -79,7 +79,8 @@ M19 needs fields the 1.7 schema lacks or leaves untyped:
 its content lives in `cells`, so no element can name it as `parentId`), with:
 
 - `rows: { h: number }[]` and `cols: { w: number }[]`, weights (> 0) whose share of the transform's height and width sizes each
-  row and column, so resizing the table scales them; at least one of each.
+  row and column, so resizing the table scales them; at least one and at most 500 of each, so the grid check (an occupancy
+  array over rows × cols that stops at the first overlap) does bounded work on a hostile file (security.md §1; M19.9 review F1).
 - `cells: { [key: "r:c"]: { text?: RichTextDoc; rowSpan?: number; colSpan?: number; style?: Style } }`, zero-based keys. A cell
   with spans covers the cells to its right and below; a covered key must be absent; spans stay inside the grid. Validation refuses
   overlaps and out-of-range keys.
@@ -148,7 +149,8 @@ validation in 1.8 and none loses a field that conforms. Fixture: `packages/schem
   conforming file unchanged but its version); JSON Schema and api report regenerated; validation refuses table overlaps,
   out-of-range cells and an image paint in a cell style or a `tableStyles` part; `core/masters.test.ts` (M19.22) resolves which master applies: none for a non-master target, a chain, a
   size mismatch or an infinite screen, each with its problem, and a `fills` naming no placeholder of the applied master drawn as
-  an ordinary element; a `texts` key naming the first region reported and not drawn; shape-pack cases: a definition with `iconSlots` parses under a 1.3 envelope, is refused under
+  an ordinary element.
+- M19.34 (shape-pack format 1.3, split from M19.9): a definition with `iconSlots` parses under a 1.3 envelope, is refused under
   1.2, and a 1.2 reader refuses the 1.3 envelope by version.
 - M19.9 core cases (`packages/core/src/hooks.test.ts`, `reference-paths.test.ts`): deleting a filled placeholder clears
   `fills`; deleting a master screen clears its dependants' `masterId` and their elements' `fills` and commits; deleting an asset
@@ -157,6 +159,7 @@ validation in 1.8 and none loses a field that conforms. Fixture: `packages/schem
 - M19.9 format case (`packages/format/src/asset-store.test.ts`): an asset used only by an icon slot is in `usedAssetIds` and
   `referencedAssetHashes`, so a save writes it.
 - M19.20–M19.23 and M19.17: render and e2e tests of tables, masters and regions; m19-complete's schema, table, masters and region legs.
+- M19.17: a `texts` key naming the first region is reported and not drawn.
 
 ## Links
 

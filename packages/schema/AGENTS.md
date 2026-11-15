@@ -21,9 +21,13 @@ Zod 4 schemas and TS types for every record; IDs; validation errors; JSON Schema
 
 - `LayoutSpec` on `screen`, `group` and `frame` (`records/layout-spec.ts`) and `document.source` (FluxScript salt and deferred sections), ADR-0031. `migrations/1.2-to-1.3.ts` drops non-conforming values there.
 
+## Version 1.8 (M19)
+
+- Masters, tables, text regions and icon slots, locks, paths (ADR-0054, ADR-0053): `screen.role`/`hideMasterElements`, element `placeholder`/`fills`, shape `texts`/`icons`/`path`, the `table` kind (a leaf; `cells` checked against the grid), theme `tableStyles`, `locks.aspect`/`select`; `assetFreeStyleSchema` for cell and table styles. `references.ts` checks `fills` and icon `assetId`s. `migrations/1.7-to-1.8.ts` removes non-conforming new fields and dangling `fills`/icon assets and renames a table that cannot be a 1.8 table to `legacy-table`. Fixtures: `v1.8/` (current), `migration/nonconforming-1.7`.
+
 ## Version 1.7 (M17)
 
-- A `LayoutSpec` of type `template` requires `id` (a `templates` registry id) and `items` (`TemplateItem`s: `label`, `detail?`, `children?`); both are typed on any spec (ADR-0047, FR-LAY-014). `migrations/1.6-to-1.7.ts` removes a template spec without them and a non-conforming `id`/`items` from any spec. The 1.2 → 1.3 step checks layouts with `layoutSpecShapeSchema` (type and options only). Fixtures: `v1.7/` (current), `migration/nonconforming-1.6`.
+- A `LayoutSpec` of type `template` requires `id` (a `templates` registry id) and `items` (`TemplateItem`s: `label`, `detail?`, `children?`); both are typed on any spec (ADR-0047, FR-LAY-014). `migrations/1.6-to-1.7.ts` removes a template spec without them and a non-conforming `id`/`items` from any spec. The 1.2 → 1.3 step checks layouts with `layoutSpecShapeSchema` (type and options only). Fixtures: `v1.7/`, `migration/nonconforming-1.6`.
 
 ## Version 1.6 (M17)
 

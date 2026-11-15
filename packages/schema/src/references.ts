@@ -9,7 +9,7 @@ type Path = readonly (string | number)[];
 
 const CONTAINERS = new Set(['group', 'frame', 'component']);
 const isContainerKind = (kind: unknown): boolean => typeof kind === 'string' && (CONTAINERS.has(kind) || kind.includes(':') || !CORE_LEAVES.has(kind));
-const CORE_LEAVES = new Set(['shape', 'connector', 'text', 'image']);
+const CORE_LEAVES = new Set(['shape', 'connector', 'text', 'image', 'table']);
 
 class References {
   readonly out: Diagnostic[] = [];
@@ -104,6 +104,13 @@ function checkCycles(c: References, elements: readonly Fields[]): void {
   }
 }
 
+/** Each icon slot's asset names an asset (schema 1.8, ADR-0054); a definition is the shape library's concern. */
+function checkIcons(c: References, el: Fields): void {
+  const icons = el['icons'];
+  if (typeof icons !== 'object' || icons === null) return;
+  for (const slot of Object.keys(icons).sort()) c.ref(el, ['icons', slot, 'assetId'], ['asset']);
+}
+
 function checkElements(c: References): void {
   const elements = c.of('element');
   for (const el of elements) {
@@ -112,6 +119,8 @@ function checkElements(c: References): void {
     c.ref(el, ['assetId'], ['asset']);
     c.ref(el, ['snapshotAssetId'], ['asset']);
     c.ref(el, ['style', 'fill', 'assetId'], ['asset']);
+    c.ref(el, ['fills'], ['element']);
+    checkIcons(c, el);
   }
   checkCycles(c, elements);
 }

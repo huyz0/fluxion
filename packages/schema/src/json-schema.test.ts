@@ -10,6 +10,6 @@ describe('the document JSON Schema (FR-AI-001)', () => {
     const schema = documentJsonSchema() as { required?: string[]; properties?: { [k: string]: unknown } };
     expect(schema.required).toEqual(['schemaVersion', 'records']);
     const text = JSON.stringify(schema);
-    for (const kind of ['shape', 'connector', 'group', 'frame', 'text', 'image', 'component']) expect(text).toContain(`"${kind}"`);
+    for (const kind of ['shape', 'connector', 'group', 'frame', 'text', 'image', 'component', 'table']) expect(text).toContain(`"${kind}"`);
   });
 });

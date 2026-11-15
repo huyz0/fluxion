@@ -46,11 +46,13 @@ const OWNED: ReadonlyArray<readonly [string, string, 'delete' | 'clear']> = [
   ['comment', 'targetId', 'delete'],
   ['screen', 'masterId', 'clear'],
   ['screen', 'parentElementId', 'clear'],
+  ['element', 'fills', 'clear'],
 ];
 
 /**
  * Records that belong to a deleted record go with it (a timeline's steps, an owner's interactions,
- * a target's comments); a screen's optional master or parent element is cleared (M3.14 review F1).
+ * a target's comments); a screen's optional master or parent element is cleared (M3.14 review F1), and so is an element's `fills` when its
+ * placeholder goes (ADR-0054).
  */
 /** Who points at what, as `OWNED` defines it: target id → [record, field, action]. */
 function ownedPointers({ tx, members }: HookContext): Map<string, Array<readonly [RecordId, string, 'delete' | 'clear']>> {

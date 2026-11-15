@@ -1,6 +1,6 @@
 import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { describe, expect, it } from 'vitest';
-import { createMemoryAssetStore, referencedAssetHashes, selectAssets } from './asset-store.js';
+import { createMemoryAssetStore, referencedAssetHashes, selectAssets, usedAssetIds } from './asset-store.js';
 import { writeFlux } from './flux-writer.js';
 import { sha256Hex as sha256 } from './sha256.js';
 import { encodeUtf8 } from './utf8.js';
@@ -111,6 +111,29 @@ describe('referenced assets', () => {
       e2: { id: id('e2'), type: 'element', kind: 'component', screenId: id('screen'), index: 'a2', snapshotAssetId: id('snap') } as AnyRecord,
     };
     expect(referencedAssetHashes({ ...doc, records })).toEqual([hashOf('b'), hashOf('c'), hashOf('e')]);
+  });
+
+  it('FR-FIL-004, FR-SHP-007: an asset only an icon slot names is used, so a save writes it; a slot holding a definition names none', async () => {
+    const doc = await documentWith(noise(50), 0);
+    const hashOf = (c: string) => c.repeat(64);
+    const asset = (rid: string, hash: string) => ({ id: id(rid), type: 'asset', hash, mime: 'image/png', size: 1, name: 'x.png' }) as AnyRecord;
+    const records: { [k: string]: AnyRecord } = {
+      ...doc.records,
+      logo: asset('logo', hashOf('f')),
+      e1: {
+        id: id('e1'),
+        type: 'element',
+        kind: 'shape',
+        screenId: id('screen'),
+        index: 'a1',
+        defId: 'basic:rect',
+        icons: { badge: { defId: 'basic:star' }, logo: { assetId: id('logo') } },
+        transform: { x: 0, y: 0, w: 1, h: 1 },
+      } as AnyRecord,
+    };
+    const withIcon = { ...doc, records };
+    expect(usedAssetIds(withIcon)).toEqual(new Set(['logo']));
+    expect(referencedAssetHashes(withIcon)).toEqual([hashOf('f')]);
   });
 
   it('FR-FIL-004: with no theme record to read the defaults from, every font asset is kept', async () => {

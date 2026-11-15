@@ -231,6 +231,8 @@ export const REFERENCE_PATHS: readonly (readonly string[])[] = [
   ['assetId'],
   ['snapshotAssetId'],
   ['style', 'fill', 'assetId'],
+  ['fills'],
+  ['icons'],
   ['connectorId'],
   ['elementId'],
   ['end'],

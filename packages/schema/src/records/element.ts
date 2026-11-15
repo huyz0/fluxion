@@ -4,6 +4,7 @@ import type { IndexKey } from '../fractional-index.js';
 import type { RecordId } from '../ids.js';
 import type { Extensible, Meta } from '../primitives.js';
 import type { RichTextDoc } from '../rich-text.js';
+import type { Style } from '../style.js';
 import type { AnchorDef, BoxedBase, ElementBase, Point, QualifiedName } from './element-base.js';
 import type { LayoutSpec } from './layout-spec.js';
 
@@ -40,6 +41,85 @@ export type ShapeElement = Extensible<
     readonly anchors?: readonly AnchorDef[];
     /** How the text fits its region (ADR-0018). */
     readonly textFit?: TextFit;
+    /** Text of the definition's text regions after the first, by region name; the first region's text is `text` (schema 1.8, ADR-0054). */
+    readonly texts?: { readonly [region: string]: RichTextDoc };
+    /** What fills the definition's icon slots, by slot name: a shape definition or an image asset (schema 1.8, ADR-0054). */
+    readonly icons?: { readonly [slot: string]: IconFill };
+    /** The outline a `core:path` shape owns (schema 1.8, ADR-0053). */
+    readonly path?: PathData;
+  }
+>;
+
+/**
+ * What fills an icon slot: a shape definition (an icon pack entry) or an image asset (ADR-0054).
+ *
+ * @public
+ */
+export type IconFill =
+  | Extensible<{
+      /** Shape definition drawn in the slot. */
+      readonly defId: QualifiedName;
+    }>
+  | Extensible<{
+      /** Image asset drawn in the slot. */
+      readonly assetId: RecordId;
+    }>;
+
+/**
+ * A path a shape owns (ADR-0053): an SVG path in a reference box, drawn scaled to the element's box.
+ *
+ * @public
+ */
+export type PathData = Extensible<{
+  /** SVG path data: M, L, Q, C and Z commands, absolute coordinates. */
+  readonly d: string;
+  /** Reference box width (\> 0). */
+  readonly w: number;
+  /** Reference box height (\> 0). */
+  readonly h: number;
+  /** Fill rule (default `nonzero`). */
+  readonly fillRule?: 'nonzero' | 'evenodd';
+}>;
+
+/**
+ * One cell of a table (ADR-0054); a spanning cell covers the cells right of and below it.
+ *
+ * @public
+ */
+export type TableCell = Extensible<{
+  /** Cell text. */
+  readonly text?: RichTextDoc;
+  /** Rows the cell spans (default 1). */
+  readonly rowSpan?: number;
+  /** Columns the cell spans (default 1). */
+  readonly colSpan?: number;
+  /** Cell style; no image paint (ADR-0054). */
+  readonly style?: Style;
+}>;
+
+/**
+ * A table: weighted rows and columns sizing its box, and cells keyed `"r:c"` (FR-SHP-014, ADR-0054).
+ *
+ * @public
+ */
+export type TableElement = Extensible<
+  BoxedBase & {
+    /** Element kind. */
+    readonly kind: 'table';
+    /** Row weights: each row's share of the box height. */
+    readonly rows: readonly Extensible<{
+      /** The row's weight (\> 0). */
+      readonly h: number;
+    }>[];
+    /** Column weights: each column's share of the box width. */
+    readonly cols: readonly Extensible<{
+      /** The column's weight (\> 0). */
+      readonly w: number;
+    }>[];
+    /** Cells by zero-based `"row:col"` key; a key a span covers is absent. */
+    readonly cells: { readonly [key: string]: TableCell };
+    /** A name in the theme's `tableStyles`. */
+    readonly tableStyle?: string;
   }
 >;
 
@@ -244,7 +324,16 @@ export type PluginElement = Extensible<
  *
  * @public
  */
-export type ElementRecord = ShapeElement | ConnectorElement | GroupElement | FrameElement | TextElement | ImageElement | ComponentElement | PluginElement;
+export type ElementRecord =
+  | ShapeElement
+  | ConnectorElement
+  | GroupElement
+  | FrameElement
+  | TextElement
+  | ImageElement
+  | ComponentElement
+  | TableElement
+  | PluginElement;
 
 /**
  * An element whose kind this version does not know and that is not a plugin kind (from a newer
@@ -274,14 +363,14 @@ export type UnknownElement = Extensible<{
  *
  * @public
  */
-export type CoreElementKind = 'shape' | 'connector' | 'group' | 'frame' | 'text' | 'image' | 'component';
+export type CoreElementKind = 'shape' | 'connector' | 'group' | 'frame' | 'text' | 'image' | 'component' | 'table';
 
 /**
  * The core element kinds.
  *
  * @public
  */
-export const ELEMENT_KINDS: readonly CoreElementKind[] = ['shape', 'connector', 'group', 'frame', 'text', 'image', 'component'];
+export const ELEMENT_KINDS: readonly CoreElementKind[] = ['shape', 'connector', 'group', 'frame', 'text', 'image', 'component', 'table'];
 
 /**
  * Whether `kind` is a core element kind.

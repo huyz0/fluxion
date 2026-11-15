@@ -28,7 +28,7 @@ async function input(source: string): Promise<SaveInput> {
     },
     f1: { id: 'f1', type: 'asset', hash, mime: 'font/ttf', size: bytes.length, name: 'FiraSans-Regular.ttf', font },
   };
-  const document = { schemaVersion: '1.7', records } as unknown as DocumentFile;
+  const document = { schemaVersion: '1.8', records } as unknown as DocumentFile;
   return { file: undefined, document, bytesOf: async (id) => (id === 'f1' ? { bytes, mime: 'font/ttf' } : undefined), hasher: webHasher, appVersion: '0.0.0' };
 }
 

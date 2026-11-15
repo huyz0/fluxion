@@ -54,22 +54,26 @@ export {
   type ElementRecord,
   type FrameElement,
   type GroupElement,
+  type IconFill,
   type ImageElement,
   isCoreElementKind,
   type Marker,
   type Markers,
+  type PathData,
   type PluginElement,
   type Route,
   type ShapeElement,
+  type TableCell,
+  type TableElement,
   type TextElement,
   type TextFit,
   type UnknownElement,
 } from './records/element.js';
 export type { AnchorDef, BoxedBase, ElementBase, Locks, Point, QualifiedName, Semantic } from './records/element-base.js';
 export { qualifiedNameSchema } from './records/element-base.js';
-export { anchorDefSchema } from './records/element-schemas.js';
+export { anchorDefSchema, pathDataSchema } from './records/element-schemas.js';
 export { type LayoutSpec, layoutSpecSchema, MAX_TEMPLATE_DEPTH, type TemplateItem, templateItemSchema } from './records/layout-spec.js';
-export type { AssetRecord, PluginRefRecord, ResourceRecord, ThemeRecord } from './records/resources.js';
+export type { AssetRecord, PluginRefRecord, ResourceRecord, TableStyle, ThemeRecord } from './records/resources.js';
 export {
   DEFAULT_SCREEN_SIZE,
   presetOf,
@@ -88,6 +92,7 @@ export { checkRichText, MAX_RICH_TEXT_DEPTH, type RichTextDoc, type RichTextIssu
 export { safeLinkUrl } from './safe-url.js';
 export { canonicalNumber, type DocumentError, MAX_JSON_DEPTH, type ParsedDocument, parseDocument, serializeDocument } from './serialize.js';
 export {
+  assetFreeStyleSchema,
   type Effect,
   type FontStyle,
   type Shadow,

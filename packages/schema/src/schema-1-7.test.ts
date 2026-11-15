@@ -18,20 +18,22 @@ describe('schema 1.7 (FR-LAY-014)', () => {
   it('FR-LAY-014: a 1.6 document migrates to a valid 1.7 one with its records unchanged and round-trips', () => {
     const r = migrate(v16);
     if (!r.ok) throw new Error(r.error.message);
-    expect(r.value.applied).toEqual(['1.6→1.7']);
-    expect(r.value.document.schemaVersion).toBe('1.7');
+    expect(r.value.applied).toEqual(['1.6→1.7', '1.7→1.8']);
+    expect(r.value.document.schemaVersion).toBe('1.8');
     expect(r.value.document.records).toEqual(v16.records);
     expect(validate(r.value.document)).toEqual([]);
     const again = parseDocument(serializeDocument(r.value.document as never));
     expect(again.ok && again.value.document).toEqual(r.value.document);
   });
 
-  it('FR-LAY-014: the 1.7 fixture holds a template layout spec with nested items, validates and round-trips', () => {
-    expect(validate(v17)).toEqual([]);
+  it('FR-LAY-014: the 1.7 fixture holds a template layout spec with nested items, validates once migrated and round-trips', () => {
+    const m = migrate(v17);
+    if (!m.ok) throw new Error(m.error.message);
+    expect(validate(m.value.document)).toEqual([]);
     expect(records(v17)['s3']?.['layout']).toMatchObject({ type: 'template', id: 'process.chevron', options: { direction: 'right' } });
     const r = parseDocument(JSON.stringify(v17));
     if (!r.ok) throw new Error(r.error.message);
-    expect(JSON.parse(serializeDocument(r.value.document))).toEqual(v17);
+    expect(JSON.parse(serializeDocument(r.value.document))).toEqual({ ...v17, schemaVersion: '1.8' });
   });
 
   it('FR-LAY-014: a 1.6 template spec that cannot be built again is removed, and a non-conforming id or items leaves its spec', () => {

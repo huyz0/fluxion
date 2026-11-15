@@ -199,6 +199,17 @@ export const styleSchema: z.ZodType<Style> = checkedSchema<Style>()(
   }),
 );
 
+/**
+ * Schema of a style that holds no asset: an element style whose fill is not an image paint. Table cell styles and theme table-style parts
+ * use it, so the only asset references are on the fixed paths the asset readers know (ADR-0054).
+ *
+ * @public
+ */
+export const assetFreeStyleSchema: z.ZodType<Style> = styleSchema.refine(
+  (style) => !(typeof style.fill === 'object' && style.fill !== null && 'type' in style.fill && style.fill.type === 'image'),
+  { message: 'an image paint is not allowed here', path: ['fill'] },
+);
+
 /** Schema of an element transform. */
 export const transformSchema: z.ZodType<Transform> = checkedSchema<Transform>()(
   z.looseObject({

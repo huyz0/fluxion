@@ -262,6 +262,58 @@ describe('integrity hooks (ADR-0014, FR-EXT-001)', () => {
     expect(store.has(asset.id as RecordId)).toBe(true);
   });
 
+  it("FR-SCR-005: deleting a placeholder clears the fills naming it; deleting a master clears its dependants' masterId and their fills, in one commit", () => {
+    const b = documentBuilder({ seed: 22 });
+    const master = b.screen();
+    const slide = b.screen();
+    const store = hookedStore(b.build());
+    const box = { x: 0, y: 0, w: 10, h: 10 };
+    const text = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 't' }] }] };
+    const el = (id: string, screenId: RecordId, index: string, extra: object) =>
+      ({ id, type: 'element', kind: 'text', screenId, index, transform: box, text, ...extra }) as unknown as AnyRecord;
+    const [p1, p2, f1, f2] = [rid('Plc', 1), rid('Plc', 2), rid('Fil', 1), rid('Fil', 2)];
+    expect(
+      store.transact('masters', (tx) => {
+        tx.patch(master, { role: 'master' });
+        tx.patch(slide, { masterId: master });
+        tx.put(el(p1, master, 'a0', { placeholder: 'title' }));
+        tx.put(el(p2, master, 'a1', { placeholder: 'body' }));
+        tx.put(el(f1, slide, 'a0', { fills: p1 }));
+        tx.put(el(f2, slide, 'a1', { fills: p2 }));
+      }).ok,
+    ).toBe(true);
+    expect(store.transact('delete placeholder', (tx) => tx.delete(p1 as RecordId)).ok).toBe(true);
+    expect(rec(store, f1 as RecordId)?.['fills']).toBeUndefined();
+    expect(rec(store, f2 as RecordId)?.['fills']).toBe(p2);
+    const r = store.transact('delete master', (tx) => tx.delete(master));
+    expect(r.ok, JSON.stringify(!r.ok && r.error)).toBe(true);
+    expect(store.has(p2 as RecordId)).toBe(false);
+    expect(rec(store, slide)?.['masterId']).toBeUndefined();
+    expect(rec(store, f2 as RecordId)?.['fills']).toBeUndefined();
+    expect(errors(store)).toEqual([]);
+  });
+
+  it('FR-SHP-007: deleting an asset only an icon slot uses is refused, as for any used asset', () => {
+    const b = documentBuilder({ seed: 23 });
+    const s = b.screen();
+    const store = hookedStore(b.build());
+    const asset = { id: rid('Ast', 2), type: 'asset', hash: 'b'.repeat(64), mime: 'image/png', size: 1, name: 'i.png' } as unknown as AnyRecord;
+    const shape = {
+      id: rid('Shp', 1),
+      type: 'element',
+      kind: 'shape',
+      screenId: s,
+      index: 'a0',
+      defId: 'basic:rect',
+      transform: { x: 0, y: 0, w: 1, h: 1 },
+      icons: { logo: { assetId: asset.id } },
+    } as unknown as AnyRecord;
+    expect(store.transact('add', (tx) => (tx.put(asset), tx.put(shape))).ok).toBe(true);
+    const r = store.transact('delete asset', (tx) => tx.delete(asset.id as RecordId));
+    expect(!r.ok && r.error.diagnostics.map((d) => `${d.code} ${d.path}`)).toContain(`FLX_REF_MISSING /records/${shape.id}/icons/logo/assetId`);
+    expect(store.has(asset.id as RecordId)).toBe(true);
+  });
+
   it('hooks run sorted by key, whatever the registration order', () => {
     const b = documentBuilder({ seed: 15 });
     const a = b.rect(b.screen());

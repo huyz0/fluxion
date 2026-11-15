@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { checkedSchema } from '../checked-schema.js';
 import type { RecordId } from '../ids.js';
 import { type Extensible, type Meta, metaSchema, recordIdSchema } from '../primitives.js';
+import { assetFreeStyleSchema, type Style } from '../style.js';
 
 /**
  * A binary asset (image, font, …); the record holds metadata, the file container holds bytes.
@@ -51,6 +52,24 @@ export type ThemeRecord = Extensible<{
   readonly tokens: { readonly [key: string]: unknown };
   /** Default styles by element kind and variant. */
   readonly defaults?: { readonly [key: string]: unknown };
+  /** Named table styles a table's `tableStyle` picks (schema 1.8, ADR-0054). */
+  readonly tableStyles?: { readonly [name: string]: TableStyle };
+}>;
+
+/**
+ * A theme's table style: style fragments for the header row, banded rows, borders and body cells (ADR-0054). No image paint.
+ *
+ * @public
+ */
+export type TableStyle = Extensible<{
+  /** The first row. */
+  readonly header?: Style;
+  /** Every second body row. */
+  readonly band?: Style;
+  /** Cell borders (its stroke). */
+  readonly border?: Style;
+  /** Every body cell. */
+  readonly cell?: Style;
 }>;
 
 /**
@@ -76,6 +95,15 @@ export type PluginRefRecord = Extensible<{
 }>;
 
 const tree = z.record(z.string(), z.unknown());
+/** Schema of a theme table style (ADR-0054). @internal */
+export const tableStyleSchema: z.ZodType<TableStyle> = checkedSchema<TableStyle>()(
+  z.looseObject({
+    header: assetFreeStyleSchema.optional(),
+    band: assetFreeStyleSchema.optional(),
+    border: assetFreeStyleSchema.optional(),
+    cell: assetFreeStyleSchema.optional(),
+  }),
+);
 const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 /** Schema of the `asset` record. */
@@ -96,7 +124,15 @@ export const assetRecordSchema: z.ZodType<AssetRecord> = checkedSchema<AssetReco
 
 /** Schema of the `theme` record. */
 export const themeRecordSchema: z.ZodType<ThemeRecord> = checkedSchema<ThemeRecord>()(
-  z.looseObject({ id: recordIdSchema, type: z.literal('theme'), meta: metaSchema.optional(), name: z.string(), tokens: tree, defaults: tree.optional() }),
+  z.looseObject({
+    id: recordIdSchema,
+    type: z.literal('theme'),
+    meta: metaSchema.optional(),
+    name: z.string(),
+    tokens: tree,
+    defaults: tree.optional(),
+    tableStyles: z.record(z.string().min(1), tableStyleSchema).optional(),
+  }),
 );
 
 /** Schema of the `plugin-ref` record. */

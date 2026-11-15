@@ -29,6 +29,9 @@ export type AnchorRef = AutoAnchor | FloatingAnchor | NamedAnchor | SideAnchor |
 export type AnyRecord = DocumentRecord | ScreenRecord | SectionRecord | ElementRecord | UnknownElement | BindingRecord | ResourceRecord | BehaviourRecord | UnknownRecord;
 
 // @public
+export const assetFreeStyleSchema: z.ZodType<Style>;
+
+// @public
 export type AssetRecord = Extensible<{
     readonly id: RecordId;
     readonly type: "asset";
@@ -145,7 +148,7 @@ export type ConnectorLabel = Extensible<{
 }>;
 
 // @public
-export type CoreElementKind = "shape" | "connector" | "group" | "frame" | "text" | "image" | "component";
+export type CoreElementKind = "shape" | "connector" | "group" | "frame" | "text" | "image" | "component" | "table";
 
 // @public
 export function createId(random: Random): RecordId;
@@ -262,13 +265,15 @@ export type ElementBase = {
     readonly matchKey?: string;
     readonly placement?: "auto" | "pinned";
     readonly hidden?: boolean;
+    readonly placeholder?: string;
+    readonly fills?: RecordId;
 };
 
 // @public
 export function elementFields(kind: string): readonly FieldDef[];
 
 // @public
-export type ElementRecord = ShapeElement | ConnectorElement | GroupElement | FrameElement | TextElement | ImageElement | ComponentElement | PluginElement;
+export type ElementRecord = ShapeElement | ConnectorElement | GroupElement | FrameElement | TextElement | ImageElement | ComponentElement | TableElement | PluginElement;
 
 // @public
 export type Err<E> = {
@@ -358,6 +363,13 @@ export type GradientStop = Extensible<{
 export type GroupElement = Extensible<BoxedBase & {
     readonly kind: "group";
     readonly layout?: LayoutSpec;
+}>;
+
+// @public
+export type IconFill = Extensible<{
+    readonly defId: QualifiedName;
+}> | Extensible<{
+    readonly assetId: RecordId;
 }>;
 
 // @public
@@ -452,6 +464,8 @@ export type Locks = Extensible<{
     readonly rotation?: boolean;
     readonly delete?: boolean;
     readonly edit?: boolean;
+    readonly aspect?: boolean;
+    readonly select?: boolean;
 }>;
 
 // @public
@@ -529,6 +543,17 @@ export type ParsedDocument = {
 
 // @public
 export function parseDocument(text: string): Result<ParsedDocument, DocumentError>;
+
+// @public
+export type PathData = Extensible<{
+    readonly d: string;
+    readonly w: number;
+    readonly h: number;
+    readonly fillRule?: "nonzero" | "evenodd";
+}>;
+
+// @public
+export const pathDataSchema: z.ZodType<PathData>;
 
 // @public
 export type PluginElement = Extensible<BoxedBase & {
@@ -700,6 +725,8 @@ export type ScreenRecord = Extensible<{
     readonly viewport?: Rect;
     readonly background?: Paint;
     readonly masterId?: RecordId;
+    readonly role?: "master";
+    readonly hideMasterElements?: boolean;
     readonly parentElementId?: RecordId;
     readonly sectionId?: RecordId;
     readonly themeId?: RecordId;
@@ -754,6 +781,13 @@ export type ShapeElement = Extensible<BoxedBase & {
     };
     readonly anchors?: readonly AnchorDef[];
     readonly textFit?: TextFit;
+    readonly texts?: {
+        readonly [region: string]: RichTextDoc;
+    };
+    readonly icons?: {
+        readonly [slot: string]: IconFill;
+    };
+    readonly path?: PathData;
 }>;
 
 // @public
@@ -844,6 +878,37 @@ export type SvgArtworkNode = {
 };
 
 // @public
+export type TableCell = Extensible<{
+    readonly text?: RichTextDoc;
+    readonly rowSpan?: number;
+    readonly colSpan?: number;
+    readonly style?: Style;
+}>;
+
+// @public
+export type TableElement = Extensible<BoxedBase & {
+    readonly kind: "table";
+    readonly rows: readonly Extensible<{
+        readonly h: number;
+    }>[];
+    readonly cols: readonly Extensible<{
+        readonly w: number;
+    }>[];
+    readonly cells: {
+        readonly [key: string]: TableCell;
+    };
+    readonly tableStyle?: string;
+}>;
+
+// @public
+export type TableStyle = Extensible<{
+    readonly header?: Style;
+    readonly band?: Style;
+    readonly border?: Style;
+    readonly cell?: Style;
+}>;
+
+// @public
 export type Tagged = Extensible<{
     readonly kind: string;
 }>;
@@ -884,6 +949,9 @@ export type ThemeRecord = Extensible<{
     };
     readonly defaults?: {
         readonly [key: string]: unknown;
+    };
+    readonly tableStyles?: {
+        readonly [name: string]: TableStyle;
     };
 }>;
 

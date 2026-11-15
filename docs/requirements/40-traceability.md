@@ -40,7 +40,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-002 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/player.keyboard-nav.spec.ts` +7 |
 | FR-SCR-003 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.navigator.spec.ts` +3 |
 | FR-SCR-004 | S | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.sections.spec.ts` +4 |
-| FR-SCR-005 | S | R3 | M19 | [10-document-and-file.md](10-document-and-file.md) | — |
+| FR-SCR-005 | S | R3 | M19 | [10-document-and-file.md](10-document-and-file.md) | `packages/core/src/hooks.test.ts` +3 |
 | FR-SCR-006 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.notes.spec.ts` +2 |
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -67,14 +67,14 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/round.test.ts` +7 |
 | FR-SHP-005 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/hit.test.ts`, `packs/basic/src/hit.test.ts` |
 | FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/text.inline-edit.spec.ts` +9 |
-| FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-SHP-008 | M | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/hooks.test.ts` +2 |
+| FR-SHP-008 | M | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/schema/src/schema-1-8.test.ts` |
 | FR-SHP-009 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-SHP-010 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-SHP-010 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/schema/src/schema-1-8.test.ts` |
 | FR-SHP-011 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-012 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/render/src/image-view.browser.test.tsx` |
 | FR-SHP-013 | M | R6 | M27 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-SHP-014 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
+| FR-SHP-014 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/schema/src/schema-1-8.test.ts` |
 | FR-SHP-015 | S | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-016 | C | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +4 |
@@ -323,7 +323,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | NFR-PORT-005 | M | R0 | M1 | [30-non-functional.md](30-non-functional.md) | `packages/cli/src/svg-witness-launch.test.ts` +4 |
 | NFR-PORT-006 | S | R8 | M32 | [30-non-functional.md](30-non-functional.md) | `tests/harness/ci-workflow.test.mjs` |
 | NFR-REL-001 | M | R1 | M10 | [30-non-functional.md](30-non-functional.md) | `apps/studio/src/autosave/autosave-bar.test.tsx` +7 |
-| NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/embed-used.test.ts` +18 |
+| NFR-REL-002 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/format/src/embed-used.test.ts` +19 |
 | NFR-REL-003 | M | R0 | M3 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/undo-property.test.ts` |
 | NFR-REL-004 | M | R6 | M27 | [30-non-functional.md](30-non-functional.md) | — |
 | NFR-REL-005 | M | R0 | M2 | [30-non-functional.md](30-non-functional.md) | `packages/core/src/bootstrap.test.ts` +12 |

@@ -73,6 +73,10 @@ export type Locks = Extensible<{
   readonly delete?: boolean;
   /** Content cannot be edited. */
   readonly edit?: boolean;
+  /** Resizes keep the aspect ratio (schema 1.8, FR-SHP-008). */
+  readonly aspect?: boolean;
+  /** Cannot be selected by click or marquee on the canvas; the layers panel still selects it (schema 1.8, FR-SHP-008). */
+  readonly select?: boolean;
 }>;
 
 /**
@@ -133,6 +137,10 @@ export type ElementBase = {
   readonly placement?: 'auto' | 'pinned';
   /** Hidden elements are not rendered. */
   readonly hidden?: boolean;
+  /** On a master screen's element: the placeholder name a screen element fills (schema 1.8, ADR-0054). */
+  readonly placeholder?: string;
+  /** The master element (a placeholder) this element takes the place of on its screen (schema 1.8, ADR-0054). */
+  readonly fills?: RecordId;
 };
 
 /**

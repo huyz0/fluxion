@@ -44,7 +44,7 @@ export function createMemoryAssetStore(hasher: ContentHasher): AssetStore {
   };
 }
 
-/** The places a record names an asset record (`references.ts` in `@fluxion/schema` checks the same fields). */
+/** The fixed places a record names an asset record; with every icon slot's `assetId` (`iconAssetIds`), the fields `references.ts` in `@fluxion/schema` checks. */
 const ASSET_FIELDS: readonly (readonly string[])[] = [['assetId'], ['snapshotAssetId'], ['style', 'fill', 'assetId'], ['background', 'assetId']];
 
 /** The value at `path` inside `value`, if every step is an object. */
@@ -59,6 +59,16 @@ function isUsedFont(font: unknown, used: ReadonlySet<string> | undefined): boole
   return typeof family === 'string' && used.has(normalise(family));
 }
 
+/** The assets an element's icon slots name (schema 1.8, ADR-0054): a slot name varies, so no fixed path reaches it. */
+function iconAssetIds(record: AnyRecord): string[] {
+  const icons = at(record, ['icons']);
+  if (typeof icons !== 'object' || icons === null) return [];
+  return Object.values(icons).flatMap((icon) => {
+    const target = at(icon, ['assetId']);
+    return typeof target === 'string' ? [target] : [];
+  });
+}
+
 /** The ids of the asset records an element or a screen names in one of the fields the schema's referential check knows. */
 function namedAssetIds(records: readonly AnyRecord[]): Set<string> {
   const named = new Set<string>();
@@ -67,13 +77,14 @@ function namedAssetIds(records: readonly AnyRecord[]): Set<string> {
       const target = at(record, path);
       if (typeof target === 'string') named.add(target);
     }
+    for (const target of iconAssetIds(record)) named.add(target);
   }
   return named;
 }
 
 /**
  * The ids of the asset records a document uses: those an element or a screen names in one of the fields the schema's referential check
- * knows (`assetId`, `snapshotAssetId`, a fill's `assetId`, a screen background's `assetId`), and every font asset record of a family the text
+ * knows (`assetId`, `snapshotAssetId`, a fill's `assetId`, a screen background's `assetId`, an icon slot's `assetId`), and every font asset record of a family the text
  * uses (`usedFontFamilies`; when that cannot be told, every font asset). A string that merely equals an asset's id (an index, a name) is not a
  * reference. What this leaves out is what the asset manager offers to remove, and what a save does not write.
  *

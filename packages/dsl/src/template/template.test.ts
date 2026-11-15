@@ -100,7 +100,7 @@ describe('patch setLayout with a template (FR-LAY-014, FR-AI-001)', () => {
 
   it('FR-LAY-014: WHEN a template is built into a screen with no slug and a mixed-case id THE SYSTEM SHALL name its nodes with valid slugs', () => {
     const screen = { id: 'ScrAb1', type: 'screen', index: 'a1', name: 'Made in the editor' };
-    const store = createStore({ schemaVersion: '1.7', records: { doc: { id: 'doc', type: 'document', title: 'T' }, ScrAb1: screen } } as never);
+    const store = createStore({ schemaVersion: '1.8', records: { doc: { id: 'doc', type: 'document', title: 'T' }, ScrAb1: screen } } as never);
     const done = command.run(
       { store },
       { patch: { flux: 1, ops: [{ op: 'setLayout', scope: '#ScrAb1', layout: { type: 'template', id: 'process.basic', items: ['Plan', 'Build'] } }] } },
@@ -110,7 +110,7 @@ describe('patch setLayout with a template (FR-LAY-014, FR-AI-001)', () => {
     expect(slugs).toEqual(['scrab1-step-0', 'scrab1-step-1']);
     // an id that starts with a digit, '_' or '-' (a fifth of the generated ones) gives a slug that starts with a letter
     const odd = createStore({
-      schemaVersion: '1.7',
+      schemaVersion: '1.8',
       records: { doc: { id: 'doc', type: 'document', title: 'T' }, '3fA_xY': { ...screen, id: '3fA_xY' } },
     } as never);
     expect(
