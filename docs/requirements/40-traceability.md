@@ -40,7 +40,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SCR-002 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/player.keyboard-nav.spec.ts` +7 |
 | FR-SCR-003 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.navigator.spec.ts` +3 |
 | FR-SCR-004 | S | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.sections.spec.ts` +4 |
-| FR-SCR-005 | S | R3 | M19 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/library/thumbnail.test.ts` +16 |
+| FR-SCR-005 | S | R3 | M19 | [10-document-and-file.md](10-document-and-file.md) | `apps/studio/src/library/thumbnail.test.ts` +17 |
 | FR-SCR-006 | M | R1 | M8 | [10-document-and-file.md](10-document-and-file.md) | `e2e/screens.notes.spec.ts` +2 |
 | FR-SCR-007 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
 | FR-SCR-008 | S | R5 | M25 | [10-document-and-file.md](10-document-and-file.md) | — |
@@ -74,7 +74,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-011 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/path.edit-vertex.spec.ts` +5 |
 | FR-SHP-012 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/render/src/image-view.browser.test.tsx` |
 | FR-SHP-013 | M | R6 | M27 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
-| FR-SHP-014 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/table.edit.spec.ts` +7 |
+| FR-SHP-014 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/table.edit.spec.ts` +8 |
 | FR-SHP-015 | S | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-SHP-016 | C | R6 | M28 | [11-shapes-and-library.md](11-shapes-and-library.md) | — |
 | FR-LIB-001 | M | R1 | M8 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +4 |
@@ -137,7 +137,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ARR-003 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +3 |
 | FR-ARR-004 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +3 |
 | FR-ARR-005 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/snapping.smart-guides.spec.ts` +3 |
-| FR-ARR-006 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/commands/frames.test.ts` +5 |
+| FR-ARR-006 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/commands/frames.test.ts` +6 |
 | FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/commands/format-painter.test.ts` +2 |
 | FR-ARR-008 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layers.reorder.spec.ts` +3 |
 | FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +6 |
@@ -258,7 +258,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-PKG-004 | S | R6 | M27 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-PKG-005 | S | R8 | M33 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-DSL-001 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/compile.test.ts` +6 |
-| FR-DSL-002 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/hash/stable-id.test.ts` +6 |
+| FR-DSL-002 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/core/src/hash/stable-id.test.ts` +7 |
 | FR-DSL-003 | M | R4 | M22 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-004 | M | R5 | M24 | [20-ai-authoring.md](20-ai-authoring.md) | — |
 | FR-DSL-005 | M | R2 | M12 | [20-ai-authoring.md](20-ai-authoring.md) | `packages/dsl/src/place/place.test.ts` +2 |

@@ -1,0 +1,33 @@
+flux: 1
+title: Quarterly plan
+uses: [basic]
+screens:
+  - id: plan
+    title: The plan for the quarter
+    master: deck
+    nodes:
+      heading:  { text: The plan for the quarter, fills: title-slot, pin: { x: 120, y: 160, w: 1680, h: 100 } }
+      budget:
+        table:
+          rows:
+            - [Stream, Owner, Weeks]
+            - [Editor, Ada, 6]
+            - [Present mode, Lin, 4]
+            - [{ text: Shared work across both streams, colSpan: 2 }, null, 3]
+          widths: [2, 1, 1]
+          tableStyle: banded
+        alt: Budget by stream
+        pin: { x: 120, y: 320, w: 900, h: 320 }
+      risk:     { shape: rounded-rect, label: Fonts may slip, tone: warning, pin: { x: 1140, y: 360 } }
+      overflow: { shape: rect, label: Clipped at the frame's edge, pin: { x: 1500, y: 560, w: 480, h: 120 } }
+    groups:
+      risks:    { label: Risks, frame: true, clip: true, contains: [risk, overflow], pin: { x: 1100, y: 320, w: 700, h: 320 } }
+    edges:
+      - budget -> risks
+  - id: deck
+    title: Deck master
+    role: master
+    nodes:
+      band:       { shape: rect, tone: accent, pin: { x: 0, y: 0, w: 1920, h: 80 } }
+      title-slot: { shape: rect, label: Title, placeholder: title, style: dashed, pin: { x: 120, y: 160, w: 1680, h: 100 } }
+      footer:     { text: Fluxion quarterly review, pin: { x: 120, y: 980, w: 600, h: 40 } }

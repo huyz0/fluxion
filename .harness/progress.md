@@ -4964,3 +4964,9 @@ round-allowance: M19.25 a fourth review round under Huy's 2026-11-05T11:04:52Z d
 - `ModeSwitch` returns void again (presentFrom reads the mode); `PresentCtx` and `presentFrom` lose @public (not exported).
 - Core screen-order.ts, cli render.ts and editor master-problems.ts use `isMasterScreen`.
 - Cases in editor master-edit.test.ts: Close master's navigator-order fallback (the lowest id in a section), a loaded group placeholder with no hint and no fill. m19-complete's FR-SCR-005 leg names M19.45's and M19.46's cases.
+
+## 2026-11-15 M19.26: FluxScript keys for masters, placeholders, tables and frames (ADR-0219)
+- Screen `role: master` and `master: <id>`; node `placeholder` and `fills`; node `table: { rows, widths, heights, tableStyle }` (a cell is text, null or { text, rowSpan, colSpan }); group `frame: true` with `pin` and `clip`. Resolve checks `master:` names a master screen of the file and `fills:` a placeholder of it.
+- Place lays a frame's loose members out inside its pinned box. Decompile v0 writes all of them back; a frame with padding or a turn, and a cell with a style, stay outside the subset.
+- examples/dsl/masters-tables.flux.yaml with its golden; examples/masters-tables.flux.json is its compile (a test keeps them equal) and joins the parity EXAMPLES; the every-screen parity case counts slides only (a master is not presented).
+- Key table, JSON schema (specs/schema), TextMate grammar, cheat sheet, authoring guide and the Writing FluxScript guide list the keys. The source-merge fixture's frame gets padding so it stays outside the subset.

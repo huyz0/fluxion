@@ -205,19 +205,35 @@ function framesFor(c: Container, pins: readonly Box[]): readonly Box[] {
   const at = bounds(pins);
   const f = c.screen.frame;
   if (c.record.type === 'screen') return [f];
+  // a frame lays its members out inside its own box (ADR-0219)
+  if (c.record.kind === 'frame' && finite(c.record.transform)) return [c.record.transform];
   if (!at) return [{ x: 0, y: 0, w: 0, h: 0 }];
   return [at, { ...at, y: f.y }, f];
 }
 
-/** Member `m` of `c` as a layout node: a group is laid out inside first and sized to its members; it is pinned when it holds a pin. */
-function nodeOf(ctx: Ctx, c: Container, m: El, order: number): LayoutNode {
-  let pinned = m.placement === 'pinned';
-  if (m.kind === 'group') {
-    pinned = arrange(ctx, { record: m, screen: c.screen, path: `${c.screen.path}/groups/${m.semantic?.slug ?? m.id}` });
+type Inner = (ctx: Ctx, c: Container, m: El) => boolean;
+
+/** How each container kind lays out its members first; true when it is pinned after. A group is sized to its members and pinned when it
+ * holds a pin; a frame keeps its pinned box, its members laid out in it and then settled (ADR-0052, ADR-0219). */
+const CONTAINERS: { readonly [kind: string]: Inner } = {
+  group: (ctx, c, m) => {
+    const pinned = arrange(ctx, { record: m, screen: c.screen, path: `${c.screen.path}/groups/${m.semantic?.slug ?? m.id}` });
     const inner = bounds((ctx.children.get(m.id) ?? []).flatMap((x) => ctx.boxes.get(x.id) ?? []));
     if (inner) ctx.boxes.set(m.id, inner);
     if (pinned) settle(ctx, c, m.id);
-  }
+    return pinned;
+  },
+  frame: (ctx, c, m) => {
+    arrange(ctx, { record: m, screen: c.screen, path: `${c.screen.path}/groups/${m.semantic?.slug ?? m.id}` });
+    settle(ctx, c, m.id);
+    return m.placement === 'pinned';
+  },
+};
+
+/** Member `m` of `c` as a layout node: a container is laid out inside first (CONTAINERS); a leaf is pinned when it is. */
+function nodeOf(ctx: Ctx, c: Container, m: El, order: number): LayoutNode {
+  const inner = m.kind === undefined ? undefined : CONTAINERS[m.kind];
+  const pinned = inner ? inner(ctx, c, m) : m.placement === 'pinned';
   return { id: m.id, box: ctx.boxes.get(m.id) as Box, order, ...(pinned ? { pinned: true } : {}) };
 }
 

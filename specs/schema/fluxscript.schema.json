@@ -176,6 +176,15 @@
             "notes": {
               "type": "string"
             },
+            "role": {
+              "const": "master",
+              "description": "a master screen: not a slide; other screens draw it behind them"
+            },
+            "master": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "the id of the master screen this screen draws behind it"
+            },
             "kind": {
               "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
             },
@@ -283,6 +292,84 @@
         "alt": {
           "type": "string"
         },
+        "table": {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": [
+                        "string",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        },
+                        "rowSpan": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "a whole number of rows or columns"
+                        },
+                        "colSpan": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "a whole number of rows or columns"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "minItems": 1,
+              "maxItems": 500
+            },
+            "widths": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "minItems": 1,
+              "maxItems": 500
+            },
+            "heights": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "minItems": 1,
+              "maxItems": 500
+            },
+            "tableStyle": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "rows"
+          ],
+          "additionalProperties": false,
+          "description": "rows of cells (text, null for none, or { text, rowSpan, colSpan }), with column widths and row heights as weights"
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "on a master's node: the placeholder's name"
+        },
+        "fills": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "the slug of the master's placeholder node this node takes the place of"
+        },
         "component": {
           "description": "kept but not compiled yet (FLX_DSL_NOT_YET)"
         },
@@ -318,6 +405,11 @@
         {
           "required": [
             "label"
+          ]
+        },
+        {
+          "required": [
+            "table"
           ]
         },
         {
@@ -397,6 +489,36 @@
             "type"
           ],
           "description": "a layout algorithm by name; the other keys are its options"
+        },
+        "frame": {
+          "type": "boolean",
+          "description": "true: a frame, a container with its own box (pin) that clips its members"
+        },
+        "clip": {
+          "type": "boolean",
+          "description": "a frame's clip (default true)"
+        },
+        "pin": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "w": {
+              "type": "number"
+            },
+            "h": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [],

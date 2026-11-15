@@ -10,6 +10,7 @@ import { isToken, isValidToken, type Theme, type Token, type TokenGroup } from '
 import type { EdgeAst, FluxAst, GroupAst, LayoutAst, NodeAst, ScreenAst } from '../read/ast.js';
 import type { Resolution } from '../resolve/resolve.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
+import { contentOf, slotOf, tableSize } from './containers.js';
 import { anchorOf, opStyle, paintOf, styleOf } from './style.js';
 
 /**
@@ -128,7 +129,7 @@ function meta(ctx: Ctx, ast: FluxAst, themeId: RecordId, salt: string): void {
 
 /** A node's box: its pin, else the origin; its size the pin's, else its shape's default, else the fixed default. */
 function transformOf(ctx: Ctx, n: NodeAst, defId: string | undefined): Transform {
-  const size = (defId && ctx.registries?.shapeDefs.get(defId)?.defaultSize) || DEFAULT_SIZE;
+  const size = n.table ? tableSize(n.table.value) : (defId && ctx.registries?.shapeDefs.get(defId)?.defaultSize) || DEFAULT_SIZE;
   const pin = n.pin?.value;
   return { x: pin?.x ?? 0, y: pin?.y ?? 0, w: pin?.w ?? size.w, h: pin?.h ?? size.h };
 }
@@ -141,6 +142,9 @@ function semanticOf(n: NodeAst, name: string | undefined): Rec {
 /** A shape's parameters (what a template gave it); a text element has none. */
 const paramsOf = (n: NodeAst, defId: unknown): Rec => (defId && n.params ? { params: n.params } : {});
 
+/** A node's element kind: a table, a shape (with a resolved shape) or a text element. */
+const kindOf = (n: NodeAst, defId: string | undefined): string => (n.table ? 'table' : defId ? 'shape' : 'text');
+
 /** A node as a shape element (with a resolved shape) or a text element (text, or a label alone); an unresolved shape gives nothing. */
 function node(ctx: Ctx, n: NodeAst, screenId: RecordId): Pending | undefined {
   const defId = ctx.resolution.shapes.get(n.slug.value);
@@ -152,12 +156,13 @@ function node(ctx: Ctx, n: NodeAst, screenId: RecordId): Pending | undefined {
     id: ctx.id(idKeys.node(n.slug.value)),
     type: 'element',
     screenId,
-    kind: defId ? 'shape' : 'text',
+    kind: kindOf(n, defId),
     ...(defId ? { defId } : {}),
     // alt is the accessible name; the label is the shown text
     semantic: semanticOf(n, name),
     ...paramsOf(n, defId),
-    ...(content === undefined ? {} : { text: richText(content) }),
+    ...contentOf(n, content, richText),
+    ...slotOf(n, (slug) => ctx.id(idKeys.node(slug))),
     ...(style ? { style } : {}),
     placement: n.pin ? 'pinned' : 'auto',
     transform: transformOf(ctx, n, defId),
@@ -172,13 +177,15 @@ function group(ctx: Ctx, g: GroupAst, screenId: RecordId): Pending {
     id: ctx.id(idKeys.node(g.slug.value)),
     type: 'element',
     screenId,
-    kind: 'group',
+    kind: g.frame ? 'frame' : 'group',
     semantic: { slug: g.slug.value, ...(g.label ? { label: g.label.value } : {}) },
     ...(g.label ? { text: richText(g.label.value) } : {}),
     ...(style ? { style } : {}),
     ...(g.layout ? { layout: layoutOf(g.layout) } : {}),
-    placement: 'auto',
-    transform: { x: 0, y: 0, w: 0, h: 0 },
+    ...(g.clip ? { clip: g.clip.value } : {}),
+    // a frame's box is its own (ADR-0052); a group's is its members' bounds
+    placement: g.pin ? 'pinned' : 'auto',
+    transform: g.pin ? { x: g.pin.value.x, y: g.pin.value.y, w: g.pin.value.w ?? 0, h: g.pin.value.h ?? 0 } : { x: 0, y: 0, w: 0, h: 0 },
   };
   return { record, range: g.slug.range };
 }
@@ -288,6 +295,8 @@ function screen(ctx: Ctx, s: ScreenAst, i: number, index: string | undefined): v
       ...(s.layout ? { layout: layoutOf(s.layout) } : {}),
       ...(s.background ? { background: paintOf(s.background.value) } : {}),
       ...(s.notes ? { notes: richText(s.notes.value) } : {}),
+      ...(s.role ? { role: s.role.value } : {}),
+      ...(s.master ? { masterId: ctx.id(idKeys.screen(s.master.value)) } : {}),
     },
     s.range,
   );

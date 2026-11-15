@@ -190,6 +190,40 @@ describe('examples/dsl/templates-all.flux.yaml', () => {
   });
 });
 
+describe('examples/dsl/masters-tables.flux.yaml', () => {
+  const STUDIO = join(import.meta.dirname, '..', '..', 'examples', 'masters-tables.flux.json');
+
+  it('FR-SHP-014, FR-SCR-005, FR-ARR-006: a master, a table and a clipping frame are drawn as the golden SVG (ADR-0219)', async () => {
+    const svg = await matchesGolden('masters-tables');
+    const records = Object.values((run(readFileSync(join(DIR, 'masters-tables.flux.yaml'), 'utf8')).doc as DocumentFile).records) as {
+      type: string;
+      kind?: string;
+      role?: string;
+      masterId?: string;
+      clip?: boolean;
+      fills?: string;
+      cells?: object;
+    }[];
+    const master = records.find((r) => r.role === 'master') as { id?: string } | undefined;
+    expect(records.filter((r) => r.type === 'screen' && r.masterId === master?.id)).toHaveLength(1);
+    expect(records.some((r) => r.kind === 'table' && Object.keys(r.cells ?? {}).length === 11)).toBe(true);
+    expect(records.some((r) => r.kind === 'frame' && r.clip === true)).toBe(true);
+    expect(records.some((r) => r.fills !== undefined)).toBe(true);
+    // one page: the master is drawn behind its screen, not as a slide; the filled placeholder is not drawn; the overflowing member is
+    // drawn inside the frame (whose members' box clips it, render/container-views.tsx)
+    expect(svg.match(/data-screen-id=/g)).toHaveLength(1);
+    expect(svg).toContain('Fluxion quarterly review');
+    expect(svg).not.toContain('>\n          Title\n');
+    expect(svg).toMatch(/data-kind="frame"[\s\S]*class="fx-members"[\s\S]*Clipped at the frame's edge/);
+    expect(svg).toContain('Shared work across both streams');
+  });
+
+  it('FR-SCR-005: the studio example examples/masters-tables.flux.json is this example compiled', () => {
+    const r = run(readFileSync(join(DIR, 'masters-tables.flux.yaml'), 'utf8'));
+    expect(readFileSync(STUDIO, 'utf8')).toBe(bytes(r));
+  });
+});
+
 describe('examples/dsl/routing-showcase.flux.yaml', () => {
   it('FR-CON-008, FR-CON-011: the showcase is drawn as its golden SVG, with a hop (an arc and a gap), fanned connectors and spread ends (FR-ANC-007)', async () => {
     const svg = await matchesGolden('routing-showcase');

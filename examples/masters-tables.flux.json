@@ -1,0 +1,881 @@
+{
+  "records": {
+    "01juEngAtRB8wyUaaRvkVH": {
+      "id": "01juEngAtRB8wyUaaRvkVH",
+      "index": "a1",
+      "meta": {
+        "slug": "deck"
+      },
+      "name": "Deck master",
+      "role": "master",
+      "type": "screen"
+    },
+    "26rs6gn3v7RliT0RAIpSAM": {
+      "defaults": {
+        "*": {
+          "font": {
+            "color": "{color.text}",
+            "family": "{font.body}",
+            "lineHeight": "{font.line-height.normal}",
+            "size": "{font.size.md}"
+          }
+        },
+        "connector": {
+          "stroke": {
+            "color": "{color.connector}",
+            "width": "{stroke.regular}"
+          }
+        },
+        "frame": {
+          "fill": "{color.surface}",
+          "stroke": {
+            "width": 0
+          }
+        },
+        "screen": {
+          "background": "{color.background}"
+        },
+        "shape": {
+          "fill": "{color.surface}",
+          "radius": "{radius.none}",
+          "stroke": {
+            "color": "{color.text}",
+            "width": "{stroke.regular}"
+          }
+        }
+      },
+      "id": "26rs6gn3v7RliT0RAIpSAM",
+      "name": "light",
+      "tokens": {
+        "color": {
+          "accent-1": {
+            "$type": "color",
+            "$value": "#0891b2"
+          },
+          "accent-2": {
+            "$type": "color",
+            "$value": "#16a34a"
+          },
+          "accent-3": {
+            "$type": "color",
+            "$value": "#ca8a04"
+          },
+          "accent-4": {
+            "$type": "color",
+            "$value": "#ea580c"
+          },
+          "accent-5": {
+            "$type": "color",
+            "$value": "#db2777"
+          },
+          "accent-6": {
+            "$type": "color",
+            "$value": "#4f46e5"
+          },
+          "background": {
+            "$type": "color",
+            "$value": "#ffffff"
+          },
+          "connector": {
+            "$type": "color",
+            "$value": "#334155"
+          },
+          "danger": {
+            "$type": "color",
+            "$value": "#dc2626"
+          },
+          "info": {
+            "$type": "color",
+            "$value": "#0284c7"
+          },
+          "muted": {
+            "$type": "color",
+            "$value": "#64748b"
+          },
+          "primary": {
+            "$type": "color",
+            "$value": "#2563eb"
+          },
+          "secondary": {
+            "$type": "color",
+            "$value": "#7c3aed"
+          },
+          "success": {
+            "$type": "color",
+            "$value": "#16a34a"
+          },
+          "surface": {
+            "$type": "color",
+            "$value": "#f8fafc"
+          },
+          "text": {
+            "$type": "color",
+            "$value": "#0f172a"
+          },
+          "warning": {
+            "$type": "color",
+            "$value": "#d97706"
+          }
+        },
+        "font": {
+          "body": {
+            "$type": "fontFamily",
+            "$value": [
+              "Inter",
+              "system-ui",
+              "sans-serif"
+            ]
+          },
+          "heading": {
+            "$type": "fontFamily",
+            "$value": [
+              "Inter",
+              "system-ui",
+              "sans-serif"
+            ]
+          },
+          "line-height": {
+            "normal": {
+              "$type": "number",
+              "$value": 1.3
+            }
+          },
+          "mono": {
+            "$type": "fontFamily",
+            "$value": [
+              "JetBrains Mono",
+              "ui-monospace",
+              "monospace"
+            ]
+          },
+          "size": {
+            "lg": {
+              "$type": "dimension",
+              "$value": {
+                "unit": "px",
+                "value": 24
+              }
+            },
+            "md": {
+              "$type": "dimension",
+              "$value": {
+                "unit": "px",
+                "value": 18
+              }
+            },
+            "sm": {
+              "$type": "dimension",
+              "$value": {
+                "unit": "px",
+                "value": 14
+              }
+            },
+            "xl": {
+              "$type": "dimension",
+              "$value": {
+                "unit": "px",
+                "value": 36
+              }
+            }
+          },
+          "weight": {
+            "bold": {
+              "$type": "fontWeight",
+              "$value": 700
+            },
+            "regular": {
+              "$type": "fontWeight",
+              "$value": 400
+            }
+          }
+        },
+        "motion": {
+          "duration": {
+            "fast": {
+              "$type": "duration",
+              "$value": {
+                "unit": "ms",
+                "value": 120
+              }
+            },
+            "normal": {
+              "$type": "duration",
+              "$value": {
+                "unit": "ms",
+                "value": 240
+              }
+            },
+            "slow": {
+              "$type": "duration",
+              "$value": {
+                "unit": "ms",
+                "value": 480
+              }
+            }
+          },
+          "easing": {
+            "in": {
+              "$type": "cubicBezier",
+              "$value": [
+                0.4,
+                0,
+                1,
+                1
+              ]
+            },
+            "out": {
+              "$type": "cubicBezier",
+              "$value": [
+                0,
+                0,
+                0.2,
+                1
+              ]
+            },
+            "standard": {
+              "$type": "cubicBezier",
+              "$value": [
+                0.2,
+                0,
+                0,
+                1
+              ]
+            }
+          }
+        },
+        "radius": {
+          "lg": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 16
+            }
+          },
+          "md": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 8
+            }
+          },
+          "none": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 0
+            }
+          },
+          "sm": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 4
+            }
+          }
+        },
+        "shadow": {
+          "lg": {
+            "$type": "shadow",
+            "$value": {
+              "blur": 32,
+              "color": "#0f172a33",
+              "offsetX": 0,
+              "offsetY": 12,
+              "spread": -4
+            }
+          },
+          "md": {
+            "$type": "shadow",
+            "$value": {
+              "blur": 12,
+              "color": "#0f172a29",
+              "offsetX": 0,
+              "offsetY": 4,
+              "spread": 0
+            }
+          },
+          "sm": {
+            "$type": "shadow",
+            "$value": {
+              "blur": 2,
+              "color": "#0f172a1f",
+              "offsetX": 0,
+              "offsetY": 1,
+              "spread": 0
+            }
+          }
+        },
+        "space": {
+          "lg": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 24
+            }
+          },
+          "md": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 16
+            }
+          },
+          "sm": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 8
+            }
+          },
+          "xl": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 40
+            }
+          },
+          "xs": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 4
+            }
+          }
+        },
+        "stroke": {
+          "regular": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 2
+            }
+          },
+          "thick": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 4
+            }
+          },
+          "thin": {
+            "$type": "dimension",
+            "$value": {
+              "unit": "px",
+              "value": 1
+            }
+          }
+        }
+      },
+      "type": "theme"
+    },
+    "274leNulMfcd6bfAJ48o1R": {
+      "fills": "5Ac64vIRTmJXAaYz1pKaKi",
+      "id": "274leNulMfcd6bfAJ48o1R",
+      "index": "a1",
+      "kind": "text",
+      "placement": "pinned",
+      "screenId": "6UTNKFTvIaU4KrF97QOw2P",
+      "semantic": {
+        "slug": "heading"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "The plan for the quarter",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 100,
+        "w": 1680,
+        "x": 120,
+        "y": 160
+      },
+      "type": "element"
+    },
+    "2gMwXZjtuQ2ZdUkQK6fzLE": {
+      "defId": "basic:rect",
+      "id": "2gMwXZjtuQ2ZdUkQK6fzLE",
+      "index": "a1",
+      "kind": "shape",
+      "parentId": "4SsGTppO6qOOeds2wnc3LP",
+      "placement": "pinned",
+      "screenId": "6UTNKFTvIaU4KrF97QOw2P",
+      "semantic": {
+        "label": "Clipped at the frame's edge",
+        "slug": "overflow"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Clipped at the frame's edge",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 120,
+        "w": 480,
+        "x": 1500,
+        "y": 560
+      },
+      "type": "element"
+    },
+    "4Hr7JA6JH0eLIFHlTzx9oG": {
+      "anchor": {
+        "kind": "auto"
+      },
+      "connectorId": "6AHbhiXI34o85rih5HgHU8",
+      "elementId": "6Yg4yTcj4JozgX9u5d1DUN",
+      "end": "source",
+      "id": "4Hr7JA6JH0eLIFHlTzx9oG",
+      "type": "binding"
+    },
+    "4SsGTppO6qOOeds2wnc3LP": {
+      "clip": true,
+      "id": "4SsGTppO6qOOeds2wnc3LP",
+      "index": "a0",
+      "kind": "frame",
+      "placement": "pinned",
+      "screenId": "6UTNKFTvIaU4KrF97QOw2P",
+      "semantic": {
+        "label": "Risks",
+        "slug": "risks"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Risks",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 320,
+        "w": 700,
+        "x": 1100,
+        "y": 320
+      },
+      "type": "element"
+    },
+    "4uqHNZdkn4gFpfbxZLcoaK": {
+      "id": "4uqHNZdkn4gFpfbxZLcoaK",
+      "source": {
+        "deferred": {},
+        "flux": 1,
+        "salt": ""
+      },
+      "themeId": "26rs6gn3v7RliT0RAIpSAM",
+      "title": "Quarterly plan",
+      "type": "document"
+    },
+    "5Ac64vIRTmJXAaYz1pKaKi": {
+      "defId": "basic:rect",
+      "id": "5Ac64vIRTmJXAaYz1pKaKi",
+      "index": "a1",
+      "kind": "shape",
+      "placeholder": "title",
+      "placement": "pinned",
+      "screenId": "01juEngAtRB8wyUaaRvkVH",
+      "semantic": {
+        "label": "Title",
+        "slug": "title-slot"
+      },
+      "style": {
+        "stroke": {
+          "dash": [
+            8,
+            4
+          ]
+        }
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Title",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 100,
+        "w": 1680,
+        "x": 120,
+        "y": 160
+      },
+      "type": "element"
+    },
+    "5kf3HkOQEb3l7sYxufiQMe": {
+      "id": "5kf3HkOQEb3l7sYxufiQMe",
+      "index": "a2",
+      "kind": "text",
+      "placement": "pinned",
+      "screenId": "01juEngAtRB8wyUaaRvkVH",
+      "semantic": {
+        "slug": "footer"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Fluxion quarterly review",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 40,
+        "w": 600,
+        "x": 120,
+        "y": 980
+      },
+      "type": "element"
+    },
+    "6AHbhiXI34o85rih5HgHU8": {
+      "id": "6AHbhiXI34o85rih5HgHU8",
+      "index": "a3",
+      "kind": "connector",
+      "markers": {
+        "end": "arrow",
+        "start": "none"
+      },
+      "route": {
+        "type": "straight"
+      },
+      "screenId": "6UTNKFTvIaU4KrF97QOw2P",
+      "type": "element"
+    },
+    "6UTNKFTvIaU4KrF97QOw2P": {
+      "id": "6UTNKFTvIaU4KrF97QOw2P",
+      "index": "a0",
+      "masterId": "01juEngAtRB8wyUaaRvkVH",
+      "meta": {
+        "slug": "plan"
+      },
+      "name": "The plan for the quarter",
+      "type": "screen"
+    },
+    "6Yg4yTcj4JozgX9u5d1DUN": {
+      "cells": {
+        "0:0": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Stream",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "0:1": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Owner",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "0:2": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Weeks",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "1:0": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Editor",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "1:1": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Ada",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "1:2": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "6",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "2:0": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Present mode",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "2:1": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Lin",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "2:2": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "4",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "3:0": {
+          "colSpan": 2,
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "Shared work across both streams",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        },
+        "3:2": {
+          "text": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "3",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "type": "doc"
+          }
+        }
+      },
+      "cols": [
+        {
+          "w": 2
+        },
+        {
+          "w": 1
+        },
+        {
+          "w": 1
+        }
+      ],
+      "id": "6Yg4yTcj4JozgX9u5d1DUN",
+      "index": "a2",
+      "kind": "table",
+      "placement": "pinned",
+      "rows": [
+        {
+          "h": 1
+        },
+        {
+          "h": 1
+        },
+        {
+          "h": 1
+        },
+        {
+          "h": 1
+        }
+      ],
+      "screenId": "6UTNKFTvIaU4KrF97QOw2P",
+      "semantic": {
+        "label": "Budget by stream",
+        "slug": "budget"
+      },
+      "tableStyle": "banded",
+      "transform": {
+        "h": 320,
+        "w": 900,
+        "x": 120,
+        "y": 320
+      },
+      "type": "element"
+    },
+    "6qTokX6c0grP9AqiuQvg4t": {
+      "anchor": {
+        "kind": "auto"
+      },
+      "connectorId": "6AHbhiXI34o85rih5HgHU8",
+      "elementId": "4SsGTppO6qOOeds2wnc3LP",
+      "end": "target",
+      "id": "6qTokX6c0grP9AqiuQvg4t",
+      "type": "binding"
+    },
+    "6vdHk3c6Ot0ItsXWBgVg6p": {
+      "defId": "basic:rect",
+      "id": "6vdHk3c6Ot0ItsXWBgVg6p",
+      "index": "a0",
+      "kind": "shape",
+      "placement": "pinned",
+      "screenId": "01juEngAtRB8wyUaaRvkVH",
+      "semantic": {
+        "slug": "band"
+      },
+      "style": {
+        "variant": "accent"
+      },
+      "transform": {
+        "h": 80,
+        "w": 1920,
+        "x": 0,
+        "y": 0
+      },
+      "type": "element"
+    },
+    "7jgiSoJm1eZItcqaxK5EpK": {
+      "defId": "basic:rounded-rect",
+      "id": "7jgiSoJm1eZItcqaxK5EpK",
+      "index": "a0",
+      "kind": "shape",
+      "parentId": "4SsGTppO6qOOeds2wnc3LP",
+      "placement": "pinned",
+      "screenId": "6UTNKFTvIaU4KrF97QOw2P",
+      "semantic": {
+        "label": "Fonts may slip",
+        "slug": "risk"
+      },
+      "style": {
+        "variant": "warning"
+      },
+      "text": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "Fonts may slip",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "type": "doc"
+      },
+      "transform": {
+        "h": 100,
+        "w": 160,
+        "x": 1140,
+        "y": 360
+      },
+      "type": "element"
+    }
+  },
+  "schemaVersion": "1.8"
+}

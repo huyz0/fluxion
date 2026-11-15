@@ -4,8 +4,10 @@
 // left out and counted, and the block ends with `# kept: N records not shown`.
 import { idKeys, stableId } from '@fluxion/core';
 import type { AnchorRef, LayoutSpec, RecordId, Style } from '@fluxion/schema';
+import { tableSize } from '../expand/containers.js';
 import { DEFAULT_SIZE } from '../expand/expand.js';
 import type { EdgeOp } from '../parse/edge.js';
+import { frameFields, screenRoleFields, slotFields, tableOf, tableOut } from './containers.js';
 import { type Ctx, type El, type Rec, SLUGGED } from './context.js';
 import type { Out, OutMap } from './emit.js';
 import { anchorSuffix, fail, Inexpressible, layoutOut, paintOut, plainText, styleOut, templateOut } from './values.js';
@@ -53,13 +55,13 @@ function textFields(t: string | undefined, n: string | undefined): Entry[] {
 }
 
 /** A pinned element's box; its size only when it is not its shape's default. */
-function pinOf(ctx: Ctx, el: El): Entry[] {
+function pinOf(ctx: Ctx, el: El, own?: { readonly w: number; readonly h: number }): Entry[] {
   if (el['placement'] !== 'pinned') return [];
   const t = el['transform'] as { readonly [k: string]: unknown } | undefined;
   const [x, y, w, h] = ['x', 'y', 'w', 'h'].map((k) => t?.[k]);
   if (![x, y, w, h].every((v) => typeof v === 'number' && Number.isFinite(v))) fail('pin');
   const defId = el['defId'];
-  const size = (typeof defId === 'string' && ctx.registries.shapeDefs.get(defId)?.defaultSize) || DEFAULT_SIZE;
+  const size = own ?? ((typeof defId === 'string' && ctx.registries.shapeDefs.get(defId)?.defaultSize) || DEFAULT_SIZE);
   const sized =
     w === size.w && h === size.h
       ? []
@@ -88,6 +90,22 @@ function nodeFields(ctx: Ctx, el: El, shaped: boolean): Entry[] {
     ...(tone !== undefined ? ([['tone', tone]] as const) : []),
     ...(style !== undefined ? ([['style', style]] as const) : []),
     ...pinOf(ctx, el),
+    ...slotFields(ctx, el),
+  ];
+}
+
+/** A table node's fields: its table, accessible name, tone, style, pin and slot keys. */
+function tableFields(ctx: Ctx, el: El): Entry[] {
+  const t = tableOf(el);
+  const { style, tone } = styleOut(el['style'] as Style | undefined, { tone: true, dashed: false });
+  const name = label(el);
+  return [
+    ['table', tableOut(t)],
+    ...(name !== undefined ? ([['alt', name]] as const) : []),
+    ...(tone !== undefined ? ([['tone', tone]] as const) : []),
+    ...(style !== undefined ? ([['style', style]] as const) : []),
+    ...pinOf(ctx, el, tableSize(t)),
+    ...slotFields(ctx, el),
   ];
 }
 
@@ -100,6 +118,7 @@ function groupFields(_ctx: Ctx, el: El): Entry[] {
     ...(name !== undefined ? ([['label', name]] as const) : []),
     ...(style !== undefined ? ([['style', style]] as const) : []),
     ...(layout ? ([['layout', layoutOut(layout)]] as const) : []),
+    ...(el.kind === 'frame' ? frameFields(el) : []),
   ];
 }
 
@@ -108,8 +127,10 @@ const READERS: { readonly [kind: string]: (ctx: Ctx, el: El) => Entry[] } = {
   shape: (ctx, el) => nodeFields(ctx, el, true),
   text: (ctx, el) => nodeFields(ctx, el, false),
   group: groupFields,
+  frame: groupFields,
+  table: tableFields,
 };
-const GROUPS: ReadonlySet<string> = new Set(['group']);
+const GROUPS: ReadonlySet<string> = new Set(['group', 'frame']);
 const CONNECTORS: ReadonlySet<string> = new Set(['connector']);
 
 /** The nodes and groups the block writes, with their fields: those the subset can write, whose parent (if any) is a written group. */
@@ -308,6 +329,7 @@ export function screenOut(ctx: Ctx, s: Rec): ScreenOut {
   const map: Entry[] = [
     ['id', sid],
     ...(typeof name === 'string' ? ([['title', name]] as const) : []),
+    ...screenRoleFields(ctx, s),
     ...layout,
     ...(background !== undefined ? ([['background', background]] as const) : []),
     ...entries,

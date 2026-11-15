@@ -10,7 +10,7 @@ import { expect, test } from './test.js';
 // in place fits it exactly into a 1920 × 1080 window.
 
 /** The examples the studio opens: their first screens are the fixture screens edit and present show. */
-const EXAMPLES = ['shapes-gallery', 'r0-static'];
+const EXAMPLES = ['shapes-gallery', 'r0-static', 'masters-tables'];
 
 /**
  * The content layer's markup with the allowlist applied: ids React generates per mount (fills,
@@ -44,13 +44,13 @@ function shifted(img: Pixels, dx: number, dy: number): Pixels {
   return { ...img, data };
 }
 
-/** How many screens the example `name` has (the navigator lists them). */
+/** How many slides the example `name` has (the navigator lists them; a master is listed apart and is not presented). */
 async function screenCount(page: Page, name: string): Promise<number> {
   const editor = new EditorPage(page);
   await editor.open(`example-${name}`);
   const focus = editor.toolbarButton('Focus mode');
   if ((await focus.getAttribute('aria-pressed')) === 'true') await focus.click();
-  return editor.panel('Screens, library and layers').locator('.fx-chrome-screen').count();
+  return editor.panel('Screens, library and layers').locator('ul[aria-label="Screens"] .fx-chrome-screen').count();
 }
 
 /** The `index`th screen of example `name` in edit at scale 1 with nothing selected or hovered, then presented in place (shift+F5 for a later one). */
@@ -105,7 +105,7 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
   });
 
   test('FR-EDT-010: every screen of every example draws the same pixels in edit and present', async ({ page }) => {
-    // seven screens, each waiting for its settled global routes in both modes (M16.28): about 26 s alone, more under a loaded run
+    // eight screens, each waiting for its settled global routes in both modes (M16.28): about 26 s alone, more under a loaded run
     test.setTimeout(60_000);
     let screens = 0;
     for (const name of [...EXAMPLES, 'rich-text', 'arrange-demo']) {
@@ -118,8 +118,9 @@ test.describe('edit and present parity', { tag: '@desktop' }, () => {
         screens += 1;
       }
     }
-    // the gallery's screen, both of r0-static's, the rich-text one and the arrange demo's three (perf-500 is the drag benchmark's)
-    expect(screens).toBe(7);
+    // the gallery's screen, both of r0-static's, masters-tables' slide (its master is not one), the rich-text one and the arrange
+    // demo's three (perf-500 is the drag benchmark's)
+    expect(screens).toBe(8);
   });
 
   test('FR-EDT-010: the content layer DOM is equal in edit and present after the allowlist', async ({ page }) => {

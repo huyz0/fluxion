@@ -7,6 +7,7 @@ import { DIAGNOSTIC_CODES } from '@fluxion/schema';
 import { isToken, LIGHT_THEME, type Theme, type TokenGroup, themeOf } from '@fluxion/theme';
 import type { FluxAst, Located, LocatedStyle, NodeAst, ScreenAst } from '../read/ast.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
+import { checkMasters } from './masters.js';
 import { nearest } from './suggest.js';
 
 /**
@@ -260,6 +261,7 @@ export function resolveFlux(ast: FluxAst, registries: CoreRegistries): ResolveRe
     }
     checkRefs(ctx, s, i, screenOf);
   });
+  ctx.diagnostics.push(...checkMasters(ast));
   const { theme, id } = themeFor(ctx, ast);
   checkTokens(ctx, ast, theme);
   return { resolution: { theme, shapes, ...(id ? { themeId: id } : {}) }, diagnostics: ctx.diagnostics };

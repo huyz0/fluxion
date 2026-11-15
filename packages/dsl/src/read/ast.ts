@@ -55,6 +55,42 @@ export type NodeAst = {
   readonly template?: TemplateRef;
   /** Set on a node a template built: the shape's parameters. */
   readonly params?: { readonly [key: string]: number };
+  /** A table: the node's content in place of a shape or text (ADR-0219). */
+  readonly table?: Located<TableAst>;
+  /** On a master's node: the placeholder's name (ADR-0219). */
+  readonly placeholder?: Located<string>;
+  /** The slug of the master's placeholder this node fills (ADR-0219). */
+  readonly fills?: Located<string>;
+};
+
+/**
+ * A table as written: rows of cells, and the column and row weights when given (ADR-0219).
+ *
+ * @public
+ */
+export type TableAst = {
+  /** The rows, each a list of cells; `null` is no cell (empty, or covered by a span). */
+  readonly rows: readonly (readonly (TableCellAst | null)[])[];
+  /** The column weights, when given. */
+  readonly widths?: readonly number[];
+  /** The row weights, when given. */
+  readonly heights?: readonly number[];
+  /** A table style of the theme (`plain`, `banded`, `grid`). */
+  readonly tableStyle?: string;
+};
+
+/**
+ * One table cell as written: its text and spans.
+ *
+ * @public
+ */
+export type TableCellAst = {
+  /** The cell's text. */
+  readonly text?: string;
+  /** How many rows it covers (1 when absent). */
+  readonly rowSpan?: number;
+  /** How many columns it covers (1 when absent). */
+  readonly colSpan?: number;
 };
 
 /**
@@ -136,6 +172,12 @@ export type GroupAst = {
   readonly style?: LocatedStyle;
   /** How it lays out its members. */
   readonly layout?: LayoutAst;
+  /** `frame: true`: a frame, a pinned container that clips (ADR-0052, ADR-0219). */
+  readonly frame?: Located<boolean>;
+  /** A frame's clip (absent: the frame's default). */
+  readonly clip?: Located<boolean>;
+  /** A frame's box. */
+  readonly pin?: Located<PinAst>;
 };
 
 /**
@@ -189,6 +231,10 @@ export type ScreenAst = {
   readonly edges: readonly EdgeAst[];
   /** Speaker notes. */
   readonly notes?: Located<string>;
+  /** `role: master`: a master screen (ADR-0219). */
+  readonly role?: Located<'master'>;
+  /** The id of the master screen it draws behind it. */
+  readonly master?: Located<string>;
   /** Where the screen is written. */
   readonly range: SourceRange;
 };

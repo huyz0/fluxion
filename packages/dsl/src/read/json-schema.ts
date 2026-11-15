@@ -45,6 +45,31 @@ const pin: Schema = {
   additionalProperties: false,
 };
 
+const span: Schema = { type: 'integer', minimum: 1, description: 'a whole number of rows or columns' };
+const cell: Schema = {
+  anyOf: [
+    { type: ['string', 'number', 'null'] },
+    {
+      type: 'object',
+      properties: { text: string, rowSpan: span, colSpan: span },
+      additionalProperties: false,
+    },
+  ],
+};
+const weights: Schema = { type: 'array', items: { type: 'number', exclusiveMinimum: 0 }, minItems: 1, maxItems: 500 };
+const table: Schema = {
+  type: 'object',
+  properties: {
+    rows: { type: 'array', items: { type: 'array', items: cell }, minItems: 1, maxItems: 500 },
+    widths: weights,
+    heights: weights,
+    tableStyle: string,
+  },
+  required: ['rows'],
+  additionalProperties: false,
+  description: 'rows of cells (text, null for none, or { text, rowSpan, colSpan }), with column widths and row heights as weights',
+};
+
 /** The value schema of every compiled key, by level. */
 const VALUES: { readonly [level in keyof typeof KEYS]: { readonly [key: string]: Schema } } = {
   top: {
@@ -72,9 +97,30 @@ const VALUES: { readonly [level in keyof typeof KEYS]: { readonly [key: string]:
     groups: { type: 'object', propertyNames: { pattern: SLUG }, additionalProperties: { $ref: '#/$defs/group' } },
     edges: { type: 'array', items: { $ref: '#/$defs/edge' } },
     notes: string,
+    role: { const: 'master', description: 'a master screen: not a slide; other screens draw it behind them' },
+    master: { type: 'string', pattern: SLUG, description: 'the id of the master screen this screen draws behind it' },
   },
-  node: { shape: string, text: string, label: string, tone: string, style, pin, alt: string },
-  group: { label: string, contains: { type: 'array', items: string }, style, layout },
+  node: {
+    shape: string,
+    text: string,
+    label: string,
+    tone: string,
+    style,
+    pin,
+    alt: string,
+    table,
+    placeholder: { type: 'string', description: "on a master's node: the placeholder's name" },
+    fills: { type: 'string', pattern: SLUG, description: "the slug of the master's placeholder node this node takes the place of" },
+  },
+  group: {
+    label: string,
+    contains: { type: 'array', items: string },
+    style,
+    layout,
+    frame: { type: 'boolean', description: 'true: a frame, a container with its own box (pin) that clips its members' },
+    clip: { type: 'boolean', description: "a frame's clip (default true)" },
+    pin,
+  },
   edge: { from: string, to: string, op: string, label: string, style, route: { enum: ROUTES }, jumps: { enum: ['arc', 'gap', 'none'] } },
   pin: {},
 };
@@ -129,7 +175,7 @@ export function fluxScriptJsonSchema(): FluxScriptJsonSchema {
       },
       node: {
         ...closed('node', []),
-        anyOf: [...['shape', 'text', 'label'], ...KEYS.node.deferred].map((key) => ({ required: [key] })),
+        anyOf: [...['shape', 'text', 'label', 'table'], ...KEYS.node.deferred].map((key) => ({ required: [key] })),
       },
       group: closed('group', []),
       edge: {

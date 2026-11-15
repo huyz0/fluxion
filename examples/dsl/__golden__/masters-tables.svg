@@ -1,0 +1,103 @@
+<svg data-screen-id="6UTNKFTvIaU4KrF97QOw2P" xmlns="http://www.w3.org/2000/svg">
+  <g data-el-id="6vdHk3c6Ot0ItsXWBgVg6p" data-kind="shape" data-place="left:0;top:0;width:1920px;height:80px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 1920 80">
+      <path class="fx-outline" d="M0 0 L1920 0 L1920 80 L0 80 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+    <g class="fx-members" data-place="left:0;top:0;transform-origin:960px 40px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="5kf3HkOQEb3l7sYxufiQMe" data-kind="text" data-place="left:120px;top:980px;width:600px;height:40px;transform:rotate(0deg)">
+    <text class="fx-label">
+      Fluxion quarterly review
+    </text>
+    <g class="fx-members" data-place="left:-120px;top:-980px;transform-origin:420px 1000px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="4SsGTppO6qOOeds2wnc3LP" data-kind="frame" data-place="left:1100px;top:320px;width:700px;height:320px;transform:rotate(0deg)">
+    <svg aria-hidden="true" style="opacity:1" viewBox="0 0 700 320">
+      <rect height="320" rx="0" style="fill:var(--fx-color-surface);stroke:currentColor;stroke-width:0px;stroke-linecap:butt;stroke-linejoin:miter" width="700">
+      </rect>
+    </svg>
+    <g class="fx-members" data-place="left:-1100px;top:-320px;transform-origin:1450px 480px;transform:rotate(0deg)">
+      <g data-el-id="7jgiSoJm1eZItcqaxK5EpK" data-kind="shape" data-place="left:1140px;top:360px;width:160px;height:100px;transform:rotate(0deg)">
+        <svg aria-hidden="true" style="opacity:1" viewBox="0 0 160 100">
+          <path class="fx-outline" d="M12 0 L148 0 C154.63 0 160 5.37 160 12 L160 88 C160 94.63 154.63 100 148 100 L12 100 C5.37 100 0 94.63 0 88 L0 12 C0 5.37 5.37 0 12 0 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+          </path>
+        </svg>
+        <text class="fx-label">
+          Fonts may slip
+        </text>
+        <g class="fx-members" data-place="left:-1140px;top:-360px;transform-origin:1220px 410px;transform:rotate(0deg)">
+        </g>
+      </g>
+      <g data-el-id="2gMwXZjtuQ2ZdUkQK6fzLE" data-kind="shape" data-place="left:1500px;top:560px;width:480px;height:120px;transform:rotate(0deg)">
+        <svg aria-hidden="true" style="opacity:1" viewBox="0 0 480 120">
+          <path class="fx-outline" d="M0 0 L480 0 L480 120 L0 120 Z" style="fill:var(--fx-color-surface);stroke:var(--fx-color-text);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+          </path>
+        </svg>
+        <text class="fx-label">
+          Clipped at the frame's edge
+        </text>
+        <g class="fx-members" data-place="left:-1500px;top:-560px;transform-origin:1740px 620px;transform:rotate(0deg)">
+        </g>
+      </g>
+    </g>
+  </g>
+  <g data-el-id="274leNulMfcd6bfAJ48o1R" data-kind="text" data-place="left:120px;top:160px;width:1680px;height:100px;transform:rotate(0deg)">
+    <text class="fx-label">
+      The plan for the quarter
+    </text>
+    <g class="fx-members" data-place="left:-120px;top:-160px;transform-origin:960px 210px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="6Yg4yTcj4JozgX9u5d1DUN" data-kind="table" data-place="left:120px;top:320px;width:900px;height:320px;transform:rotate(0deg)">
+    <text class="fx-label">
+      Stream
+    </text>
+    <text class="fx-label">
+      Owner
+    </text>
+    <text class="fx-label">
+      Weeks
+    </text>
+    <text class="fx-label">
+      Editor
+    </text>
+    <text class="fx-label">
+      Ada
+    </text>
+    <text class="fx-label">
+      6
+    </text>
+    <text class="fx-label">
+      Present mode
+    </text>
+    <text class="fx-label">
+      Lin
+    </text>
+    <text class="fx-label">
+      4
+    </text>
+    <text class="fx-label">
+      Shared work across both streams
+    </text>
+    <text class="fx-label">
+      3
+    </text>
+    <g class="fx-members" data-place="left:-120px;top:-320px;transform-origin:570px 480px;transform:rotate(0deg)">
+    </g>
+  </g>
+  <g data-el-id="6AHbhiXI34o85rih5HgHU8" data-kind="connector">
+    <svg aria-hidden="true" class="fx-connector" data-route-pass="cheap" style="left:996px;top:456px;width:128px;height:48px;opacity:1" viewBox="996 456 128 48">
+      <defs>
+        <marker id="fx-id-0-end" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto-start-reverse" overflow="visible" refX="3" refY="5" viewBox="0 0 10 10">
+          <path d="M0 0 L10 5 L0 10 L3 5 Z" style="fill:var(--fx-color-connector);stroke:none">
+          </path>
+        </marker>
+      </defs>
+      <path class="fx-route" d="M1020 480 L1093 480" marker-end="url(#fx-id-0-end)" style="fill:none;stroke:var(--fx-color-connector);stroke-width:var(--fx-stroke-regular);stroke-linecap:butt;stroke-linejoin:miter">
+      </path>
+    </svg>
+  </g>
+</svg>

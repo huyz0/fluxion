@@ -79,7 +79,7 @@ export function addRecords(fixture: Pick<Core, 'execute'>, puts: readonly object
   if (!result.ok) throw new Error(result.error.message);
 }
 
-/** A frame on `screen`: an element the decompiler leaves out. */
+/** A frame with padding on `screen`: an element the decompiler leaves out. */
 export const frameOn = (screen: RecordId, id = 'kept-frame'): object => ({
   id,
   type: 'element',
@@ -87,6 +87,8 @@ export const frameOn = (screen: RecordId, id = 'kept-frame'): object => ({
   screenId: screen,
   index: 'a8',
   transform: { x: 600, y: 600, w: 200, h: 120 },
+  // padding is outside the decompiler's subset (ADR-0219): the frame is kept, not written
+  padding: 8,
 });
 
 /** A comment on `target`. */

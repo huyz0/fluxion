@@ -25,7 +25,7 @@ exports[`the diagnostic formatter for models (FR-AI-004) > FR-AI-004: the format
     "L1:1  error   FLX_DSL_VERSION  the file has no flux version — hint: start the file with \`flux: 1\`",
   ],
   "unknown key": [
-    "L7:25  error   FLX_DSL_UNKNOWN_KEY  "colour" is not a key here — hint: keys here: shape, text, label, tone, style, pin, alt",
+    "L7:25  error   FLX_DSL_UNKNOWN_KEY  "colour" is not a key here — hint: keys here: shape, text, label, tone, style, pin, alt, table, placeholder, fills",
   ],
   "unknown shape": [
     "L7:19  error   FLX_DSL_UNKNOWN_SHAPE  no used pack has a shape "rectt" — hint: did you mean "rect"?",

@@ -392,6 +392,9 @@ export type GroupAst = {
     readonly contains: readonly Located<string>[];
     readonly style?: LocatedStyle;
     readonly layout?: LayoutAst;
+    readonly frame?: Located<boolean>;
+    readonly clip?: Located<boolean>;
+    readonly pin?: Located<PinAst>;
 };
 
 // @public
@@ -627,6 +630,9 @@ export type NodeAst = {
     readonly params?: {
         readonly [key: string]: number;
     };
+    readonly table?: Located<TableAst>;
+    readonly placeholder?: Located<string>;
+    readonly fills?: Located<string>;
 };
 
 // @public
@@ -991,6 +997,8 @@ export type ScreenAst = {
     readonly groups: readonly GroupAst[];
     readonly edges: readonly EdgeAst[];
     readonly notes?: Located<string>;
+    readonly role?: Located<"master">;
+    readonly master?: Located<string>;
     readonly range: SourceRange;
 };
 
@@ -1104,6 +1112,21 @@ export type StyleAst = {
 // @public
 export type StyleSpec = {
     readonly [key: string]: string;
+};
+
+// @public
+export type TableAst = {
+    readonly rows: readonly (readonly (TableCellAst | null)[])[];
+    readonly widths?: readonly number[];
+    readonly heights?: readonly number[];
+    readonly tableStyle?: string;
+};
+
+// @public
+export type TableCellAst = {
+    readonly text?: string;
+    readonly rowSpan?: number;
+    readonly colSpan?: number;
 };
 
 // @public

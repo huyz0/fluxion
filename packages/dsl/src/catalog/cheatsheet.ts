@@ -39,9 +39,9 @@ screens:
 
 - top: flux, title, theme, uses, lineJumps (true: lines hop where they cross), screens
 - theme: preset, name, overrides
-- screen: id, title, layout, template, items, options, background, nodes, groups, edges, notes
-- node: shape, text, label, tone, style, pin, alt (node names are slugs: lowercase letters, digits, hyphens)
-- group: label, contains, style, layout
+- screen: id, title, layout, template, items, options, background, nodes, groups, edges, notes, role (master: not a slide), master (a master's id, drawn behind)
+- node: shape, text, label, tone, style, pin, alt, placeholder (a master's slot), fills (the slot's slug), table: { rows: [[A, B], [c, null]], widths?, heights?, tableStyle? } (node names are slugs: lowercase letters, digits, hyphens)
+- group: label, contains, style, layout; frame: true with pin { x, y, w, h } and clip makes a clipping frame
 - edge: "a -> b: label" or { from, to, op, label, style, route, jumps: arc|gap|none }; ops are -> <- <-> -- ~>; an end may name an anchor: a.e -> b.w
 - pin: { x, y, w?, h? } keeps a box where you put it
 

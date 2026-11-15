@@ -55,6 +55,8 @@ export type {
   PinAst,
   ScreenAst,
   StyleAst,
+  TableAst,
+  TableCellAst,
   TemplateItemAst,
   TemplateRef,
   ThemeAst,

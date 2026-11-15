@@ -144,6 +144,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0216](ADR-0216-cold-setup-without-coverage.md) | The cold setup measures the ladder without coverage; the verify jobs gate coverage | accepted | 2026-11-05 |
 | [0217](ADR-0217-pack-import-bound-leaves-out-browser-start.md) | The pack-import refusal bound leaves out the first witness session's browser start | accepted | 2026-11-06 |
 | [0218](ADR-0218-node-tests-share-a-module-registry.md) | Node test files share a module registry; files that change process-wide state stay isolated | accepted | 2026-11-13 |
+| [0219](ADR-0219-fluxscript-masters-tables-frames.md) | FluxScript keys for master screens, placeholders, tables and frames | accepted | 2026-11-15 |
 
 ## ADR required when
 

@@ -158,6 +158,33 @@ screens:
 
 Text is not measured yet, so a node has its shape's default size.
 
+## Masters, tables and frames
+
+A screen with `role: master` is not a slide: screens that name it with `master: <id>` draw its nodes behind their own. A master's node
+with `placeholder: <name>` is a slot; a node with `fills: <slot slug>` takes its place on that screen. A node with `table:` holds rows of
+cells: text, `null` for no cell, or `{ text, colSpan, rowSpan }`, with `widths` and `heights` as weights. A group with `frame: true` is a
+frame: it needs a `pin` with `w` and `h`, lays its members out inside that box, and clips what falls outside unless `clip: false`
+(ADR-0219).
+
+```yaml flux
+flux: 1
+title: Plan
+uses: [basic]
+screens:
+  - id: plan
+    master: deck
+    nodes:
+      heading: { text: The plan, fills: slot, pin: { x: 120, y: 120, w: 800, h: 80 } }
+      costs:   { table: { rows: [[Stream, Weeks], [Editor, 6]], widths: [2, 1] }, pin: { x: 120, y: 260, w: 600, h: 200 } }
+      note:    { shape: rect, label: Overflows the frame, pin: { x: 1300, y: 300, w: 400, h: 100 } }
+    groups:
+      side:    { label: Notes, frame: true, contains: [note], pin: { x: 1000, y: 260, w: 500, h: 300 } }
+  - id: deck
+    role: master
+    nodes:
+      slot:    { shape: rect, placeholder: title, pin: { x: 120, y: 120, w: 800, h: 80 } }
+```
+
 ## What is not compiled yet
 
 FluxScript v1 already names more than the compiler turns into records. The rest is read, kept and warned about with

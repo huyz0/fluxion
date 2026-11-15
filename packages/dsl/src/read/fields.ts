@@ -9,11 +9,14 @@ export const KEYS = {
   top: { compiled: ['flux', 'title', 'theme', 'uses', 'lineJumps', 'screens'], deferred: ['vars', 'settings'] },
   theme: { compiled: ['preset', 'name', 'overrides'], deferred: ['mode', 'accent'] },
   screen: {
-    compiled: ['id', 'title', 'layout', 'template', 'items', 'options', 'background', 'nodes', 'groups', 'edges', 'notes'],
+    compiled: ['id', 'title', 'layout', 'template', 'items', 'options', 'background', 'nodes', 'groups', 'edges', 'notes', 'role', 'master'],
     deferred: ['kind', 'steps', 'interactions', 'breakpoints', 'markdown', 'mermaid', 'raw'],
   },
-  node: { compiled: ['shape', 'text', 'label', 'tone', 'style', 'pin', 'alt'], deferred: ['component', 'image', 'icon', 'badge', 'props', 'near'] },
-  group: { compiled: ['label', 'contains', 'style', 'layout'], deferred: [] as string[] },
+  node: {
+    compiled: ['shape', 'text', 'label', 'tone', 'style', 'pin', 'alt', 'table', 'placeholder', 'fills'],
+    deferred: ['component', 'image', 'icon', 'badge', 'props', 'near'],
+  },
+  group: { compiled: ['label', 'contains', 'style', 'layout', 'frame', 'clip', 'pin'], deferred: [] as string[] },
   edge: { compiled: ['from', 'to', 'op', 'label', 'style', 'route', 'jumps'], deferred: ['flow', 'riders'] },
   pin: { compiled: ['x', 'y', 'w', 'h'], deferred: [] as string[] },
 } as const;

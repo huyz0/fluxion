@@ -3,16 +3,19 @@ export type Json = { readonly [keyword: string]: unknown };
 
 const isObject = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v);
 const typeOf = (v: unknown): string => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v);
+/** Whether `v` is of JSON Schema type `t`: an integer is a whole number. */
+const isType = (v: unknown, t: string): boolean => t === typeOf(v) || (t === 'integer' && Number.isInteger(v));
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 
 type Check = (schema: Json, value: unknown, ok: (s: Json, v: unknown) => boolean) => boolean;
 
-/** The scalar keywords: const, enum, type, pattern. */
+/** The scalar keywords: const, enum, type, pattern, minimum. */
 const scalar: Check = (s, v) =>
   (!('const' in s) || s['const'] === v) &&
   (!Array.isArray(s['enum']) || s['enum'].includes(v)) &&
-  (s['type'] === undefined || ([s['type']].flat() as string[]).includes(typeOf(v))) &&
-  (typeof v !== 'string' || typeof s['pattern'] !== 'string' || new RegExp(s['pattern']).test(v));
+  (s['type'] === undefined || ([s['type']].flat() as string[]).some((t) => isType(v, t))) &&
+  (typeof v !== 'string' || typeof s['pattern'] !== 'string' || new RegExp(s['pattern']).test(v)) &&
+  (typeof v !== 'number' || typeof s['minimum'] !== 'number' || v >= s['minimum']);
 
 /** The combinators: not, anyOf. */
 const combined: Check = (s, v, ok) => (!isObject(s['not']) || !ok(s['not'], v)) && (!Array.isArray(s['anyOf']) || s['anyOf'].some((x) => ok(x as Json, v)));

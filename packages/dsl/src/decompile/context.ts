@@ -44,9 +44,9 @@ export type Ctx = {
 
 const SLUG = /^[a-z][a-z0-9-]*$/;
 /** The slug of an element with neither slug nor label, by kind; `node` for the others. */
-const SLUG_BASE: { readonly [kind: string]: string } = { group: 'group', text: 'text' };
+const SLUG_BASE: { readonly [kind: string]: string } = { group: 'group', text: 'text', table: 'table', frame: 'frame' };
 /** Kinds that are nodes or groups in FluxScript, and so have a slug. */
-export const SLUGGED: ReadonlySet<string> = new Set(['shape', 'text', 'group']);
+export const SLUGGED: ReadonlySet<string> = new Set(['shape', 'text', 'group', 'table', 'frame']);
 
 const byIndex = (a: Rec, b: Rec) => {
   const [x, y] = [String(a['index'] ?? ''), String(b['index'] ?? '')];

@@ -51,4 +51,18 @@ describe('the FluxScript JSON Schema (FR-AI-001)', () => {
       expect(readerErrors(JSON.stringify(doc))).toBeGreaterThan(0);
     }
   });
+
+  it('FR-AI-001: a table cell spanning a fraction or zero columns is rejected by the schema and by the compiler, a whole span by neither', () => {
+    const table = (colSpan: number) => ({
+      flux: 1,
+      title: 'T',
+      screens: [{ id: 'main', nodes: { t: { table: { rows: [[{ text: 'A', colSpan }, null]] } } } }],
+    });
+    expect(validAgainst(ROOT, table(2))).toBe(true);
+    expect(readerErrors(JSON.stringify(table(2)))).toBe(0);
+    for (const span of [1.5, 0]) {
+      expect(validAgainst(ROOT, table(span)), String(span)).toBe(false);
+      expect(readerErrors(JSON.stringify(table(span))), String(span)).toBeGreaterThan(0);
+    }
+  });
 });

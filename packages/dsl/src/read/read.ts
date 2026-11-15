@@ -6,10 +6,11 @@ import { isYMap, isYScalar, isYSeq, type YEntry, type YMap, type YNode } from '.
 import { nearest } from '../resolve/suggest.js';
 import type { DslDiagnostic, SourceRange } from '../types.js';
 import type { EdgeAst, FluxAst, GroupAst, LayoutAst, Located, NodeAst, ScreenAst, ThemeAst } from './ast.js';
+import { frameExtras, nodeExtras, screenExtras } from './containers.js';
 import { asMap, type Ctx, EDGE_DETAILS, entries, KEYS, layout, pin, report, slug, stringList, style, templateLayout, text, textOf } from './fields.js';
 
 /** Content keys: a node that has none of them after deferral has nothing to draw and is deferred whole (ADR-0030 review r2 F1). */
-const CONTENT = ['shape', 'text', 'label'];
+const CONTENT = ['shape', 'text', 'label', 'table'];
 
 /** Report the keys of `m` the table has neither compiled nor deferred (a node kept whole still has its typos found). */
 function unknownKeys(ctx: Ctx, m: YMap, table: { readonly compiled: readonly string[]; readonly deferred: readonly string[] }, path: string): void {
@@ -68,7 +69,7 @@ function node(ctx: Ctx, e: YEntry, path: string, pointer: string): NodeAst | und
   );
   const st = style(ctx, f.get('style'), at);
   const pn = pin(ctx, f.get('pin'), at);
-  return { ...located, ...fields, ...(st ? { style: st } : {}), ...(pn ? { pin: pn } : {}) };
+  return { ...located, ...fields, ...(st ? { style: st } : {}), ...(pn ? { pin: pn } : {}), ...nodeExtras(ctx, f, at) };
 }
 
 function group(ctx: Ctx, e: YEntry, path: string): GroupAst | undefined {
@@ -81,7 +82,14 @@ function group(ctx: Ctx, e: YEntry, path: string): GroupAst | undefined {
   const label = text(ctx, f.get('label'), at);
   const st = style(ctx, f.get('style'), at);
   const lay = layout(ctx, f.get('layout'), at);
-  return { slug: { value: e.key, range: e.keyRange }, contains, ...(label ? { label } : {}), ...(st ? { style: st } : {}), ...(lay ? { layout: lay } : {}) };
+  return {
+    slug: { value: e.key, range: e.keyRange },
+    contains,
+    ...(label ? { label } : {}),
+    ...(st ? { style: st } : {}),
+    ...(lay ? { layout: lay } : {}),
+    ...frameExtras(ctx, f, at),
+  };
 }
 
 /** An edge entry: `- a -> b`, `- a -> b: label`, `- a -> b: { label, style, route, jumps }`, or the object form. */
@@ -245,6 +253,7 @@ function screen(ctx: Ctx, item: YNode, index: number): ScreenAst | undefined {
     ...(background ? { background } : {}),
     ...(notes ? { notes } : {}),
     ...(lay ? { layout: lay } : {}),
+    ...screenExtras(ctx, f, path),
   };
 }
 
