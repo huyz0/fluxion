@@ -1365,6 +1365,12 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.selection.editPath": {
+    "message": "Edit path",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.selection.flip.x": {
     "message": "Flip horizontally",
     "origin": [

@@ -1306,6 +1306,15 @@ export type PathBox = {
 export function pathBox(points: readonly Vec2[]): PathBox | undefined;
 
 // @public
+export type PathEditing = {
+    readonly id: RecordId;
+    readonly point?: {
+        readonly sub: number;
+        readonly index: number;
+    } | undefined;
+};
+
+// @public
 export function payloadHtml(payload: ClipboardPayload, json?: string): string;
 
 // @public
@@ -1553,6 +1562,7 @@ export type Session = {
     readonly library: WritableSignal<string>;
     readonly snap: WritableSignal<boolean>;
     readonly grid: WritableSignal<boolean>;
+    readonly pathEdit: WritableSignal<PathEditing | undefined>;
 };
 
 // @public

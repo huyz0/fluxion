@@ -10,6 +10,7 @@ import { pageToScreen } from './camera.js';
 import { type ConnectorHandle, connectorHandlesOf, readRoutes } from './connector-handles.js';
 import { HANDLE_PX } from './overlay-geometry.js';
 import { type PlacedParamHandle, paramHandlesOf, type ShapeDefs } from './param-handles.js';
+import { PathMarks } from './path-marks.js';
 import type { Session } from './session.js';
 
 /** Props of {@link HandleMarks}. */
@@ -142,13 +143,14 @@ function ConnectorMarks(props: HandleMarksProps): ReactNode {
   });
 }
 
-/** The parametric handles of the one selected shape, the outline of selected and hovered connectors, and the handles of the one selected connector. */
+/** The parametric handles of the one selected shape, the outline of selected and hovered connectors, the handles of the one selected connector, and those of the path being edited. */
 export function HandleMarks(props: HandleMarksProps): ReactNode {
   return (
     <>
       <RouteMarks {...props} />
       <ConnectorMarks {...props} />
       <ParamMarks {...props} />
+      <PathMarks store={props.store} session={props.session} />
     </>
   );
 }

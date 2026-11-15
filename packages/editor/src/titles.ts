@@ -46,6 +46,7 @@ export const COMMAND_MESSAGES: Readonly<Record<string, MessageDescriptor>> = {
   'selection.boolean.subtract': msg({ id: 'command.selection.boolean.subtract', message: 'Subtract' }),
   'selection.boolean.intersect': msg({ id: 'command.selection.boolean.intersect', message: 'Intersect' }),
   'selection.boolean.exclude': msg({ id: 'command.selection.boolean.exclude', message: 'Exclude' }),
+  'selection.editPath': msg({ id: 'command.selection.editPath', message: 'Edit path' }),
   'tool.use': msg({ id: 'command.tool.use', message: 'Use a tool' }),
   'selection.nudge': msg({ id: 'command.selection.nudge', message: 'Nudge the selection' }),
   'selection.all': msg({ id: 'command.selection.all', message: 'Select all' }),

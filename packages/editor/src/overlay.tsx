@@ -71,6 +71,30 @@ function GuideMark(props: { readonly guide: SnapGuide; readonly camera: Camera }
   );
 }
 
+/** The selection frame's eight resize handles and its rotate handle. */
+function FrameHandles(props: { readonly frame: NonNullable<ReturnType<typeof selectionFrame>> }): ReactNode {
+  const { frame } = props;
+  const half = HANDLE_PX / 2;
+  return (
+    <>
+      <line className="fx-chrome-frame" x1={frame.handles[1]?.[1].x} y1={frame.handles[1]?.[1].y} x2={frame.rotate.x} y2={frame.rotate.y} />
+      <circle className="fx-chrome-handle" data-handle="rotate" cx={frame.rotate.x} cy={frame.rotate.y} r={half} />
+      {frame.handles.map(([id, at]) => (
+        <rect
+          key={id}
+          className="fx-chrome-handle"
+          data-handle={id}
+          x={at.x - half}
+          y={at.y - half}
+          width={HANDLE_PX}
+          height={HANDLE_PX}
+          transform={`rotate(${frame.rotation} ${at.x} ${at.y})`}
+        />
+      ))}
+    </>
+  );
+}
+
 /** The overlay over the canvas. */
 export function Overlay(props: OverlayProps): ReactNode {
   const { store, session, box, shapeDefs, routes } = props;
@@ -84,6 +108,8 @@ export function Overlay(props: OverlayProps): ReactNode {
   const entered = useValue(session.entered.get);
   const guides = useValue(session.guides.get);
   const dropTarget = useValue(session.dropTarget.get);
+  // a path being edited shows its vertices, not the frame's handles (FR-SHP-011)
+  const pathEditing = useValue(session.pathEdit.get)?.id;
   // the group entered to edit its members is outlined dashed (M8.5)
   const enteredPlaced = useValue(useMemo(() => store.query((view) => (entered === undefined ? [] : placements(view, [entered]))), [store, entered]));
   const placed = useValue(useMemo(() => store.query((view) => placements(view, selection)), [store, selection]));
@@ -109,20 +135,7 @@ export function Overlay(props: OverlayProps): ReactNode {
       {frame === undefined ? null : (
         <g className="fx-chrome-selection">
           <polygon className="fx-chrome-frame" points={points(frame.corners)} />
-          <line className="fx-chrome-frame" x1={frame.handles[1]?.[1].x} y1={frame.handles[1]?.[1].y} x2={frame.rotate.x} y2={frame.rotate.y} />
-          <circle className="fx-chrome-handle" data-handle="rotate" cx={frame.rotate.x} cy={frame.rotate.y} r={half} />
-          {frame.handles.map(([id, at]) => (
-            <rect
-              key={id}
-              className="fx-chrome-handle"
-              data-handle={id}
-              x={at.x - half}
-              y={at.y - half}
-              width={HANDLE_PX}
-              height={HANDLE_PX}
-              transform={`rotate(${frame.rotation} ${at.x} ${at.y})`}
-            />
-          ))}
+          {selection.length === 1 && selection[0] === pathEditing ? null : <FrameHandles frame={frame} />}
         </g>
       )}
       <HandleMarks store={store} session={session} shapeDefs={shapeDefs} routes={routes} />

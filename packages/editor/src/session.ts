@@ -1,7 +1,7 @@
 // The editor session (ADR-0028): selection, camera, tool and hover of one open document, as core's
 // writable signals. Never part of the document: nothing here is passed to `store.transact` or
 // serialized; undo carries the selection through transaction meta instead (ADR-0014).
-import { type WritableSignal, writable } from '@fluxion/core';
+import { effect, type WritableSignal, writable } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import type { AnchorDot } from './anchor-snap.js';
@@ -56,6 +56,27 @@ export type Session = {
   readonly snap: WritableSignal<boolean>;
   /** Whether snapping includes a grid (the toolbar's Grid toggle, FR-ARR-005; off to start). */
   readonly grid: WritableSignal<boolean>;
+  /** The path shape whose vertices are being edited (FR-SHP-011; double-click it, Esc leaves), and its selected vertex, if any. */
+  readonly pathEdit: WritableSignal<PathEditing | undefined>;
+};
+
+/**
+ * The path shape being edited and its selected vertex.
+ *
+ * @public
+ */
+export type PathEditing = {
+  /** The `core:path` shape. */
+  readonly id: RecordId;
+  /** The selected vertex (Delete removes it): its subpath and index. */
+  readonly point?:
+    | {
+        /** The subpath, in path order. */
+        readonly sub: number;
+        /** The vertex within it. */
+        readonly index: number;
+      }
+    | undefined;
 };
 
 /**
@@ -72,7 +93,7 @@ export const DEFAULT_CAMERA: Camera = { x: 0, y: 0, z: 1 };
  * @public
  */
 export function createSession(docId: string): Session {
-  return {
+  const session: Session = {
     docId,
     selection: writable<readonly RecordId[]>([]),
     camera: writable(DEFAULT_CAMERA),
@@ -94,7 +115,15 @@ export function createSession(docId: string): Session {
     library: writable('basic:rect'),
     snap: writable(true),
     grid: writable(false),
+    pathEdit: writable<PathEditing | undefined>(undefined),
   };
+  // path editing ends when its shape stops being the whole selection, however the selection changed (FR-SHP-011)
+  effect(() => {
+    const [only, ...rest] = session.selection.get();
+    const editing = session.pathEdit.get();
+    if (editing !== undefined && (only !== editing.id || rest.length > 0)) session.pathEdit.set(undefined);
+  });
+  return session;
 }
 
 /**

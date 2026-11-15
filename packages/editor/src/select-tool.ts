@@ -10,6 +10,7 @@ import type { RecordId } from '@fluxion/schema';
 import { adjusting, bending, type ConnectorGrab, connectorHandleUnder, ending, type ParamGrab, paramHandleUnder } from './handle-states.js';
 import { duplicates, moved, reframed, resizeStarts, restored, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
+import { isPathEditing, leavePathEdit, type PathGrab, pathPressUnder, reshaping } from './path-edit-states.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
 import { pickable } from './select-actions.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
@@ -192,6 +193,8 @@ type Press = {
   param?: ParamGrab | undefined;
   /** A press on a handle of the selected connector. */
   connector?: ConnectorGrab | undefined;
+  /** A press on a vertex, bezier handle or segment of the path being edited. */
+  path?: PathGrab | undefined;
 };
 
 /**
@@ -204,6 +207,8 @@ function pressed(ctx: ToolCtx, e: PointerInfo, p: Press): void {
   // a press on a selection-locked element is a press on empty canvas
   const hit = under !== undefined && pickable(ctx, under) ? under : undefined;
   const before = ctx.session.selection.get();
+  // a press off the path being edited stops editing it
+  if (hit !== ctx.session.pathEdit.get()?.id) leavePathEdit(ctx);
   const kept = hit !== undefined && before.includes(hit);
   if (!kept) ctx.session.selection.set(clickSelection(before, hit, e.shift));
   p.narrow = kept && !e.shift ? hit : undefined;
@@ -215,6 +220,10 @@ function pressed(ctx: ToolCtx, e: PointerInfo, p: Press): void {
 
 /** A press on a handle of the selection: the state it starts, and what the states after it need, in `p`. */
 function handlePress(ctx: ToolCtx, e: PointerInfo, p: Press): string | undefined {
+  p.path = pathPressUnder(ctx, e);
+  if (p.path !== undefined) return 'reshaping';
+  // a path being edited shows no frame handles (overlay.tsx), so none takes the press
+  if (isPathEditing(ctx)) return undefined;
   p.param = paramHandleUnder(ctx, e);
   if (p.param !== undefined) return 'adjusting';
   p.connector = connectorHandleUnder(ctx, e);
@@ -359,6 +368,7 @@ export function selectTool(): Tool {
         return snapped(ctx, h, sized, kept);
       }),
       adjusting: adjusting(p),
+      reshaping: reshaping(p),
       ending: ending(p),
       bending: bending(p),
       // a free turn snaps to the 15 degree steps when near one (shift always does); Alt and Ctrl/Cmd skip it

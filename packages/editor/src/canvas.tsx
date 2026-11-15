@@ -10,6 +10,7 @@ import { useElementBox } from '@fluxion/player';
 import { type AssetUrls, type RenderRegistries, ScreenView, useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
+import { enterPathEdit } from './path-edit-states.js';
 import './i18n.js';
 import { type DOMAttributes, type MouseEvent, type ReactNode, type RefObject, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { type Camera, fitBox, panBy, screenToPage, ZOOM_LIMITS, zoomAt, zoomBy, zoomTo100 } from './camera.js';
@@ -211,15 +212,15 @@ function canvasConsumer(session: Session, space: RefObject<boolean>, drag: RefOb
 }
 
 /**
- * A double-click on a group enters it, to edit its members (Esc leaves it); on an element with text it opens the
- * text for editing in place (the select tool, between gestures).
+ * A double-click on a group enters it, to edit its members (Esc leaves it); on a path shape it edits its vertices (FR-SHP-011);
+ * on an element with text it opens the text for editing in place (the select tool, between gestures).
  */
 function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatcher | undefined): void {
   if (tools === undefined || tools.current !== `${SELECT_TOOL}.idle`) return;
   const r = e.currentTarget.getBoundingClientRect();
   const at = screenToPage(session.camera.get(), { x: e.clientX - r.left, y: e.clientY - r.top });
   const hit = tools.ctx.hitTest(at);
-  if (hit !== undefined && enterGroup(tools.ctx, hit, at)) return;
+  if (hit !== undefined && (enterGroup(tools.ctx, hit, at) || enterPathEdit(tools.ctx, hit))) return;
   const element = hit === undefined ? undefined : textElement(tools.ctx.view, hit);
   if (hit === undefined || element === undefined) return;
   session.selection.set([hit]);

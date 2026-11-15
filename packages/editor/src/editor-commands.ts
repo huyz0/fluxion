@@ -10,9 +10,10 @@ import { BOOLEAN_OPS, combineSelection } from './boolean-edit.js';
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
-import { exitGroup, groupSelection, ungroupSelection } from './group-edit.js';
+import { groupSelection, ungroupSelection } from './group-edit.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
 import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, fitToScreen, LAYOUT_CHOICES, tidyUp } from './layout-arrange.js';
+import { deleteSelected, editSelectedPath, leaveEditing } from './path-edit-states.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-actions.js';
 import { selectSame } from './select-same.js';
 import { editSelectedText } from './text-edit.js';
@@ -216,8 +217,8 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   cameraCommand('camera.zoom100', 'Zoom to 100 %', 'zoom100'),
   cameraCommand('camera.fitScreen', 'Zoom to fit the screen', 'fitScreen'),
   cameraCommand('camera.fitSelection', 'Zoom to the selection', 'fitSelection'),
-  // between gestures Esc first leaves the group entered with a double-click (M8.5); else it cancels what is under way (always taken)
-  { id: 'tool.escape', title: 'Cancel', run: (ctx) => (selectIdle(ctx) && exitGroup(ctx.tools.ctx)) || ctx.tools.escape() },
+  // between gestures Esc first leaves the edited path, then the entered group (M8.5); else it cancels what is under way (always taken)
+  { id: 'tool.escape', title: 'Cancel', run: (ctx) => (selectIdle(ctx) && leaveEditing(ctx.tools.ctx)) || ctx.tools.escape() },
   { id: 'selection.group', title: 'Group', run: (ctx) => selectIdle(ctx) && groupSelection(ctx.tools.ctx) },
   { id: 'selection.ungroup', title: 'Ungroup', run: (ctx) => selectIdle(ctx) && ungroupSelection(ctx.tools.ctx) },
   ...ALIGN_MODES.map(
@@ -278,7 +279,9 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   },
   { id: 'selection.sameType', title: 'Select same type', run: (ctx) => selectIdle(ctx) && selectSame(ctx.tools.ctx, 'type') },
   { id: 'selection.sameStyle', title: 'Select same style', run: (ctx) => selectIdle(ctx) && selectSame(ctx.tools.ctx, 'style') },
-  { id: 'selection.delete', title: 'Delete the selection', run: (ctx) => selectIdle(ctx) && deleteSelection(ctx.tools.ctx) },
+  // while a path is edited, Delete removes its selected vertex, never the shape (FR-SHP-011)
+  { id: 'selection.delete', title: 'Delete the selection', run: (ctx) => selectIdle(ctx) && deleteSelected(ctx.tools.ctx) },
+  { id: 'selection.editPath', title: 'Edit path', run: (ctx) => selectIdle(ctx) && editSelectedPath(ctx.tools.ctx) },
   { id: 'clipboard.copy', title: 'Copy', run: (ctx) => selectIdle(ctx) && copySelection(ctx) },
   { id: 'clipboard.cut', title: 'Cut', run: (ctx) => selectIdle(ctx) && copySelection(ctx) && deleteSelection(ctx.tools.ctx) },
   {
