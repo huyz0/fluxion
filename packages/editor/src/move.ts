@@ -2,7 +2,7 @@
 // since members are placed in screen coordinates; a connector's free ends and waypoints), each moved
 // record's fields from where it started, and copies of it for an alt-drag. Pure: the select tool turns
 // these into element.updateMany and element.createMany commands.
-import type { ReadView } from '@fluxion/core';
+import { hasLock, type ReadView } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
 import { type AnyRecord, keyBetween, type RecordId } from '@fluxion/schema';
 import { roundGeom } from './round-geom.js';
@@ -32,12 +32,15 @@ function withMembers(view: ReadView, id: RecordId): RecordId[] {
 }
 
 /**
- * Where the elements `ids` and their members start, each once: what a move of them moves.
+ * Where the elements `ids` and their members start, each once: what a move of them moves. With `lock`, an element of `ids` holding
+ * that lock is left out with its members (FR-SHP-008: a drag or a nudge does not move a position-locked element, a turn does not
+ * turn a rotation-locked one).
  *
  * @public
  */
-export function starts(view: ReadView, ids: readonly RecordId[]): Start[] {
-  return startsOf(view, [...new Set(ids.flatMap((id) => withMembers(view, id)))]);
+export function starts(view: ReadView, ids: readonly RecordId[], lock?: 'position' | 'rotation'): Start[] {
+  const free = lock === undefined ? ids : ids.filter((id) => !hasLock(view, id, lock));
+  return startsOf(view, [...new Set(free.flatMap((id) => withMembers(view, id)))]);
 }
 
 /** Where each element of `all` starts. */
@@ -68,7 +71,7 @@ function withResized(view: ReadView, id: RecordId): RecordId[] {
  * Where what a resize of the elements `ids` changes starts, each once: as {@link starts}, but a resized frame's members stay where
  * they are (a frame reveals or hides what it holds, it does not scale it, ADR-0052), and a group's members, frames inside it and
  * their members included, are scaled with it. An element
- * listed with a container above it goes with that container.
+ * listed with a container above it goes with that container; one with a size lock is not resized (FR-SHP-008).
  *
  * @public
  */
@@ -83,7 +86,7 @@ export function resizeStarts(view: ReadView, ids: readonly RecordId[]): Start[] 
       if (listed.has(p)) return true;
     return false;
   };
-  return startsOf(view, [...new Set(ids.filter((id) => !above(id)).flatMap((id) => withResized(view, id)))]);
+  return startsOf(view, [...new Set(ids.filter((id) => !above(id) && !hasLock(view, id, 'size')).flatMap((id) => withResized(view, id)))]);
 }
 
 /** `p` moved by `d`, to the precision a gesture writes (the pointer's float noise stays out of the document). */

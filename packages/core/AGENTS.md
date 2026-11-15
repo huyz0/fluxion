@@ -21,7 +21,7 @@ Design: docs/architecture/03-core-engine.md; semantics: ADR-0014.
 
 ## Arrange and screens (M8)
 
-- `src/arrange/`: `element.group`/`ungroup` (members keep screen coordinates; the `core:5-group-bounds` hook refits a group's box), `element.align`, `element.distribute`, `element.matchSize`, `element.pasteStyle` (`match.ts`), `element.zOrder` (only moved elements get a new index), `element.reorder` (in front of a named sibling; the layers panel's drag).
+- `src/arrange/`: `element.group`/`ungroup` (members keep screen coordinates; the `core:5-group-bounds` hook refits a group's box), `element.align`, `element.distribute`, `element.matchSize`, `element.pasteStyle` (`match.ts`), `element.zOrder` (only moved elements get a new index), `element.reorder` (in front of a named sibling; the layers panel's drag). `locks.ts` (`hasLock`, `lockedWithin`): `movesFor` leaves a position-locked element still, match size skips `size` and keeps the ratio under `aspect`, paste style skips `edit` (FR-SHP-008).
 - `src/screens/`: `screen.rename`/`setHidden`/`setFormat`/`setNotes`/`setSection`/`duplicate` (new ids come from the caller), `section.*` (a section delete lets its screens go in the same transaction), `nextVisibleScreen`; `screen-order.ts` places screens and sections by fractional index.
 
 ## Tests

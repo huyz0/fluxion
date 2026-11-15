@@ -3,6 +3,7 @@
 // own move (editor/src/move.ts) does the same for a drag; arranging commands do it in core, undoably in one step.
 import type { RecordId } from '@fluxion/schema';
 import type { CommandContext } from '../commands.js';
+import { hasLock } from './locks.js';
 
 type Vec = { readonly x: number; readonly y: number };
 type Moving = {
@@ -48,11 +49,14 @@ export function outermost(ctx: CommandContext, ids: readonly RecordId[]): Record
   return [...new Set(ids)].filter((id) => !above(id));
 }
 
-/** The moves that put each of `deltas` (element → vector) and its members away: one patch per record that has something to move. */
+/**
+ * The moves that put each of `deltas` (element → vector) and its members away: one patch per record that has something to move. An
+ * element with a position lock stays where it is (FR-SHP-008); its box still counts where the command measures (an align's bounds).
+ */
 export function movesFor(ctx: CommandContext, deltas: ReadonlyMap<RecordId, Vec>): Array<{ readonly id: RecordId; readonly fields: Record<string, unknown> }> {
   const out: Array<{ id: RecordId; fields: Record<string, unknown> }> = [];
   for (const [id, d] of deltas) {
-    if (d.x === 0 && d.y === 0) continue;
+    if ((d.x === 0 && d.y === 0) || hasLock(ctx.store, id, 'position')) continue;
     for (const member of withMembers(ctx, id)) {
       const fields = translateFields(ctx.store.get(member) as Moving, d);
       if (Object.keys(fields).length > 0) out.push({ id: member, fields });

@@ -1,11 +1,12 @@
 // Distribute (FR-ARR-003, M8.7): space the selected elements evenly along an axis, by equal gaps between their drawn
 // bounds or equal distances between their centres, the outer two staying; or lay them out in order from the first with
-// a fixed gap. Groups move as one with their members (translate.ts); the whole is one undo step.
+// a fixed gap. Groups move as one with their members (translate.ts); a position-locked element is left out; the whole is one undo step.
 import type { RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
 import { drawnBounds } from './align.js';
+import { hasLock } from './locks.js';
 import { movesFor, outermost } from './translate.js';
 
 type Box = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
@@ -85,8 +86,9 @@ export const DISTRIBUTE_COMMANDS: readonly AnyCommand[] = [
       const ordered = outermost(ctx, args.ids as RecordId[]);
       const screens = new Set(ordered.map((x) => (ctx.store.get(x) as unknown as { screenId?: unknown }).screenId));
       if (screens.size > 1) return refuse('element.distribute', ['ids'], 'the elements are on different screens');
+      // a position-locked element keeps its place and is left out of the spacing: the others are spaced among themselves (FR-SHP-008)
       const movers = ordered.flatMap((x) => {
-        const box = drawnBounds(ctx, x);
+        const box = hasLock(ctx.store, x, 'position') ? undefined : drawnBounds(ctx, x);
         return box === undefined ? [] : [{ id: x as string, box }];
       });
       const shifts = distributeDeltas(movers, args.axis, args.by, args.gap);

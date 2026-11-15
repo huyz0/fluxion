@@ -493,6 +493,9 @@ export interface Hasher {
 export const hasIconSlots: (version: unknown) => boolean;
 
 // @public
+export function hasLock(view: ReadView, id: RecordId, lock: LockName): boolean;
+
+// @public
 interface History_2 {
     batch<R>(label: string, fn: () => R, options?: TxOptions): Result<R, TxFailure>;
     canRedo(): boolean;
@@ -536,6 +539,12 @@ export function isArtworkFontAlias(family: string): boolean;
 
 // @public
 export const isFontFormat: (version: unknown) => version is ShapePackFontFormat;
+
+// @public
+export function lockedWithin(view: ReadView, id: RecordId, lock: LockName): boolean;
+
+// @public
+export type LockName = "position" | "size" | "rotation" | "delete" | "edit" | "aspect" | "select";
 
 // @public
 export type LogEntry = {

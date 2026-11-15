@@ -12,8 +12,8 @@ import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboar
 import { exitGroup, groupSelection, ungroupSelection } from './group-edit.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
 import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, fitToScreen, LAYOUT_CHOICES, tidyUp } from './layout-arrange.js';
+import { deleteSelection, nudgeSelection, selectAll } from './select-actions.js';
 import { selectSame } from './select-same.js';
-import { deleteSelection, nudgeSelection, selectAll } from './select-tool.js';
 import { editSelectedText } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
 

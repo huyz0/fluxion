@@ -7,6 +7,7 @@ import type { RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from '../commands.js';
+import { hasLock, lockedWithin } from './locks.js';
 import { outermost, withMembers } from './translate.js';
 
 type Vec = { readonly x: number; readonly y: number };
@@ -73,6 +74,15 @@ function sizedTo(ctx: CommandContext, x: RecordId, w: number, h: number): Array<
   });
 }
 
+/**
+ * The size `t` takes from the key box `key` by `mode`; with `aspect` its ratio stays, the matched side deciding (`both`: the width).
+ */
+function matched(t: Placed, key: Placed, mode: 'width' | 'height' | 'both', aspect: boolean): { readonly w: number; readonly h: number } {
+  const to = { w: mode === 'height' ? t.w : key.w, h: mode === 'width' ? t.h : key.h };
+  if (!aspect || t.w === 0 || t.h === 0) return to;
+  return mode === 'height' ? { w: (t.w * to.h) / t.h, h: to.h } : { w: to.w, h: (t.h * to.w) / t.w };
+}
+
 /** `x` when it has a style of its own to take, or each of a group's members that does, all the way down. */
 function painted(ctx: CommandContext, x: RecordId): RecordId[] {
   return isGroup(ctx, x) ? ctx.store.members('byParent', x).flatMap((m) => painted(ctx, m)) : [x];
@@ -100,11 +110,14 @@ export const MATCH_COMMANDS: readonly AnyCommand[] = [
       if (key.transform === undefined) return refuse('element.matchSize', ['key'], `"${args.key}" has no box to match`);
       const sized = outermost(ctx, args.ids as RecordId[]).filter((x) => x !== args.key && get(ctx, x)?.transform !== undefined);
       if (sized.length === 0) return refuse('element.matchSize', ['ids'], 'no other element has a box to size');
-      const { w, h } = key.transform;
-      const patches = sized.flatMap((x) => {
-        const t = get(ctx, x)?.transform as Placed;
-        return sizedTo(ctx, x, args.mode === 'height' ? t.w : w, args.mode === 'width' ? t.h : h);
-      });
+      // a size lock skips the element; an aspect lock keeps its ratio (FR-SHP-008, M19 cp2 F3)
+      const patches = sized
+        .filter((x) => !hasLock(ctx.store, x, 'size'))
+        .flatMap((x) => {
+          const t = get(ctx, x)?.transform as Placed;
+          const to = matched(t, key.transform as Placed, args.mode, hasLock(ctx.store, x, 'aspect'));
+          return sizedTo(ctx, x, to.w, to.h);
+        });
       return write(ctx, 'element.matchSize', (tx) => {
         for (const p of patches) tx.patch(p.id, p.fields);
       });
@@ -119,7 +132,9 @@ export const MATCH_COMMANDS: readonly AnyCommand[] = [
       const bad = elements(ctx, 'element.pasteStyle', 'ids', args.ids) ?? checkIds(ctx, 'element.pasteStyle', 'element', [[['from'], args.from]]);
       if (bad) return bad;
       const from = get(ctx, args.from as RecordId) as El;
-      const targets = [...new Set(outermost(ctx, args.ids as RecordId[]).flatMap((x) => painted(ctx, x)))].filter((x) => x !== args.from);
+      // an element with an edit lock keeps its style (FR-SHP-008), and so do the members of a group that holds one, at any depth
+      const listed = outermost(ctx, args.ids as RecordId[]).filter((x) => !hasLock(ctx.store, x, 'edit'));
+      const targets = [...new Set(listed.flatMap((x) => painted(ctx, x)))].filter((x) => x !== args.from && !lockedWithin(ctx.store, x, 'edit'));
       if (targets.length === 0) return refuse('element.pasteStyle', ['ids'], 'no element to take the style');
       return write(ctx, 'element.pasteStyle', (tx) => {
         // the style as written, theme tokens and all; none when the source has none

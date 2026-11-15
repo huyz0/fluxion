@@ -2,6 +2,7 @@
 
 export type { Random } from '@fluxion/schema';
 export { dropReparents, type FrameUpdate, frameDropTarget, frameFlipped, frameTurned } from './arrange/frames.js';
+export { hasLock, type LockName, lockedWithin } from './arrange/locks.js';
 export { type Core, createCore } from './bootstrap.js';
 export { CORE_COMMANDS, registerCoreCommands } from './builtin-commands.js';
 export {

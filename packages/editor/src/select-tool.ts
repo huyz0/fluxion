@@ -4,54 +4,20 @@
 // ctrl/cmd + A selects all, Delete deletes) are keymap bindings whose commands call the functions
 // here while the tool is idle (M7.4). A drag is one gesture, so one undo step.
 
-import { dropReparents } from '@fluxion/core';
+import { dropReparents, hasLock } from '@fluxion/core';
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { adjusting, bending, type ConnectorGrab, connectorHandleUnder, ending, type ParamGrab, paramHandleUnder } from './handle-states.js';
 import { duplicates, moved, reframed, resizeStarts, restored, type Start, starts } from './move.js';
 import { frameBox, HANDLE_PX, type HandleId, handleAt, type Placed, selectionFrame } from './overlay-geometry.js';
 import { beginGesture, type Gesture, type PointerInfo } from './pointer.js';
+import { pickable } from './select-actions.js';
 import { clickSelection, DRAG_PX, marquee, union } from './selection.js';
 import { GRID_CELL, snapAngle, snapBox, snapResize } from './snap/snap.js';
 import { boundsOf, snapScreen, snapTargets } from './snap/targets.js';
 import { SELECT_TOOL, type StateNode, type Tool, type ToolCtx } from './tools.js';
 import { TOUCH } from './touch.js';
 import { type Box2, EDGES, handlePoint, resize, rotation } from './transform.js';
-
-/**
- * Nudge the selection by `d` page units, one undo step; false with nothing selected.
- *
- * @public
- */
-export function nudgeSelection(ctx: ToolCtx, d: Vec2): boolean {
-  const selected = ctx.session.selection.get();
-  if (selected.length === 0) return false;
-  // nothing of its own to move (a bound connector): the command refuses an empty list
-  ctx.execute('element.updateMany', { updates: moved(starts(ctx.view, selected), d) });
-  return true;
-}
-
-/**
- * Select every selectable element of the canvas's screen.
- *
- * @public
- */
-export function selectAll(ctx: ToolCtx): void {
-  ctx.session.selection.set(ctx.allElements());
-}
-
-/**
- * Delete the selection, one undo step, and select nothing; false with nothing selected.
- *
- * @public
- */
-export function deleteSelection(ctx: ToolCtx): boolean {
-  const ids = ctx.session.selection.get();
-  if (ids.length === 0) return false;
-  ctx.execute('element.delete', { ids });
-  ctx.session.selection.set([]);
-  return true;
-}
 
 /**
  * A drag of the selection under way: where it started, what moves, the gesture writing it, and for an
@@ -83,7 +49,9 @@ function startDrag(ctx: ToolCtx, page: Vec2, alt: boolean): Drag {
       return { page, from: starts(ctx.view, ids), gesture, ...snapping(ctx, ids), copies: { ids: copies.records.map((r) => r.id), before } };
     }
   }
-  return { page, from: starts(ctx.view, before), gesture, ...snapping(ctx, before) };
+  // a position-locked element stays, so neither its box nor its members snap with the drag (FR-SHP-008)
+  const movable = before.filter((id) => !hasLock(ctx.view, id, 'position'));
+  return { page, from: starts(ctx.view, movable), gesture, ...snapping(ctx, movable) };
 }
 
 /** What a drag of `ids` snaps to, or nothing when snapping is off or they have no box. */
@@ -147,6 +115,8 @@ type Handle = {
   readonly box: Box2;
   readonly page: Vec2;
   readonly from: readonly Start[];
+  /** Whether a selected element holds an aspect lock: the resize keeps the frame's ratio. */
+  readonly aspect: boolean;
   /** What a resize snaps to, as for a drag (absent: snapping is off). */
   readonly snap?: Drag['snap'];
 };
@@ -160,8 +130,10 @@ function handleUnder(ctx: ToolCtx, e: PointerInfo): Handle | undefined {
   const box = frameBox(placed);
   if (id === undefined || box === undefined) return undefined;
   // a turn carries every member (a frame's too); a resize changes a frame's box alone (ADR-0052)
-  const from = id === 'rotate' ? starts(ctx.view, selected) : resizeStarts(ctx.view, selected);
-  return { id, box, page: e.page, from, ...snapping(ctx, selected) };
+  // a rotation lock keeps an element's turn, a size lock its size; an aspect lock keeps the ratio as shift does (FR-SHP-008)
+  const from = id === 'rotate' ? starts(ctx.view, selected, 'rotation') : resizeStarts(ctx.view, selected);
+  const aspect = selected.some((x) => hasLock(ctx.view, x, 'aspect'));
+  return { id, box, page: e.page, from, aspect, ...snapping(ctx, selected) };
 }
 
 /**
@@ -226,7 +198,9 @@ type Press = {
  * and note what a drag from here would do.
  */
 function pressed(ctx: ToolCtx, e: PointerInfo, p: Press): void {
-  const hit = ctx.hitTest(e.page);
+  const under = ctx.hitTest(e.page);
+  // a press on a selection-locked element is a press on empty canvas
+  const hit = under !== undefined && pickable(ctx, under) ? under : undefined;
   const before = ctx.session.selection.get();
   const kept = hit !== undefined && before.includes(hit);
   if (!kept) ctx.session.selection.set(clickSelection(before, hit, e.shift));
@@ -338,7 +312,7 @@ function brushing(p: Press): StateNode {
     const press = p.marquee as NonNullable<Press['marquee']>;
     const { box, mode } = marquee(press.page, e.page);
     ctx.session.marquee.set(box);
-    const picked = ctx.elementsIn(box, mode);
+    const picked = ctx.elementsIn(box, mode).filter((id) => pickable(ctx, id));
     ctx.session.selection.set(press.shift ? union(press.before, picked) : picked);
   };
   return {
@@ -378,8 +352,9 @@ export function selectTool(): Tool {
       // the handle follows the pointer from where it was pressed (a finger presses beside it)
       resizing: transforming(p, 'resizing', (h, e, ctx) => {
         const at = handlePoint(h.box, h.id as HandleId);
-        const sized = resize(h.box, h.id as HandleId, { x: at.x + e.page.x - h.page.x, y: at.y + e.page.y - h.page.y }, e);
-        return snapped(ctx, h, sized, e);
+        const kept = h.aspect ? { ...e, shift: true } : e;
+        const sized = resize(h.box, h.id as HandleId, { x: at.x + e.page.x - h.page.x, y: at.y + e.page.y - h.page.y }, kept);
+        return snapped(ctx, h, sized, kept);
       }),
       adjusting: adjusting(p),
       ending: ending(p),
