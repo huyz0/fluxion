@@ -4,7 +4,8 @@
 // index and every category validated by the pack parsers under the caller's content policy. Pure: core's synchronous SHA-256.
 // A draft with `fonts` encodes as pack 1.1 (ADR-0192): its font metadata in the index and each exact font file, checked against
 // its resource, at `fonts/<sha256>.woff2`. A category text that is neither its slug nor the slug's title form is kept as the
-// category's display name, and the pack encodes as 1.2, which is 1.1 plus names (ADR-0210); every other pack's bytes are unchanged.
+// category's display name, and the pack encodes as 1.2, which is 1.1 plus names (ADR-0210); a definition with `iconSlots` makes it
+// 1.3, which is 1.2 plus icon slots (ADR-0054); every other pack's bytes are unchanged.
 // A draft with `connectors` also writes `connectors.json`, a `fluxion-connector-defs` 1.0 envelope beside the index (M18.250).
 import { type Diagnostic, err, ok, type Result } from '@fluxion/schema';
 import { type ConnectorDef, parseConnectorDefs } from '../connector-def.js';
@@ -13,7 +14,7 @@ import { utf8 } from '../hash/stable-id.js';
 import { describeOf } from '../registry.js';
 import type { ShapePackDistributionFontResource, ShapePackFonts, VersionedShapePackIndex } from './pack-font-types.js';
 import { parseVersionedShapePackCategory, parseVersionedShapePackIndex } from './pack-font-validation.js';
-import { CATEGORY_NAME_MAX, categoryNameProblem, categoryTitle, packHasFonts } from './pack-format.js';
+import { CATEGORY_NAME_MAX, categoryNameProblem, categoryTitle, packHasFonts, type ShapePackFontFormat } from './pack-format.js';
 import type { ShapePackCredit, ShapePackIndex, ShapePackLicensePolicy } from './pack-types.js';
 import { type CategoryEntries, categoryOfIndex } from './pack-validation.js';
 import { parseShapeDef, type ShapeDef } from './shape-def.js';
@@ -199,7 +200,7 @@ function checkCategories(
   envelopes: ReadonlyMap<string, unknown>,
   licensePolicy: ShapePackLicensePolicy,
 ): Result<true, readonly Diagnostic[]> {
-  // a 1.1 or 1.2 category also checks every definition's font closure against its index: that parser validates the index itself
+  // a 1.1, 1.2 or 1.3 category also checks every definition's font closure against its index: that parser validates the index itself
   if (packHasFonts(index)) {
     for (const [slug, envelope] of envelopes) {
       const category = parseVersionedShapePackCategory(envelope, index, slug, licensePolicy);
@@ -215,7 +216,7 @@ function checkCategories(
   }
   for (const [category, envelope] of envelopes) {
     const entries: CategoryEntries = bySlug.get(category) ?? new Map();
-    const checked = categoryOfIndex(envelope, { index: legacy, category, entries }, licensePolicy);
+    const checked = categoryOfIndex(envelope, { index: legacy, category, entries }, licensePolicy, false);
     if (!checked.ok) return err(checked.error.map((d) => ({ ...d, path: `/categories/${category}${d.path}` })));
   }
   return ok(true);
@@ -238,13 +239,20 @@ function categoryFilesOf(groups: ReadonlyMap<string, ShapeDef[]>, formatVersion:
   return { categoryFiles, envelopes, descriptors };
 }
 
-/** The index's font metadata: the draft's, an empty closure for a fontless 1.2 (which carries 1.1's fields), none for 1.0. */
+/** The pack format a draft encodes as: 1.3 with icon slots, else 1.2 with category names, else 1.1 with fonts, else 1.0. */
+function formatOf(iconSlots: boolean, names: boolean, fonts: boolean): '1.0' | ShapePackFontFormat {
+  if (iconSlots) return '1.3';
+  if (names) return '1.2';
+  return fonts ? '1.1' : '1.0';
+}
+
+/** The index's font metadata: the draft's, an empty closure for a fontless 1.2 or 1.3 (which carry 1.1's fields), none for 1.0. */
 function fontMetadataOf(fonts: ShapePackDraftFonts | undefined, formatVersion: string): Partial<ShapePackFonts<ShapePackDistributionFontResource>> {
   if (fonts !== undefined) {
     const { fontResources, fontFaces, definitionFonts, fontCredits } = fonts;
     return { fontResources, fontFaces, definitionFonts, fontCredits };
   }
-  return formatVersion === '1.2' ? { fontResources: [], fontFaces: [], definitionFonts: [], fontCredits: [] } : {};
+  return formatVersion === '1.2' || formatVersion === '1.3' ? { fontResources: [], fontFaces: [], definitionFonts: [], fontCredits: [] } : {};
 }
 
 /**
@@ -281,8 +289,13 @@ export function encodeShapePack(draft: ShapePackDraft, licensePolicy: ShapePackL
   if (!fonts.ok) return fonts;
   const connectors = connectorFiles(draft);
   if (!connectors.ok) return connectors;
-  // names need 1.2, which carries the 1.1 font metadata (empty without fonts); a pack without names is written exactly as before
-  const formatVersion = names.size > 0 ? '1.2' : draft.fonts === undefined ? '1.0' : '1.1';
+  // icon slots need 1.3 and names 1.2, which carry the 1.1 font metadata (empty without fonts); a pack with neither is written
+  // exactly as before (ADR-0054, ADR-0210)
+  const formatVersion = formatOf(
+    members.some((m) => m.def.iconSlots !== undefined),
+    names.size > 0,
+    draft.fonts !== undefined,
+  );
   const { categoryFiles, envelopes, descriptors } = categoryFilesOf(groupBySlug(members), formatVersion, names);
   const index = parseVersionedShapePackIndex(
     {

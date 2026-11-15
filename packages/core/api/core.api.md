@@ -464,9 +464,15 @@ export type HandleSubject = {
 export function handleValue(subject: HandleSubject, index: number, target: Vec2): number | undefined;
 
 // @public
+export const hasCategoryNames: (version: unknown) => boolean;
+
+// @public
 export interface Hasher {
     sha256(bytes: Uint8Array): Promise<string>;
 }
+
+// @public
+export const hasIconSlots: (version: unknown) => boolean;
 
 // @public
 interface History_2 {
@@ -749,6 +755,7 @@ export type ShapeDef = {
     readonly outline: OutlineSpec;
     readonly anchors?: readonly AnchorDef[];
     readonly textRegions?: readonly TextRegionDef[];
+    readonly iconSlots?: readonly TextRegionDef[];
     readonly handles?: readonly HandleDef[];
     readonly defaultSize: {
         readonly w: number;
@@ -865,7 +872,7 @@ export type ShapePackFontFace = {
 };
 
 // @public
-export type ShapePackFontFormat = "1.1" | "1.2";
+export type ShapePackFontFormat = "1.1" | "1.2" | "1.3";
 
 // @public
 export type ShapePackFontResource = {

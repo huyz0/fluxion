@@ -1,9 +1,10 @@
-// Pack format versions as one rule (ADR-0210, M18.211): 1.1 adds exact artwork fonts (ADR-0192) and 1.2 is 1.1 plus category
-// display names, so every reader that keeps fonts asks `packHasFonts`, never compares a version string. A category's display name
+// Pack format versions as one rule (ADR-0210, M18.211): 1.1 adds exact artwork fonts (ADR-0192), 1.2 is 1.1 plus category
+// display names and 1.3 is 1.2 plus definition icon slots (ADR-0054), so every reader that keeps fonts asks `packHasFonts`, one
+// that keeps names `hasCategoryNames` and one that keeps icon slots `hasIconSlots`, never compares a version string. A category's display name
 // is its `name` when the pack gives one, else `categoryTitle(slug)`: the encoder writes a name only when it differs from that.
 
-/** A pack format version that carries exact artwork fonts: 1.1, and 1.2 (1.1 plus category names). @public */
-export type ShapePackFontFormat = '1.1' | '1.2';
+/** A pack format version that carries exact artwork fonts: 1.1, 1.2 (1.1 plus category names) and 1.3 (1.2 plus icon slots). @public */
+export type ShapePackFontFormat = '1.1' | '1.2' | '1.3';
 
 /** Anything with a pack format version: an index, a category or a saved subset. @public */
 export type ShapePackVersioned = {
@@ -13,17 +14,23 @@ export type ShapePackVersioned = {
 
 /** A `T` whose format version carries exact artwork fonts. @public */
 export type ShapePackWithFonts<T extends ShapePackVersioned> = T & {
-  /** Format 1.1 or 1.2. */
+  /** Format 1.1, 1.2 or 1.3. */
   readonly formatVersion: ShapePackFontFormat;
 };
 
-/** Whether `pack` (an index, category or saved subset) carries exact artwork fonts: format 1.1 or 1.2. @public */
+/** Whether `pack` (an index, category or saved subset) carries exact artwork fonts: format 1.1, 1.2 or 1.3. @public */
 export function packHasFonts<T extends ShapePackVersioned>(pack: T): pack is ShapePackWithFonts<T> {
   return isFontFormat(pack.formatVersion);
 }
 
-/** Whether the format version `version` carries exact artwork fonts (`'1.1'` or `'1.2'`). @public */
-export const isFontFormat = (version: unknown): version is ShapePackFontFormat => version === '1.1' || version === '1.2';
+/** Whether the format version `version` carries exact artwork fonts (`'1.1'`, `'1.2'` or `'1.3'`). @public */
+export const isFontFormat = (version: unknown): version is ShapePackFontFormat => version === '1.1' || version === '1.2' || version === '1.3';
+
+/** Whether the format version `version` may hold category display names (`'1.2'` or `'1.3'`, ADR-0210). @public */
+export const hasCategoryNames = (version: unknown): boolean => version === '1.2' || version === '1.3';
+
+/** Whether the format version `version` may hold definitions with `iconSlots` (`'1.3'`, ADR-0054). @public */
+export const hasIconSlots = (version: unknown): boolean => version === '1.3';
 
 /** The longest category display name, in UTF-16 code units. @public */
 export const CATEGORY_NAME_MAX = 80;

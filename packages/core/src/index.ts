@@ -106,6 +106,8 @@ export {
   CATEGORY_NAME_MAX,
   categoryNameProblem,
   categoryTitle,
+  hasCategoryNames,
+  hasIconSlots,
   isFontFormat,
   packHasFonts,
   type ShapePackFontFormat,

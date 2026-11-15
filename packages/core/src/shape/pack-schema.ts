@@ -1,10 +1,12 @@
 import { checkedSchema, qualifiedNameSchema } from '@fluxion/schema';
 import { z } from 'zod';
 import type { ShapePackIndex11, ShapePackSubset11 } from './pack-font-types.js';
-import { categoryNameProblem } from './pack-format.js';
+import { categoryNameProblem, hasCategoryNames } from './pack-format.js';
 import type { ShapePackCategory, ShapePackIndex, ShapePackSubset } from './pack-types.js';
-import { shapeDefSchema } from './shape-def.js';
+import { type ShapeDef, shapeDef10Schema } from './shape-def.js';
 
+// a 1.0 definition is a ShapeDef without `iconSlots` (pack 1.3), so its output is a ShapeDef
+const def10 = shapeDef10Schema as z.ZodType<ShapeDef>;
 const text = z.string().regex(/\S/);
 const slug = z.string().regex(/^[a-z0-9][a-z0-9-]*$/);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -25,12 +27,12 @@ const credit = z.strictObject({
   source,
   definitionIds: z.array(qualifiedNameSchema).min(1).optional(),
 });
-// a category display name (ADR-0210): checked here, and allowed only in format 1.2 (1.0 is closed; 1.1 by `namesOnlyIn12`)
+// a category display name (ADR-0210): checked here, and allowed only in format 1.2 and 1.3 (1.0 is closed; 1.1 by `namesOnlyIn12`)
 const categoryName = z.string().superRefine((name, ctx) => {
   const problem = categoryNameProblem(name);
   if (problem !== undefined) ctx.addIssue({ code: 'custom', message: problem });
 });
-// the released 1.0 entry is closed (its published JSON Schema has no `name`); 1.1 and 1.2 share the entry with an optional name
+// the released 1.0 entry is closed (its published JSON Schema has no `name`); 1.1 to 1.3 share the entry with an optional name
 const categoriesOf = <T extends z.ZodType>(entry: T) =>
   z
     .unknown()
@@ -43,7 +45,7 @@ function namesOnlyIn12(
   value: { formatVersion: string; categories?: Record<string, { name?: string | undefined }>; categoryNames?: unknown },
   ctx: z.RefinementCtx,
 ): void {
-  if (value.formatVersion === '1.2') return;
+  if (hasCategoryNames(value.formatVersion)) return;
   for (const [slug, entry] of Object.entries(value.categories ?? {}))
     if (entry.name !== undefined) ctx.addIssue({ code: 'custom', path: ['categories', slug, 'name'], message: 'a category name needs format 1.2' });
   if (value.categoryNames !== undefined) ctx.addIssue({ code: 'custom', path: ['categoryNames'], message: 'category names need format 1.2' });
@@ -70,7 +72,7 @@ export const shapePackIndexSchema: z.ZodType<ShapePackIndex> = checkedSchema<Sha
 export const shapePackCategorySchema: z.ZodType<ShapePackCategory> = checkedSchema<ShapePackCategory>()(
   z.strictObject({
     formatVersion: z.literal('1.0'),
-    definitions: z.array(shapeDefSchema).min(1),
+    definitions: z.array(def10).min(1),
   }),
 );
 
@@ -92,7 +94,7 @@ const subsetHeader = {
 
 /** Structural saved-subset schema; geometry and credit semantics require parseShapePackSubset. @public */
 export const shapePackSubsetSchema: z.ZodType<ShapePackSubset> = checkedSchema<ShapePackSubset>()(
-  z.strictObject({ ...subsetHeader, definitions: z.array(shapeDefSchema).min(1) }),
+  z.strictObject({ ...subsetHeader, definitions: z.array(def10).min(1) }),
 );
 
 type SubsetEnvelope = Omit<ShapePackSubset, 'definitions'> & { definitions: unknown[] };
@@ -134,9 +136,9 @@ const fonts = <R extends z.ZodType>(resources: R) => ({
   fontCredits: z.array(fontCredit),
 });
 
-const fontFormat = z.enum(['1.1', '1.2']);
+const fontFormat = z.enum(['1.1', '1.2', '1.3']);
 
-/** Structural 1.1 or 1.2 index; closure, membership and rights require the versioned parser. @internal */
+/** Structural 1.1, 1.2 or 1.3 index; closure, membership and rights require the versioned parser. @internal */
 export const index11Schema: z.ZodType<ShapePackIndex11> = checkedSchema<ShapePackIndex11>()(
   z
     .strictObject({
@@ -155,14 +157,14 @@ export const index11Schema: z.ZodType<ShapePackIndex11> = checkedSchema<ShapePac
     .superRefine(namesOnlyIn12),
 );
 
-/** Structural 1.1 or 1.2 category header; definitions receive the existing parser's diagnostics. @internal */
-export const category11Schema: z.ZodType<{ formatVersion: '1.1' | '1.2'; definitions: unknown[] }> = z.strictObject({
+/** Structural 1.1, 1.2 or 1.3 category header; definitions receive the existing parser's diagnostics. @internal */
+export const category11Schema: z.ZodType<{ formatVersion: '1.1' | '1.2' | '1.3'; definitions: unknown[] }> = z.strictObject({
   formatVersion: fontFormat,
   definitions: z.array(z.unknown()).min(1),
 });
 
 type Subset11Envelope = Omit<ShapePackSubset11, 'definitions'> & { definitions: unknown[] };
-/** Structural 1.1 or 1.2 saved-subset header; geometry and closure require the versioned parser. @internal */
+/** Structural 1.1, 1.2 or 1.3 saved-subset header; geometry and closure require the versioned parser. @internal */
 export const subset11Schema: z.ZodType<Subset11Envelope> = checkedSchema<Subset11Envelope>()(
   z
     .strictObject({

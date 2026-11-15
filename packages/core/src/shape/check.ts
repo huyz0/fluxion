@@ -20,10 +20,19 @@ type Checked = {
     | { readonly points: string };
   readonly decorations?: readonly { readonly path: string }[] | undefined;
   readonly handles?: readonly { readonly x: string; readonly y: string }[] | undefined;
-  readonly textRegions?:
-    | readonly { readonly x: number | string; readonly y: number | string; readonly w: number | string; readonly h: number | string }[]
-    | undefined;
+  readonly textRegions?: readonly Box[] | undefined;
+  readonly iconSlots?: readonly Box[] | undefined;
 };
+type Box = { readonly x: number | string; readonly y: number | string; readonly w: number | string; readonly h: number | string };
+
+/** The expression issues of each box in `boxes`, a text region or icon slot list at `field`. */
+const boxIssues = (boxes: readonly Box[] | undefined, field: string, base: ReadonlySet<string>) =>
+  (boxes ?? []).flatMap((r, k) =>
+    (['x', 'y', 'w', 'h'] as const).flatMap((axis) => {
+      const v = r[axis];
+      return typeof v === 'string' ? expressionIssues(v, { at: [field, k, axis], allowed: base }) : [];
+    }),
+  );
 
 type Place = { readonly at: readonly (string | number)[]; readonly allowed: ReadonlySet<string> };
 
@@ -91,11 +100,7 @@ export function definitionIssues(def: Checked): DefinitionIssue[] {
       ...expressionIssues(h.x, { at: ['handles', k, 'x'], allowed: base }),
       ...expressionIssues(h.y, { at: ['handles', k, 'y'], allowed: base }),
     ]),
-    ...(def.textRegions ?? []).flatMap((r, k) =>
-      (['x', 'y', 'w', 'h'] as const).flatMap((axis) => {
-        const v = r[axis];
-        return typeof v === 'string' ? expressionIssues(v, { at: ['textRegions', k, axis], allowed: base }) : [];
-      }),
-    ),
+    ...boxIssues(def.textRegions, 'textRegions', base),
+    ...boxIssues(def.iconSlots, 'iconSlots', base),
   ];
 }

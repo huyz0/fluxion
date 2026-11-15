@@ -14,6 +14,8 @@ const read = (path: string) => readFileSync(new URL(path, root));
 const SUBSET = JSON.parse(read('fixtures/shape-pack/v1.1/subset.json').toString()) as ShapePackSubset11;
 /** The 1.0 fixture subset: a box and a triangle, no fonts. */
 const SUBSET10 = JSON.parse(read('fixtures/shape-pack/subset.json').toString()) as VersionedShapePackSubset;
+/** The 1.3 fixture subset: the 1.2 one (with category names) whose box has a badge icon slot. */
+const SUBSET13 = JSON.parse(read('fixtures/shape-pack/v1.3/subset.json').toString()) as ShapePackSubset11;
 const INTER = new Uint8Array(read('packs/fonts-core/fonts/inter-latin-400-normal.woff2'));
 const SHA = sha256Hex(INTER);
 const hasher = { sha256: async (bytes: Uint8Array) => sha256Hex(bytes) };
@@ -94,6 +96,23 @@ describe('My shapes carry the pack subsets they use (M18.122)', () => {
     expect(JSON.parse(exportMyShapes([plain.value])).formatVersion).toBe('1.0');
   });
 
+  it('FR-SHP-007, FR-LIB-008: an item using a 1.3 pack shape carries the 1.3 subset with its icon slot and its exact font bytes, and reads back', async () => {
+    const a = doc(['sample:box', 'sample:label']);
+    const saved = await saveMyShape(
+      a.core.store,
+      a.ids,
+      { id: 'slotted', name: 'Slotted' },
+      { source: SOURCE(a.screen), available: BUILT_IN, packs: savePacks([embedded(SUBSET13)]) },
+    );
+    if (!saved.ok) throw new Error(saved.reason);
+    const [pack] = saved.value.packs ?? [];
+    expect(pack?.subset.formatVersion).toBe('1.3');
+    expect(pack?.subset.definitions.find((d) => d.id === 'sample:box')?.iconSlots).toEqual([{ name: 'badge', x: 0.05, y: 0.1, w: 0.2, h: 0.8 }]);
+    // a font-bearing format past 1.1 keeps its font bytes (packHasFonts, not a version compare)
+    expect(Object.keys(pack?.fonts ?? {})).toEqual([SHA]);
+    expect(parseMyShapes(exportMyShapes([saved.value]), BUILT_IN)).toEqual({ ok: true, value: [saved.value] });
+  });
+
   it('FR-LIB-008, NFR-LIC-003: a shape with no pack source, or a font whose bytes are missing, is refused on save', async () => {
     const a = doc(['sample:label', 'other:thing']);
     const save = (packs: MyShapesPacks | undefined, ids = a.ids) =>
@@ -163,6 +182,9 @@ describe('My shapes carry the pack subsets they use (M18.122)', () => {
     for (const [subset, first, second] of [
       [SUBSET10, 'sample:box', 'sample:triangle'],
       [SUBSET, 'sample:box', 'sample:label'],
+      // a 1.3 pack: the slotted box saves as 1.3 and the label alone as 1.2, which merge into one 1.3 subset either way (M19.34 r1 F1)
+      [SUBSET13, 'sample:box', 'sample:label'],
+      [SUBSET13, 'sample:label', 'sample:box'],
     ] as const) {
       const a = await narrowed(subset, first);
       const b = await narrowed(subset, second);
@@ -175,18 +197,22 @@ describe('My shapes carry the pack subsets they use (M18.122)', () => {
         { ok: true, value: undefined },
         { ok: true, value: undefined },
       ]);
-      expect(r.shapeDefs.list().map(([id]) => id)).toEqual([first, second]);
+      expect(r.shapeDefs.list().map(([id]) => id)).toEqual([first, second].sort());
       // one source holds both shapes, so a save of a document using both embeds the pack once
       const [source] = set.sources();
       expect(set.sources()).toHaveLength(1);
-      expect(source?.kind === 'embedded' && source.subset.definitions.map((d) => d.id)).toEqual([first, second]);
+      expect(source?.kind === 'embedded' && source.subset.definitions.map((d) => d.id)).toEqual([first, second].sort());
+      if (subset === SUBSET13) {
+        expect([a, b].map((p) => p.subset.formatVersion)).toEqual(first === 'sample:box' ? ['1.3', '1.2'] : ['1.2', '1.3']);
+        expect(source?.kind === 'embedded' && source.subset).toMatchObject({ formatVersion: '1.3', categoryNames: { labels: 'Labels & Badges' } });
+      }
       const both = doc([first, second]);
       const saved = await packsFor(both.ids.map((id) => both.core.store.get(id)) as never, {
         sources: set.sources,
         builtinIds: new Set(['basic:rect']),
         hasher,
       });
-      expect(saved.ok && saved.value.map((p) => p.subset.definitions.map((d) => d.id))).toEqual([[first, second]]);
+      expect(saved.ok && saved.value.map((p) => p.subset.definitions.map((d) => d.id))).toEqual([[first, second].sort()]);
       set.dispose();
       expect(r.shapeDefs.list()).toEqual([]);
     }

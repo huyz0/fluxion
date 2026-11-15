@@ -155,6 +155,8 @@ export type ShapeDef = {
   readonly anchors?: readonly AnchorDef[];
   /** Text regions; default an inset box. */
   readonly textRegions?: readonly TextRegionDef[];
+  /** Icon slots, boxes as fractions like text regions, each filled by an element's `icons[name]` (ADR-0054; pack format 1.3). */
+  readonly iconSlots?: readonly TextRegionDef[];
   /** Drag handles. */
   readonly handles?: readonly HandleDef[];
   /** Size of a new element. */
@@ -235,13 +237,16 @@ const paramsSchema = z
   })
   .pipe(z.record(z.string(), z.union([numberParam, enumParam, pointsParam])));
 
+// a named box as fractions of the element: a text region or an icon slot
+const region = z.strictObject({ name: z.string().min(1), x: fraction, y: fraction, w: fraction, h: fraction });
 const shapeDefObject = z.strictObject({
   artwork: checkedArtworkSchema.optional(),
   id: qualifiedNameSchema,
   params: paramsSchema.optional(),
   outline: outlineSchema,
   anchors: z.array(anchorDefSchema).optional(),
-  textRegions: z.array(z.strictObject({ name: z.string().min(1), x: fraction, y: fraction, w: fraction, h: fraction })).optional(),
+  textRegions: z.array(region).optional(),
+  iconSlots: z.array(region).min(1).optional(),
   handles: z.array(z.strictObject({ param: z.string().min(1), x: expr, y: expr })).optional(),
   defaultSize: z.strictObject({ w: z.number().positive(), h: z.number().positive() }),
   defaultStyle: styleSchema.optional(),
@@ -280,6 +285,9 @@ function crossIssues(def: z.infer<typeof shapeDefObject>): Issue[] {
     const type = params[h.param]?.type;
     if (type !== 'number' && type !== 'int') issues.push({ path: ['handles', i, 'param'], message: `"${h.param}" is not a number or int param` });
   }
+  const slotNames = (def.iconSlots ?? []).map((s) => s.name);
+  for (const [i, name] of slotNames.entries())
+    if (slotNames.indexOf(name) !== i) issues.push({ path: ['iconSlots', i, 'name'], message: `icon slot "${name}" is named twice` });
   return [...issues, ...definitionIssues(def)];
 }
 
@@ -290,6 +298,18 @@ function crossIssues(def: z.infer<typeof shapeDefObject>): Issue[] {
  */
 export const shapeDefSchema: z.ZodType<ShapeDef> = checkedSchema<ShapeDef>()(
   shapeDefObject.superRefine((def, ctx) => {
+    for (const issue of crossIssues(def)) ctx.addIssue({ code: 'custom', path: [...issue.path], message: issue.message, params: { code: issue.code } });
+  }),
+);
+
+/**
+ * Schema of a shape definition as pack format 1.0 holds it: without `iconSlots` (pack 1.3, ADR-0054), so the published 1.0
+ * category and subset JSON Schemas stay the released ones.
+ *
+ * @internal
+ */
+export const shapeDef10Schema: z.ZodType<Omit<ShapeDef, 'iconSlots'>> = checkedSchema<Omit<ShapeDef, 'iconSlots'>>()(
+  shapeDefObject.omit({ iconSlots: true }).superRefine((def, ctx) => {
     for (const issue of crossIssues(def)) ctx.addIssue({ code: 'custom', path: [...issue.path], message: issue.message, params: { code: issue.code } });
   }),
 );

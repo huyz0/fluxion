@@ -28,7 +28,7 @@ export const shapePackLock10Schema: z.ZodType<ShapePackDataLock & { readonly pac
 >()(z.strictObject({ ...lockFields, packFormat: z.literal('1.0') }));
 // 1.1 retains exact artwork fonts (ADR-0192); 1.2 is 1.1 plus category names (ADR-0210)
 const lock11Schema = checkedSchema<ShapePackDataLock & { readonly packFormat: ShapePackFontFormat }>()(
-  z.strictObject({ ...lockFields, packFormat: z.enum(['1.1', '1.2']) }),
+  z.strictObject({ ...lockFields, packFormat: z.enum(['1.1', '1.2', '1.3']) }),
 );
 const listedSchema = z.object({ sha256: z.string().regex(/^[0-9a-f]{64}$/), size: z.number().int().nonnegative() });
 const object = (input: unknown): input is Record<string, unknown> => typeof input === 'object' && input !== null && !Array.isArray(input);

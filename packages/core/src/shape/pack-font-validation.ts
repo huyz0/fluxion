@@ -12,10 +12,10 @@ import type {
   VersionedShapePackIndex,
   VersionedShapePackSubset,
 } from './pack-font-types.js';
-import { isFontFormat } from './pack-format.js';
+import { hasIconSlots, isFontFormat } from './pack-format.js';
 import { category11Schema, index11Schema, subset11Schema } from './pack-schema.js';
 import type { ShapePackLicensePolicy } from './pack-types.js';
-import { parseShapePackCategory, parseShapePackIndex, parseShapePackSubset } from './pack-validation.js';
+import { categoryAgainst, parseShapePackCategory, parseShapePackIndex, parseShapePackSubset, subsetWith } from './pack-validation.js';
 import type { ShapeDef } from './shape-def.js';
 
 type At = readonly (string | number)[];
@@ -30,7 +30,7 @@ const issues = (items: readonly { path: readonly PropertyKey[]; message: string 
   );
 const versionOf = (input: unknown): unknown => (typeof input === 'object' && input !== null && 'formatVersion' in input ? input.formatVersion : undefined);
 const FONT_KEYS = ['fontResources', 'fontFaces', 'definitionFonts', 'fontCredits'] as const;
-/** The 1.0 view of a parsed 1.1 or 1.2 envelope (no fonts, no category names), so the unchanged 1.0 rules check its shared fields. */
+/** The 1.0 view of a parsed 1.1, 1.2 or 1.3 envelope (no fonts, no category names), so the unchanged 1.0 rules check its shared fields. */
 function legacyView<T extends object>(value: T): Record<string, unknown> {
   const out: Record<string, unknown> = { ...value, formatVersion: '1.0' };
   for (const key of FONT_KEYS) delete out[key];
@@ -199,10 +199,10 @@ function closureProblems(fonts: Fonts, definitions: readonly ShapeDef[], at: str
 }
 
 /**
- * Parse a pack index of version 1.0, 1.1 or 1.2. Version 1.0 uses `parseShapePackIndex` unchanged.
+ * Parse a pack index of version 1.0, 1.1, 1.2 or 1.3. Version 1.0 uses `parseShapePackIndex` unchanged.
  * Version 1.1 also validates exact resource, face, binding and scoped font-credit closure without
  * geometry or I/O; artwork text closure is checked when a category is acquired. Version 1.2 is 1.1
- * plus category display names (ADR-0210); a name in 1.0 or 1.1 is refused.
+ * plus category display names (ADR-0210); a name in 1.0 or 1.1 is refused. Version 1.3 is 1.2 plus definition `iconSlots` (ADR-0054).
  * @public
  */
 export function parseVersionedShapePackIndex(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackIndex, readonly Diagnostic[]> {
@@ -218,7 +218,7 @@ function parseIndex11(input: unknown, licensePolicy: ShapePackLicensePolicy): Re
 
 /**
  * Validate a complete category against its index; both must declare the same version.
- * Version 1.1 additionally requires every definition's artwork text closure to equal its binding.
+ * Version 1.1 additionally requires every definition's artwork text closure to equal its binding; only 1.3 holds `iconSlots`.
  * No accepted subset is returned on failure and nothing is registered.
  * @public
  */
@@ -235,7 +235,10 @@ export function parseVersionedShapePackCategory(
   const envelope = category11Schema.safeParse(input);
   if (!envelope.success) return err(issues(envelope.error.issues));
   const pack = metadata.value;
-  const legacy = parseShapePackCategory({ ...envelope.data, formatVersion: '1.0' }, legacyView(pack), category, licensePolicy);
+  const legacy = categoryAgainst({ ...envelope.data, formatVersion: '1.0' }, legacyView(pack), licensePolicy, {
+    category,
+    iconSlots: hasIconSlots(pack.formatVersion),
+  });
   if (!legacy.ok) return legacy;
   const errors = closureProblems(pack, legacy.value.definitions, 'definitions');
   const value: ShapePackCategory11 = { formatVersion: pack.formatVersion, definitions: legacy.value.definitions };
@@ -251,17 +254,18 @@ function namedCategoryProblems(names: Readonly<Record<string, string>> | undefin
 }
 
 /**
- * Parse a saved subset of version 1.0, 1.1 or 1.2. Version 1.0 uses `parseShapePackSubset` unchanged.
+ * Parse a saved subset of version 1.0, 1.1, 1.2 or 1.3. Version 1.0 uses `parseShapePackSubset` unchanged.
  * Version 1.1 validates every included definition's exact font closure and scoped font credits;
  * an empty font closure is valid and is never downgraded to 1.0. Version 1.2 is 1.1 plus `categoryNames`,
- * each naming a category an included definition uses (ADR-0210).
+ * each naming a category an included definition uses (ADR-0210). Version 1.3 is 1.2 plus definition `iconSlots` (ADR-0054);
+ * a definition with `iconSlots` in an earlier version is refused.
  * @public
  */
 export function parseVersionedShapePackSubset(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackSubset, readonly Diagnostic[]> {
   if (!isFontFormat(versionOf(input))) return parseShapePackSubset(input, licensePolicy);
   const parsed = subset11Schema.safeParse(input);
   if (!parsed.success) return err(issues(parsed.error.issues));
-  const legacy = parseShapePackSubset(legacyView(parsed.data), licensePolicy);
+  const legacy = subsetWith(legacyView(parsed.data), licensePolicy, hasIconSlots(parsed.data.formatVersion));
   if (!legacy.ok) return legacy;
   const definitions = legacy.value.definitions;
   const errors = [

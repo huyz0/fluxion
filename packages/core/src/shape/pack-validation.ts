@@ -20,6 +20,9 @@ function licenseProblem(value: string, policy: ShapePackLicensePolicy, path: At)
   }
   return [problem(path, 'license is not permitted by the supplied content policy')];
 }
+/** A definition's `iconSlots` where its envelope's format version holds none (before 1.3, ADR-0054). */
+const slotProblems = (def: ShapeDef, at: At, iconSlots: boolean): Diagnostic[] =>
+  iconSlots || def.iconSlots === undefined ? [] : [problem([...at, 'iconSlots'], 'icon slots need format 1.3')];
 function categoryProblems(index: ShapePackIndex): Diagnostic[] {
   const out: Diagnostic[] = [];
   if (Object.keys(index.categories).length === 0) out.push(problem(['categories'], 'at least one category is required'));
@@ -93,10 +96,20 @@ export function parseShapePackCategory(
   category: string,
   licensePolicy: ShapePackLicensePolicy,
 ): Result<ShapePackCategory, readonly Diagnostic[]> {
+  return categoryAgainst(input, index, licensePolicy, { category, iconSlots: false });
+}
+
+/** {@link parseShapePackCategory}, with definitions' `iconSlots` allowed when `iconSlots` (a 1.3 envelope's 1.0 view). @internal */
+export function categoryAgainst(
+  input: unknown,
+  index: unknown,
+  licensePolicy: ShapePackLicensePolicy,
+  { category, iconSlots }: { readonly category: string; readonly iconSlots: boolean },
+): Result<ShapePackCategory, readonly Diagnostic[]> {
   const metadata = parseShapePackIndex(index, licensePolicy);
   if (!metadata.ok) return metadata;
   const entries = new Map(metadata.value.definitions.filter((entry) => entry.category === category).map((entry) => [entry.id, entry]));
-  return categoryOfIndex(input, { index: metadata.value, category, entries }, licensePolicy);
+  return categoryOfIndex(input, { index: metadata.value, category, entries }, licensePolicy, iconSlots);
 }
 
 /** The index entries of `category` by definition id, for {@link categoryOfIndex}. */
@@ -113,6 +126,7 @@ export function categoryOfIndex(
   input: unknown,
   { index, category, entries }: IndexedCategory,
   licensePolicy: ShapePackLicensePolicy,
+  iconSlots = false,
 ): Result<ShapePackCategory, readonly Diagnostic[]> {
   if (!Object.hasOwn(index.categories, category)) return err([problem(['category'], 'category is not indexed')]);
   const envelope = categoryEnvelopeSchema.safeParse(input);
@@ -129,7 +143,7 @@ export function categoryOfIndex(
     }
     if (seen.has(def.value.id)) errors.push(problem([...at, 'id'], 'duplicate category definition'));
     seen.add(def.value.id);
-    errors.push(...metadataProblems(def.value, entries.get(def.value.id), category, at));
+    errors.push(...metadataProblems(def.value, entries.get(def.value.id), category, at), ...slotProblems(def.value, at, iconSlots));
     if (def.value.license !== undefined) errors.push(...licenseProblem(def.value.license, licensePolicy, [...at, 'license']));
     definitions.push(def.value);
   });
@@ -143,6 +157,11 @@ export function categoryOfIndex(
  * @public
  */
 export function parseShapePackSubset(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<ShapePackSubset, readonly Diagnostic[]> {
+  return subsetWith(input, licensePolicy, false);
+}
+
+/** {@link parseShapePackSubset}, with definitions' `iconSlots` allowed when `iconSlots` (a 1.3 envelope's 1.0 view). @internal */
+export function subsetWith(input: unknown, licensePolicy: ShapePackLicensePolicy, iconSlots: boolean): Result<ShapePackSubset, readonly Diagnostic[]> {
   const parsed = subsetEnvelopeSchema.safeParse(input);
   if (!parsed.success) return err(issues(parsed.error.issues));
   const definitions: ShapeDef[] = [];
@@ -158,6 +177,7 @@ export function parseShapePackSubset(input: unknown, licensePolicy: ShapePackLic
     if (seen.has(def.value.id)) errors.push(problem([...at, 'id'], 'duplicate saved definition'));
     seen.add(def.value.id);
     if (!def.value.id.startsWith(`${parsed.data.id}:`)) errors.push(problem([...at, 'id'], 'definition belongs to another namespace'));
+    errors.push(...slotProblems(def.value, at, iconSlots));
     if (def.value.license !== undefined) errors.push(...licenseProblem(def.value.license, licensePolicy, [...at, 'license']));
     definitions.push(def.value);
   });

@@ -322,6 +322,16 @@ including `labels.flux`). The encoder writes a name only for a category text tha
 own slug nor that slug's `categoryTitle`, so a pack without one keeps its 1.0 or 1.1 bytes. Names
 are refused in 1.0 and 1.1. Every font-bearing reader asks `packHasFonts` (1.1 or 1.2); a used 1.2
 source saves under `packFormat: '1.2'` with its fonts checked at the lock as in 1.1. Migration: none.
+
+### Pack 1.3 icon slots (ADR-0054)
+
+Pack 1.3 is 1.2 plus definition `iconSlots` (`{ name, x, y, w, h }` fractions, as `textRegions`; names
+unique), which an element fills through its `icons[name]` (schema 1.8). A definition with `iconSlots`
+is refused under a 1.0, 1.1 or 1.2 envelope ("icon slots need format 1.3"); the encoder writes 1.3
+only when a definition has one, and a saved subset none of whose used definitions has one is written
+as 1.2, so a file without icon slots stays readable by a 1.2 reader, which refuses a 1.3 envelope by
+its version. `hasIconSlots` and `hasCategoryNames` answer per version (fixture
+`fixtures/shape-pack/v1.3/subset.json`). Migration: none.
 ### Known shape data I/O (ADR-0184)
 
 Both loaders validate known locks and saved geometry before returning `LoadedFlux.shapePacks`.

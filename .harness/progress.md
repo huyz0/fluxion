@@ -4808,3 +4808,12 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - Core: `['element', 'fills', 'clear']` hook; `['fills']`, `['icons']` in REFERENCE_PATHS. Format: `usedAssetIds` walks `icons`; the lean reader opens 1.7. Every bundled file at 1.8; JSON Schema and schema api report regenerated.
 - Split: shape-pack format 1.3 for `iconSlots` is its own row M19.34 (the pack envelopes have their own 1.0/1.1/1.2 machinery across core and format); M19.17 depends on it; ADR-0054's Confirmation names it.
 - Node tests: 3376 run, 1 failed before the fix (cli.subset-fonts hard-coded schema 1.7; seven test files moved to 1.8), then the touched files 49/49.
+
+## 2026-11-15 M19.34: shape-pack format 1.3
+
+- `ShapeDef.iconSlots` (named fraction boxes, names unique, expressions checked as text regions'). Pack 1.3 is 1.2 plus slots: `isFontFormat`/`packHasFonts` admit it; new `hasCategoryNames` (1.2, 1.3) and `hasIconSlots` (1.3). A slotted definition is refused under a 1.0–1.2 envelope (internal `categoryAgainst`/`subsetWith` carry the flag to the 1.0 view); a 1.0 reader refuses a 1.3 envelope at `/formatVersion`.
+- Encoder writes 1.3 only for a draft with a slot; `usedSubset` writes a 1.3 source as 1.2 when no used definition has one. Lock `packFormat` and the CLI `pack import` reply admit 1.3 (schemas regenerated).
+- The released 1.0 category and subset JSON Schemas stay unchanged: their structural schemas use `shapeDef10Schema` (no `iconSlots`).
+- r1 F1: `mergeMyShapePacks` merges a 1.2 and a 1.3 subset of one pack version into 1.3 (with the union of category names); test inserts both orders. The merge and the pack types move to `my-shapes-merge.ts` (file size).
+- Fix found on the way: My shapes kept font bytes only for 1.1 subsets (`=== '1.1'`); now `packHasFonts`.
+- Fixture `fixtures/shape-pack/v1.3/subset.json` (v1.2's plus a badge slot); tests in core pack-format, format shape-pack-icon-slots, editor my-shapes-packs.

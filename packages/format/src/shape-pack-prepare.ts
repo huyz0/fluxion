@@ -229,7 +229,10 @@ function collectSources(inputs: readonly ShapePackSourceData[], policy: ShapePac
   return ok(sources);
 }
 
-/** The used subset of one source, validated in its own format version; never downgraded. */
+/**
+ * The used subset of one source, validated in its own format version, except that a 1.3 subset none of whose used definitions has
+ * `iconSlots` is written as 1.2 (1.3 is 1.2 plus icon slots, ADR-0054), so a document that uses none stays readable by a 1.2 reader.
+ */
 function usedSubset(
   subset: VersionedShapePackSubset,
   used: ReadonlySet<string>,
@@ -237,7 +240,8 @@ function usedSubset(
 ): Result<VersionedShapePackSubset, readonly Diagnostic[]> {
   const definitions = subset.definitions.filter((d) => used.has(d.id)).sort(byId);
   const { categoryNames: _, ...rest } = subset as ShapePackSubset11;
-  const header = { ...rest, definitions, credits: usedCredits(subset.credits, used) };
+  const formatVersion = subset.formatVersion === '1.3' && !definitions.some((d) => d.iconSlots !== undefined) ? '1.2' : subset.formatVersion;
+  const header = { ...rest, formatVersion, definitions, credits: usedCredits(subset.credits, used) };
   if (!packHasFonts(subset)) return parseVersionedShapePackSubset(header, policy);
   return parseVersionedShapePackSubset({ ...header, ...usedFonts(subset, used), ...namesOf(subset.categoryNames, definitions) }, policy);
 }
