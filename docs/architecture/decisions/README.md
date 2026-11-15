@@ -61,6 +61,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0051](ADR-0051-bounded-font-subsetting.md) | Bounded HarfBuzz/WOFF2 workers, deterministic subsets and lossless font fallback | accepted | 2026-10-25 |
 | [0052](ADR-0052-frames-and-containment.md) | Frames carry members in screen coordinates, clip drawing and hit-testing, and adopt dropped elements | accepted | 2026-11-14 |
 | [0053](ADR-0053-boolean-path-operations.md) | Boolean path ops: polybooljs on flattened outlines in geometry, re-fitted to cubics, stored as a core:path shape | accepted | 2026-11-14 |
+| [0054](ADR-0054-masters-tables-regions-schema.md) | Schema 1.8: master screens and placeholders, the table element, text regions and icon slots, aspect and selection locks, the path field | accepted | 2026-11-14 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
