@@ -130,8 +130,10 @@ function handleUnder(ctx: ToolCtx, e: PointerInfo): Handle | undefined {
   const box = frameBox(placed);
   if (id === undefined || box === undefined) return undefined;
   // a turn carries every member (a frame's too); a resize changes a frame's box alone (ADR-0052)
-  // a rotation lock keeps an element's turn, a size lock its size; an aspect lock keeps the ratio as shift does (FR-SHP-008)
-  const from = id === 'rotate' ? starts(ctx.view, selected, 'rotation') : resizeStarts(ctx.view, selected);
+  // a rotation lock keeps an element's turn, a size lock its size; an aspect lock keeps the ratio as shift does; in a frame of several
+  // a position-locked element is not carried with the others (FR-SHP-008, M19.15 r2 F1)
+  const carried = selected.length > 1 ? selected.filter((x) => !hasLock(ctx.view, x, 'position')) : selected;
+  const from = id === 'rotate' ? starts(ctx.view, carried, 'rotation') : resizeStarts(ctx.view, carried);
   const aspect = selected.some((x) => hasLock(ctx.view, x, 'aspect'));
   return { id, box, page: e.page, from, aspect, ...snapping(ctx, selected) };
 }

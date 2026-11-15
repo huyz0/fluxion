@@ -103,7 +103,7 @@ leg('FR-ARR-006 frames carry children by the same delta and reparent on drop, un
         named: [
           'a frame move carries its members by the same delta',
           'a frame resize leaves members unchanged',
-          'turn and flip carry members',
+          'flip carries members',
           'flipping a turned frame (φ) maps a member rot θ to 2φ − θ',
           'a drop into a live frame adopts the element as auto',
           'a hidden frame is never a drop target',
@@ -118,6 +118,8 @@ leg('FR-ARR-006 frames carry children by the same delta and reparent on drop, un
           'the resize handle on a selected frame leaves a member at its edge unchanged; a group resize still scales its member',
           'a group resize scales a frame inside it together with its own members',
           'a drag that drops a shape inside a frame reparents it',
+          // the one turn path of a frame (M19 cp2 F1)
+          'the rotate handle on a frame turns its members',
         ],
       }),
   ),
@@ -138,7 +140,12 @@ leg('FR-ARR-007 match size per mode; the format painter copies style only', () =
 leg('M8 handoff: align to a key object, distribute by centres and tidy to equal gaps from the arrange UI', () =>
   tests('packages/editor/src/arrange-panel.browser.test.tsx', { project: 'browser' }),
 );
-leg('FR-SHP-009 a flipped e anchor resolves to the west side and a bound connector follows', () => tests('packages/geometry/src/flip-anchors.test.ts'));
+leg('FR-SHP-009 a flipped e anchor resolves to the west side and a bound connector follows', () =>
+  all(
+    () => tests('packages/geometry/src/flip-anchors.test.ts'),
+    () => tests('packages/routing/src/flip-follow.test.ts'),
+  ),
+);
 leg('FR-SHP-007 a card shape renders three editable text regions and an icon slot', () =>
   tests('packages/render/src/text-regions.browser.test.tsx', { project: 'browser' }),
 );

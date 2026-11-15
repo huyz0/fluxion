@@ -2,7 +2,7 @@ import { createCore } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import { describe, expect, it } from 'vitest';
-import { alignSelection, distributeSelection, orderSelection } from './arrange-edit.js';
+import { alignSelection, distributeSelection, flipSelection, orderSelection } from './arrange-edit.js';
 import { createSession } from './session.js';
 import type { ToolCtx } from './tools.js';
 
@@ -53,5 +53,24 @@ describe('arranging the selection (FR-ARR-002, FR-ARR-003, FR-ARR-004)', () => {
     expect(t.core.store.history.undoDepth).toBe(depth + 1);
     t.session.selection.set([]);
     expect(orderSelection(t.ctx, 'back')).toBe(false);
+  });
+});
+
+describe('flipping the selection (FR-SHP-009)', () => {
+  it('FR-SHP-009: the selection flips each element about its own centre in one undo step; nothing selected does nothing', () => {
+    const t = setup();
+    const flips = (id: RecordId) => t.core.store.get(id) as unknown as { transform: { x: number; flipX?: boolean; flipY?: boolean } };
+    expect(flipSelection(t.ctx, 'x')).toBe(false);
+    t.session.selection.set([t.a, t.c]);
+    expect(flipSelection(t.ctx, 'x')).toBe(true);
+    expect([flips(t.a).transform, flips(t.c).transform]).toMatchObject([
+      { x: 20, flipX: true },
+      { x: 200, flipX: true },
+    ]);
+    expect(t.core.store.history.undoDepth).toBe(1);
+    expect(flipSelection(t.ctx, 'y')).toBe(true);
+    expect(flips(t.a).transform.flipY).toBe(true);
+    t.core.store.history.undo();
+    expect(flips(t.a).transform.flipY).toBeUndefined();
   });
 });

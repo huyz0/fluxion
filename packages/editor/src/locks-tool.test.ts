@@ -131,4 +131,16 @@ describe('locks in the select tool (FR-SHP-008)', () => {
     resized.tools.pointer(at('up', 103, 50));
     expect(resized.box(resized.a).w).toBe(103);
   });
+
+  it('FR-SHP-008: a handle gesture on several elements leaves a position-locked one where it is (M19.15 r2 F1)', () => {
+    const { session, tools, a, c, box } = setup({ position: true });
+    session.selection.set([a, c]);
+    // the frame of both spans 0..300: its rotate handle 24 px above the top edge's middle (150, 0), swept a quarter turn
+    tools.pointer(at('down', 150, -24));
+    tools.pointer(at('move', 324, 50, { shift: true }));
+    tools.pointer(at('up', 324, 50));
+    expect(box(a)).toMatchObject({ x: 0, y: 0, w: 100, h: 100 });
+    expect(box(a).rot ?? 0).toBe(0);
+    expect(box(c).rot).toBe(90);
+  });
 });

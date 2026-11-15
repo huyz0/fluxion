@@ -4,7 +4,7 @@
 // `execute`, or act on the session (camera, tool, selection, mode). Each returns whether it acted, so
 // a key it declines stays the tools' (or the browser's).
 
-import { ALIGN_MODES, alignSelection, DISTRIBUTE_AXES, distributeSelection, ORDER_MOVES, orderSelection } from './arrange-edit.js';
+import { ALIGN_MODES, alignSelection, DISTRIBUTE_AXES, distributeSelection, FLIP_AXES, flipSelection, ORDER_MOVES, orderSelection } from './arrange-edit.js';
 import type { AssetStore } from './asset-store.js';
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
@@ -231,6 +231,9 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   ),
   ...ORDER_MOVES.map(
     ([to, title]): EditorCommand => ({ id: `selection.order.${to}`, title, run: (ctx) => selectIdle(ctx) && orderSelection(ctx.tools.ctx, to) }),
+  ),
+  ...FLIP_AXES.map(
+    ([axis, title]): EditorCommand => ({ id: `selection.flip.${axis}`, title, run: (ctx) => selectIdle(ctx) && flipSelection(ctx.tools.ctx, axis) }),
   ),
   ...LAYOUT_CHOICES.flatMap(([name, words]): EditorCommand[] => [
     { id: `layout.arrange.screen.${name}`, title: `Arrange the screen (${words})`, run: (ctx) => selectIdle(ctx) && arrangeScreen(ctx, name) },

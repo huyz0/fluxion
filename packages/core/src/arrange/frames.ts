@@ -1,7 +1,7 @@
 // Frames carry their members (FR-ARR-006, ADR-0052, M19.10). Members keep screen coordinates, as a group's do, so a frame's move
-// is the move of every element below it (translate.ts `movesFor`), and its turn and flip are computed here: each member's centre
-// turned or mirrored about the frame's centre and its own turn and flips changed to match, so the frame and its content stay one
-// picture. A frame's resize changes its box alone (the editor's resize handle). A pointer drag that ends with an element's centre
+// is the move of every element below it (translate.ts `movesFor`), its turn the editor's rotate handle (which turns a group's members
+// the same way), and its flip is computed here (`elementFlipped`, which flips any element with what is below it): each member's centre
+// mirrored about the frame's centre and its own turn and flips changed to match, so the frame and its content stay one picture. A frame's resize changes its box alone (the editor's resize handle). A pointer drag that ends with an element's centre
 // inside a frame makes it that frame's member; one whose centre leaves its frame joins the frame's container. All of it is a list
 // of `element.updateMany` updates, so a gesture writes it in its own transaction: one undo step.
 import type { Vec2 } from '@fluxion/geometry';
@@ -53,10 +53,10 @@ function carried(r: El, at: (p: Vec) => Vec, box: (t: Placed, centre: Vec) => Re
   return fields;
 }
 
-/** `frame` and every element below it, each with the fields `map` gives it; none when `frame` is not a frame with a box. */
-function carry(view: ReadView, frame: RecordId, map: (r: El) => Record<string, unknown>): FrameUpdate[] {
-  if (el(view, frame)?.kind !== 'frame' || el(view, frame)?.transform === undefined) return [];
-  return [frame, ...below(view, frame)].flatMap((id) => {
+/** Element `top` and every element below it, each with the fields `map` gives it; none when `top` has no box. */
+function carry(view: ReadView, top: RecordId, map: (r: El) => Record<string, unknown>): FrameUpdate[] {
+  if (el(view, top)?.transform === undefined) return [];
+  return [top, ...below(view, top)].flatMap((id) => {
     const r = el(view, id);
     const fields = r?.type === 'element' ? map(r) : {};
     return Object.keys(fields).length === 0 ? [] : [{ id, fields }];
@@ -64,43 +64,31 @@ function carry(view: ReadView, frame: RecordId, map: (r: El) => Record<string, u
 }
 
 /**
- * The updates that turn frame `frame` by `deg` degrees with its members (ADR-0052): each one's centre turned about the frame's
- * centre and its own `rot` increased by `deg`; a connector's free ends and waypoints turned too. None when `frame` is no frame.
+ * The updates that flip element `id` with what is below it (FR-SHP-009, ADR-0052): horizontally (`'x'`) each one's centre is mirrored
+ * across the element's vertical centre line (turned with it, at `φ`), its `flipX` toggled and its `rot` θ mapped to `2φ − θ`;
+ * vertically (`'y'`) the same across the horizontal centre line with `flipY`. The element itself keeps its place and turn
+ * (2φ − φ = φ); a group's or a frame's members are carried. None when `id` has no box. `element.flip` runs it; a frame's turn is the
+ * editor's rotate handle, which carries members as it carries a group's (one path each, M19 cp2 F1, M19.16 r1 F1).
  *
  * @public
  */
-export function frameTurned(view: ReadView, frame: RecordId, deg: number): FrameUpdate[] {
-  const t = el(view, frame)?.transform;
-  if (t === undefined) return [];
-  const c = centreOf(t);
-  const [cos, sin] = [Math.cos(rad(deg)), Math.sin(rad(deg))];
-  const at = (p: Vec): Vec => ({ x: c.x + (p.x - c.x) * cos - (p.y - c.y) * sin, y: c.y + (p.x - c.x) * sin + (p.y - c.y) * cos });
-  return carry(view, frame, (r) => carried(r, at, (b, m) => ({ ...b, x: m.x - b.w / 2, y: m.y - b.h / 2, rot: turnOf((b.rot ?? 0) + deg) })));
-}
-
-/**
- * The updates that flip frame `frame` with its members (ADR-0052): horizontally (`'x'`) each one's centre is mirrored across the
- * frame's vertical centre line (turned with the frame, at `φ`), its `flipX` toggled and its `rot` θ mapped to `2φ − θ`; vertically
- * (`'y'`) the same across the horizontal centre line with `flipY`. The frame itself keeps its turn (2φ − φ = φ). None when `frame`
- * is no frame.
- *
- * @public
- */
-export function frameFlipped(view: ReadView, frame: RecordId, axis: 'x' | 'y'): FrameUpdate[] {
-  const t = el(view, frame)?.transform;
+export function elementFlipped(view: ReadView, id: RecordId, axis: 'x' | 'y'): FrameUpdate[] {
+  const t = el(view, id)?.transform;
   if (t === undefined) return [];
   const c = centreOf(t);
   const phi = t.rot ?? 0;
-  // the mirror line through the centre: the frame's own y axis for a horizontal flip, its x axis for a vertical one
+  // the mirror line through the centre: the element's own y axis for a horizontal flip, its x axis for a vertical one
   const line = rad(axis === 'x' ? phi + 90 : phi);
-  const u = { x: Math.cos(line), y: Math.sin(line) };
+  // a quarter turn's cosine is 6e-17, not 0: exact axes keep an unturned flip free of float noise
+  const exact = (v: number): number => (Math.abs(v) < 1e-12 ? 0 : v);
+  const u = { x: exact(Math.cos(line)), y: exact(Math.sin(line)) };
   const at = (p: Vec): Vec => {
     const d = { x: p.x - c.x, y: p.y - c.y };
     const along = d.x * u.x + d.y * u.y;
     return { x: c.x + 2 * along * u.x - d.x, y: c.y + 2 * along * u.y - d.y };
   };
   const flip = axis === 'x' ? 'flipX' : 'flipY';
-  return carry(view, frame, (r) =>
+  return carry(view, id, (r) =>
     carried(r, at, (b, m) => ({ ...b, x: m.x - b.w / 2, y: m.y - b.h / 2, rot: turnOf(2 * phi - (b.rot ?? 0)), [flip]: !b[flip] })),
   );
 }

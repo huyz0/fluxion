@@ -1341,6 +1341,18 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.selection.flip.x": {
+    "message": "Flip horizontally",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.flip.y": {
+    "message": "Flip vertically",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.selection.group": {
     "message": "Group",
     "origin": [

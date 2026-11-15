@@ -2,7 +2,7 @@
 // list of editor commands. Pure: the menu component (context-menu.tsx) shows it.
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
-import { ALIGN_MODES, DISTRIBUTE_AXES, ORDER_MOVES } from './arrange-edit.js';
+import { ALIGN_MODES, DISTRIBUTE_AXES, FLIP_AXES, ORDER_MOVES } from './arrange-edit.js';
 import type { EditorCommand } from './editor-commands.js';
 import { LAYOUT_CHOICES } from './layout-arrange.js';
 import { commandTitle } from './titles.js';
@@ -26,11 +26,12 @@ export type MenuItem = {
   readonly title: string;
 };
 
-/** The Arrange lines of the element menu: align, distribute and order. */
+/** The Arrange lines of the element menu: align, distribute, order and flip. */
 const ARRANGE = [
   ...ALIGN_MODES.map(([m]) => `selection.align.${m}`),
   ...DISTRIBUTE_AXES.map(([a]) => `selection.distribute.${a}`),
   ...ORDER_MOVES.map(([t]) => `selection.order.${t}`),
+  ...FLIP_AXES.map(([a]) => `selection.flip.${a}`),
   // the layout lines (M13.16)
   ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.selection.${n}`),
   'layout.arrange.container',

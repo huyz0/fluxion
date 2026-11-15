@@ -43,6 +43,8 @@ describe('context menu model (FR-EDT-013)', () => {
       'Bring forward',
       'Send backward',
       'Send to back',
+      'Flip horizontally',
+      'Flip vertically',
       // the layout lines (M13.16)
       'Arrange the selection (layered)',
       'Arrange the selection (grid)',

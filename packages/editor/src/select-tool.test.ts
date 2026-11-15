@@ -152,6 +152,21 @@ describe('frames under the select tool (FR-ARR-006, ADR-0052)', () => {
     expect(s.t('grpmember001')).toMatchObject({ x: 300, y: 300, w: 100, h: 100 });
   });
 
+  it('FR-ARR-006: the rotate handle on a frame turns its members about its centre (the one turn path of a frame)', () => {
+    const s = framed();
+    s.session.selection.set(['frameframe01' as RecordId]);
+    // the rotate handle 24 px above the top edge's middle (100, 300), swept a quarter turn about the centre (100, 400)
+    s.tools.pointer(at('down', 100, 276));
+    expect(s.tools.current).toBe('select.rotating');
+    s.tools.pointer(at('move', 224, 400, { shift: true }));
+    s.tools.pointer(at('up', 224, 400));
+    expect(s.t('frameframe01')).toMatchObject({ x: 0, y: 300, w: 200, h: 200, rot: 90 });
+    // the member's centre (175, 375) turned 90° about (100, 400): (125, 475), its own turn 90°
+    expect(s.t('membermember')).toEqual({ x: 100, y: 450, w: 50, h: 50, rot: 90 });
+    expect(s.core.store.history.undo().ok).toBe(true);
+    expect(s.t('membermember')).toEqual({ x: 150, y: 350, w: 50, h: 50, rot: 0 });
+  });
+
   it('FR-ARR-006: a group resize scales a frame inside it together with its own members', () => {
     const s = framed();
     const put = (r: Record<string, unknown>) => {

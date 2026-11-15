@@ -511,6 +511,7 @@ export const BENCH_COMMANDS = [
   'element.pasteStyle',
   'element.zOrder',
   'element.reorder',
+  'element.flip',
   'shape.replace',
   'document.update',
   'document.setTheme',

@@ -239,6 +239,8 @@ function arrangeArgs(shapes: readonly RecordId[]): Record<string, unknown> {
     'element.zOrder': { ids: [shapes[1420]], to: 'front' },
     // a shape of screen 5 placed in front of a neighbour (the layers panel's drag)
     'element.reorder': { id: shapes[1421], after: shapes[1423] },
+    // a shape of screen 5 mirrored left to right
+    'element.flip': { ids: [shapes[1424]], axis: 'x' },
   };
 }
 
@@ -291,6 +293,7 @@ export const COMMANDS = [
   'element.pasteStyle',
   'element.zOrder',
   'element.reorder',
+  'element.flip',
   'shape.replace',
   'document.update',
   'document.setTheme',

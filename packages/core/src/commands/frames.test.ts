@@ -5,7 +5,7 @@ import type { AnyRecord, DocumentFile, RecordId } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { dropReparents, frameDropTarget, frameFlipped, frameTurned } from '../arrange/frames.js';
+import { dropReparents, frameDropTarget } from '../arrange/frames.js';
 import { createCore } from '../bootstrap.js';
 
 type Box = { x: number; y: number; w: number; h: number; rot: number; flipX?: boolean; flipY?: boolean };
@@ -94,36 +94,30 @@ describe('frames carry their members (FR-ARR-006, ADR-0052)', () => {
     expect(s.el(s.group).transform).toMatchObject({ x: 700, y: 400, w: 400, h: 300 });
   });
 
-  it('FR-ARR-006: turn and flip carry members: a member turned 30° in a horizontally flipped frame ends at 330° with flipX toggled', () => {
+  it('FR-ARR-006: flip carries members: a member turned 30° in a horizontally flipped frame ends at 330° with flipX toggled', () => {
     const s = setup();
-    const turned = frameTurned(s.core.store, s.frame, 90);
-    expect(turned.map((u) => u.id)).toEqual([s.frame, s.a, s.b]);
-    expect(s.update(turned).ok).toBe(true);
-    // a's centre (160, 140) about the frame's centre (300, 250), turned 90°: (410, 110)
-    const a = s.el(s.a).transform;
-    expect([a.x + a.w / 2, a.y + a.h / 2].map((v) => Math.round(v * 1e6) / 1e6)).toEqual([410, 110]);
-    expect([s.el(s.frame).transform.rot, a.rot, s.el(s.b).transform.rot]).toEqual([90, 90, 120]);
-    expect(s.core.store.history.undo().ok).toBe(true);
-    expect(s.update(frameFlipped(s.core.store, s.frame, 'x')).ok).toBe(true);
+    // the user's path: element.flip, which the element menu's Flip horizontally runs (M19.16 r1 F1)
+    const flip = (axis: 'x' | 'y') => s.core.execute('element.flip', { ids: [s.frame], axis });
+    expect(flip('x').ok).toBe(true);
     const b = s.el(s.b).transform;
     expect(b).toMatchObject({ rot: 330, flipX: true });
     // b's centre (330, 280) mirrored across x = 300
     expect([b.x + b.w / 2, b.y + b.h / 2].map((v) => Math.round(v * 1e6) / 1e6)).toEqual([270, 280]);
     expect(s.el(s.frame).transform).toMatchObject({ x: 100, rot: 0, flipX: true });
     // a vertical flip toggles flipY and mirrors across y = 250
-    expect(s.update(frameFlipped(s.core.store, s.frame, 'y')).ok).toBe(true);
+    expect(flip('y').ok).toBe(true);
     expect(s.el(s.b).transform).toMatchObject({ rot: 30, flipX: true, flipY: true });
   });
 
   it('FR-ARR-006: flipping a turned frame (φ) maps a member rot θ to 2φ − θ and mirrors it across the turned centre line', () => {
     const s = setup({ frame: { transform: { x: 100, y: 100, w: 400, h: 300, rot: 20 } } });
-    expect(s.update(frameFlipped(s.core.store, s.frame, 'x')).ok).toBe(true);
+    expect(s.core.execute('element.flip', { ids: [s.frame], axis: 'x' }).ok).toBe(true);
     expect(s.el(s.frame).transform).toMatchObject({ rot: 20, flipX: true });
     expect(s.el(s.b).transform.rot).toBe(10);
     expect(s.el(s.a).transform.rot).toBe(40);
     // the mirror is an involution: flipping again restores every member's box
     const once = [s.a, s.b].map((id) => s.el(id).transform);
-    expect(s.update(frameFlipped(s.core.store, s.frame, 'x')).ok).toBe(true);
+    expect(s.core.execute('element.flip', { ids: [s.frame], axis: 'x' }).ok).toBe(true);
     const twice = [s.a, s.b].map((id) => s.el(id).transform);
     const original = setup({ frame: { transform: { x: 100, y: 100, w: 400, h: 300, rot: 20 } } });
     for (const [i, t] of twice.entries()) {

@@ -71,7 +71,7 @@ async function mount(options: { settings?: ReturnType<typeof memorySettings>; co
 
 describe('command palette (FR-EDT-011, FR-EDT-012)', () => {
   it('FR-EDT-011: every registered command appears', async () => {
-    const flip: EditorCommand = { id: 'plugin.flip', title: 'Flip the selection', run: () => true };
+    const flip: EditorCommand = { id: 'plugin.wobble', title: 'Wobble the selection', run: () => true };
     const { palette, titles } = await mount({ commands: [flip] });
     expect(palette()).toBeNull();
     // Ctrl/Cmd+K opens it, and the key is taken
@@ -83,14 +83,14 @@ describe('command palette (FR-EDT-011, FR-EDT-012)', () => {
       const named = c.title === 'Use a tool' ? 'Select tool' : c.title === 'Nudge the selection' ? 'Nudge left 1 px' : c.title;
       expect(shown.has(named), c.id).toBe(true);
     }
-    expect(shown.has('Flip the selection')).toBe(true);
+    expect(shown.has('Wobble the selection')).toBe(true);
   });
 
   it('FR-EDT-011: typing narrows the list, Enter runs the highlighted command and closes, Esc closes, keys stay in it', async () => {
     let flipped = 0;
     const flip: EditorCommand = {
-      id: 'plugin.flip',
-      title: 'Flip the selection',
+      id: 'plugin.wobble',
+      title: 'Wobble the selection',
       run: () => {
         flipped += 1;
         return true;
@@ -102,15 +102,15 @@ describe('command palette (FR-EDT-011, FR-EDT-012)', () => {
     expect(document.activeElement).toBe(input());
     // the canvas's keys do not act behind it
     expect(key('Delete', {}, input()).defaultPrevented).toBe(false);
-    type('flp');
-    expect(titles()).toEqual(['Flip the selection']);
+    type('wbl');
+    expect(titles()).toEqual(['Wobble the selection']);
     expect(options()[0]?.getAttribute('aria-selected')).toBe('true');
     expect(input().getAttribute('aria-activedescendant')).toBe(options()[0]?.id);
     type('zzzz');
     expect(titles()).toEqual([]);
     expect(host.textContent).toContain('No command matches');
     expect(inPalette('Enter').defaultPrevented).toBe(false);
-    type('flip');
+    type('wobble');
     inPalette('Enter');
     expect([flipped, palette()]).toEqual([1, null]);
     // arrows move the highlight and wrap; Enter on the second runs that one (undo of the change above)
@@ -127,7 +127,7 @@ describe('command palette (FR-EDT-011, FR-EDT-012)', () => {
     expect([core.store.history.canUndo(), palette()]).toEqual([false, null]);
     // a click runs a command too; Esc closes without running
     mod('k');
-    type('flip');
+    type('wobble');
     act(() => options()[0]?.click());
     expect([flipped, palette()]).toEqual([2, null]);
     mod('k');

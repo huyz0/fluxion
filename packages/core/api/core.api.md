@@ -303,6 +303,9 @@ export type EdgeKey = {
 export function effect(fn: () => void): () => void;
 
 // @public
+export function elementFlipped(view: ReadView, id: RecordId, axis: "x" | "y"): FrameUpdate[];
+
+// @public
 export type EncodedShapePack = {
     readonly files: ReadonlyMap<string, Uint8Array>;
     readonly index: VersionedShapePackIndex;
@@ -446,12 +449,6 @@ export type FontSpec = {
 
 // @public
 export function frameDropTarget(view: ReadView, screen: RecordId, p: Vec2, moving: ReadonlySet<RecordId>): RecordId | undefined;
-
-// @public
-export function frameFlipped(view: ReadView, frame: RecordId, axis: "x" | "y"): FrameUpdate[];
-
-// @public
-export function frameTurned(view: ReadView, frame: RecordId, deg: number): FrameUpdate[];
 
 // @public
 export type FrameUpdate = {

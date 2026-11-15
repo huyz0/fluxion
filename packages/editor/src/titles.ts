@@ -40,6 +40,8 @@ export const COMMAND_MESSAGES: Readonly<Record<string, MessageDescriptor>> = {
   'selection.order.forward': msg({ id: 'command.selection.order.forward', message: 'Bring forward' }),
   'selection.order.backward': msg({ id: 'command.selection.order.backward', message: 'Send backward' }),
   'selection.order.back': msg({ id: 'command.selection.order.back', message: 'Send to back' }),
+  'selection.flip.x': msg({ id: 'command.selection.flip.x', message: 'Flip horizontally' }),
+  'selection.flip.y': msg({ id: 'command.selection.flip.y', message: 'Flip vertically' }),
   'tool.use': msg({ id: 'command.tool.use', message: 'Use a tool' }),
   'selection.nudge': msg({ id: 'command.selection.nudge', message: 'Nudge the selection' }),
   'selection.all': msg({ id: 'command.selection.all', message: 'Select all' }),

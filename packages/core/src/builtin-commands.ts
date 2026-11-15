@@ -17,6 +17,7 @@ import {
 import { z } from 'zod';
 import { ALIGN_COMMANDS } from './arrange/align.js';
 import { DISTRIBUTE_COMMANDS } from './arrange/distribute.js';
+import { FLIP_COMMANDS } from './arrange/flip.js';
 import { GROUP_COMMANDS } from './arrange/group.js';
 import { MATCH_COMMANDS } from './arrange/match.js';
 import { Z_ORDER_COMMANDS } from './arrange/z-order.js';
@@ -95,6 +96,7 @@ export const CORE_COMMANDS: readonly AnyCommand[] = [
   ...MATCH_COMMANDS,
   ...DISTRIBUTE_COMMANDS,
   ...Z_ORDER_COMMANDS,
+  ...FLIP_COMMANDS,
   ...SCREEN_COMMANDS,
   ...SECTION_COMMANDS,
   ...THEME_COMMANDS,

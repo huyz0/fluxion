@@ -1,4 +1,4 @@
-// Arranging in the editor (FR-ARR-002, FR-ARR-003, FR-ARR-004, M8.26): the selection aligned, distributed and put
+// Arranging in the editor (FR-ARR-002, FR-ARR-003, FR-ARR-004, FR-SHP-009, M8.26): the selection aligned, distributed, flipped and put
 // forward or back, each one core command and so one undo step. Pure over the tool context; the keymap, the palette and
 // the menus call these through the editor commands below.
 import type { ToolCtx } from './tools.js';
@@ -17,6 +17,12 @@ export const ALIGN_MODES = [
 export const DISTRIBUTE_AXES = [
   ['horizontal', 'Distribute horizontally'],
   ['vertical', 'Distribute vertically'],
+] as const;
+
+/** The flip axes (FR-SHP-009): `x` mirrors left and right, `y` top and bottom. */
+export const FLIP_AXES = [
+  ['x', 'Flip horizontally'],
+  ['y', 'Flip vertically'],
 ] as const;
 
 /** The order moves. */
@@ -57,4 +63,15 @@ export function distributeSelection(ctx: ToolCtx, axis: (typeof DISTRIBUTE_AXES)
 export function orderSelection(ctx: ToolCtx, to: (typeof ORDER_MOVES)[number][0]): boolean {
   const ids = ctx.session.selection.get();
   return ids.length > 0 && ctx.execute('element.zOrder', { ids, to }).ok;
+}
+
+/**
+ * Flip the selection, each element about its own centre (a group's or a frame's members with it). False with nothing selected or when
+ * the document refuses (nothing with a box).
+ *
+ * @public
+ */
+export function flipSelection(ctx: ToolCtx, axis: (typeof FLIP_AXES)[number][0]): boolean {
+  const ids = ctx.session.selection.get();
+  return ids.length > 0 && ctx.execute('element.flip', { ids, axis }).ok;
 }
