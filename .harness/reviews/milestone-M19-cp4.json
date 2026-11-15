@@ -1,0 +1,62 @@
+{
+  "milestone": "M19",
+  "checkpoint": "cp4",
+  "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..0237f29bfad8955c3668aa5742cb2a210b3b0201",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "changes-requested",
+  "reviewedDelta": "Each commit after cp3's record aedb317 read as a diff: 7496f47 M19.39, f9a6035 M19.41, f1eedac M19.18, ee638c3 M19.19, db363af M19.20, f68b8f5 M19.21, 0237f29 M19.22. cp3's reopens traced (F1 M19.39 done; F2 M19.40 todo; F3 M19.35 and M19.16 amended; F4 in M19.35; F5 M19.42 todo). vitest node 10 files 55/55, browser 4 files 19/19; ci green at f68b8f5 (43738774768), all e2e shards on three engines. Mutants: removing the size refusal in masters.ts is caught (masters.test.ts, master-view.browser.test.tsx); keeping an off-outline anchor in keptAnchor is caught (boolean-command.test.ts); insertRowAbove inserting below survives (F6).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "summary": "The gate legs of this delta's features run whole files or nothing (cp1 Learned): the FR-SHP-010 leg names no boolean case and no leg runs e2e/geometry.boolean-engines.spec.ts, e2e/arrange.boolean.spec.ts or boolean-command.test.ts's one-undo case; M19.41's core:path tests (core, render, editor 'ignored' case) have no leg; FR-SHP-014's precedence case and the path-edit lock case are not named.",
+      "evidence": "scripts/gates/m19-complete.mjs FR-SHP-010 leg and SPECS; M19.42 lists FR-SHP-008/007/ARR-006/007/002/003 only"
+    },
+    {
+      "id": "F2",
+      "severity": "major",
+      "summary": "The cold-setup ≤ 420 s leg (M19.28) is green from one CI reading (334 s at f1eedac) while readings swing to 516 s (f68b8f5) and M19.28 is todo: one fast run meets its only checkable target.",
+      "evidence": ".harness/budget.json coldSetupMs 334000 from ci:43719363208; last-ci cold-setup 516 s at f68b8f5"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "f9a6035 (M19.41) changed packages/dsl/src/catalog/catalog.ts but its changeset names no @fluxion/dsl, so the changesets leg is red.",
+      "evidence": ".changeset/core-path-shape.md"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "summary": "M19.22's r2 minor (presenting the current screen from a master) was carried only in the commit body; M19.23's acceptance does not hold it.",
+      "evidence": "0237f29 body; docs/backlog/current.md M19.23"
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "summary": "Screen lists outside render do not use isMasterScreen: screen-png.ts inlines role !== 'master', the CLI outline lists masters as slides, and the studio library thumbnail can take a master and draws no master layer under a slide.",
+      "evidence": "packages/cli/src/screen-png.ts:57, packages/cli/src/ops/outline.ts:52-55, apps/studio/src/library/thumbnail.ts:72"
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "summary": "No test pins the direction of table insert and delete: the e2e counts cells and table-edit.test.ts runs insertRowBelow and insertColumnLeft only; insertRowAbove inserting below survives.",
+      "evidence": "e2e/table.edit.spec.ts:44-56; packages/editor/src/table-edit.test.ts:82-112"
+    },
+    {
+      "id": "F7",
+      "severity": "minor",
+      "summary": "Table styles are described three ways (schema tableStyleSchema, a loose theme fragment, a loose theme-command tree): a theme themeSchema accepts can hold a table style the store later refuses, reported as a generic record error.",
+      "evidence": "packages/schema/src/records/resources.ts:99,134; packages/theme/src/tokens.ts; packages/core/src/theme-commands.ts"
+    }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "note": "M19.42 amended: also name the FR-SHP-010 golden, bound and one-undo cases, add geometry.boolean-engines and arrange.boolean to the e2e legs, a core:path leg (core and editor path-shape, the 'ignored' case, render path-shape.browser), and the FR-SHP-014 precedence and merged-span and path-edit lock cases.", "target": "M19.42" },
+    { "finding": "F2", "disposition": "reopen", "note": "M19.28 amended: check-budget keeps a list of CI cold-setup readings and the m19-complete leg requires at least 3, each at a commit descended from M19.28's commit, median at or under 420 s, recorded by a bookkeeping commit before the final review.", "target": "M19.28" },
+    { "finding": "F3", "disposition": "reopen", "note": "New row M19.44: a @fluxion/dsl patch changeset for the catalog's core-shape filter.", "target": "M19.44" },
+    { "finding": "F4", "disposition": "reopen", "note": "M19.23 amended: Present from the current screen while a master is open starts at the first slide.", "target": "M19.23" },
+    { "finding": "F5", "disposition": "reopen", "note": "M19.23 amended: screen-png uses isMasterScreen; the studio library thumbnail skips masters and draws the master layer; the CLI outline omits masters (no --json shape change).", "target": "M19.23" },
+    { "finding": "F6", "disposition": "reopen", "note": "M19.43 amended: table-edit cases for insertRowAbove, insertColumnRight, deleteRow and deleteColumn pin which line moves and where the picked cell lands.", "target": "M19.43" },
+    { "finding": "F7", "disposition": "reopen", "note": "M19.35 amended: the theme's table-style schema and theme.set's tableStyles reuse or are pinned equal to schema tableStyleSchema, with a case refusing an image paint in a cell part at the theme boundary.", "target": "M19.35" }
+  ],
+  "planDelta": "44 rows against 31 planned (1.42x; about 1.9x the plan's 23 items). This delta added M19.43 (cell text editing split from M19.21) and cp4's M19.44 (a changeset); the other reopens amend M19.23, M19.28, M19.35, M19.42 and M19.43. 15 rows remain todo, the heavy ones (master UI, quick-connect, search, DSL, parity) contract-bearing: expect past 1.5x. M19.35 and M19.42 have absorbed three checkpoints of hygiene: split them at their next seam. Each feature row adds its named gate cases in its own commit (M19.22 did; M19.18, M19.20, M19.41 did not)."
+}
