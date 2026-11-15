@@ -1,0 +1,55 @@
+{
+  "milestone": "M19",
+  "checkpoint": "cp5",
+  "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..4042b8bee8097dbb01192c2ecd79dfd0037e02a0",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "Each commit after cp4's record 228c5ea read as a diff: 72aa72b M19.23, 0eca0b1 M19.46, f86bb00 M19.24, ab778b7 M19.25, a1952d1 M19.44, 7cbeae8 M19.47, 4042b8b M19.45. cp4's reopens: F3 done (M19.44, changesets leg PASS); F4 done in 72aa72b (present case named in the masters leg); F5 done at the three named sites (isMasterScreen moved to schema; residue F5 below); F1, F2, F6 and F7 are amended into M19.42, M19.28, M19.43 and M19.35, all still todo. The cold-setup leg is still green from one reading (328 s at 7cbeae8 after 334 s and 516 s), as cp4 F2 said; M19.28 holds the fix. last-ci: ci green at 7cbeae8 (43764435939), gates green at 4042b8b (43768206551). In the packet's local gate run the eight e2e legs fail on Firefox and WebKit, but the same specs pass in CI, so this looks like the local environment. Gate 26/42; the red legs are rows still todo. Mutants: measuring the quick-connect no-drag test from the side's middle again is caught (quick-connect.test.ts click case: the press sits beyond the edge); dropping the wrap in stepMatch is caught (find-model.test.ts wrap case); putting Close master's fallback back to dependentsOf().sort()[0] survives (F2).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "summary": "M19.45 r2's two minors are carried only in 4042b8b's body and have no row. (a) A group or frame placeholder from a file still shows a fill hint, because placeholdersOf lists it, but element.fillPlaceholder refuses it, so a double-click does nothing. (b) ModeSwitch's return type changed from void to boolean and nothing reads the result. ModeSwitch is the type of the public EditorKeysInput.switchMode, so a host that passes a void switch no longer type-checks, and the changeset is only a patch. PresentCtx and presentFrom are tagged @public but not exported.",
+      "evidence": "4042b8b body; packages/editor/src/present.tsx:79; packages/editor/src/index.ts:85 (EditorKeysInput); .changeset/master-edge-cases.md (editor patch); packages/editor/src/present-mode.ts:31-57"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "summary": "Close master's fallback, the first screen in navigator order that uses the master, is not pinned. In the setup only one dependent is left when the fallback runs, so going back to the lowest-id dependent (the r1 bug M19.45 fixed) still passes.",
+      "evidence": "packages/editor/src/master-edit.test.ts:87-99 (setup: brand, a, plain); packages/editor/src/master-edit.ts closeMaster"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "M19.45 and M19.46 add no named cases to m19-complete's FR-SCR-005 leg: the group/frame placeholder refusals, the Close master target, the all-master present notice and offersMasterLine. This goes against cp4 Learned. M19.24, M19.25 and M19.47 did name theirs.",
+      "evidence": "scripts/gates/m19-complete.mjs FR-SCR-005 leg (unchanged by 0eca0b1 and 4042b8b)"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "summary": "Review minors reached their receiving rows one commit late, twice. 72aa72b's body says its r1 minors were carried to M19.35, but M19.35 was not changed; M19.45 was created in f86bb00. f86bb00's r3 minors got M19.47 only in ab778b7. cp1 and cp4 Learned both ask for the receiving row in the same commit.",
+      "evidence": "72aa72b body and backlog diff (state cell only); f86bb00 and ab778b7 backlog diffs"
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "summary": "cp4 F5 residue: inline role === 'master' checks are still outside isMasterScreen. One of them, core screen-order.ts, was added by 72aa72b, the same commit that moved the predicate to schema.",
+      "evidence": "packages/core/src/screens/screen-order.ts:16; packages/cli/src/render.ts:28; packages/editor/src/master-problems.ts:72"
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "summary": "The packet's full-verify leg failed in harness-tests: build-settle.test.mjs:74 left a stuck-*.txt file behind on Linux during the loaded local gate run. CI is green at 7cbeae8.",
+      "evidence": "packet gate output, full verification leg; .harness/tmp/verify-logs/1794781063978-27857/harness-tests.log"
+    }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "target": "M19.48", "note": "New row M19.48 (M19.45 r2 minors and cp5 hygiene): placeholdersOf, or the fill hint, leaves out group and frame placeholders, with a case in master-edit.test.ts that shows no hint for a loaded group placeholder; ModeSwitch returns void again (the notice decided inside presentFrom or by reading the mode), or the change goes into a minor changeset; PresentCtx and presentFrom are exported or lose @public." },
+    { "finding": "F2", "disposition": "reopen", "target": "M19.48", "note": "M19.48: a master-edit.test.ts case where two screens still use the master and navigator order differs from id order, after the screen it was opened from drops the master; Close master shows the first in navigator order." },
+    { "finding": "F3", "disposition": "reopen", "target": "M19.48", "note": "M19.48: m19-complete's FR-SCR-005 leg names M19.45's refusal, Close master and all-master present cases and M19.46's offersMasterLine case." },
+    { "finding": "F4", "disposition": "argue", "note": "Both rows exist and are done, so no requirement was lost. Bodies are immutable on main. The cp5 Learned line repeats the rule: a commit that carries minors creates or amends the receiving row in that commit, and its body names that row." },
+    { "finding": "F5", "disposition": "reopen", "target": "M19.48", "note": "M19.48: core screen-order.ts, cli render.ts and editor master-problems.ts use isMasterScreen." },
+    { "finding": "F6", "disposition": "argue", "note": "This was a local run under the gate's own load, and CI is green. Under ADR-0176, a CI repeat of a stuck build-settle child after ac4f2d6 counts against M19.32's cause (cp1 F7) and needs the step annotations before another attempt. The final review's full-verify leg must pass in a quiet run." }
+  ],
+  "planDelta": "47 rows against 31 planned (1.52x, past 1.5x); cp5's M19.48 makes 48 (1.55x). This delta added two rows for per-commit review minors (M19.45, M19.47) and one CI-red fix (M19.46, from a menu-list e2e that M19.23 did not run, a repeat of the cp3 Learned rule). Each feature row now costs about two commits: the feature, then its review minors. 11 rows remain todo plus M19.48. The contract-bearing ones are M19.26 (DSL grammar and parity) and M19.28 (cold setup). M19.35 and M19.42 still hold four checkpoints of hygiene, so cp4's advice to split them stands. Later milestones should budget for a minors row per UI feature."
+}
