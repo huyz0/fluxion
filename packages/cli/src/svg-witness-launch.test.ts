@@ -3,6 +3,7 @@ import { expect, it, vi } from 'vitest';
 import { createWitnessCleanup } from './svg-witness-cleanup.js';
 import type { Browser, BrowserServer } from './svg-witness-driver.js';
 import { connectWitnessBrowser, processOwner, type WitnessBrowserDriver } from './svg-witness-launch.js';
+import { WITNESS_LAUNCH_TIMEOUT_MS, WITNESS_PAGE_TIMEOUT_MS, WITNESS_SETUP_BUDGET_MS } from './svg-witness-types.js';
 import { createWindowsTermination } from './svg-witness-windows.js';
 
 vi.mock('./svg-witness-windows.js', () => ({
@@ -41,12 +42,17 @@ it('NFR-SEC-001: Node witness launches only loopback ephemeral server and connec
   const f = fixture();
   const owned = vi.fn();
   const result = await connectWitnessBrowser(f.driver, { alive: () => true, own: owned });
-  expect(f.driver.launchServer).toHaveBeenCalledWith({ host: '127.0.0.1', port: 0, headless: true, timeout: 10000 });
-  expect(f.driver.connect).toHaveBeenCalledWith(f.server.wsEndpoint(), { timeout: 10000 });
+  expect(f.driver.launchServer).toHaveBeenCalledWith({ host: '127.0.0.1', port: 0, headless: true, timeout: WITNESS_LAUNCH_TIMEOUT_MS });
+  expect(f.driver.connect).toHaveBeenCalledWith(f.server.wsEndpoint(), { timeout: WITNESS_LAUNCH_TIMEOUT_MS });
   expect(owned).toHaveBeenCalledTimes(1);
   expect(result.browser).toBe(f.browser);
   expect(await result.close()).toBe(true);
   expect(f.server.kill).not.toHaveBeenCalled();
+});
+it('NFR-PORT-005: the launch, connection and page-load bounds tolerate a loaded runner and fit together in the setup budget', () => {
+  expect(WITNESS_LAUNCH_TIMEOUT_MS).toBeGreaterThanOrEqual(30000);
+  expect(WITNESS_PAGE_TIMEOUT_MS).toBeGreaterThanOrEqual(30000);
+  expect(2 * WITNESS_LAUNCH_TIMEOUT_MS + WITNESS_PAGE_TIMEOUT_MS).toBeLessThan(WITNESS_SETUP_BUDGET_MS);
 });
 it('NFR-SEC-001: rejected non-loopback endpoint is never connected and its owned server closes', async () => {
   const f = fixture();

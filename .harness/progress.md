@@ -4787,3 +4787,10 @@ round-allowance: M19.4 a fourth review round under Huy's 2026-11-05T11:04:52Z de
 - Independent milestone review over 5a3d0ee..94fb564: changes-requested, 7 findings (2 major). check-commits 8/8; harness node tests 92/92.
 - Reopened: F1/F2 into M19.10 (ADR-0052 r2 minors as an amendment with cases; its Confirmation as named cases incl. the select-tool resize handle; frames leg names them); F4 into M19.18 (turn limit by dot/cross against cos 10°, a three-engine byte e2e); F6 shas fixed here, M19.8's row requires its entry to match the ADR. r1 (changes-requested): Chromium is V8 like Node, so the e2e spans three engines; the nested-group leave is decided (joins the group); M19.md's Decide line fixed.
 - Argued: F3 (licence widened the ADR-0053 choice; M19.md fixed here), F5 (missing hand-off test case, next edit), F7 (a Windows build-settle repeat is attempt 2 under ADR-0176).
+
+## 2026-11-15 M19.33: main green again: the witness connection bound tolerates a loaded runner
+
+- ci 43658352359 at 0dfa628 (docs-only commits): cli-mcp (macos-latest) failed `cli.pack-import`'s corpus folder case with "Node SVG witness: transport" at 12.1 s; the same case is 6.3 s green at ac4f2d6, and the ZIP case failed only because the folder case writes its pack.
+- Read from the code and the timing: a launchServer timeout reports `peer-missing`, so it is ruled out; a 10 s timeout in `connect` or in the page's `setContent` (both after ~2 s launch, both ending as `transport`) fits the 12 s; the diagnostic does not say which (review r1).
+- Fix: WITNESS_LAUNCH_TIMEOUT_MS = 30 s for launch and connect, WITNESS_PAGE_TIMEOUT_MS = 30 s for setContent, WITNESS_SETUP_BUDGET_MS (118 s, unchanged, now also used by svg-witness-control) in svg-witness-types.ts; tests pin each call's bound and launch + connect + page < budget. Local: svg-witness tests 69/69, cli.pack-import 19/19.
+- If the transport failure repeats with this bound, it is attempt 2 under ADR-0176: add the failing stage to the diagnostic before attempt 3.

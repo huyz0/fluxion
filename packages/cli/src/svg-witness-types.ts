@@ -55,3 +55,13 @@ export function nodeWitnessFailure(kind: NodeSvgWitnessFailureKind): Err<NodeSvg
   const code = FAILURE_CODES[kind];
   return err({ kind, diagnostics: [{ code, severity: 'error', path: '', message: `Node SVG witness: ${kind}` }] });
 }
+/**
+ * Bound on each of the browser launch and the connection to it. A loaded CI runner took more than 10 s to answer the connection
+ * (ci 43658352359, macOS: the corpus import failed at 12 s against 6 s green); 30 s each keeps both, with the page load, inside the setup budget.
+ * @internal
+ */
+export const WITNESS_LAUNCH_TIMEOUT_MS = 30000;
+/** Bound on loading the witness page's markup in the connected browser; same reasoning as the launch bound. @internal */
+export const WITNESS_PAGE_TIMEOUT_MS = 30000;
+/** The whole witness setup's budget: driver, artifact, launch, connection and page. @internal */
+export const WITNESS_SETUP_BUDGET_MS = 118000;

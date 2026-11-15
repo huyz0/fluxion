@@ -1,6 +1,7 @@
 import type { WitnessCleanup } from './svg-witness-cleanup.js';
 import type { Browser, BrowserServer } from './svg-witness-driver.js';
 import { type BrowserProcessOwner, ownBrowserProcess } from './svg-witness-process.js';
+import { WITNESS_LAUNCH_TIMEOUT_MS } from './svg-witness-types.js';
 import { createWindowsTermination } from './svg-witness-windows.js';
 
 export type WitnessBrowserKind = 'chromium' | 'firefox' | 'webkit';
@@ -45,12 +46,12 @@ function endpoint(server: BrowserServer): string {
 /** Register ownership before connecting; a late launch after cancellation can only close. */
 export async function connectWitnessBrowser(driver: WitnessBrowserDriver, scope: WitnessBrowserScope): Promise<WitnessBrowserConnection> {
   if (!scope.alive()) throw Error('cancelled browser launch');
-  const server = await driver.launchServer({ host: '127.0.0.1', port: 0, headless: true, timeout: 10000 });
+  const server = await driver.launchServer({ host: '127.0.0.1', port: 0, headless: true, timeout: WITNESS_LAUNCH_TIMEOUT_MS });
   const owner = processOwner(server, scope.cleanup);
   try {
     scope.own(owner);
     if (!scope.alive()) throw Error('cancelled browser connection');
-    const browser = await driver.connect(endpoint(server), { timeout: 10000 });
+    const browser = await driver.connect(endpoint(server), { timeout: WITNESS_LAUNCH_TIMEOUT_MS });
     if (!scope.alive()) throw Error('cancelled browser connection');
     return { browser, close: owner.close };
   } catch (cause) {

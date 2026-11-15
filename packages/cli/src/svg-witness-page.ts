@@ -1,6 +1,7 @@
 import type { SvgWitnessOptions, SvgWitnessSession } from '@fluxion/render/svg-witness';
 import type { Browser, Page } from './svg-witness-driver.js';
 import type { PreparedWitnessInput } from './svg-witness-input.js';
+import { WITNESS_PAGE_TIMEOUT_MS } from './svg-witness-types.js';
 
 type ClientScript = { nonce: string; textContent: string };
 export type WitnessClientState = {
@@ -32,7 +33,7 @@ export async function prepareWitnessPage(
     ensureAlive(scope);
     const page = await context.newPage();
     ensureAlive(scope);
-    await page.setContent(HTML, { timeout: 10000 });
+    await page.setContent(HTML, { timeout: WITNESS_PAGE_TIMEOUT_MS });
     ensureAlive(scope);
     await page.evaluate(
       ({ code, nonce }) => {

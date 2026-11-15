@@ -1,6 +1,7 @@
 import { expect, it, vi } from 'vitest';
 import type { Browser, BrowserContext, Page } from './svg-witness-driver.js';
 import { prepareWitnessPage } from './svg-witness-page.js';
+import { WITNESS_PAGE_TIMEOUT_MS } from './svg-witness-types.js';
 
 it('NFR-SEC-001: routing containment is installed before page creation and inputs never enter markup', async () => {
   const order: string[] = [];
@@ -29,6 +30,7 @@ it('NFR-SEC-001: routing containment is installed before page creation and input
   expect(order).toEqual(['route', 'page', 'content']);
   expect(abort).toHaveBeenCalledTimes(1);
   const markup = vi.mocked(page.setContent).mock.calls[0]?.[0];
+  expect(vi.mocked(page.setContent).mock.calls[0]?.[1]).toEqual({ timeout: WITNESS_PAGE_TIMEOUT_MS });
   expect(markup).toContain("default-src 'none'");
   expect(markup).not.toContain('evil.invalid');
   expect(vi.mocked(page.evaluate).mock.calls[1]?.[1]).toEqual(input);

@@ -14,6 +14,7 @@ import {
   type NodeSvgWitnessOptions,
   type NodeSvgWitnessSession,
   nodeWitnessFailure,
+  WITNESS_SETUP_BUDGET_MS,
 } from './svg-witness-types.js';
 
 export type { NodeSvgWitnessFailure, NodeSvgWitnessFailureKind, NodeSvgWitnessOptions, NodeSvgWitnessSession } from './svg-witness-types.js';
@@ -95,7 +96,7 @@ export async function createNodeSvgPaintWitness(options: NodeSvgWitnessOptions):
     }
     startupKind = 'transport';
     return prepareWitnessPage(connection.browser, input, bundle, control);
-  }, 118000);
+  }, WITNESS_SETUP_BUDGET_MS);
   if (!setup.ok) return nodeWitnessFailure(setup.kind === 'transport' ? startupKind : setup.kind);
   if (!setup.value.accepted) return nodeWitnessFailure((await control.dispose()) ? 'invalid-input' : 'cleanup');
   return ok(session(setup.value.page, control));

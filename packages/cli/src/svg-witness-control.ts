@@ -1,3 +1,4 @@
+import { WITNESS_SETUP_BUDGET_MS } from './svg-witness-types.js';
 export type WitnessFailureKind = 'deadline' | 'cancelled' | 'cleanup' | 'transport' | 'busy' | 'disposed';
 export type ControlledResult<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly kind: WitnessFailureKind };
 export type WitnessControl = {
@@ -28,7 +29,7 @@ export function controlWitness(cleanup: { readonly close: () => Promise<boolean>
   };
   const lifetime = setTimeout(() => {
     void close('deadline');
-  }, 118000);
+  }, WITNESS_SETUP_BUDGET_MS);
   signal?.addEventListener('abort', abort, { once: true });
   if (signal?.aborted) abort();
   const failure = async (): Promise<ControlledResult<never>> => ({ ok: false, kind: (await closing) ? (reason ?? 'disposed') : 'cleanup' });
@@ -40,7 +41,7 @@ export function controlWitness(cleanup: { readonly close: () => Promise<boolean>
       () => {
         void close('deadline');
       },
-      Math.min(budget, 118000),
+      Math.min(budget, WITNESS_SETUP_BUDGET_MS),
     );
     try {
       const value = await Promise.race([
