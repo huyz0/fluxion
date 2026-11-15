@@ -510,6 +510,7 @@ export const BENCH_COMMANDS = [
   'element.matchSize',
   'element.pasteStyle',
   'element.zOrder',
+  'element.reorder',
   'shape.replace',
   'document.update',
   'document.setTheme',

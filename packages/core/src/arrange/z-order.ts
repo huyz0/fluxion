@@ -4,8 +4,8 @@
 import { compareKeys, keyBetween, type RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
-import { type AnyCommand, defineCommand } from '../commands.js';
-import { element, siblings } from './siblings.js';
+import { type AnyCommand, type CommandContext, defineCommand } from '../commands.js';
+import { type El, element, siblings } from './siblings.js';
 import { outermost } from './translate.js';
 
 /**
@@ -77,7 +77,22 @@ function newKeys(
   return { keys };
 }
 
-/** The z-order command (FR-ARR-004). */
+/**
+ * The index that puts `moved` right in front of its sibling `after` (at the back when absent), or why none exists:
+ * `after` must be another element under the same parent of the same screen. Only `moved`'s key is new (FR-ARR-008).
+ */
+function indexInFront(ctx: CommandContext, moved: El, after: string | undefined): { readonly key: string } | { readonly problem: string } {
+  const list = siblings(ctx, moved.screenId, moved.parentId).filter((e) => e.id !== moved.id);
+  const at = after === undefined ? -1 : list.findIndex((e) => e.id === after);
+  if (after !== undefined && at < 0) return { problem: `"${after}" is not a sibling of "${moved.id}"` };
+  const [lower, upper] = [list[at]?.index ?? null, list[at + 1]?.index ?? null];
+  // an element already in that place keeps its key: nothing is written
+  if ((lower === null || compareKeys(moved.index, lower) > 0) && (upper === null || compareKeys(moved.index, upper) < 0)) return { key: moved.index };
+  const key = keyBetween(lower, upper);
+  return key.ok ? { key: key.value } : { problem: key.error.message };
+}
+
+/** The z-order commands (FR-ARR-004, FR-ARR-008). */
 export const Z_ORDER_COMMANDS: readonly AnyCommand[] = [
   defineCommand({
     id: 'element.zOrder',
@@ -108,6 +123,25 @@ export const Z_ORDER_COMMANDS: readonly AnyCommand[] = [
       }
       return write(ctx, 'element.zOrder', (tx) => {
         for (const [x, key] of writes) tx.patch(x, { index: key });
+      });
+    },
+  }),
+  defineCommand({
+    id: 'element.reorder',
+    title: title('element.reorder', 'Move layer'),
+    // `after`: the sibling it is drawn right in front of; absent → the back. The layers panel's drag (FR-ARR-008).
+    args: z.object({ id, after: id.optional() }),
+    run: (ctx, args) => {
+      const refs: Array<readonly [ReadonlyArray<string | number>, string]> = [[['id'], args.id]];
+      if (args.after !== undefined) refs.push([['after'], args.after]);
+      const bad = checkIds(ctx, 'element.reorder', 'element', refs);
+      if (bad) return bad;
+      if (args.after === args.id) return refuse('element.reorder', ['after'], 'an element cannot be placed in front of itself');
+      const moved = element(ctx, args.id);
+      const placed = indexInFront(ctx, moved, args.after);
+      if ('problem' in placed) return refuse('element.reorder', ['after'], placed.problem);
+      return write(ctx, 'element.reorder', (tx) => {
+        if (placed.key !== moved.index) tx.patch(moved.id, { index: placed.key });
       });
     },
   }),

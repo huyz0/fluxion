@@ -237,6 +237,8 @@ function arrangeArgs(shapes: readonly RecordId[]): Record<string, unknown> {
     'element.pasteStyle': { from: shapes[1450], ids: [shapes[1451], shapes[1452]] },
     // a shape of screen 5 to the front
     'element.zOrder': { ids: [shapes[1420]], to: 'front' },
+    // a shape of screen 5 placed in front of a neighbour (the layers panel's drag)
+    'element.reorder': { id: shapes[1421], after: shapes[1423] },
   };
 }
 
@@ -288,6 +290,7 @@ export const COMMANDS = [
   'element.matchSize',
   'element.pasteStyle',
   'element.zOrder',
+  'element.reorder',
   'shape.replace',
   'document.update',
   'document.setTheme',

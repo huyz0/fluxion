@@ -40,6 +40,6 @@ Design: ADR-0028 (interaction architecture) and ADR-0029 (the chrome); 04 §3.
 
 - **arrange** (`group-edit.ts`, `arrange-edit.ts`): group, enter a group (`session.entered`), align, distribute and order the selection; each is one core command (`element.group`, `element.align`, `element.distribute`, `element.zOrder`) and one undo step.
 - **snap** (`snap/snap.ts` pure, `snap/targets.ts`, `snap/use-snap-setting.ts`): `snapBox` and `snapAngle` (8 px over the zoom, Alt/Ctrl bypass); the select tool snaps a drag and fills `session.guides`; the toolbar toggle is `session.snap`, persisted in settings.
-- **screens** (`screens-tab.tsx`, `navigator/`): the navigator (thumbnails drawn only once seen, drag reorder, rename, hide, formats, sections with folding), `notes-panel.tsx` (speaker notes); all through `screen.*` and `section.*` commands.
+- **screens** (`screens-tab.tsx`, `navigator/`): the navigator (thumbnails drawn only once seen, drag reorder, rename, hide, formats, sections with folding), `notes-panel.tsx` (speaker notes); all through `screen.*` and `section.*` commands. `layers-tab.tsx` and `layers-model.ts`: the Layers tab, the shown screen's element tree front first; a drag among siblings runs `element.reorder`, Alt+Arrow `element.zOrder`, the toggles `element.update` of `hidden` or `locks` (position, size, rotation, select).
 - **library** (`library/`): `library-search.ts` (pure token index), `library-panel.tsx`, `library-insert.ts` (click or drop inserts; `session.library` is what the shape tool places).
 

@@ -77,6 +77,7 @@ function leftTabsFor(props: EditBodyProps, library: LibraryPanelProps, onRemap: 
       problems={{ store, session, execute }}
       notes={{ store, execute, screenId }}
       library={library}
+      layers={{ store, session, execute, screenId }}
       source={sourceRegistries === undefined ? undefined : { store, execute, registries: sourceRegistries, screenId, onRemap }}
     />
   );

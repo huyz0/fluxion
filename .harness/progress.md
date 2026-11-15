@@ -4848,3 +4848,7 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - r1 (pass, minors fixed): align and distribute labels are the translated command titles; key choices read "Key n" or "Key n: name" from a query, so a rename shows.
 - Groups are fieldsets (biome's semantic-elements rule); `fieldset.fx-chrome-actions` drops the fieldset frame.
 - Re-applied after the cp2 record (dbc36e1), which added M19.35 in place of this row's first version; M19.22 gains ADR-0054's screen-level master rules (cp2 record r2 F1).
+## 2026-11-15 M19.14: the layers panel
+- Core `element.reorder {id, after?}` (z-order.ts): in front of one sibling (same screen and parent), at the back without `after`; writes only the moved index, nothing when already there; a non-sibling or itself is refused (COMMAND_ARGS). Added to every command list (registry, bootstrap, bench, BENCH_COMMANDS, 03-core-engine, core AGENTS).
+- Editor `layers-model.ts` (rows front first, members indented; `layerDrop`: upper half in front, lower half behind, never across sibling lists; lock toggle = position, size, rotation, select, keeping other locks) and `layers-tab.tsx` (click selects, Shift adds; drag; Alt+ArrowUp/Down zOrder; Hide and Lock toggles), mounted as the Layers tab.
+- e2e/layers.reorder.spec.ts passes on Chromium locally; Firefox and WebKit are not installed here, CI runs them.

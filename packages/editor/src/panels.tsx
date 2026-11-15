@@ -8,6 +8,7 @@ import './i18n.js';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
 import { ArrangeSection } from './arrange-panel.js';
 import { InspectorFields, type InspectorFieldsProps } from './inspector.js';
+import { LayersTab, type LayersTabProps } from './layers-tab.js';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
 import { LayoutOptionsSection, type LayoutOptionsSectionProps } from './layout-options-form.js';
 import { LayoutPickerSection } from './layout-picker-section.js';
@@ -144,15 +145,18 @@ export type LeftTabsProps = {
   readonly library?: LibraryPanelProps | undefined;
   /** The document, command runner, registries and shown screen the Source tab edits the FluxScript of; without them it is a placeholder. */
   readonly source?: Omit<SourceTabProps, 'onEscape'> | undefined;
+  /** The document, session, command runner and shown screen the Layers tab lists the elements of; without them it is a placeholder. */
+  readonly layers?: LayersTabProps | undefined;
 };
 
 /** The content of a left tab: its panel when the host gave it what it needs, else the placeholder text. */
 function TabBody(props: LeftTabsProps & { readonly tab: (typeof TABS)[number]; readonly onEscape: () => void }): ReactNode {
-  const { tab, screens, problems, notes, library, source, onEscape } = props;
+  const { tab, screens, problems, notes, library, source, layers, onEscape } = props;
   if (tab.name === 'Screens' && screens !== undefined) return <ScreensTab {...screens} />;
   if (tab.name === 'Problems' && problems !== undefined) return <ProblemsTab {...problems} />;
   if (tab.name === 'Notes' && notes !== undefined) return <NotesPanel {...notes} />;
   if (tab.name === 'Library' && library !== undefined) return <LibraryPanel {...library} />;
+  if (tab.name === 'Layers' && layers !== undefined) return <LayersTab {...layers} />;
   if (tab.name === 'Source' && source !== undefined) return <SourceTab {...source} onEscape={onEscape} />;
   return <p className="fx-chrome-placeholder">{tab.text}</p>;
 }

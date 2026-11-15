@@ -131,6 +131,18 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "4UJc-X": {
+    "message": "This screen has no elements yet.",
+    "origin": [
+      "packages/editor/src/layers-tab.tsx"
+    ]
+  },
+  "4hJhzz": {
+    "message": "Table",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
+    ]
+  },
   "4xxB5n": {
     "message": "Import an image…",
     "origin": [
@@ -364,6 +376,7 @@
   "D-zLDD": {
     "message": "Hidden",
     "origin": [
+      "packages/editor/src/layers-tab.tsx",
       "packages/editor/src/navigator/screen-row.tsx"
     ]
   },
@@ -371,6 +384,12 @@
     "message": "Done",
     "origin": [
       "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "DSD611": {
+    "message": "Element",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
     ]
   },
   "DaqVOF": {
@@ -382,6 +401,7 @@
   "Dq6GG7": {
     "message": "Layers",
     "origin": [
+      "packages/editor/src/layers-tab.tsx",
       "packages/editor/src/panels.tsx"
     ]
   },
@@ -463,6 +483,12 @@
       "packages/editor/src/canvas.tsx"
     ]
   },
+  "G2fuEb": {
+    "message": "Locked",
+    "origin": [
+      "packages/editor/src/layers-tab.tsx"
+    ]
+  },
   "GIofCc": {
     "message": "Layout algorithm",
     "origin": [
@@ -486,6 +512,12 @@
     "message": "Save selection to My shapes",
     "origin": [
       "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
+  "GgLVpZ": {
+    "message": "Frame",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
     ]
   },
   "Gl1I_5": {
@@ -518,6 +550,12 @@
       "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
+  "HD2Tiz": {
+    "message": "Lock",
+    "origin": [
+      "packages/editor/src/layers-tab.tsx"
+    ]
+  },
   "HemInN": {
     "message": "Loading the source view…",
     "origin": [
@@ -541,6 +579,12 @@
     "origin": [
       "packages/editor/src/font-picker.tsx",
       "packages/editor/src/toolbar-extras.tsx"
+    ]
+  },
+  "I6gXOa": {
+    "message": "Path",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
     ]
   },
   "IEOEF3": {
@@ -577,6 +621,12 @@
     "message": "Choose a credits file.",
     "origin": [
       "packages/editor/src/library/library-import-form.ts"
+    ]
+  },
+  "JcIhdY": {
+    "message": "Lock {0}",
+    "origin": [
+      "packages/editor/src/layers-tab.tsx"
     ]
   },
   "JxPdar": {
@@ -621,6 +671,12 @@
       "packages/editor/src/screens-tab.tsx"
     ]
   },
+  "L8fEEm": {
+    "message": "Group",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
+    ]
+  },
   "LbM5wr": {
     "message": "My shapes",
     "origin": [
@@ -631,6 +687,12 @@
     "message": "Screens, library and layers",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "LqWHk1": {
+    "message": "Hide {0}",
+    "origin": [
+      "packages/editor/src/layers-tab.tsx"
     ]
   },
   "LvT2zE": {
@@ -877,6 +939,12 @@
       "packages/editor/src/panels.tsx"
     ]
   },
+  "WkbAmY": {
+    "message": "Shape",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
+    ]
+  },
   "X7GiRg": {
     "message": "The Google Fonts catalog could not be loaded. Close the dialog and open it again to retry.",
     "origin": [
@@ -1055,6 +1123,12 @@
     "message": "Loading the catalog…",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "cQpGeE": {
+    "message": "Connector",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
     ]
   },
   "cklVjM": {
@@ -1459,6 +1533,12 @@
     "message": "Bundled",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "hG89Ed": {
+    "message": "Image",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
     ]
   },
   "he3ygx": {
@@ -1888,6 +1968,7 @@
   "vLyv1R": {
     "message": "Hide",
     "origin": [
+      "packages/editor/src/layers-tab.tsx",
       "packages/editor/src/navigator/screen-row.tsx"
     ]
   },
@@ -1980,6 +2061,12 @@
     "message": "Tools",
     "origin": [
       "packages/editor/src/panels.tsx"
+    ]
+  },
+  "xeiujy": {
+    "message": "Text",
+    "origin": [
+      "packages/editor/src/layers-model.ts"
     ]
   },
   "xynpjC": {

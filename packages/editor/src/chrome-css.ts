@@ -79,6 +79,11 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-screen[data-dragging] { opacity: 0.4; }
 .fx-chrome-screen[data-hidden] .fx-chrome-screen-button { font-style: italic; }
 .fx-chrome-screen-button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.fx-chrome-layers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.fx-chrome-layer { display: flex; align-items: center; gap: 2px; border-radius: 4px; }
+.fx-chrome-layer[data-dragging] { opacity: 0.4; }
+.fx-chrome-layer[data-hidden] .fx-chrome-layer-button { font-style: italic; }
+.fx-chrome-layer-button { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fx-chrome-library { padding: 4px 8px; }
 .fx-chrome-library-search { width: 100%; box-sizing: border-box; font: inherit; padding: 4px 6px; color: var(--ui-text); background: var(--ui-panel); border: 1px solid var(--ui-border); border-radius: 4px; }
 .fx-chrome-library-count { margin: 4px 0; color: var(--ui-muted); }
