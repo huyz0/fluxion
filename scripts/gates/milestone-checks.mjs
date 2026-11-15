@@ -513,6 +513,7 @@ export const BENCH_COMMANDS = [
   'element.reorder',
   'element.flip',
   'shape.replace',
+  'shape.boolean',
   'document.update',
   'document.setTheme',
   'screen.setThemeOverride',

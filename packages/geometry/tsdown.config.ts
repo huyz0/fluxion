@@ -9,7 +9,8 @@ const PACKAGE_DOC = `/**
  */`;
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  // the boolean operations are their own entry: polybooljs stays out of what the player bundles (ADR-0053)
+  entry: { index: 'src/index.ts', boolean: 'src/boolean.ts' },
   format: 'esm',
   dts: true,
   clean: true,

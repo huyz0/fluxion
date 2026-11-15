@@ -214,6 +214,14 @@ function benchArgs(
     ...arrangeArgs(shapes),
     // a shape of screen 5 swapped to another definition, its bindings remapped
     'shape.replace': { id: shapes[1430], defId: 'basic:ellipse' },
+    // two shapes of screen 5 combined into one path shape, their bindings moved to it
+    'shape.boolean': {
+      ids: [shapes[1460], shapes[1461]],
+      resultId: 'BenchNewPath00001',
+      op: 'union',
+      path: { d: 'M 0 0 L 220 0 L 220 80 L 0 80 Z', w: 220, h: 80, fillRule: 'evenodd' },
+      box: { x: 0, y: 0, w: 220, h: 80 },
+    },
     'connector.freeEnd': { connectorId: lines[501], end: 'source', at: { x: 5, y: 6 } },
     'document.update': { fields: { title: 'bench' } },
     ...themeArgs(screens[5] as RecordId),
@@ -295,6 +303,7 @@ export const COMMANDS = [
   'element.reorder',
   'element.flip',
   'shape.replace',
+  'shape.boolean',
   'document.update',
   'document.setTheme',
   'screen.setThemeOverride',

@@ -11,7 +11,9 @@ export type GeometryErrorCode =
   | 'PATH_MULTIPLE_SUBPATHS'
   | 'PATH_COMMAND_AFTER_CLOSE'
   | 'PATH_INVALID_POINT'
-  | 'PATH_DATA_INVALID';
+  | 'PATH_DATA_INVALID'
+  | 'BOOLEAN_OPERANDS'
+  | 'BOOLEAN_EMPTY';
 
 /**
  * An expected failure reported by a geometry function.

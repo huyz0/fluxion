@@ -33,7 +33,7 @@ const SIDE_AT = {
 } as const;
 
 /** Where `def` sits in the box as fractions; undefined when that depends on the outline or the other end (a perimeter anchor). */
-function fractionOf(def: AnchorDef): Fraction | undefined {
+export function fractionOf(def: AnchorDef): Fraction | undefined {
   switch (
     def.kind // kind-switch-allow: anchor def kinds are a closed union of the schema, not element kinds
   ) {

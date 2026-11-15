@@ -83,13 +83,15 @@ nothing is changed.
   completion leave it out, since it is made by an operation and a FluxScript shape cannot carry its `path`.
 - The field is part of schema 1.8 (ADR-0054, M19.9), additive: a 1.7 reader ignored no such field because none existed.
 - The operation's command (core) replaces the operands by the new shape in one transaction (one undo step): the result takes the
-  bottom-most operand's z-index, container and style; bindings to removed operands are moved to the result at the same anchor
-  side when the anchor still lies on the result's outline, else to `auto`.
+  bottom-most operand's z-index, container and style; bindings to removed operands are moved to the result when the anchor's
+  place on screen still lies on the result's outline (at the same anchor when it reads to that place in the result's box, else
+  at a point anchor there, so the connector does not move), else to `auto`.
 
 ### Packaging
 
 - `polybooljs` becomes a runtime dependency of `@fluxion/geometry` (reason and licence in the commit, `check-licenses`). The player
-  never imports `boolean.ts`; size-limit's player entries confirm it stays out (tree-shaken), and PLAYER_CORE_GZIP is unchanged.
+  never imports `boolean.ts`, which is its own entry, `@fluxion/geometry/boolean` (M19.18: a CommonJS module imported from the main
+  entry is kept by the player's bundler even unused); size-limit's player entries confirm it stays out, and PLAYER_CORE_GZIP is unchanged.
 - If polybooljs fails a fixture's area or bound, the fallback is Option 5 behind the same `boolean.ts` signature; the choice of
   backend is not part of any contract.
 

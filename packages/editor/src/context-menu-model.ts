@@ -3,6 +3,7 @@
 import type { Box, Vec2 } from '@fluxion/geometry';
 import type { RecordId } from '@fluxion/schema';
 import { ALIGN_MODES, DISTRIBUTE_AXES, FLIP_AXES, ORDER_MOVES } from './arrange-edit.js';
+import { BOOLEAN_OPS } from './boolean-edit.js';
 import type { EditorCommand } from './editor-commands.js';
 import { LAYOUT_CHOICES } from './layout-arrange.js';
 import { commandTitle } from './titles.js';
@@ -26,12 +27,14 @@ export type MenuItem = {
   readonly title: string;
 };
 
-/** The Arrange lines of the element menu: align, distribute, order and flip. */
+/** The Arrange lines of the element menu: align, distribute, order, flip and the boolean operations. */
 const ARRANGE = [
   ...ALIGN_MODES.map(([m]) => `selection.align.${m}`),
   ...DISTRIBUTE_AXES.map(([a]) => `selection.distribute.${a}`),
   ...ORDER_MOVES.map(([t]) => `selection.order.${t}`),
   ...FLIP_AXES.map(([a]) => `selection.flip.${a}`),
+  // the boolean operations (FR-SHP-010, M19.18)
+  ...BOOLEAN_OPS.map(([o]) => `selection.boolean.${o}`),
   // the layout lines (M13.16)
   ...LAYOUT_CHOICES.map(([n]) => `layout.arrange.selection.${n}`),
   'layout.arrange.container',

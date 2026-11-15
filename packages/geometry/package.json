@@ -10,6 +10,11 @@
       "@fluxion/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./boolean": {
+      "@fluxion/source": "./src/boolean.ts",
+      "types": "./dist/boolean.d.ts",
+      "default": "./dist/boolean.js"
     }
   },
   "files": [
@@ -25,6 +30,7 @@
   },
   "dependencies": {
     "flatbush": "catalog:",
+    "polybooljs": "catalog:",
     "rbush": "catalog:"
   },
   "devDependencies": {

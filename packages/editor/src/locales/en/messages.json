@@ -1323,6 +1323,30 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.selection.boolean.exclude": {
+    "message": "Exclude",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.boolean.intersect": {
+    "message": "Intersect",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.boolean.subtract": {
+    "message": "Subtract",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.boolean.union": {
+    "message": "Union",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.selection.delete": {
     "message": "Delete the selection",
     "origin": [

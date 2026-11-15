@@ -138,6 +138,9 @@ catalogs:
     playwright:
       specifier: 1.63.0
       version: 1.63.0
+    polybooljs:
+      specifier: 1.2.2
+      version: 1.2.2
     prosemirror-commands:
       specifier: 1.7.2
       version: 1.7.2
@@ -689,6 +692,9 @@ importers:
       flatbush:
         specifier: 'catalog:'
         version: 4.6.2
+      polybooljs:
+        specifier: 'catalog:'
+        version: 1.2.2
       rbush:
         specifier: 'catalog:'
         version: 4.0.1
@@ -6229,6 +6235,9 @@ packages:
   pngjs@7.0.0:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
+
+  polybooljs@1.2.2:
+    resolution: {integrity: sha512-ziHW/02J0XuNuUtmidBc6GXE8YohYydp3DWPWXYsd7O721TjcmN+k6ezjdwkDqep+gnWnFY+yqZHvzElra2oCg==}
 
   postcss-nested@6.2.0:
     resolution: {integrity: sha512-HQbt28KulC5AJzG+cZtj9kvKB93CFCdLvog1WFLf1D+xmMvPGlBstkpTEZfK5+AN9hfJocyBFCNiqyS48bpgzQ==}
@@ -12986,6 +12995,8 @@ snapshots:
       playwright-core: 1.63.0
 
   pngjs@7.0.0: {}
+
+  polybooljs@1.2.2: {}
 
   postcss-nested@6.2.0(postcss@8.5.31):
     dependencies:

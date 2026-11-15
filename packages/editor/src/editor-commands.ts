@@ -6,6 +6,7 @@
 
 import { ALIGN_MODES, alignSelection, DISTRIBUTE_AXES, distributeSelection, FLIP_AXES, flipSelection, ORDER_MOVES, orderSelection } from './arrange-edit.js';
 import type { AssetStore } from './asset-store.js';
+import { BOOLEAN_OPS, combineSelection } from './boolean-edit.js';
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
@@ -234,6 +235,10 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   ),
   ...FLIP_AXES.map(
     ([axis, title]): EditorCommand => ({ id: `selection.flip.${axis}`, title, run: (ctx) => selectIdle(ctx) && flipSelection(ctx.tools.ctx, axis) }),
+  ),
+  // the boolean operations (FR-SHP-010)
+  ...BOOLEAN_OPS.map(
+    ([op, title]): EditorCommand => ({ id: `selection.boolean.${op}`, title, run: (ctx) => selectIdle(ctx) && combineSelection(ctx.tools.ctx, op) }),
   ),
   ...LAYOUT_CHOICES.flatMap(([name, words]): EditorCommand[] => [
     { id: `layout.arrange.screen.${name}`, title: `Arrange the screen (${words})`, run: (ctx) => selectIdle(ctx) && arrangeScreen(ctx, name) },

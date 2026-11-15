@@ -124,6 +124,7 @@ catalog:
   rbush: 4.0.1 # dynamic spatial index (ADR-0141), MIT; bundled by the player through @fluxion/geometry
   "@types/rbush": 4.0.0 # rbush ships no types; MIT, dev only
   flatbush: 4.6.2 # static spatial index (ADR-0141), ISC; bundled by the player through @fluxion/geometry
+  polybooljs: 1.2.2 # boolean path operations (ADR-0053), MIT, no dependencies; editing only, kept out of the player by tree-shaking
   "@lingui/core": 6.9.0 # i18n runtime for the editor and studio (ADR-0023), MIT; the player takes none
   "@lingui/react": 6.9.0 # I18nProvider and Trans for the editor and studio (ADR-0023), MIT
   "@lingui/native-tools": 0.1.5 # macro transform and message extraction without Babel (ADR-0023), MIT, dev only

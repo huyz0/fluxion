@@ -45,6 +45,10 @@ describe('context menu model (FR-EDT-013)', () => {
       'Send to back',
       'Flip horizontally',
       'Flip vertically',
+      'Union',
+      'Subtract',
+      'Intersect',
+      'Exclude',
       // the layout lines (M13.16)
       'Arrange the selection (layered)',
       'Arrange the selection (grid)',
