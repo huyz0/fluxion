@@ -219,8 +219,9 @@ describe('a paste that carries only text/plain (FR-EDT-007, NFR-PORT-001, M18.24
     // another editor page: it copied before this one opened, and answers this one's ask
     const other = new BroadcastChannel(SHARE_CHANNEL);
     const at = Date.now();
+    let asked = false;
     other.onmessage = (e: MessageEvent) => {
-      if ((e.data as { ask?: boolean }).ask === true) other.postMessage({ copy: { json: payloadJson(copied), text: payloadText(copied), at } });
+      if ((e.data as { ask?: boolean }).ask === true) asked = true;
     };
     const fresh = createClipboard();
     const pastes: string[] = [];
@@ -240,10 +241,17 @@ describe('a paste that carries only text/plain (FR-EDT-007, NFR-PORT-001, M18.24
     }
     await act(async () => root.render(<Opened />));
     (host.querySelector('[data-testid="canvas"]') as HTMLElement).focus();
-    // the answer arrives as a message, a task later
-    await new Promise((done) => setTimeout(done, 50));
+    // the page asks on opening; the other page answers. A channel opened after the page's hears the answer after it (channels are
+    // served in creation order), so once that witness has it the page has it too: no fixed wait a loaded runner can outlast
+    await vi.waitFor(() => expect(asked).toBe(true));
+    const witness = new BroadcastChannel(SHARE_CHANNEL);
+    const heard: unknown[] = [];
+    witness.onmessage = (e: MessageEvent) => heard.push(e.data);
+    other.postMessage({ copy: { json: payloadJson(copied), text: payloadText(copied), at } });
+    await vi.waitFor(() => expect(heard).toHaveLength(1));
     event('paste', textOnly(payloadText(copied)));
     other.close();
+    witness.close();
     expect(pastes).toEqual([`clipboard.paste ${copied.records.length}`]);
     expect(fresh.get()?.records.length).toBe(copied.records.length);
   });
