@@ -222,6 +222,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "7lr464": {
+    "message": "Masters",
+    "origin": [
+      "packages/editor/src/screens-tab.tsx"
+    ]
+  },
   "84nh8m": {
     "message": "Export My shapes",
     "origin": [
@@ -1834,6 +1840,12 @@
     "message": "Custom fields",
     "origin": [
       "packages/editor/src/metadata-dialog.tsx"
+    ]
+  },
+  "oSPlG-": {
+    "message": "Master {0}",
+    "origin": [
+      "packages/editor/src/screens-tab.tsx"
     ]
   },
   "ofhozU": {

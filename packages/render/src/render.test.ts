@@ -33,10 +33,10 @@ describe('fit view (FR-SCR-001) and mode policy (04 §2.6)', () => {
   });
 
   it('only edit mounts the overlay; only present is interactive; export and thumbnails do not measure', () => {
-    expect(modePolicy('edit')).toEqual({ editOverlay: true, interactive: false, measure: true, showHidden: true });
-    expect(modePolicy('present')).toEqual({ editOverlay: false, interactive: true, measure: true, showHidden: false });
-    expect(modePolicy('export')).toEqual({ editOverlay: false, interactive: false, measure: false, showHidden: false });
-    expect(modePolicy('thumbnail')).toEqual({ editOverlay: false, interactive: false, measure: false, showHidden: false });
+    expect(modePolicy('edit')).toEqual({ editOverlay: true, interactive: false, measure: true, showHidden: true, placeholderHints: true });
+    expect(modePolicy('present')).toEqual({ editOverlay: false, interactive: true, measure: true, showHidden: false, placeholderHints: false });
+    expect(modePolicy('export')).toEqual({ editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false });
+    expect(modePolicy('thumbnail')).toEqual({ editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false });
   });
 
   it('content CSS is fx-prefixed and in @layer fx.content (ADR-0010, ADR-0015)', () => {

@@ -23,13 +23,15 @@ export type ModePolicy = {
   readonly measure: boolean;
   /** Hidden screens are shown (edit only: presentation and export skip them, FR-SCR-001). */
   readonly showHidden: boolean;
+  /** A master's unfilled placeholders are drawn as dashed hints (edit only: nowhere in present or export, ADR-0054). */
+  readonly placeholderHints: boolean;
 };
 
 const POLICIES: { readonly [M in RenderMode]: ModePolicy } = {
-  edit: { editOverlay: true, interactive: false, measure: true, showHidden: true },
-  present: { editOverlay: false, interactive: true, measure: true, showHidden: false },
-  export: { editOverlay: false, interactive: false, measure: false, showHidden: false },
-  thumbnail: { editOverlay: false, interactive: false, measure: false, showHidden: false },
+  edit: { editOverlay: true, interactive: false, measure: true, showHidden: true, placeholderHints: true },
+  present: { editOverlay: false, interactive: true, measure: true, showHidden: false, placeholderHints: false },
+  export: { editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false },
+  thumbnail: { editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false },
 };
 
 /**

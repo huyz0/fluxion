@@ -153,10 +153,29 @@ leg('FR-SHP-010 boolean ops match their goldens (area within 0.5 % of reference)
 leg('FR-SHP-014 tables render merged cells and three theme table styles', () =>
   tests('packages/render/src/table-view.browser.test.tsx', { project: 'browser' }),
 );
+// ADR-0054's master outcomes, each a named case (M19.22 r1 F1)
 leg('FR-SCR-005 a master change updates every dependent screen', () =>
   all(
-    () => tests('packages/core/src/masters.test.ts'),
-    () => tests('packages/render/src/master-view.browser.test.tsx', { project: 'browser' }),
+    () =>
+      tests('packages/core/src/masters.test.ts', {
+        named: [
+          'none for a non-master target, a chain, a size mismatch or an infinite screen, each with its problem',
+          'a `fills` naming no placeholder of the applied master draws as an ordinary element',
+          'a master change updates every dependent screen in the derived model',
+        ],
+      }),
+    () =>
+      tests('packages/render/src/master-view.browser.test.tsx', {
+        project: 'browser',
+        named: [
+          'a placeholder never draws as an element; an unfilled one is a hint in edit mode only',
+          'the screen’s own background wins; hideMasterElements keeps the background',
+          'a master change updates every dependent screen',
+          'a drag redraws the element and not the master',
+          'present order and export skip it, the navigator lists it apart',
+        ],
+      }),
+    () => tests('packages/editor/src/screens-tab.browser.test.tsx', { project: 'browser', named: 'master screens are listed in their own section' }),
   ),
 );
 const SPECS = ['layers.reorder', 'locks', 'text-regions.edit', 'path.edit-vertex', 'table.edit', 'masters.propagate', 'quick-connect', 'search.find-element'];

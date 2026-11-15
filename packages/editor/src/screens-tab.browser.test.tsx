@@ -70,4 +70,21 @@ describe('Screens tab (FR-EDT-006)', () => {
     // session.screen follows the fallback, so a screen that comes back (an undo) does not pull the canvas away again
     expect([shown(), rows().length, session.screen.get()]).toEqual([first, 1, first]);
   });
+
+  it('FR-SCR-005: master screens are listed in their own section, apart from the screens, and a click shows one to edit', async () => {
+    const { core, first, second, shown, rows } = await mount();
+    const masters = () => [...host.querySelectorAll('ul[aria-label="Masters"] .fx-chrome-screen-button')] as HTMLButtonElement[];
+    expect(masters()).toEqual([]);
+    act(() => void core.store.transact('make a master', (tx) => tx.patch(second as RecordId, { role: 'master' })));
+    await act(frame);
+    expect(rows().map((r) => r.querySelector(':scope > span')?.textContent)).toEqual(['Screen 1']);
+    expect(masters().map((r) => r.querySelector(':scope > span')?.textContent)).toEqual(['Pricing']);
+    act(() => masters()[0]?.click());
+    await act(frame);
+    expect(shown()).toBe(second);
+    expect(masters()[0]?.getAttribute('aria-pressed')).toBe('true');
+    act(() => rows()[0]?.click());
+    await act(frame);
+    expect(shown()).toBe(first);
+  });
 });

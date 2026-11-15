@@ -75,6 +75,28 @@ describe('fluxion render (FR-CLI-001, FR-SCR-001, ADR-0015)', { timeout: E2E_TIM
     }
   });
 
+  it('FR-SCR-005: a master screen is no page: render skips it, draws it behind the screen that uses it, and --screen refuses it', () => {
+    const b = documentBuilder({ seed: 422 });
+    const [master, slide] = [b.screen({ name: 'brand' }), b.screen({ name: 'slide' })];
+    const logo = b.rect(master, { label: 'Logo' });
+    const built = b.build();
+    const records = {
+      ...built.records,
+      [master]: { ...(built.records[master] as object), role: 'master' },
+      [slide]: { ...(built.records[slide] as object), masterId: master },
+    };
+    const doc = join(dir, 'master.flux.json');
+    writeFileSync(doc, serializeDocument({ ...built, records } as DocumentFile));
+    const out = join(dir, 'master.html');
+    expect(render([doc, '-o', out]).reply.result?.screens).toBe(1);
+    const html = readFileSync(out, 'utf8');
+    expect([...html.matchAll(/data-screen-id="([^"]+)"/g)].map((m) => m[1])).toEqual([slide]);
+    expect(html).toContain(`data-el-id="${logo}"`);
+    const refused = render([doc, '-o', out, '--screen', master]);
+    expect(refused.status).toBe(2);
+    expect(refused.reply.errors?.[0]?.code).toBe('FLX_CLI_USAGE');
+  });
+
   it('FR-CLI-001: an invalid document exits 1 with its diagnostics and writes nothing; -o is required', () => {
     const out = join(dir, 'bad.html');
     const bad = render(['fixtures/docs/invalid-ref-missing.flux.json', '-o', out]);

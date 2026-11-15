@@ -1,10 +1,11 @@
 // The document's problems (FR-EDT-021, M7.26): what `validate()` reports about the records, and what a few lint
 // rules notice about how they are laid out, each with the fix the panel offers when there is one. Pure: the Problems
 // tab (problems-tab.tsx) shows the list and runs the fixes through the editor's `execute`.
-import { createRegistry } from '@fluxion/core';
+import { createRegistry, createStore } from '@fluxion/core';
 import { CORE_LINT_RULES, type LintFinding, lint, registerLintRules } from '@fluxion/dsl';
 import { DEFAULT_SCREEN_SIZE, type Diagnostic, type DocumentFile, type RecordId, validate } from '@fluxion/schema';
 import { themeOf } from '@fluxion/theme';
+import { masterProblems } from './master-problems.js';
 import type { Problem, ProblemFix } from './problem-types.js';
 import { regionProblems, type ShapeDefLookup } from './region-problems.js';
 
@@ -117,7 +118,7 @@ function themeOfDocument(doc: DocumentFile) {
 
 /**
  * The problems of `doc`: its validation diagnostics, then the lint findings, in a stable order; with the shape definitions,
- * also the `texts` entries no region draws (FR-SHP-007).
+ * also the `texts` entries no region draws (FR-SHP-007); then the master problems (FR-SCR-005).
  *
  * @public
  */
@@ -130,5 +131,7 @@ export function problemsOf(doc: DocumentFile, shapeDefs?: ShapeDefLookup): reado
     (f) => !(f.code === 'FLX_LINT_OVERLAP' && covered.has([...f.elements].sort().join('|'))),
   );
   const regions = shapeDefs === undefined ? [] : regionProblems(doc, shapeDefs);
-  return [...validate(doc).map((d) => fromDiagnostic(doc, d)), ...stack, ...found.map((f) => fromFinding(doc, f)), ...regions];
+  // the master rules read the records through a store's indexes (ADR-0054)
+  const masters = masterProblems(createStore(doc, { validate: false, policy: 'read-only' }));
+  return [...validate(doc).map((d) => fromDiagnostic(doc, d)), ...stack, ...found.map((f) => fromFinding(doc, f)), ...regions, ...masters];
 }

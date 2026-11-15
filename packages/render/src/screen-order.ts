@@ -1,7 +1,9 @@
 // Presentation order (FR-SCR-001, FR-DOC-010): screens, and the elements of one parent, sorted by
 // fractional index with the id breaking a tie. Hidden screens only where the mode policy shows them
-// (edit); hidden elements are never drawn (the editor's ghosts are overlay, 04 §2.6).
-import type { ReadView } from '@fluxion/core';
+// (edit); hidden elements are never drawn (the editor's ghosts are overlay, 04 §2.6). Master screens are
+// no slides (FR-SCR-005, ADR-0054): present mode, navigation, export pages and play order skip them, and
+// the navigator lists them apart ({@link mastersInOrder}).
+import { isMasterScreen, type ReadView } from '@fluxion/core';
 import { compareKeys, type RecordId } from '@fluxion/schema';
 
 type Ordered = { readonly index?: unknown; readonly hidden?: unknown; readonly parentId?: unknown };
@@ -15,13 +17,22 @@ function inOrder(view: ReadView, ids: readonly RecordId[], keep: (record: Ordere
 }
 
 /**
- * The ids of the screens `view` holds, in presentation order; hidden screens are left out unless
+ * The ids of the screens `view` holds, in presentation order, masters left out; hidden screens are left out unless
  * `showHidden`.
  *
  * @public
  */
 export function screensInOrder(view: ReadView, showHidden: boolean): RecordId[] {
-  return inOrder(view, view.members('byType', 'screen'), (r) => showHidden || r.hidden !== true);
+  return inOrder(view, view.members('byType', 'screen'), (r) => !isMasterScreen(r as { type?: unknown; role?: unknown }) && (showHidden || r.hidden !== true));
+}
+
+/**
+ * The ids of the master screens `view` holds, in their order: the navigator's masters section.
+ *
+ * @public
+ */
+export function mastersInOrder(view: ReadView): RecordId[] {
+  return inOrder(view, view.members('byType', 'screen'), (r) => isMasterScreen(r as { type?: unknown; role?: unknown }));
 }
 
 /**

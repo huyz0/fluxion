@@ -55,7 +55,7 @@ The R0 API as built (M4; `packages/render/api/render.api.md` is the snapshot):
 
 ```ts
 type RenderMode = 'edit' | 'present' | 'export' | 'thumbnail';
-function modePolicy(mode: RenderMode): ModePolicy;   // editOverlay, interactive, measure, showHidden
+function modePolicy(mode: RenderMode): ModePolicy;   // editOverlay, interactive, measure, showHidden, placeholderHints (a master's unfilled placeholders, edit only: ADR-0054)
 
 interface ScreenViewProps {
   store: Store; screenId: RecordId; mode: RenderMode;

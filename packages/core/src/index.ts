@@ -37,6 +37,19 @@ export { CORE_HOOKS, type HookContext, type IntegrityHook, registerCoreHooks } f
 export type { IndexName } from './indexes.js';
 export { type ConsoleLike, consoleSink, createLogger, type LogEntry, type LoggerOptions, type NamespacedLogger, namespaceEnabled } from './logger.js';
 export { MARKER_SIZE, type MarkerDef, markerDefSchema, markerTrim, parseMarkerDef } from './marker.js';
+export {
+  type AppliedMaster,
+  appliedMaster,
+  dependentsOf,
+  isMasterScreen,
+  type MasterLayers,
+  type MasterProblemCode,
+  masterLayers,
+  placeholdersOf,
+  sameMasterLayers,
+  sharedPlaceholderNames,
+  strayFills,
+} from './masters.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, SyncHash128, TextMeasurer, TextMetrics } from './ports/ports.js';
 export { createRegistry, type Disposable, describeOf, type PluginId, type Registry, type RegistryOptions } from './registry.js';
 export { screenRecordsToCopy } from './screens/screen-commands.js';

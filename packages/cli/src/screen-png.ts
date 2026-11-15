@@ -51,9 +51,12 @@ const pngSize = (png: Uint8Array): { width: number; height: number } => {
 };
 
 function firstScreen(document: DocumentFile): string | undefined {
-  return Object.values(document.records)
-    .filter((r) => r.type === 'screen' && (r as { hidden?: unknown }).hidden !== true)
-    .sort((a, b) => ((a as { index: string }).index < (b as { index: string }).index ? -1 : 1))[0]?.id;
+  return (
+    Object.values(document.records)
+      // a master is no page (ADR-0054): the first visible screen that is not one
+      .filter((r) => r.type === 'screen' && (r as { hidden?: unknown }).hidden !== true && (r as { role?: unknown }).role !== 'master')
+      .sort((a, b) => ((a as { index: string }).index < (b as { index: string }).index ? -1 : 1))[0]?.id
+  );
 }
 
 /**

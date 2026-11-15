@@ -2,9 +2,9 @@
 // and export. The `.fx-screen` root carries the theme's CSS variables and the fit transform; its layers
 // are the background, the content (the elements, drawn by their registered views) and the editor's
 // overlay slot (edit only).
-import type { Store, TextMeasurer } from '@fluxion/core';
+import type { MasterLayers, Store, TextMeasurer } from '@fluxion/core';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
-import { resolveBackground, styleKey, type Theme, toCssVars } from '@fluxion/theme';
+import { type ResolvedPaint, resolveBackground, styleKey, type Theme, toCssVars } from '@fluxion/theme';
 import { type Context, type CSSProperties, createContext, type ReactNode, useContext, useInsertionEffect, useMemo } from 'react';
 import { AssetsContext, type AssetUrls } from './assets.js';
 import { paintCss } from './background.js';
@@ -13,6 +13,7 @@ import { CONTENT_CSS } from './content-css.js';
 import { ElementList } from './elements.js';
 import { cameraTransform, fitTransform, screenArea } from './fit.js';
 import { BuildHiddenContext } from './line-jumps.js';
+import { MasterLayer, useMasterLayers } from './master-view.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
 import type { RenderRegistries } from './registries.js';
 import { useScreenTheme } from './screen-theme.js';
@@ -110,6 +111,12 @@ function useContentCss(): void {
   }, [inject]);
 }
 
+/** The background `screen` draws: its own, else its applied master's (ADR-0054). */
+function screenBackground(screen: ScreenRecord, master: MasterLayers | undefined, theme: Theme): ResolvedPaint {
+  if (screen.background !== undefined || master === undefined) return resolveBackground(screen.background, theme, ['records', screen.id]).paint;
+  return resolveBackground(master.background, theme, ['records', master.master]).paint;
+}
+
 /**
  * One screen of `store` in `view.box`, fitted or through a camera, styled by `theme`.
  *
@@ -117,7 +124,9 @@ function useContentCss(): void {
  */
 export function ScreenView(props: ScreenViewProps): ReactNode {
   const { store, screenId, view, editOverlay, children } = props;
-  const own = useScreenTheme(store, screenId);
+  // the applied master (ADR-0054): its background and theme under the screen's own, its elements beneath the screen's
+  const master = useMasterLayers(store, screenId);
+  const own = useScreenTheme(store, screenId, master?.themeId);
   const theme = props.theme ?? own;
   const registries = useMemo(() => props.registries ?? builtinRegistries(), [props.registries]);
   const policy = modePolicy(props.mode);
@@ -131,7 +140,7 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
   const styling = useMemo(() => theme, [key]);
   if (!screen || screen.type !== 'screen') return null;
   const area = screenArea(screen);
-  const background = resolveBackground(screen.background, theme, ['records', screenId]).paint;
+  const background = screenBackground(screen, master, theme);
   const fit = view.kind === 'camera' ? cameraTransform(area, view.camera) : fitTransform(area, view.box);
   const style = {
     ...vars,
@@ -152,6 +161,7 @@ export function ScreenView(props: ScreenViewProps): ReactNode {
             <div className="fx-layer fx-background" style={paintCss(background)} data-asset-id={background.type === 'image' ? background.assetId : undefined} />
             <div className="fx-layer fx-content" style={origin}>
               <BuildHiddenContext.Provider value={props.hidden}>
+                <MasterLayer store={store} layers={master} registries={registries} theme={styling} hints={policy.placeholderHints} hidden={props.hidden} />
                 <ElementList store={store} screenId={screenId} registries={registries} theme={styling} hidden={props.hidden} />
               </BuildHiddenContext.Provider>
               {children}

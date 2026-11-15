@@ -10,6 +10,7 @@ import { AnyRecord } from '@fluxion/schema';
 import { Box } from '@fluxion/geometry';
 import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
+import { Paint } from '@fluxion/schema';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
 import { PathData } from '@fluxion/schema';
@@ -43,6 +44,15 @@ export function allowsShapePackContentLicense(expression: string): boolean;
 
 // @public
 export type AnyCommand = CommandDef<unknown>;
+
+// @public
+export type AppliedMaster = {
+    readonly master?: RecordId;
+    readonly problem?: MasterProblemCode;
+};
+
+// @public
+export function appliedMaster(view: ReadView, screenId: RecordId): AppliedMaster;
 
 // @public
 export function applyFork(parent: Store, fork: Store, label?: string, options?: TxOptions): Result<Diff, TxFailure>;
@@ -294,6 +304,9 @@ export const DEFAULT_OUTLINE_BUDGET = 1e5;
 
 // @public
 export function defineCommand<A>(def: CommandDef<A>): CommandDef<A>;
+
+// @public
+export function dependentsOf(view: ReadView, masterId: RecordId): RecordId[];
 
 // @public
 export const DESCRIBED_REGISTRY_NAMES: readonly CoreRegistryName[];
@@ -566,6 +579,12 @@ export function isArtworkFontAlias(family: string): boolean;
 export const isFontFormat: (version: unknown) => version is ShapePackFontFormat;
 
 // @public
+export function isMasterScreen(record: {
+    readonly type?: unknown;
+    readonly role?: unknown;
+} | undefined): boolean;
+
+// @public
 export function lockedWithin(view: ReadView, id: RecordId, lock: LockName): boolean;
 
 // @public
@@ -614,6 +633,22 @@ export const markerDefSchema: z.ZodType<MarkerDef>;
 
 // @public
 export function markerTrim(def: MarkerDef | undefined, width: number): number;
+
+// @public
+export type MasterLayers = {
+    readonly master: RecordId;
+    readonly background?: Paint;
+    readonly themeId?: RecordId;
+    readonly elements: boolean;
+    readonly placeholders: ReadonlySet<RecordId>;
+    readonly unfilled: readonly RecordId[];
+};
+
+// @public
+export function masterLayers(view: ReadView, screenId: RecordId): MasterLayers | undefined;
+
+// @public
+export type MasterProblemCode = "not-master" | "chain" | "infinite" | "size";
 
 // @public
 export function mergeCells(grid: TableGrid, area: CellArea): TableGrid | undefined;
@@ -748,6 +783,9 @@ export function parseVersionedShapePackIndex(input: unknown, licensePolicy: Shap
 export function parseVersionedShapePackSubset(input: unknown, licensePolicy: ShapePackLicensePolicy): Result<VersionedShapePackSubset, readonly Diagnostic[]>;
 
 // @public
+export function placeholdersOf(view: ReadView, masterId: RecordId): RecordId[];
+
+// @public
 export type PluginId = string;
 
 // @public
@@ -823,6 +861,9 @@ export function resolveSalt(base: {
 
 // @public
 export function runExpr(src: string, scope: ExprScope, budget: ExprBudget, at?: ReadonlyArray<string | number>): Result<number, Diagnostic>;
+
+// @public
+export function sameMasterLayers(a: MasterLayers | undefined, b: MasterLayers | undefined): boolean;
 
 // @public
 export function screenRecordsToCopy(view: ReadView, screen: RecordId): RecordId[];
@@ -1077,6 +1118,9 @@ export type ShapeTextInput = {
 };
 
 // @public
+export function sharedPlaceholderNames(view: ReadView, masterId: RecordId): ReadonlyMap<string, readonly RecordId[]>;
+
+// @public
 export function shrinksText(fit: TextFit | undefined): boolean;
 
 // @public
@@ -1116,6 +1160,9 @@ export type StoreOptions = {
     readonly hooks?: Registry<string, IntegrityHook>;
     readonly policy?: "read-write" | "read-only";
 };
+
+// @public
+export function strayFills(view: ReadView, screenId: RecordId): RecordId[];
 
 // @public
 export type StyledBlock = {

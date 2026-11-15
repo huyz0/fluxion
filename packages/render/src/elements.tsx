@@ -15,7 +15,7 @@ import { elementsInOrder } from './screen-order.js';
 import { useValue } from './use-value.js';
 
 /** The wrapper's placement: the element's box, rotated about its centre (connectors have no box). */
-function placement(element: ElementRecord): CSSProperties | undefined {
+export function placement(element: ElementRecord): CSSProperties | undefined {
   const t = (element as { readonly transform?: Transform }).transform;
   if (t === undefined) return undefined;
   const turns = [`rotate(${transformRotation(t)}deg)`, t.flipX ? 'scaleX(-1)' : '', t.flipY ? 'scaleY(-1)' : ''].filter(Boolean);

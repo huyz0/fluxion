@@ -17,6 +17,7 @@ import { FaceMetrics } from '@fluxion/core';
 import { GlobalRoute } from '@fluxion/routing';
 import { GlobalRouteInput } from '@fluxion/routing';
 import { MarkerDef } from '@fluxion/core';
+import { MasterLayers } from '@fluxion/core';
 import { NamedExoticComponent } from 'react';
 import { PathCommand } from '@fluxion/geometry';
 import { ReactNode } from 'react';
@@ -231,11 +232,15 @@ export type MarkPlan = {
 };
 
 // @public
+export function mastersInOrder(view: ReadView): RecordId[];
+
+// @public
 export type ModePolicy = {
     readonly editOverlay: boolean;
     readonly interactive: boolean;
     readonly measure: boolean;
     readonly showHidden: boolean;
+    readonly placeholderHints: boolean;
 };
 
 // @public
@@ -403,7 +408,10 @@ export function TableView(props: ElementViewProps): ReactNode;
 export function TextView(props: ElementViewProps): ReactNode;
 
 // @public
-export function useScreenTheme(store: Store, screenId: RecordId): Theme;
+export function useMasterLayers(store: Store, screenId: RecordId): MasterLayers | undefined;
+
+// @public
+export function useScreenTheme(store: Store, screenId: RecordId, masterThemeId?: RecordId): Theme;
 
 // @public
 export function useValue<T>(signal: ReadSignal<T>): T;

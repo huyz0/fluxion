@@ -16,14 +16,17 @@ import { measurerFor } from './measurer.js';
 import { type Launcher, playwrightLauncher, renderPngs } from './render-png.js';
 
 /**
- * Why the screens `wanted` names cannot be rendered: not screens of `document`, or hidden (export
- * skips hidden screens, so asking for one would write an empty page; M4.20 review F2).
+ * Why the screens `wanted` names cannot be rendered: not screens of `document`, hidden (export
+ * skips hidden screens, so asking for one would write an empty page; M4.20 review F2), or masters.
  */
 function screenProblem(document: DocumentFile, wanted: readonly string[], file: string): string | undefined {
   const missing = wanted.filter((id) => document.records[id]?.type !== 'screen');
   if (missing.length > 0) return `no screen ${missing.map((id) => `"${id}"`).join(', ')} in ${file}`;
   const hidden = wanted.filter((id) => (document.records[id] as { readonly hidden?: unknown }).hidden === true);
   if (hidden.length > 0) return `screen ${hidden.map((id) => `"${id}"`).join(', ')} is hidden; show it to render it`;
+  // a master is no page: export skips it and draws it behind the screens that use it (ADR-0054)
+  const masters = wanted.filter((id) => (document.records[id] as { readonly role?: unknown }).role === 'master');
+  if (masters.length > 0) return `screen ${masters.map((id) => `"${id}"`).join(', ')} is a master; render a screen that uses it`;
   return undefined;
 }
 
