@@ -16,6 +16,7 @@ import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey }
 import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, fitToScreen, LAYOUT_CHOICES, tidyUp } from './layout-arrange.js';
 import { MASTER_ACTIONS } from './master-edit.js';
 import { deleteSelected, editSelectedPath, leaveEditing } from './path-edit-states.js';
+import { presentFrom } from './present-mode.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-actions.js';
 import { selectSame } from './select-same.js';
 import { TABLE_ACTIONS } from './table-commands.js';
@@ -342,20 +343,12 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   {
     id: 'mode.present',
     title: 'Present from the first visible screen',
-    run: (ctx) => {
-      if (ctx.switchMode === undefined) return false;
-      ctx.switchMode('start');
-      return true;
-    },
+    run: (ctx) => presentFrom(ctx, 'start'),
   },
   {
     id: 'mode.toggle',
     title: 'Present the shown screen / stop presenting',
-    run: (ctx) => {
-      if (ctx.switchMode === undefined) return false;
-      ctx.switchMode('current');
-      return true;
-    },
+    run: (ctx) => presentFrom(ctx, 'current'),
   },
   // the table commands (FR-SHP-014, M19.21)
   ...[...TABLE_ACTIONS, ...MASTER_ACTIONS].map(([id, title, act]): EditorCommand => ({ id, title, run: (ctx) => selectIdle(ctx) && act(ctx.tools.ctx) })),

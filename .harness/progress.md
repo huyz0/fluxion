@@ -4951,3 +4951,9 @@ round-allowance: M19.25 a fourth review round under Huy's 2026-11-05T11:04:52Z d
 - A drop back on the source adds and opens nothing; the comment said it opened the mini library.
 - `hoverAt` asks for the hovered shape's "+" before hit-testing, so a "+" lying over a nearby shape keeps the hover and can be pressed.
 - Cases in editor quick-connect.test.ts (two fail on the old code; the drop-on-source one pins existing behaviour); the FR-EDT-015 gate leg names them.
+## 2026-11-15 M19.45: master editing edge cases (M19.23 r1 minors)
+- Close master shows the screen Edit master was run from (kept per session in master-edit.ts) while it still uses the master, else the first screen in navigator order using it (was the lowest id), else the first screen.
+- Presenting: `useModeSwitch` resolves the shown screen through `shownScreen` (an unset one is the first, which may be a master) and, with the shown screen a master and no visible screen to present, stays in edit mode; `ModeSwitch` returns false then. `mode.present` and `mode.toggle` notice it ("Nothing to present: every screen is a master."); the toolbar's Present runs `mode.present`, so it notices too.
+- Core `element.setPlaceholder` refuses naming a group or frame (a fill copies the placeholder's record alone, so its members would not come).
+- Cases: core master-commands.test.ts (group refused), editor master-edit.test.ts (Close master target; fails on the old code), present.browser.test.tsx (all-master document).
+- r1 (changes-requested, fixed): F1 a group or frame placeholder that came in another way (a loaded file) could still be filled empty: `element.fillPlaceholder` refuses it too, with a case; F2 the notice is a Lingui message (the mode commands' helper moved to present-mode.ts as `presentFrom`); F3 its text names hidden screens too ("every screen is a master or hidden"); F4 `CONTAINER_KINDS` sits above MASTER_COMMANDS's doc again.

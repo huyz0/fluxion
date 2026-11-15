@@ -84,6 +84,20 @@ describe('master editing on the canvas (FR-SCR-005, ADR-0054)', () => {
     expect(closeMaster(t.ctxOn(t.plain))).toBe(false);
   });
 
+  it('FR-SCR-005: Close master shows the screen Edit master was run from, else the first in navigator order using the master', () => {
+    const t = setup();
+    expect(t.core.execute('screen.setMaster', { id: t.plain, masterId: t.brand }).ok).toBe(true);
+    // opened from the second screen using it: back there, not to the first
+    expect(openMaster(t.ctxOn(t.plain))).toBe(true);
+    expect(closeMaster(t.ctxOn(t.brand))).toBe(true);
+    expect(t.session.screen.get()).toBe(t.plain);
+    // that screen no longer uses the master: the first that does
+    openMaster(t.ctxOn(t.plain));
+    t.core.execute('screen.setMaster', { id: t.plain });
+    closeMaster(t.ctxOn(t.brand));
+    expect(t.session.screen.get()).toBe(t.a);
+  });
+
   it('FR-SCR-005: the element menu offers the placeholder lines and the screen menu Edit master and Close master', () => {
     const element = menuItems('element', EDITOR_COMMANDS).map((i) => i.command);
     expect(element).toEqual(expect.arrayContaining(['master.makePlaceholder', 'master.clearPlaceholder']));

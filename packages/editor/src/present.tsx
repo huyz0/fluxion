@@ -12,7 +12,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useSyncExterna
 import { usePointerInput } from './pointer-input.js';
 import { fitCamera } from './present-mode.js';
 import { usePresentNav } from './present-nav.js';
-import { switchScreen } from './screen-switch.js';
+import { shownScreen, switchScreen } from './screen-switch.js';
 import { DEFAULT_CAMERA, type Session } from './session.js';
 import type { ToolDispatcher } from './tools.js';
 
@@ -36,6 +36,20 @@ export function useRevision(store: Store): number {
 }
 
 /**
+ * Where presenting `from` starts: F5 (`start`) from the first visible screen; shift+F5 from the shown one, unless it is a master,
+ * which is never presented: then from the first visible screen too (FR-EDT-009, FR-SCR-005). Undefined keeps the shown screen;
+ * null is nothing to present (the shown screen a master, no screen visible).
+ */
+function startOf(store: Store, session: Session, from: 'start' | 'current'): RecordId | undefined | null {
+  // the screen the canvas shows: an unset or gone one is the document's first, which may be a master
+  const shown = shownScreen(store, session.screen.get());
+  const onMaster = shown !== undefined && isMasterScreen(store.get(shown));
+  if (from !== 'start' && !onMaster) return undefined;
+  const first = presentationOrder(store, false)[0];
+  return first === undefined && onMaster ? null : first;
+}
+
+/**
  * The switch between editing and presenting in place (F5, shift+F5 and Esc bind to it through the
  * keymap's `mode.toggle`, M7.4): the edit tool is saved on the way in and put back on the way out.
  *
@@ -45,13 +59,12 @@ export function useModeSwitch(store: Store, session: Session, edit: ToolDispatch
   const saved = useRef(session.tool.get());
   return useCallback(
     (from = 'current') => {
-      // F5 starts from the first visible screen; shift+F5, and the way out, leave the shown screen as it is (FR-EDT-009), unless it
-      // is a master, which is never presented: then from the first visible screen too (FR-SCR-005)
-      const shown = session.screen.get();
-      const onMaster = shown !== undefined && isMasterScreen(store.get(shown));
-      const first = (from === 'start' || onMaster) && session.mode.get() === 'edit' ? presentationOrder(store, false)[0] : undefined;
+      const first = session.mode.get() === 'edit' ? startOf(store, session, from) : undefined;
+      // a document whose every visible screen is a master has nothing to present: it stays in edit mode (M19.23 r1)
+      if (first === null) return false;
       if (first !== undefined && first !== session.screen.get()) switchScreen(session, first);
       switchMode(session, session.mode.get() === 'present' ? present : edit, saved);
+      return true;
     },
     [store, session, edit, present],
   );
@@ -59,10 +72,11 @@ export function useModeSwitch(store: Store, session: Session, edit: ToolDispatch
 
 /**
  * Switch between editing and presenting; entering `from` the first visible screen (`start`, F5) or the shown one (`current`).
+ * False when it stayed in edit mode: nothing to present, the shown screen a master and no other visible.
  *
  * @public
  */
-export type ModeSwitch = (from?: 'start' | 'current') => void;
+export type ModeSwitch = (from?: 'start' | 'current') => boolean;
 
 /**
  * Switch between editing and presenting: what the leaving mode's tools were doing is cancelled, and

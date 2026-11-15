@@ -3,9 +3,10 @@
 // go back. Each write is one master command, so one undo step; opening and closing a master only switches the shown screen.
 import { appliedMaster, dependentsOf, isMasterScreen, masterLayers } from '@fluxion/core';
 import type { Vec2 } from '@fluxion/geometry';
-import { screensInOrder } from '@fluxion/render';
+import { presentationOrder, screensInOrder } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { switchScreen } from './screen-switch.js';
+import type { Session } from './session.js';
 import type { ToolCtx } from './tools.js';
 
 type Placed = { readonly name?: unknown; readonly placeholder?: unknown; readonly transform?: { x: number; y: number; w: number; h: number } };
@@ -54,20 +55,32 @@ export function fillAt(ctx: ToolCtx, at: Vec2): boolean {
   return true;
 }
 
+/** The screen each session's open master was opened from (Edit master), to go back to on Close master. */
+const openedFrom = new WeakMap<Session, { readonly master: RecordId; readonly from: RecordId }>();
+
 /** Show the master of the shown screen, to edit it; false when its master does not apply. */
 export function openMaster(ctx: ToolCtx): boolean {
   const master = ctx.screen === undefined ? undefined : appliedMaster(ctx.view, ctx.screen).master;
-  if (master === undefined) return false;
+  if (master === undefined || ctx.screen === undefined) return false;
+  openedFrom.set(ctx.session, { master, from: ctx.screen });
   switchScreen(ctx.session, master);
   return true;
 }
 
-/** Leave the shown master: show the first screen using it, else the first screen; false when the shown screen is no master. */
+/**
+ * Leave the shown master: show the screen Edit master was run from while it still uses the master, else the first screen in
+ * navigator order using it, else the first screen; false when the shown screen is no master.
+ */
 export function closeMaster(ctx: ToolCtx): boolean {
   const screen = ctx.screen;
   if (screen === undefined || !isMasterScreen(ctx.view.get(screen) as never)) return false;
-  const back = dependentsOf(ctx.view, screen).sort()[0] ?? screensInOrder(ctx.view, true)[0];
+  const opened = openedFrom.get(ctx.session);
+  const uses = (id: RecordId) => appliedMaster(ctx.view, id).master === screen;
+  const from = opened?.master === screen && uses(opened.from) ? opened.from : undefined;
+  const dependents = new Set(dependentsOf(ctx.view, screen));
+  const back = from ?? presentationOrder(ctx.view, true).find((id) => dependents.has(id)) ?? screensInOrder(ctx.view, true)[0];
   if (back === undefined) return false;
+  openedFrom.delete(ctx.session);
   switchScreen(ctx.session, back);
   return true;
 }

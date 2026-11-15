@@ -1065,7 +1065,7 @@ export function metadataProblems(form: MetadataForm): {
 };
 
 // @public
-export type ModeSwitch = (from?: "start" | "current") => void;
+export type ModeSwitch = (from?: "start" | "current") => boolean;
 
 // @public
 export const moved: (from: Vec2, to: Vec2) => boolean;

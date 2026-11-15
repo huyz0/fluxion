@@ -197,6 +197,12 @@
       "packages/editor/src/inspector.tsx"
     ]
   },
+  "6VGs81": {
+    "message": "Nothing to present: every screen is a master or hidden.",
+    "origin": [
+      "packages/editor/src/present-mode.ts"
+    ]
+  },
   "6YtxFj": {
     "message": "Name",
     "origin": [

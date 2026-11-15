@@ -86,6 +86,34 @@ describe('master commands (FR-SCR-005, ADR-0054)', () => {
     expect([t.get(t.title)['placeholder'], t.get(t.fillA)['fills'], t.get(t.fillB)['fills']]).toEqual([undefined, undefined, undefined]);
   });
 
+  it('FR-SCR-005: element.setPlaceholder refuses a group, whose members a fill would not copy', () => {
+    const t = setup();
+    const groupId = 'GroupGroupGroupG' as RecordId;
+    expect(t.core.execute('element.group', { ids: [t.logo], groupId }).ok).toBe(true);
+    expect(refusal(t.core.execute('element.setPlaceholder', { id: groupId, name: 'brand' }))).toMatch(/group or frame/);
+    expect(t.get(groupId)['placeholder']).toBeUndefined();
+  });
+
+  it('FR-SCR-005: element.fillPlaceholder refuses a group placeholder that came in another way (a loaded file)', () => {
+    const b = documentBuilder({ seed: 1945 });
+    const brand = b.screen();
+    const logo = b.rect(brand, { x: 0, y: 0, w: 10, h: 10 });
+    const s = b.screen();
+    const file = b.build();
+    const groupId = 'GroupGroupGroupG' as RecordId;
+    const group = { ...(file.records[logo] as object), id: groupId, kind: 'group', placeholder: 'brand' };
+    const records = {
+      ...file.records,
+      [brand]: { ...(file.records[brand] as object), role: 'master' },
+      [s]: { ...(file.records[s] as object), masterId: brand },
+      [logo]: { ...(file.records[logo] as object), parentId: groupId },
+      [groupId]: group,
+    };
+    const core = createCore({ ...file, records } as unknown as DocumentFile);
+    const r = core.execute('element.fillPlaceholder', { screenId: s, placeholderId: groupId, newId: 'FilledFilledFill' });
+    expect(refusal(r)).toMatch(/group or frame/);
+  });
+
   it('FR-SCR-005: element.fillPlaceholder puts a copy of the placeholder on the screen, on top, filling it; refuses a second fill and a non-placeholder', () => {
     const t = setup();
     expect(t.core.execute('element.setPlaceholder', { id: t.logo, name: 'logo' }).ok).toBe(true);

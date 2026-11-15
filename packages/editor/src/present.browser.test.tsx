@@ -111,6 +111,25 @@ describe('present in place (FR-EDT-009)', () => {
     expect(session.screen.get()).toBe(slide);
   });
 
+  it('FR-SCR-005: a document whose every screen is a master presents nothing: F5 and shift+F5 stay in edit mode with a notice', async () => {
+    const b = documentBuilder({ seed: 192 });
+    const master = b.screen({ name: 'Brand' });
+    const built = b.build();
+    const records = { ...built.records, [master]: { ...(built.records[master] as object), role: 'master' } };
+    const core = createCore({ ...built, records } as typeof built);
+    const session = createSession('doc');
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />),
+    );
+    await act(frame);
+    key('F5');
+    await act(frame);
+    key('F5', { shiftKey: true });
+    await act(frame);
+    expect(session.mode.get()).toBe('edit');
+    expect(document.body.textContent).toContain('Nothing to present: every screen is a master or hidden.');
+  });
+
   it('FR-EDT-003: while presenting, the pointer draws the laser trail over the screen and leaving the stage clears it', async () => {
     const { session } = await mount();
     key('F5');

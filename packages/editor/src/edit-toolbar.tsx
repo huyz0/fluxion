@@ -41,7 +41,7 @@ export type EditToolbarProps = {
 
 /** The toolbar of the edit mode. */
 export function EditToolbar(props: EditToolbarProps): ReactNode {
-  const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, switchMode, openHelp, extras } = props;
+  const { layout, onLayout, store, session, tools, box, area, base, overrides, mac, run, system, openHelp, extras } = props;
   const snapping = useValue(session.snap.get);
   const grid = useValue(session.grid.get);
   return (
@@ -74,7 +74,7 @@ export function EditToolbar(props: EditToolbarProps): ReactNode {
         {t`Paste`}
       </button>
       {extras}
-      <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title={t`Present (F5)`} onClick={() => switchMode('start')}>
+      <button type="button" className="fx-chrome-button" aria-keyshortcuts="F5" title={t`Present (F5)`} onClick={() => run('mode.present')}>
         {t`Present`}
       </button>
       <button type="button" className="fx-chrome-button" aria-keyshortcuts="?" title={t`Keyboard shortcuts (?)`} onClick={openHelp}>
