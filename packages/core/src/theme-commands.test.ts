@@ -31,6 +31,13 @@ describe('theme commands (FR-THM-004, ADR-0152)', () => {
     expect(core.store.toDocument()).toEqual(before);
   });
 
+  it('FR-SHP-014 FR-THM-004: a theme’s table styles are written to its record', () => {
+    const { core } = setup();
+    const tableStyles = { banded: { header: { fill: '#ff0000' } } };
+    expect(core.execute('document.setTheme', { theme: { ...dark, tableStyles } }).ok).toBe(true);
+    expect((core.store.get(themeRecordId(dark.name) as RecordId) as unknown as { tableStyles?: unknown }).tableStyles).toEqual(tableStyles);
+  });
+
   it('FR-THM-004: switching back never duplicates or overwrites the theme record', () => {
     const { core, doc, field } = setup();
     core.execute('document.setTheme', { theme: dark });

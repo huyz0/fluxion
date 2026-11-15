@@ -1,5 +1,5 @@
 // The built-in `light` theme (FR-THM-001 colour roles; FR-THM-003 lists the other built-ins for M9).
-import type { Theme, Token } from './tokens.js';
+import type { Theme, ThemeTableStyle, Token } from './tokens.js';
 
 const color = ($value: string): Token => ({ $type: 'color', $value });
 const px = (value: number): Token => ({ $type: 'dimension', $value: { value, unit: 'px' } });
@@ -10,6 +10,32 @@ const shadow = (offsetY: number, blur: number, spread: number, alpha: string): T
 });
 const ms = (value: number): Token => ({ $type: 'duration', $value: { value, unit: 'ms' } });
 const bezier = (a: number, b: number, c: number, d: number): Token => ({ $type: 'cubicBezier', $value: [a, b, c, d] });
+
+/**
+ * The table styles every built-in theme ships (ADR-0054, FR-SHP-014): `plain` (no borders, a bold header), `banded` (a filled
+ * header and every second body row tinted) and `grid` (every cell bordered). Colours are the theme's roles, so each theme draws
+ * them in its own palette.
+ *
+ * @public
+ */
+export const BUILTIN_TABLE_STYLES: { readonly [name: string]: ThemeTableStyle } = {
+  plain: {
+    cell: { fill: 'transparent', font: { align: 'left' } },
+    border: { stroke: { width: 0 } },
+    header: { font: { weight: 700 } },
+  },
+  banded: {
+    cell: { fill: '{color.background}', font: { align: 'left' } },
+    border: { stroke: { width: 0 } },
+    header: { fill: '{color.primary}', font: { weight: 700, color: '{color.background}' } },
+    band: { fill: '{color.surface}' },
+  },
+  grid: {
+    cell: { fill: '{color.background}', font: { align: 'left' } },
+    border: { stroke: { color: '{color.text}', width: '{stroke.regular}' } },
+    header: { fill: '{color.surface}', font: { weight: 700 } },
+  },
+};
 
 /**
  * The light theme: the default of every document without a theme.
@@ -62,4 +88,5 @@ export const LIGHT_THEME: Theme = {
     screen: { background: '{color.background}' },
     '*': { font: { family: '{font.body}', size: '{font.size.md}', lineHeight: '{font.line-height.normal}', color: '{color.text}' } },
   },
+  tableStyles: BUILTIN_TABLE_STYLES,
 };

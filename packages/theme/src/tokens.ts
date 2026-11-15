@@ -6,7 +6,7 @@ import { colorSchema } from '@fluxion/schema';
 import { z } from 'zod';
 import { FAMILY } from './token-check.js';
 
-export type { Dimension, Duration, ShadowValue, Theme, Token, TokenGroup, TypedToken } from './token-types.js';
+export type { Dimension, Duration, ShadowValue, Theme, ThemeTableStyle, Token, TokenGroup, TypedToken } from './token-types.js';
 
 import type { Theme, Token, TokenGroup } from './token-types.js';
 
@@ -76,6 +76,9 @@ export function tokenEntries(group: TokenGroup, prefix = ''): Array<readonly [st
   });
 }
 
+/** A style fragment of a table style part. */
+const fragment = z.record(z.string(), z.unknown());
+
 /**
  * Schema of a {@link Theme} (FR-THM-001: "Theme JSON validates"). Two tokens whose CSS properties
  * coincide (`a.b-c` and `a-b.c` are both `--fx-a-b-c`) are refused (review F1).
@@ -87,6 +90,9 @@ export const themeSchema: z.ZodType<Theme> = z
     name: z.string().min(1),
     tokens: groupSchema,
     defaults: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
+    tableStyles: z
+      .record(z.string().min(1), z.object({ header: fragment.optional(), band: fragment.optional(), border: fragment.optional(), cell: fragment.optional() }))
+      .optional(),
   })
   .superRefine((theme, ctx) => {
     const seen = new Map<string, string>();

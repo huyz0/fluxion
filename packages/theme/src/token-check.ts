@@ -74,5 +74,8 @@ export function themeOf(value: unknown): Theme | undefined {
     return undefined;
   const defaults = value['defaults'];
   if (defaults !== undefined && !(isObj(defaults) && Object.values(defaults).every(isObj))) return undefined;
-  return { name: value['name'], tokens: value['tokens'], ...(defaults === undefined ? {} : { defaults: defaults as Theme['defaults'] }) } as Theme;
+  const tableStyles = value['tableStyles'];
+  // a malformed table style list is left out rather than refusing the theme (cells then fall back to the theme's defaults)
+  const styles = isObj(tableStyles) && Object.values(tableStyles).every(isObj) ? { tableStyles: tableStyles as Theme['tableStyles'] } : {};
+  return { name: value['name'], tokens: value['tokens'], ...(defaults === undefined ? {} : { defaults: defaults as Theme['defaults'] }), ...styles } as Theme;
 }

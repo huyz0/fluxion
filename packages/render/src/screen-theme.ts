@@ -27,6 +27,7 @@ export function useScreenTheme(store: Store, screenId: RecordId): Theme {
         name: record['name'],
         tokens: record['tokens'],
         ...(record['defaults'] === undefined ? {} : { defaults: record['defaults'] }),
+        ...(record['tableStyles'] === undefined ? {} : { tableStyles: record['tableStyles'] }),
       }) ?? LIGHT_THEME
     );
   }, [record]);

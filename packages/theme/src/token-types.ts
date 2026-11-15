@@ -93,4 +93,23 @@ export type Theme = {
   readonly tokens: TokenGroup;
   /** Default styles by element kind (`shape`, `connector`, …); values may be token references. */
   readonly defaults?: { readonly [kind: string]: { readonly [field: string]: unknown } };
+  /** Named table styles a table's `tableStyle` picks (ADR-0054); values may be token references. */
+  readonly tableStyles?: { readonly [name: string]: ThemeTableStyle };
+};
+
+/**
+ * A theme's table style (ADR-0054): style fragments for the header row, every second body row, the cell borders and every body
+ * cell. A cell's own style wins over the part for its row, which wins over `cell` and `border`, which win over the theme's defaults.
+ *
+ * @public
+ */
+export type ThemeTableStyle = {
+  /** The first row. */
+  readonly header?: { readonly [field: string]: unknown };
+  /** Every second body row (the second, fourth, … after the header). */
+  readonly band?: { readonly [field: string]: unknown };
+  /** Cell borders: its `stroke`. */
+  readonly border?: { readonly [field: string]: unknown };
+  /** Every cell. */
+  readonly cell?: { readonly [field: string]: unknown };
 };

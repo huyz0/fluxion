@@ -5,7 +5,7 @@ export type { ResolvedEffect, ResolvedShadow } from './effects.js';
 export type { ThemeError, ThemeErrorCode } from './errors.js';
 export { FONT_MAX_BYTES, type FontFileInfo, type FontFormat, readFontFile } from './font-file.js';
 export { createFontRegistry, type FontFaceDef, type FontFamilyInfo, type FontRegistry, type FontSource } from './fonts.js';
-export { LIGHT_THEME } from './light.js';
+export { BUILTIN_TABLE_STYLES, LIGHT_THEME } from './light.js';
 export {
   type ColorStep,
   contrastRatio,
@@ -43,6 +43,7 @@ export {
   isValidToken,
   type ShadowValue,
   type Theme,
+  type ThemeTableStyle,
   type Token,
   type TokenGroup,
   type TypedToken,

@@ -11,6 +11,11 @@ import { TokenRef } from '@fluxion/schema';
 import { z } from 'zod';
 
 // @public
+export const BUILTIN_TABLE_STYLES: {
+    readonly [name: string]: ThemeTableStyle;
+};
+
+// @public
 export type ColorResolver = (path: string) => Result<string, ThemeError>;
 
 // @public
@@ -271,6 +276,9 @@ export type Theme = {
             readonly [field: string]: unknown;
         };
     };
+    readonly tableStyles?: {
+        readonly [name: string]: ThemeTableStyle;
+    };
 };
 
 // @public
@@ -297,6 +305,22 @@ export type ThemeProblem = {
 
 // @public
 export const themeSchema: z.ZodType<Theme>;
+
+// @public
+export type ThemeTableStyle = {
+    readonly header?: {
+        readonly [field: string]: unknown;
+    };
+    readonly band?: {
+        readonly [field: string]: unknown;
+    };
+    readonly border?: {
+        readonly [field: string]: unknown;
+    };
+    readonly cell?: {
+        readonly [field: string]: unknown;
+    };
+};
 
 // @public
 export function toCssVars(theme: Theme): Record<string, string>;

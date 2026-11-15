@@ -24,14 +24,21 @@ export function themeRecordId(name: string): string {
 }
 
 const tree = z.record(z.string(), z.unknown());
-const themeArg = z.object({ name: z.string().min(1), tokens: tree, defaults: tree.optional() });
+const themeArg = z.object({ name: z.string().min(1), tokens: tree, defaults: tree.optional(), tableStyles: tree.optional() });
 type ThemeArg = z.infer<typeof themeArg>;
 
 /** The id `theme` is stored under, written first unless a record holds that id already (it is then used as it is). */
 function adopt(tx: Tx, theme: ThemeArg): RecordId {
   const themeId = themeRecordId(theme.name) as RecordId;
   if (tx.get(themeId) === undefined)
-    tx.put({ id: themeId, type: 'theme', name: theme.name, tokens: theme.tokens, ...(theme.defaults ? { defaults: theme.defaults } : {}) });
+    tx.put({
+      id: themeId,
+      type: 'theme',
+      name: theme.name,
+      tokens: theme.tokens,
+      ...(theme.defaults ? { defaults: theme.defaults } : {}),
+      ...(theme.tableStyles ? { tableStyles: theme.tableStyles } : {}),
+    });
   return themeId;
 }
 
