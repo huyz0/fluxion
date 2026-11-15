@@ -1,7 +1,7 @@
 // The AI catalog (FR-AI-002, 06-ai-authoring.md §6): what a model may name when it writes FluxScript or a patch, generated from the registries
 // the host loaded, so a plugin's shapes, layouts and markers appear beside the built-ins. An entry is an id and one line; `full` adds the
 // parameters and options a model needs to use it.
-import { type CoreRegistries, describeOf, type Registry } from '@fluxion/core';
+import { CORE_SHAPE_IDS, type CoreRegistries, describeOf, type Registry } from '@fluxion/core';
 import type { Diagnostic } from '@fluxion/schema';
 import { z } from 'zod';
 
@@ -117,9 +117,14 @@ function listed(source: string, options: CatalogOptions): boolean {
   return options.core === undefined || options.core.includes(source);
 }
 
+/**
+ * The entries of `registry` an author can name: core's own shapes (`core:path`, ADR-0053) are made by operations on a drawing, and
+ * a FluxScript shape cannot carry the path one draws, so the catalog leaves them out.
+ */
+const authored = (registry: Registry<string, unknown>): readonly (readonly [string, unknown])[] => registry.list().filter(([key]) => !CORE_SHAPE_IDS.has(key));
+
 function entries(registry: Registry<string, unknown>, options: CatalogOptions, details?: Details): CatalogEntry[] {
-  return registry
-    .list()
+  return authored(registry)
     .filter(([key]) => listed(registry.source(key) ?? 'core', options))
     .map(([key, value]): CatalogEntry => {
       const base = { id: key, describe: describeOf(value) ?? '', source: registry.source(key) ?? 'core' };
@@ -144,7 +149,7 @@ type Tally = Map<string, { count: number; kinds: string[] }>;
 
 /** Count into `found` the entries of `registry` (the catalog's `kind`) whose registrant `options` does not list. */
 function tally(found: Tally, registry: Registry<string, unknown>, kind: string, options: CatalogOptions): void {
-  for (const [key] of registry.list()) {
+  for (const [key] of authored(registry)) {
     const source = registry.source(key) ?? 'core';
     if (listed(source, options)) continue;
     const summary = found.get(source) ?? { count: 0, kinds: [] };

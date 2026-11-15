@@ -7,7 +7,7 @@
 // collection or library file (FR-LIB-005/006, M18.210). A host's `catalog` adds entries whose geometry is not loaded yet (FR-LIB-009, M18.32):
 // they are listed and searched by their pack index's names, drawn as a plain tile until loaded, and picked like any other
 // (the host loads the definition first); a registered definition with a catalog entry takes the catalog's names.
-import { evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
+import { CORE_SHAPE_IDS, evaluateOutline, type Registry, type ShapeDef } from '@fluxion/core';
 import { pathData, useValue } from '@fluxion/render';
 import { plural, t } from '@lingui/core/macro';
 import '../i18n.js';
@@ -254,7 +254,8 @@ export function LibraryPanel(props: LibraryPanelProps): ReactNode {
         };
   const version = useValue(shapeDefs.changes$);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` stands for the registry's contents
-  const defs = useMemo(() => new Map(shapeDefs.list().map(([id, def]) => [id, def] as const)), [shapeDefs, version]);
+  // core's own shapes are made by operations (a boolean op, the path tool), not inserted: a path shape without its path is a box
+  const defs = useMemo(() => new Map(shapeDefs.list().flatMap(([id, def]) => (CORE_SHAPE_IDS.has(id) ? [] : [[id, def] as const]))), [shapeDefs, version]);
   const index = useMemo(() => buildLibraryIndex(listed(defs, catalog, hidden)), [defs, catalog, hidden]);
   const found = index.search(query);
   const searching = query.trim() !== '';

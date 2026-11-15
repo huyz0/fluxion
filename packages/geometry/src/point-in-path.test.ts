@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type Path, type PathCommand, pathFromCommands, pointAt } from './path.js';
-import { pointInPath } from './point-in-path.js';
+import { pointInPath, pointInPaths } from './point-in-path.js';
 
 function polygon(points: readonly [number, number][], isClosed = true): Path {
   const [first, ...rest] = points.map(([x, y]) => ({ x, y }));
@@ -113,5 +113,31 @@ describe('pointInPath', () => {
       expect(pointInPath(circle, { x: on.x * (1 - 0.05 / n), y: on.y * (1 - 0.05 / n) }), `inside ${i}`).toBe(true);
       expect(pointInPath(circle, { x: on.x * (1 + 0.05 / n), y: on.y * (1 + 0.05 / n) }), `outside ${i}`).toBe(false);
     }
+  });
+});
+
+describe('pointInPaths (ADR-0053)', () => {
+  const square = (x: number, y: number, s: number, clockwise = true): Path => {
+    const pts: [number, number][] = [
+      [x, y],
+      [x + s, y],
+      [x + s, y + s],
+      [x, y + s],
+    ];
+    return polygon(clockwise ? pts : [...pts].reverse());
+  };
+
+  it('FR-SHP-010: a hole of the same winding is filled under nonzero and open under evenodd', () => {
+    const paths = [square(0, 0, 10), square(3, 3, 4)];
+    expect(pointInPaths(paths, { x: 5, y: 5 }, 'nonzero')).toBe(true);
+    expect(pointInPaths(paths, { x: 5, y: 5 }, 'evenodd')).toBe(false);
+    expect(pointInPaths(paths, { x: 1, y: 1 }, 'evenodd')).toBe(true);
+    expect(pointInPaths(paths, { x: 11, y: 5 }, 'nonzero')).toBe(false);
+  });
+
+  it('FR-SHP-010: a hole wound the other way is open under nonzero too', () => {
+    const paths = [square(0, 0, 10), square(3, 3, 4, false)];
+    expect(pointInPaths(paths, { x: 5, y: 5 }, 'nonzero')).toBe(false);
+    expect(pointInPaths(paths, { x: 1, y: 1 }, 'nonzero')).toBe(true);
   });
 });

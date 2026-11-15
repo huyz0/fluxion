@@ -27,8 +27,9 @@ export { intersectCubics, intersectPaths, intersectSegments, type LineSegment } 
 export { apply, determinant, identity, invert, type Mat2d, multiply, rotation, scaling, translate } from './mat2d.js';
 export { type NearestPoint, nearestPoint } from './nearest.js';
 export { type CubicSegment, derivativeAt, type Path, type PathCommand, pathBounds, pathFromCommands, pointAt, segmentBounds, splitAt } from './path.js';
+export { parsePathData } from './path-data.js';
 export { createPathSampler, type PathSampler, type PathSamplerOptions } from './path-sampler.js';
-export { type FillRule, pointInPath } from './point-in-path.js';
+export { type FillRule, pointInPath, pointInPaths } from './point-in-path.js';
 export type { Err, Ok, Result } from './result.js';
 export { roundCorners } from './round.js';
 export { createDynamicIndex, createStaticIndex, type DynamicSpatialIndex, type IndexedBox, type SpatialIndex } from './spatial-index.js';

@@ -6,7 +6,7 @@
 // center or perimeter. Side and point anchors are fractions of the box too; `auto`
 // floats until the anchor choice of FR-ANC-004 (M16). Everything is computed in the element's own
 // box and mapped through its placement, so an anchor follows every move, resize, rotation and flip.
-import { DEFAULT_ANCHOR_DEFS, evaluateOutline, projectToOutline, type ShapeDef } from '@fluxion/core';
+import { DEFAULT_ANCHOR_DEFS, evaluateOutline, ownPathOf, projectToOutline, type ShapeDef } from '@fluxion/core';
 import {
   apply,
   createPathSampler,
@@ -20,7 +20,7 @@ import {
   sub,
   type Vec2,
 } from '@fluxion/geometry';
-import { type AnchorDef, type AnchorRef, type Transform, transformRotation } from '@fluxion/schema';
+import { type AnchorDef, type AnchorRef, type PathData, type Transform, transformRotation } from '@fluxion/schema';
 
 /**
  * What a connector end attaches to: the element's placement, its outline in its own box (none: the
@@ -244,20 +244,33 @@ function outlineOf(def: ShapeDef, size: { readonly w: number; readonly h: number
 }
 
 /**
+ * What an element adds to its definition's anchor target: its parameters, anchors and, on a path shape, its own path.
+ *
+ * @public
+ */
+export type AnchoredElement = {
+  /** The instance's parameters, which its definition's outline reads. */
+  readonly params?: { readonly [key: string]: unknown } | undefined;
+  /** The instance's anchors, read before its definition's. */
+  readonly anchors?: readonly AnchorDef[] | undefined;
+  /** The path a `core:path` shape owns: its outline (ignored on any other definition). */
+  readonly path?: PathData | undefined;
+};
+
+/**
  * The anchor target of a shape of definition `def` (none: its box) placed at `transform` with
  * `params` and instance `anchors`: the definition's outline for its size, and the instance's anchors
  * before the definition's. An outline that does not evaluate falls back to the box.
  *
  * @public
  */
-export function shapeAnchorTarget(
-  transform: Transform,
-  def: ShapeDef | undefined,
-  element: { readonly params?: { readonly [key: string]: unknown } | undefined; readonly anchors?: readonly AnchorDef[] | undefined } = {},
-): AnchorTarget {
+export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefined, element: AnchoredElement = {}): AnchorTarget {
+  const size = { w: transform.w, h: transform.h };
+  // a path shape meets connectors on the outline its element owns (ADR-0053)
+  const own = def === undefined ? undefined : ownPathOf({ defId: def.id, path: element.path }, size);
   return {
     transform,
-    outline: def === undefined ? undefined : outlineOf(def, { w: transform.w, h: transform.h }, element.params ?? {}),
+    outline: def === undefined ? undefined : (own?.outline ?? outlineOf(def, size, element.params ?? {})),
     anchors: [...(element.anchors ?? []), ...(def?.anchors ?? [])],
   };
 }

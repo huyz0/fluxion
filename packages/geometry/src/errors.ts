@@ -5,7 +5,13 @@
  *
  * @public
  */
-export type GeometryErrorCode = 'MATRIX_SINGULAR' | 'PATH_MISSING_MOVE' | 'PATH_MULTIPLE_SUBPATHS' | 'PATH_COMMAND_AFTER_CLOSE' | 'PATH_INVALID_POINT';
+export type GeometryErrorCode =
+  | 'MATRIX_SINGULAR'
+  | 'PATH_MISSING_MOVE'
+  | 'PATH_MULTIPLE_SUBPATHS'
+  | 'PATH_COMMAND_AFTER_CLOSE'
+  | 'PATH_INVALID_POINT'
+  | 'PATH_DATA_INVALID';
 
 /**
  * An expected failure reported by a geometry function.

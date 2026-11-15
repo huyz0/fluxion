@@ -1,7 +1,7 @@
 // A shape's region and slot problems (FR-SHP-007, ADR-0054, M19 cp2 F2): a `texts` entry naming the first text region, which the
-// element's `text` draws instead, and an icon slot naming a definition that is not available (M19.17 r1 F2). Neither is drawn; the
-// Problems tab reports each with a fix that removes the entry.
-import type { ShapeDef } from '@fluxion/core';
+// element's `text` draws instead, an icon slot naming a definition that is not available (M19.17 r1 F2), and a `path` on a shape
+// other than `core:path` (ADR-0053, M19.41). None is drawn; the Problems tab reports each with a fix that removes the entry.
+import { CORE_PATH_ID, type ShapeDef } from '@fluxion/core';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import type { Problem } from './problem-types.js';
 
@@ -22,6 +22,7 @@ type Shaped = {
   readonly defId?: unknown;
   readonly texts?: { readonly [region: string]: unknown };
   readonly icons?: { readonly [slot: string]: { readonly defId?: unknown } };
+  readonly path?: unknown;
 };
 
 /** `entries` without `key`, or undefined when nothing is left (the field goes with its last entry). */
@@ -65,15 +66,30 @@ function missingIcons(r: Shaped, shapeDefs: ShapeDefLookup): Problem[] {
     });
 }
 
+/** The problem of a `path` on shape `r` of a definition other than `core:path`: only the path shape draws its own path. */
+function ignoredPath(r: Shaped, defId: string): Problem[] {
+  if (r.path === undefined || defId === CORE_PATH_ID) return [];
+  return [
+    {
+      id: `FLX_PATH_IGNORED|${r.id}`,
+      severity: 'warning',
+      message: `The path kept on this ${defId} shape is not drawn: only a path shape draws its own path.`,
+      elements: [r.id as RecordId],
+      fix: { title: 'Remove the unused path', command: 'element.update', args: { id: r.id, fields: { path: undefined } } },
+    },
+  ];
+}
+
 /**
  * The region and slot problems of every shape in `doc`: a `texts` entry naming its definition's first text region, and an icon
- * slot naming a definition `shapeDefs` does not hold; each fix drops that entry (and the field with its last entry).
+ * slot naming a definition `shapeDefs` does not hold, and a `path` on a shape that is not `core:path`; each fix drops that entry (and
+ * the field with its last entry).
  *
  * @public
  */
 export function regionProblems(doc: DocumentFile, shapeDefs: ShapeDefLookup): Problem[] {
   return (Object.values(doc.records) as Shaped[]).flatMap((r) => {
     if (r.type !== 'element' || r.kind !== 'shape' || typeof r.defId !== 'string') return [];
-    return [...firstRegionText(r, r.defId, shapeDefs), ...missingIcons(r, shapeDefs)];
+    return [...firstRegionText(r, r.defId, shapeDefs), ...missingIcons(r, shapeDefs), ...ignoredPath(r, r.defId)];
   });
 }

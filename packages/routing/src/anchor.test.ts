@@ -1,5 +1,5 @@
 import type { ShapeDef } from '@fluxion/core';
-import { outlineDistance } from '@fluxion/core';
+import { CORE_PATH_DEF, outlineDistance } from '@fluxion/core';
 import { apply, elementMatrix, invert, type Mat2d, type Ok, type Path, pathFromCommands, type Vec2 } from '@fluxion/geometry';
 import type { Transform } from '@fluxion/schema';
 import fc from 'fast-check';
@@ -180,5 +180,25 @@ describe('floating anchor on a plain box (FR-ANC-001, FR-RTE-002)', () => {
       }),
       { numRuns: 300 },
     );
+  });
+});
+
+describe('path-shape anchors (ADR-0053, M19.41)', () => {
+  const triangle = { d: 'M 0 0 L 10 0 L 0 10 Z', w: 10, h: 10 };
+  const t = { x: 100, y: 100, w: 100, h: 100 };
+
+  it('FR-SHP-010: a floating anchor on a core:path shape lands on the outline its element owns', () => {
+    const own = shapeAnchorTarget(t, CORE_PATH_DEF, { path: triangle });
+    // toward the bottom-right the hypotenuse is met at the box's centre, not the box's corner
+    near(resolveAnchor(own, { kind: 'floating' }, { x: 400, y: 400 }).point, { x: 150, y: 150 });
+    // its definition's box is all another definition sees: a path on it is ignored (ADR-0054)
+    const ignored = shapeAnchorTarget(t, { ...CORE_PATH_DEF, id: 'basic:rect' }, { path: triangle });
+    near(resolveAnchor(ignored, { kind: 'floating' }, { x: 400, y: 400 }).point, { x: 200, y: 200 });
+  });
+
+  it('FR-SHP-011: a core:path shape keeps the default side anchors of basic:rect', () => {
+    const own = shapeAnchorTarget(t, CORE_PATH_DEF, { path: triangle });
+    near(resolveAnchor(own, { kind: 'named', name: 'e' }, { x: 400, y: 150 }).point, { x: 200, y: 150 });
+    near(resolveAnchor(own, { kind: 'named', name: 's' }, { x: 150, y: 400 }).point, { x: 150, y: 200 });
   });
 });

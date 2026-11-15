@@ -78,6 +78,9 @@ nothing is changed.
   Its outline (hit-testing, connector perimeter, morphing, FR-SHP-005) is `d` scaled.
 - `core:path` has default anchors at its box sides like `basic:rect` and no params. The path tool (FR-SHP-011, M19.19) edits `d`
   (and refits `w`, `h` and the transform when the bounds change) in one undoable step.
+- `core:path` is core's own definition (M19.41): every fresh `createCoreRegistries()` holds it from source `core`, so every host
+  (studio, player, player-inline, CLI) draws it; a save never embeds it in a pack; the library, the AI catalog and FluxScript
+  completion leave it out, since it is made by an operation and a FluxScript shape cannot carry its `path`.
 - The field is part of schema 1.8 (ADR-0054, M19.9), additive: a 1.7 reader ignored no such field because none existed.
 - The operation's command (core) replaces the operands by the new shape in one transaction (one undo step): the result takes the
   bottom-most operand's z-index, container and style; bindings to removed operands are moved to the result at the same anchor

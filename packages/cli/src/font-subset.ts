@@ -18,7 +18,7 @@ import {
   writePortableFlux,
 } from '@fluxion/format';
 import { basicPack } from '@fluxion/pack-basic';
-import { allowsShapePackContentLicense } from '@fluxion/sdk';
+import { allowsShapePackContentLicense, createCoreRegistries } from '@fluxion/sdk';
 import { CLI_VERSION } from './version.js';
 
 /** The built worker module beside this one (`dist/font-subset-worker.js`). */
@@ -47,7 +47,13 @@ export function cliSubsetDeps(hasher: ContentHasher, spawn: () => FontJobWorker 
 /** What subsetting wrote: the `.flux` bytes and one line per embedded font. */
 export type SubsetFlux = { readonly bytes: Uint8Array; readonly fonts: readonly FontSubsetLine[] };
 
-const builtinIds: ReadonlySet<string> = new Set(basicPack.shapes.map((def) => def.id));
+// core's own shapes (the ones a fresh registry holds, ADR-0053) and the basic pack's
+const builtinIds: ReadonlySet<string> = new Set([
+  ...createCoreRegistries()
+    .shapeDefs.list()
+    .map(([id]) => id),
+  ...basicPack.shapes.map((def) => def.id),
+]);
 /** Saved shape packs open under the content policy, as `convert` opens them (M18.116). */
 const OPEN = (hasher: ContentHasher) => ({ hasher, shapePackLicensePolicy: allowsShapePackContentLicense });
 

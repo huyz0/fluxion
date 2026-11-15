@@ -5,7 +5,7 @@
 // Reads records through a ReadView, so a store query over it re-routes when a bound element changes.
 import type { ReadSignal, ReadView, Registry, ShapeDef } from '@fluxion/core';
 import { createPathSampler, type PathCommand, pathFromCommands, type Vec2 } from '@fluxion/geometry';
-import type { AnchorDef, AnchorRef, RecordId, Route, Transform } from '@fluxion/schema';
+import type { AnchorDef, AnchorRef, PathData, RecordId, Route, Transform } from '@fluxion/schema';
 import { type AnchorTarget, resolveAnchor, shapeAnchorTarget } from './anchor.js';
 import { routerBase } from './decorate.js';
 import { fannedPath, fanOffsetOf } from './fan.js';
@@ -60,6 +60,7 @@ type Bound = {
   readonly route?: Route;
   readonly params?: { readonly [key: string]: unknown };
   readonly anchors?: readonly AnchorDef[];
+  readonly path?: PathData;
 };
 type ConnectorLike = { readonly route?: Route; readonly freeSource?: Vec2; readonly freeTarget?: Vec2 };
 

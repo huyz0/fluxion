@@ -145,7 +145,7 @@ export type GeometryError = {
 };
 
 // @public
-export type GeometryErrorCode = "MATRIX_SINGULAR" | "PATH_MISSING_MOVE" | "PATH_MULTIPLE_SUBPATHS" | "PATH_COMMAND_AFTER_CLOSE" | "PATH_INVALID_POINT";
+export type GeometryErrorCode = "MATRIX_SINGULAR" | "PATH_MISSING_MOVE" | "PATH_MULTIPLE_SUBPATHS" | "PATH_COMMAND_AFTER_CLOSE" | "PATH_INVALID_POINT" | "PATH_DATA_INVALID";
 
 // @public
 export function identity(): Mat2d;
@@ -205,6 +205,9 @@ export type Ok<T> = {
 };
 
 // @public
+export function parsePathData(d: string): Result<readonly (readonly PathCommand[])[], GeometryError>;
+
+// @public
 export type Path = {
     readonly segments: readonly CubicSegment[];
     readonly closed: boolean;
@@ -254,6 +257,9 @@ export function pointAt(seg: CubicSegment, t: number): Vec2;
 
 // @public
 export function pointInPath(path: Path, p: Vec2, rule?: FillRule): boolean;
+
+// @public
+export function pointInPaths(paths: readonly Path[], p: Vec2, rule?: FillRule): boolean;
 
 // @public
 export type Polyline = {

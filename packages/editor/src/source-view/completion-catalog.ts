@@ -1,6 +1,6 @@
 // The catalog completion reads (FR-DSL-009, ADR-0032), built from what the editor already holds: the shape registry, the theme record the
 // document or screen uses, and the screen's elements. Each list is read when asked, so an edit shows in the next completion. Lazy chunk.
-import type { ReadView, Registry, ShapeDef } from '@fluxion/core';
+import { CORE_SHAPE_IDS, type ReadView, type Registry, type ShapeDef } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { isToken, LIGHT_THEME, type TokenGroup } from '@fluxion/theme';
 import type { CompletionCatalog } from './completion.js';
@@ -46,7 +46,8 @@ function themeTokens(view: ReadView, screen: RecordId | undefined): TokenGroup {
  * @returns the lists completion reads
  */
 export function completionCatalog(source: CatalogSource): CompletionCatalog {
-  const shapes = () => source.shapeDefs.list().map(([id]) => id);
+  // core's own shapes are made by operations, not written (ADR-0053)
+  const shapes = () => source.shapeDefs.list().flatMap(([id]) => (CORE_SHAPE_IDS.has(id) ? [] : [id]));
   return {
     shapes,
     tokens: () => tokenNames(themeTokens(source.view, source.screen())),

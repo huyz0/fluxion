@@ -12,6 +12,7 @@ import { Diagnostic } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
+import { PathData } from '@fluxion/schema';
 import { QualifiedName } from '@fluxion/schema';
 import { Random } from '@fluxion/schema';
 import { RecordId } from '@fluxion/schema';
@@ -225,7 +226,19 @@ export const CORE_COMMANDS: readonly AnyCommand[];
 export const CORE_HOOKS: ReadonlyArray<readonly [string, IntegrityHook]>;
 
 // @public
+export const CORE_PATH_DEF: ShapeDef;
+
+// @public
+export const CORE_PATH_ID = "core:path";
+
+// @public
 export const CORE_REGISTRY_NAMES: readonly ["elementKinds", "shapeDefs", "markers", "routers", "layouts", "templates", "effects", "transitions", "themes", "fonts", "commands", "integrityHooks", "importers", "exporters", "dslMacros", "lintRules"];
+
+// @public
+export const CORE_SHAPE_DEFS: readonly ShapeDef[];
+
+// @public
+export const CORE_SHAPE_IDS: ReadonlySet<string>;
 
 // @public
 export type CoreError = {
@@ -646,6 +659,29 @@ export type OutlineSpec = {
     readonly closed?: boolean;
     readonly smooth?: boolean;
 };
+
+// @public
+export type OwnPath = {
+    readonly commands: readonly PathCommand[];
+    readonly paths: readonly Path[];
+    readonly outline: Path;
+    readonly fillRule: "nonzero" | "evenodd";
+};
+
+// @public
+export function ownPath(path: PathData, size: {
+    readonly w: number;
+    readonly h: number;
+}): OwnPath | undefined;
+
+// @public
+export function ownPathOf(element: {
+    readonly defId: string;
+    readonly path?: PathData | undefined;
+}, size: {
+    readonly w: number;
+    readonly h: number;
+}): OwnPath | undefined;
 
 // @public
 export function packHasFonts<T extends ShapePackVersioned>(pack: T): pack is ShapePackWithFonts<T>;

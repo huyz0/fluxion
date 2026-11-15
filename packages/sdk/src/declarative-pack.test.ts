@@ -35,6 +35,7 @@ describe('declarative pack SDK integration', () => {
     const result = parseShapePackCategory(category(), bad, 'basic', policy);
     expect(result.ok).toBe(false);
     if (result.ok) definePack({ id: 'sample', shapes: result.value.definitions }).register(registries);
-    expect(registries.shapeDefs.list()).toEqual([]);
+    // only core's own shapes, none of the pack's
+    expect(registries.shapeDefs.list().map(([id]) => registries.shapeDefs.source(id))).toEqual(['core']);
   });
 });

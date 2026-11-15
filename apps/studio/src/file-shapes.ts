@@ -1,10 +1,10 @@
-import { allowsShapePackContentLicense, type VersionedShapePackSubset } from '@fluxion/core';
+import { allowsShapePackContentLicense, CORE_SHAPE_IDS, type VersionedShapePackSubset } from '@fluxion/core';
 import type { PrepareShapePacksOptions, ShapePackSourceData } from '@fluxion/format';
 import { basicPack } from '@fluxion/pack-basic';
 import type { DocumentFile } from '@fluxion/schema';
 
 /** Explicit bundled geometry; namespace strings never imply a builtin. */
-const builtinIds: ReadonlySet<string> = new Set(basicPack.shapes.map((def) => def.id));
+const builtinIds: ReadonlySet<string> = new Set([...CORE_SHAPE_IDS, ...basicPack.shapes.map((def) => def.id)]);
 
 /** The shapes every Studio session has (the bundled basic shapes), which no saved pack carries. */
 export const builtinShapeIds: ReadonlySet<string> = builtinIds;

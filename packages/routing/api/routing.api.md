@@ -14,6 +14,7 @@ import { Disposable } from '@fluxion/core';
 import { IndexedBox } from '@fluxion/geometry';
 import { Path } from '@fluxion/geometry';
 import { PathCommand } from '@fluxion/geometry';
+import { PathData } from '@fluxion/schema';
 import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
@@ -26,6 +27,15 @@ import { Vec2 } from '@fluxion/geometry';
 
 // @public
 export function affectedConnectors(view: ReadView, moved: readonly RecordId[]): RecordId[];
+
+// @public
+export type AnchoredElement = {
+    readonly params?: {
+        readonly [key: string]: unknown;
+    } | undefined;
+    readonly anchors?: readonly AnchorDef[] | undefined;
+    readonly path?: PathData | undefined;
+};
 
 // @public
 export type AnchorTarget = {
@@ -360,12 +370,7 @@ export type SearchInput = {
 export function searchRoute(input: SearchInput): Vec2[] | undefined;
 
 // @public
-export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefined, element?: {
-    readonly params?: {
-        readonly [key: string]: unknown;
-    } | undefined;
-    readonly anchors?: readonly AnchorDef[] | undefined;
-}): AnchorTarget;
+export function shapeAnchorTarget(transform: Transform, def: ShapeDef | undefined, element?: AnchoredElement): AnchorTarget;
 
 // @public
 export type Side = "n" | "e" | "s" | "w";

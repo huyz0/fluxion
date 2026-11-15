@@ -60,13 +60,26 @@ function closedSegments(path: Path): readonly CubicSegment[] {
  * @public
  */
 export function pointInPath(path: Path, p: Vec2, rule: FillRule = 'nonzero'): boolean {
+  return pointInPaths([path], p, rule);
+}
+
+/**
+ * True when `p` is inside the region the subpaths `paths` make together under the fill rule: their windings (nonzero) or
+ * crossings (evenodd) summed, as an SVG path of several subpaths fills (a counter-wound inner ring is a hole). Each open
+ * subpath is treated as closed by a straight line back to its start.
+ *
+ * @public
+ */
+export function pointInPaths(paths: readonly Path[], p: Vec2, rule: FillRule = 'nonzero'): boolean {
   let winding = 0;
   let crossings = 0;
-  for (const seg of closedSegments(path)) {
-    for (const piece of monotonePieces(seg)) {
-      const c = crossing(piece, p);
-      winding += c;
-      crossings += Math.abs(c);
+  for (const path of paths) {
+    for (const seg of closedSegments(path)) {
+      for (const piece of monotonePieces(seg)) {
+        const c = crossing(piece, p);
+        winding += c;
+        crossings += Math.abs(c);
+      }
     }
   }
   return rule === 'evenodd' ? crossings % 2 === 1 : winding !== 0;

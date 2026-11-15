@@ -232,3 +232,9 @@ it('FR-LIB-009: a later hash failure exposes no earlier prepared entries and a t
     }),
   ).toMatchObject({ ok: false });
 });
+
+it('FR-SHP-010: a core:path shape is built in wherever a file is saved: no pack carries it, whatever the host lists (ADR-0053)', async () => {
+  const out = await prepared(document(['core:path', 'sample:s0']), [source()]);
+  expect(unpack(out.extraEntries).flatMap((s) => s.definitions.map((d) => d.id))).toEqual(['sample:s0']);
+  expect((await prepared(document(['core:path']), [])).extraEntries.size).toBe(0);
+});

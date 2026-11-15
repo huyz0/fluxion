@@ -4,6 +4,7 @@ import type { AnyCommand } from './commands.js';
 import type { IntegrityHook } from './hook-types.js';
 import type { MarkerDef } from './marker.js';
 import { createRegistry, type Registry, type RegistryOptions } from './registry.js';
+import { CORE_SHAPE_DEFS } from './shape/path-shape.js';
 import type { ShapeDef } from './shape/shape-def.js';
 
 /**
@@ -66,16 +67,20 @@ export type CoreRegistries = {
 export const DESCRIBED_REGISTRY_NAMES: readonly CoreRegistryName[] = ['shapeDefs', 'markers', 'routers', 'layouts', 'templates', 'effects', 'transitions'];
 
 /**
- * A fresh set of empty core registries; `requireDescribe` makes the catalog registries refuse an entry with no `describe` line (a dev
- * host's check, FR-AI-002).
+ * A fresh set of core registries, empty but for core's own shapes (`core:path`, ADR-0053: every host draws the path shape a boolean
+ * operation or the path tool makes, from source `core`); `requireDescribe` makes the catalog registries refuse an entry with no
+ * `describe` line (a dev host's check, FR-AI-002).
  *
  * @public
  */
 export function createCoreRegistries(options: RegistryOptions = {}): CoreRegistries {
-  return Object.fromEntries(
+  const registries = Object.fromEntries(
     CORE_REGISTRY_NAMES.map((name) => [
       name,
       createRegistry<string, unknown>(name, { requireDescribe: options.requireDescribe === true && DESCRIBED_REGISTRY_NAMES.includes(name) }),
     ]),
   ) as CoreRegistries;
+  // a fresh registry holds no id, and core's shapes carry their describe line: neither can be refused
+  for (const def of CORE_SHAPE_DEFS) registries.shapeDefs.register(def.id, def, 'core');
+  return registries;
 }

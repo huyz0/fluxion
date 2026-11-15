@@ -1,4 +1,5 @@
 import {
+  CORE_SHAPE_IDS,
   packHasFonts,
   parseShapeDef,
   parseVersionedShapePackIndex,
@@ -252,7 +253,8 @@ function usedIds(document: Pick<DocumentFile, 'records'>, builtinIds: ReadonlySe
     if (record.type === 'element' && record['kind'] === 'shape') {
       const id = record['defId'];
       if (typeof id !== 'string') return err([problem('/document/records', 'shape has no definition ID')]);
-      if (!builtinIds.has(id)) used.add(id);
+      // core's own shapes are in every host and no pack carries them (ADR-0053)
+      if (!builtinIds.has(id) && !CORE_SHAPE_IDS.has(id)) used.add(id);
     }
   }
   return ok(used);

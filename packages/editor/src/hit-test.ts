@@ -4,7 +4,7 @@
 // or routers change); candidates near the point are tested exactly (a shape's outline through core's
 // hitTestShape with its stroke, miter spikes included, and its label; a connector's route; any other
 // element's box), with a pick margin of PICK_PX canvas px, and the topmost in paint order wins.
-import { effect, evaluateOutline, hitTestShape, type ShapeDef, type Store, textRegion } from '@fluxion/core';
+import { effect, type ShapeDef, type Store, textRegion } from '@fluxion/core';
 import {
   apply,
   type Box,
@@ -25,6 +25,7 @@ import { connectorHittable } from './connector-hit.js';
 import { clippedByFrames } from './frame-clip.js';
 import { type HitContext, type Hittable, inBox, type Resolving } from './hittable.js';
 import { affected, paintOrder } from './paint-order.js';
+import { shapeOutline, touchesAny } from './shape-outline.js';
 import { grow, onStroked, reachOf, stroked, strokedBounds } from './stroke-band.js';
 
 /**
@@ -65,14 +66,15 @@ function boxHittable(screenId: RecordId, t: Transform): Hittable {
 /** A shape hit on its outline: inside it when filled and closed, on its stroke, and on its label's region when it has text. */
 function shapeHittable(element: ElementRecord & { readonly transform: Transform }, def: ShapeDef, ctx: Resolving): Hittable {
   const t = element.transform;
-  const outlined = evaluateOutline(def, { w: t.w, h: t.h }, (element as { params?: Record<string, unknown> }).params);
-  if (!outlined.ok) return boxHittable(element.screenId, t);
+  const outlined = shapeOutline(element, def);
+  if (outlined === undefined) return boxHittable(element.screenId, t);
   const of =
     // tzap disable next-line ConditionalExpression, ObjectLiteral, ArrayDeclaration, StringLiteral: without defaults either form resolves alike; defaultsAt only locates diagnostics
     def.defaultStyle === undefined ? 'shape' : { kind: 'shape' as const, defaults: def.defaultStyle, defaultsAt: ['shapeDefs', def.id, 'defaultStyle'] };
   // tzap disable next-line StringLiteral, ArrayDeclaration: the path only locates diagnostics, which hit-testing drops
   const { style } = resolveStyle((element as { style?: unknown }).style as never, of as never, ctx.theme, ['records', element.id, 'style']);
-  const path = outlined.value.path;
+  const { path, within } = outlined;
+  const rings = outlined.rings.map((r) => stroked(r, style.stroke, ctx.vars));
   // a hollow shape (no fill: `none` and `transparent` resolve to none) is hit on its stroke only
   const filled = style.fill.type !== 'none';
   const outline = stroked(path, style.stroke, ctx.vars);
@@ -85,19 +87,21 @@ function shapeHittable(element: ElementRecord & { readonly transform: Transform 
   // the label's region as an outline of its own, from its corner
   const labelOutline = label === undefined ? undefined : rectOutline(label.w, label.h);
   const labelFrame: Mat2d = label === undefined ? inv : [inv[0], inv[1], inv[2], inv[3], inv[4] - label.x, inv[5] - label.y];
-  const drawn = strokedBounds(outline, pathBounds(path) ?? { x: 0, y: 0, w: t.w, h: t.h });
+  // every subpath is drawn, a path shape's islands apart from its outline included (M19.41 r1 F1)
+  const drawn = [outline, ...rings].map((s) => strokedBounds(s, pathBounds(s.path) ?? { x: 0, y: 0, w: t.w, h: t.h })).reduce(boxUnion);
   return {
     screenId: element.screenId,
     bounds: transformBox(m, label === undefined ? drawn : boxUnion(drawn, label)),
     hits: (p, tol) => {
       const l = apply(inv, p);
-      // an open outline has no inside
-      const inside = path.closed && hitTestShape(path, l, 0);
-      return (filled && inside) || onStroked(outline, l, inside, tol) || (label !== undefined && inBox(l, label, tol));
+      const inside = within(l);
+      const onRing = rings.some((r) => onStroked(r, l, inside, tol));
+      return (filled && inside) || onStroked(outline, l, inside, tol) || onRing || (label !== undefined && inBox(l, label, tol));
     },
-    // the stroke is drawn out to its reach from the outline: a box that near touches it
+    // the stroke is drawn out to its reach from the outline: a box that near touches any subpath, or lies in the filled inside
     touches: (box) =>
-      boxTouches(path, filled, grow(box, reachOf(outline.stroke)), inv) || (labelOutline !== undefined && boxTouches(labelOutline, true, box, labelFrame)),
+      touchesAny([path, ...outlined.rings], filled ? within : undefined, grow(box, reachOf(outline.stroke)), inv) ||
+      (labelOutline !== undefined && boxTouches(labelOutline, true, box, labelFrame)),
   };
 }
 

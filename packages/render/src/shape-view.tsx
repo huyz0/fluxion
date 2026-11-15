@@ -29,7 +29,8 @@ import { RegionsAndSlots } from './region-views.js';
 import type { ElementViewProps } from './registries.js';
 import { styledBlocks } from './rich-layout.js';
 import { RichText } from './rich-text.js';
-import { outlineOf, shapeStyle, viewStyle } from './shape-style.js';
+import { strokeCss, useOutline } from './shape-outline.js';
+import { shapeStyle, viewStyle } from './shape-style.js';
 import { browserMeasurer, concreteFont, MeasurerContext, useFontGeneration } from './text-measurer.js';
 
 const stops = (paint: { readonly stops: ReadonlyArray<{ readonly offset: number; readonly css: string }> }) =>
@@ -182,24 +183,26 @@ function Outline(props: {
   readonly stroke: CSSProperties;
   readonly align: string;
   readonly ids: string;
+  /** How several subpaths fill together (a path shape's own, ADR-0053); the browser's default (nonzero) when absent. */
+  readonly fillRule?: 'nonzero' | 'evenodd' | undefined;
 }): ReactNode {
-  const { d, fill, stroke, align, ids } = props;
-  if (align !== 'inside' && align !== 'outside') return <path className="fx-outline" d={d} style={{ fill, ...stroke }} />;
+  const { d, fill, stroke, align, ids, fillRule } = props;
+  if (align !== 'inside' && align !== 'outside') return <path className="fx-outline" d={d} style={{ fill, fillRule, ...stroke }} />;
   const doubled: CSSProperties = { ...stroke, fill: 'none', strokeWidth: `calc(${String(stroke.strokeWidth)} * 2)` };
   const inside = align === 'inside';
   return (
     <>
       {inside ? (
         <clipPath id={`fx-clip-${ids}`}>
-          <path d={d} />
+          <path d={d} clipRule={fillRule} />
         </clipPath>
       ) : (
         <mask id={`fx-edge-${ids}`} maskUnits="userSpaceOnUse" {...EDGE_AREA}>
           <rect {...EDGE_AREA} fill="white" />
-          <path d={d} fill="black" />
+          <path d={d} fill="black" fillRule={fillRule} />
         </mask>
       )}
-      <path className="fx-outline" d={d} style={{ fill, stroke: 'none' }} />
+      <path className="fx-outline" d={d} style={{ fill, fillRule, stroke: 'none' }} />
       <path
         className="fx-stroke"
         d={d}
@@ -314,7 +317,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   const fonts = useFontGeneration();
   const { w, h } = element.transform;
   const artwork = useArtwork(def, { w, h }, { prefix: `fx-art-${ids}`, theme, fonts: registries.artworkFonts?.get(element.defId) });
-  const outlined = useMemo(() => (def === undefined ? undefined : outlineOf(def, { w, h }, element.params)), [def, w, h, element.params]);
+  const outlined = useOutline(def, element, { w, h });
   const paragraphs = useMemo(() => plainParagraphs(element.text), [element.text]);
   // the text as it is drawn (sizes, headings, spacing, indents), which the fit measures
   // tzap disable next-line ArrayDeclaration: the list only re-runs the memo
@@ -330,17 +333,12 @@ export function ShapeView(props: ElementViewProps): ReactNode {
   if (outlined === undefined || !outlined.ok) return <PlaceholderView {...props} />;
   // an open outline is a stroke: it has no inside to fill (ADR-0016 item 2)
   const { fill, defs } = outlined.value.path.closed ? svgFill(style.fill, fillId, { w, h }, image) : { fill: 'none', defs: undefined };
-  const stroke: CSSProperties = {
-    stroke: style.stroke.color,
-    strokeWidth: style.stroke.width,
-    strokeLinecap: style.stroke.cap as CSSProperties['strokeLinecap'],
-    strokeLinejoin: style.stroke.join as CSSProperties['strokeLinejoin'],
-    ...(style.stroke.dash === undefined ? {} : { strokeDasharray: style.stroke.dash }),
-  };
+  const stroke = strokeCss(style.stroke);
   // a style's corner radius rounds the drawn outline's straight corners (ADR-0019)
   const radius = concreteLength(style.radius, theme);
   const closed = outlined.value.path.closed;
-  const drawn = closed && radius > 0 ? roundCorners(outlined.value.commands, radius) : outlined.value.commands;
+  // a path shape's own outline keeps its corners: it may hold several subpaths, which rounding does not take
+  const drawn = closed && radius > 0 && outlined.fillRule === undefined ? roundCorners(outlined.value.commands, radius) : outlined.value.commands;
   // an open outline has no inside or outside: its stroke is centred
   // tzap disable next-line StringLiteral: any align but inside and outside draws centred
   const align = closed ? style.stroke.align : 'center';
@@ -356,7 +354,16 @@ export function ShapeView(props: ElementViewProps): ReactNode {
           margin={strokeReach(concreteLength(style.stroke.width, theme), align, style.stroke.join)}
         />
         <Effected on={style.shadows.length + style.effects.length > 0} id={`fx-effects-${ids}`}>
-          <ShapePaint artwork={artwork} d={pathData(drawn)} fill={fill} stroke={stroke} align={align} ids={ids} decorations={outlined.value.decorations} />
+          <ShapePaint
+            artwork={artwork}
+            d={pathData(drawn)}
+            fill={fill}
+            stroke={stroke}
+            align={align}
+            ids={ids}
+            fillRule={outlined.fillRule}
+            decorations={outlined.value.decorations}
+          />
         </Effected>
       </svg>
       {paragraphs.length === 0 ? null : (
