@@ -44,6 +44,8 @@ test.describe('context menus: mouse', { tag: '@desktop' }, () => {
       /Bring forward/,
       /Send backward/,
       /Send to back/,
+      /Flip horizontally/,
+      /Flip vertically/,
       /Arrange the selection \(layered\)/,
       /Arrange the selection \(grid\)/,
       /Arrange the selection \(stack\)/,

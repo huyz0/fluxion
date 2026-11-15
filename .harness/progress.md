@@ -4864,3 +4864,5 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 - M19.15 r2 F1: a handle gesture on several elements leaves a position-locked one where it is (locks-tool.test.ts).
 - The palette test's plugin command is now "Wobble the selection": typing "flip" also matches the new built-in flips.
 - r1 (changes-requested, fixed): `frameFlipped` had no caller but its test; removed, and the frames tests flip a frame through `element.flip` (the menu's path), so "flip carries members" runs what the user runs.
+## 2026-11-15 M19.37: context menu e2e (Fixes-ci 43691996267)
+- main's ci went red at d34a336 on e2e shard 1/3 of all three engines: e2e/context-menu.element.spec.ts lists the element menu's items exactly, and M19.16 added Flip horizontally and Flip vertically after Send to back. The spec now names them; chromium 3/3 locally. M19.16's own local run covered the palette and arrange specs but not this one.
