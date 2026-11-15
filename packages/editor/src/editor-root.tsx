@@ -392,7 +392,7 @@ function EditorShell(props: EditorRootProps): ReactNode {
         />
       </Measured>
       <Notice notice={notice} onDismiss={() => notify('')} />
-      <Dialogs dialogs={dialogs} commands={props.commands} overrides={overrides} onOverrides={setOverrides} tools={tools} run={run} />
+      <Dialogs store={store} dialogs={dialogs} commands={props.commands} overrides={overrides} onOverrides={setOverrides} tools={tools} run={run} />
     </div>
   );
 }

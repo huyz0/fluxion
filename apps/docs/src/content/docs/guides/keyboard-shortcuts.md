@@ -40,9 +40,12 @@ where each shortcut can be changed; changes are kept in your settings.
 | Bring to front | `Ctrl+Shift+]`, `Ctrl+}` |
 | Send to back | `Ctrl+Shift+[`, `Ctrl+{` |
 | Edit the text | `Enter`, `F2` |
+| Next cell | `Tab` |
+| Previous cell | `Shift+Tab` |
 | Delete the selection | `Delete`, `Backspace` |
 | Keyboard shortcuts | `?` |
 | Command palette | `Ctrl+K` |
+| Find elements | `Ctrl+F` |
 
 ## Tools
 

@@ -215,6 +215,16 @@ leg('FR-EDT-015 quick-connect joins a shape to another or to a new one from the 
     ],
   }),
 );
+// element search's outcomes, each a named case (M19.25)
+leg('FR-EDT-016 element search finds by text, name and semantic label and jumps across screens', () =>
+  tests('packages/editor/src/find-model.test.ts', {
+    named: [
+      'FR-EDT-016: a query finds elements by text, name and semantic label, ignoring case, screen by screen in reading order',
+      'FR-EDT-016: text regions and table cells are searched too',
+      'FR-EDT-016: Enter jumps to the next match across screens and selects it',
+    ],
+  }),
+);
 const SPECS = ['layers.reorder', 'locks', 'text-regions.edit', 'path.edit-vertex', 'table.edit', 'masters.propagate', 'quick-connect', 'search.find-element'];
 for (const spec of SPECS) leg(`${spec}: Chromium, Firefox, WebKit; axe clean; no retries`, () => e2e([`e2e/${spec}.spec.ts`]));
 leg('FluxScript table, frame and master: examples/dsl/masters-tables.flux.yaml renders to its golden', () => {

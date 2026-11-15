@@ -143,6 +143,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "4TVVsS": {
+    "message": "No matches",
+    "origin": [
+      "packages/editor/src/find-bar.tsx"
+    ]
+  },
   "4UJc-X": {
     "message": "This screen has no elements yet.",
     "origin": [
@@ -404,6 +410,12 @@
       "packages/editor/src/navigator/screen-row.tsx"
     ]
   },
+  "DHhJ7s": {
+    "message": "Previous",
+    "origin": [
+      "packages/editor/src/find-bar.tsx"
+    ]
+  },
   "DPfwMq": {
     "message": "Done",
     "origin": [
@@ -609,6 +621,12 @@
     "message": "Path",
     "origin": [
       "packages/editor/src/layers-model.ts"
+    ]
+  },
+  "I9PVdo": {
+    "message": "{found} matches",
+    "origin": [
+      "packages/editor/src/find-bar.tsx"
     ]
   },
   "IEOEF3": {
@@ -820,6 +838,12 @@
     "message": "Reset",
     "origin": [
       "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "OmPvof": {
+    "message": "Find by text or label",
+    "origin": [
+      "packages/editor/src/find-bar.tsx"
     ]
   },
   "OuME7l": {
@@ -1137,6 +1161,12 @@
       "packages/editor/src/arrange-panel.tsx"
     ]
   },
+  "b5q-QX": {
+    "message": "{0} of {found}",
+    "origin": [
+      "packages/editor/src/find-bar.tsx"
+    ]
+  },
   "bUM2wG": {
     "message": "My own work",
     "origin": [
@@ -1223,6 +1253,12 @@
   },
   "command.clipboard.paste": {
     "message": "Paste",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.find.open": {
+    "message": "Find elements",
     "origin": [
       "packages/editor/src/titles.ts"
     ]
@@ -1708,6 +1744,12 @@
     "origin": [
       "packages/editor/src/layers-model.ts",
       "packages/editor/src/slot-section.tsx"
+    ]
+  },
+  "hXzOVo": {
+    "message": "Next",
+    "origin": [
+      "packages/editor/src/find-bar.tsx"
     ]
   },
   "he3ygx": {
@@ -2280,6 +2322,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "yNch0G": {
+    "message": "Find elements",
+    "origin": [
+      "packages/editor/src/find-bar.tsx"
+    ]
+  },
   "yTqatN": {
     "message": "Size of {0}",
     "origin": [
@@ -2302,6 +2350,7 @@
     "message": "Close",
     "origin": [
       "packages/editor/src/asset-dialog.tsx",
+      "packages/editor/src/find-bar.tsx",
       "packages/editor/src/font-picker.tsx",
       "packages/editor/src/keymap-dialog.tsx"
     ]

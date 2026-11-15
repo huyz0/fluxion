@@ -11,6 +11,7 @@ import { createClipboard } from './clipboard.js';
 import { PaletteHost } from './command-palette.js';
 import type { CanvasSize, EditorCommand } from './editor-commands.js';
 import { useEditorKeys } from './editor-keys.js';
+import { FindBar } from './find-bar.js';
 import { enteredHolds } from './group-edit.js';
 import { baseKeymap, KeymapDialog, onMac } from './keymap-dialog.js';
 import type { KeyOverrides } from './keymap-overrides.js';
@@ -176,6 +177,7 @@ export function useDialogs(): DialogState {
 
 /** Props of {@link Dialogs}. */
 export type DialogsProps = {
+  readonly store: Store;
   readonly dialogs: DialogState;
   readonly commands: readonly EditorCommand[] | undefined;
   readonly overrides: KeyOverrides;
@@ -184,9 +186,9 @@ export type DialogsProps = {
   readonly run: (command: string, args?: unknown) => boolean;
 };
 
-/** The command palette and the keyboard shortcuts dialog, whichever is open. */
+/** The command palette and the keyboard shortcuts dialog, whichever is open, and the find bar while it is (FR-EDT-016). */
 export function Dialogs(props: DialogsProps): ReactNode {
-  const { dialogs, commands, overrides, onOverrides, tools, run } = props;
+  const { store, dialogs, commands, overrides, onOverrides, tools, run } = props;
   const list = tools.list();
   const base = useMemo(() => baseKeymap(list), [list]);
   const mac = onMac();
@@ -195,6 +197,7 @@ export function Dialogs(props: DialogsProps): ReactNode {
       {dialogs.palette ? (
         <PaletteHost commands={commands} base={base} overrides={overrides} tools={list} mac={mac} run={run} onClose={() => dialogs.setPalette(false)} />
       ) : null}
+      <FindBar store={store} session={tools.ctx.session} />
       {dialogs.help ? <KeymapDialog tools={list} overrides={overrides} onOverrides={onOverrides} onClose={() => dialogs.setHelp(false)} /> : null}
     </>
   );

@@ -295,7 +295,7 @@ export function Canvas(props: CanvasProps): ReactNode {
     [session, tools],
   );
   usePointerInput(ref, session.camera.get, consumer);
-  const overlay = useOverlayShown(session);
+  const overlay = useOverlayShown(session, store);
   return (
     <main
       ref={ref}

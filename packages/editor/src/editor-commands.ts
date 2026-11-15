@@ -10,6 +10,7 @@ import { BOOLEAN_OPS, combineSelection } from './boolean-edit.js';
 import type { Camera } from './camera.js';
 import { type CameraStep, cameraStep, type FitTargets } from './canvas-input.js';
 import { type Clipboard, copyPayload, PASTE_OFFSET, pasteInto } from './clipboard.js';
+import { FIND_ACTIONS } from './find-bar.js';
 import { groupSelection, ungroupSelection } from './group-edit.js';
 import { EDIT_FLAGS, type KeyBinding, type KeyPress, PRESENT_FLAGS, resolveKey } from './keymap.js';
 import { type ArrangePort, arrangeContainer, arrangeScreen, arrangeSelected, fitToScreen, LAYOUT_CHOICES, tidyUp } from './layout-arrange.js';
@@ -358,6 +359,7 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   },
   // the table commands (FR-SHP-014, M19.21)
   ...[...TABLE_ACTIONS, ...MASTER_ACTIONS].map(([id, title, act]): EditorCommand => ({ id, title, run: (ctx) => selectIdle(ctx) && act(ctx.tools.ctx) })),
+  ...FIND_ACTIONS.map(([id, title, act]): EditorCommand => ({ id, title, when: 'edit', run: (ctx) => act(ctx.tools.ctx) })),
 ];
 
 /**

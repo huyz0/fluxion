@@ -536,6 +536,22 @@ export function exportMyShapes(items: readonly MyShape[]): string;
 export function filterEntries(entries: readonly PaletteEntry[], query: string): readonly PaletteEntry[];
 
 // @public
+export type FindMatch = {
+    readonly id: RecordId;
+    readonly screen: RecordId;
+};
+
+// @public
+export function findMatches(view: ReadView, query: string): readonly FindMatch[];
+
+// @public
+export type FindState = {
+    readonly query: string;
+    readonly current?: RecordId | undefined;
+    readonly opened: number;
+};
+
+// @public
 export const FIT_PADDING = 32;
 
 // @public
@@ -1574,6 +1590,7 @@ export type Session = {
     readonly pathEdit: WritableSignal<PathEditing | undefined>;
     readonly tableCells: WritableSignal<TableCellRange | undefined>;
     readonly quickDrop: WritableSignal<QuickDrop | undefined>;
+    readonly find: WritableSignal<FindState | undefined>;
 };
 
 // @public
@@ -1698,6 +1715,9 @@ export type StateNode = {
     onKeyDown?(ctx: ToolCtx, e: KeyInfo): Transition | undefined;
     onCancel?(ctx: ToolCtx): Transition | undefined;
 };
+
+// @public
+export function stepMatch(matches: readonly FindMatch[], current: RecordId | undefined, step: 1 | -1, shown?: RecordId): FindMatch | undefined;
 
 // @public
 export type StreamFluxOptions = {

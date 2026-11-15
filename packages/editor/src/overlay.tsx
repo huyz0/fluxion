@@ -8,6 +8,7 @@ import { useValue } from '@fluxion/render';
 import type { RouteContext } from '@fluxion/routing';
 import { type ReactNode, useMemo } from 'react';
 import { type Camera, pageToScreen } from './camera.js';
+import { FindMarks, useFindShown } from './find-marks.js';
 import { HANDLE_PX, placements, screenBox, selectionFrame } from './overlay-geometry.js';
 import { HandleMarks } from './overlay-marks.js';
 import type { ShapeDefs } from './param-handles.js';
@@ -32,18 +33,19 @@ export type OverlayProps = {
 };
 
 /**
- * Whether the overlay has anything to draw: a selection, a hovered element, a marquee, a draft or a
- * sketch. Without, it is not mounted, so the canvas holds the content alone (the parity suite's
+ * Whether the overlay has anything to draw: a selection, a hovered element, a marquee, a draft, a
+ * sketch or a find match (FR-EDT-016). Without, it is not mounted, so the canvas holds the content alone (the parity suite's
  * "overlay unmounted", FR-EDT-010).
  */
-export function useOverlayShown(session: Session): boolean {
+export function useOverlayShown(session: Session, store?: Store): boolean {
   const selection = useValue(session.selection.get);
   const hover = useValue(session.hover.get);
   const marquee = useValue(session.marquee.get);
   const draft = useValue(session.draft.get);
   const sketch = useValue(session.sketch.get);
   const guides = useValue(session.guides.get);
-  return guides.length > 0 || selection.length > 0 || hover !== undefined || marquee !== undefined || draft !== undefined || sketch !== undefined;
+  const found = useFindShown(store, session);
+  return found || guides.length > 0 || selection.length > 0 || hover !== undefined || marquee !== undefined || draft !== undefined || sketch !== undefined;
 }
 
 /** A smart guide: its line across the canvas, and for a gap its distance in a label at the middle. */
@@ -141,6 +143,7 @@ export function Overlay(props: OverlayProps): ReactNode {
       )}
       <HandleMarks store={store} session={session} shapeDefs={shapeDefs} routes={routes} />
       <QuickConnectMarks store={store} session={session} />
+      <FindMarks store={store} session={session} />
       {guides.map((g) => (
         <GuideMark key={`${g.axis}:${g.kind}:${g.at}:${g.distance}`} guide={g} camera={camera} />
       ))}

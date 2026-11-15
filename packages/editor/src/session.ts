@@ -62,6 +62,22 @@ export type Session = {
   readonly tableCells: WritableSignal<TableCellRange | undefined>;
   /** A quick-connect drag dropped on nothing (FR-EDT-015): where, waiting for the mini library's choice; undefined otherwise. */
   readonly quickDrop: WritableSignal<QuickDrop | undefined>;
+  /** The find bar's state while it is open (FR-EDT-016; Ctrl/Cmd+F); undefined while closed. */
+  readonly find: WritableSignal<FindState | undefined>;
+};
+
+/**
+ * The find bar's state (FR-EDT-016).
+ *
+ * @public
+ */
+export type FindState = {
+  /** What is searched for. */
+  readonly query: string;
+  /** The match Enter last jumped to, if any. */
+  readonly current?: RecordId | undefined;
+  /** Counts each opening, so that opening it again focuses it again. */
+  readonly opened: number;
 };
 
 /**
@@ -158,6 +174,7 @@ export function createSession(docId: string): Session {
     pathEdit: writable<PathEditing | undefined>(undefined),
     tableCells: writable<TableCellRange | undefined>(undefined),
     quickDrop: writable<QuickDrop | undefined>(undefined),
+    find: writable<FindState | undefined>(undefined),
   };
   // path editing ends when its shape stops being the whole selection, however the selection changed (FR-SHP-011)
   // so does a table's cell selection (FR-SHP-014)

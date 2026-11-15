@@ -84,6 +84,7 @@ export {
 } from './editor-commands.js';
 export { type EditorKeysInput, isEditable, useEditorKeys } from './editor-keys.js';
 export { EditorRoot, type EditorRootProps } from './editor-root.js';
+export { type FindMatch, findMatches, stepMatch } from './find-model.js';
 export { createGlobalRouting, GLOBAL_ROUTE_SETTLE_MS, type GlobalRoutePort, type GlobalRouting } from './global-routing.js';
 export { createHitIndex, type HitIndex, PICK_PX } from './hit-test.js';
 export type { HitContext } from './hittable.js';
@@ -247,6 +248,7 @@ export {
   createSession,
   createSessions,
   DEFAULT_CAMERA,
+  type FindState,
   type PathEditing,
   type QuickDrop,
   type Session,

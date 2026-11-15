@@ -75,6 +75,7 @@ export const COMMAND_MESSAGES: Readonly<Record<string, MessageDescriptor>> = {
   'text.edit': msg({ id: 'command.text.edit', message: 'Edit the text' }),
   'help.keys': msg({ id: 'command.help.keys', message: 'Keyboard shortcuts' }),
   'palette.open': msg({ id: 'command.palette.open', message: 'Command palette' }),
+  'find.open': msg({ id: 'command.find.open', message: 'Find elements' }),
   'mode.present': msg({ id: 'command.mode.present', message: 'Present from the first visible screen' }),
   'mode.toggle': msg({ id: 'command.mode.toggle', message: 'Present the shown screen / stop presenting' }),
 };

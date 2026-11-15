@@ -50,6 +50,12 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-overlay .fx-chrome-table-cells { fill: none; stroke: var(--ui-accent); stroke-width: 2; }
 .fx-chrome-overlay .fx-chrome-quick-connect-dot { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 1.5; }
 .fx-chrome-overlay .fx-chrome-quick-connect-plus { stroke: var(--ui-accent); stroke-width: 2; stroke-linecap: round; }
+.fx-chrome-overlay .fx-chrome-find-match { fill: none; stroke: var(--ui-accent); stroke-width: 2; stroke-dasharray: 4 3; }
+.fx-chrome-overlay .fx-chrome-find-current { stroke-width: 3; stroke-dasharray: none; }
+.fx-chrome-find { position: fixed; top: 56px; right: 16px; z-index: 20; display: flex; align-items: center; gap: 4px; padding: 6px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2); }
+.fx-chrome-find .fx-chrome-button { font: inherit; color: inherit; padding: 4px 8px; border: 1px solid var(--ui-border); border-radius: 4px; background: transparent; cursor: pointer; }
+.fx-chrome-find .fx-chrome-button:disabled { opacity: 0.4; cursor: default; }
+.fx-chrome-find-count { min-width: 72px; font-variant-numeric: tabular-nums; }
 .fx-chrome-overlay .fx-chrome-route { fill: none; stroke: var(--ui-accent); stroke-width: 1; opacity: 0.5; }
 .fx-chrome-overlay .fx-chrome-route-selected { stroke-width: 2; opacity: 0.9; }
 .fx-chrome-overlay .fx-chrome-connector-end { fill: var(--ui-panel); stroke: var(--ui-accent); stroke-width: 2; }
