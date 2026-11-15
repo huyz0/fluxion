@@ -29,6 +29,12 @@
       "packages/editor/src/source-view/source-status.ts"
     ]
   },
+  "0nAqyj": {
+    "message": "Align to",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "1DBGsz": {
     "message": "Notes",
     "origin": [
@@ -210,6 +216,12 @@
       "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
+  "8GpsQ1": {
+    "message": "Centres",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "8uA5Jn": {
     "message": "Shortcut",
     "origin": [
@@ -232,6 +244,12 @@
     "message": "{errors} errors: the canvas keeps its last good state.",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "9ms-e0": {
+    "message": "Align",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "9oWmtA": {
@@ -259,6 +277,12 @@
       "packages/editor/src/canvas.tsx"
     ]
   },
+  "AFtKRK": {
+    "message": "Tidy across",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "AUiJVO": {
     "message": "Reset {title}",
     "origin": [
@@ -283,6 +307,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "AfA2et": {
+    "message": "Tidy down",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "BItucz": {
     "message": "{0} colour",
     "origin": [
@@ -293,6 +323,12 @@
     "message": "Choose an image",
     "origin": [
       "packages/editor/src/image-picker.tsx"
+    ]
+  },
+  "BSmCD2": {
+    "message": "Tidy gap",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "CKJ6Y-": {
@@ -462,6 +498,12 @@
     "message": "No bundled fonts.",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "GwDfuA": {
+    "message": "Tidy",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "H3oH0g": {
@@ -700,6 +742,12 @@
       "packages/editor/src/library/library-import-dialog.tsx"
     ]
   },
+  "PeqIbe": {
+    "message": "Match width",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "Po9RAe": {
     "message": "{family} could not be added.",
     "origin": [
@@ -722,6 +770,12 @@
     "message": "Read {0}",
     "origin": [
       "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "QbV9Lv": {
+    "message": "Arrange",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "QlHlh_": {
@@ -791,6 +845,12 @@
     "origin": [
       "packages/editor/src/panels.tsx",
       "packages/editor/src/screens-tab.tsx"
+    ]
+  },
+  "V7-hqD": {
+    "message": "Match size",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "VQfe81": {
@@ -919,6 +979,12 @@
       "packages/editor/src/library/my-shapes-section.tsx"
     ]
   },
+  "_H-WFg": {
+    "message": "Key {n}",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "_Le-z-": {
     "message": "Give the author's name.",
     "origin": [
@@ -959,6 +1025,12 @@
     "message": "Used",
     "origin": [
       "packages/editor/src/asset-dialog.tsx"
+    ]
+  },
+  "a_xCcD": {
+    "message": "Equal gaps",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "bUM2wG": {
@@ -1371,6 +1443,12 @@
       "packages/editor/src/debug-overlay.tsx"
     ]
   },
+  "gkxXC6": {
+    "message": "Distribute by",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "gvcBzV": {
     "message": "{0}x{1}",
     "origin": [
@@ -1435,6 +1513,12 @@
     "message": "Credits file…",
     "origin": [
       "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "k4wWXY": {
+    "message": "Key {n}: {name}",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "kBaxJl": {
@@ -1539,6 +1623,12 @@
       "packages/editor/src/keymap-dialog.tsx"
     ]
   },
+  "o4Kk7U": {
+    "message": "Match height",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
   "oLa1bP": {
     "message": "Section {0}",
     "origin": [
@@ -1566,6 +1656,7 @@
   "p7_fS2": {
     "message": "Selection",
     "origin": [
+      "packages/editor/src/arrange-panel.tsx",
       "packages/editor/src/canvas.tsx"
     ]
   },
@@ -1786,6 +1877,12 @@
     "message": "tone",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "vKAWSE": {
+    "message": "Distribute",
+    "origin": [
+      "packages/editor/src/arrange-panel.tsx"
     ]
   },
   "vLyv1R": {

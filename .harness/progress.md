@@ -4842,3 +4842,9 @@ round-allowance: M19.8 review rounds 4–10 under Huy's 2026-11-05T11:04:52Z del
 
 - cp2 by an independent subagent over 5a3d0ee..db1a566 (new delta 67bd33c..db1a566): changes-requested, 8 findings. Reopened: F1 into M19.16 (frame flip and turn through core, a rotate-handle case); F2 ADR-0054 outcomes copied as named cases into M19.22, M19.17, M19.20, M19.18; F3 match size in M19.15's locks; F4–F7 into the new M19.35 with M19.12's r3 minors. Argued: F8.
 - M19.13 (arrange panel, reviewed) waits on this record: the hook refused it at 8/8.
+## 2026-11-15 M19.13: the arrange panel
+
+- Editor `arrange-panel.tsx` (`ArrangeSection`, in the inspector for two or more selected): "Align to" the selection or a key object (one of the selection, which stays) for the six align buttons; distribute by equal gaps or centres (three or more); tidy across or down to a typed gap (`element.distribute` with `gap`); with a key, match width, height or size (`element.matchSize`, M19.12). Each button is one command, one undo step.
+- r1 (pass, minors fixed): align and distribute labels are the translated command titles; key choices read "Key n" or "Key n: name" from a query, so a rename shows.
+- Groups are fieldsets (biome's semantic-elements rule); `fieldset.fx-chrome-actions` drops the fieldset frame.
+- Re-applied after the cp2 record (dbc36e1), which added M19.35 in place of this row's first version; M19.22 gains ADR-0054's screen-level master rules (cp2 record r2 F1).

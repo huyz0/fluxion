@@ -133,12 +133,12 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-LAY-013 | S | R7 | M29 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-LAY-014 | S | R3 | M17 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `apps/studio/src/arrange-port.test.ts` +7 |
 | FR-ARR-001 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.group-edit.spec.ts` +7 |
-| FR-ARR-002 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +2 |
-| FR-ARR-003 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +2 |
+| FR-ARR-002 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +3 |
+| FR-ARR-003 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +3 |
 | FR-ARR-004 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +3 |
 | FR-ARR-005 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/snapping.smart-guides.spec.ts` +3 |
 | FR-ARR-006 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/commands/frames.test.ts` +5 |
-| FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/commands/format-painter.test.ts`, `packages/core/src/commands/match-size.test.ts` |
+| FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/commands/format-painter.test.ts` +2 |
 | FR-ARR-008 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | — |
 | FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +6 |
 | FR-THM-002 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/derive.test.ts` |

@@ -114,6 +114,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-customrow { display: flex; gap: 4px; margin-bottom: 4px; }
 .fx-chrome-customrow .fx-chrome-textbox { flex: 1; min-width: 0; }
 .fx-chrome-actions { display: flex; gap: 8px; }
+fieldset.fx-chrome-actions { flex-wrap: wrap; border: 0; margin: 0; padding: 0; min-width: 0; }
 .fx-chrome-fonts { min-width: 420px; max-width: 90vw; max-height: 80vh; overflow: auto; }
 .fx-chrome-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .fx-chrome-tabs .fx-chrome-button[aria-selected="true"] { background: var(--ui-pressed); border-color: var(--ui-border); }

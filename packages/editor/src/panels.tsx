@@ -6,6 +6,7 @@ import { t } from '@lingui/core/macro';
 import { toolTitle } from './titles.js';
 import './i18n.js';
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react';
+import { ArrangeSection } from './arrange-panel.js';
 import { InspectorFields, type InspectorFieldsProps } from './inspector.js';
 import { type EditorLayout, type PanelId, panelIds, panelShown, toggleFocus, togglePanelShown } from './layout.js';
 import { LayoutOptionsSection, type LayoutOptionsSectionProps } from './layout-options-form.js';
@@ -216,6 +217,7 @@ export function Inspector(props: InspectorProps): ReactNode {
         {count === 0 ? t`Select an element to see its properties.` : count === 1 ? t`${count} element selected` : t`${count} elements selected`}
       </p>
       {props.fields === undefined ? null : <InspectorFields {...props.fields} session={props.session} />}
+      {props.fields === undefined ? null : <ArrangeSection store={props.fields.store} execute={props.fields.execute} session={props.session} />}
       {props.layout === undefined ? null : <LayoutPickerSection {...props.layout} session={props.session} />}
       {props.layout === undefined ? null : <LayoutOptionsSection {...props.layout} session={props.session} />}
     </>
