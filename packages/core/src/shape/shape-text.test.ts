@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FixedTextMeasurer } from '../testing/fakes.js';
 import type { ShapeDef } from './shape-def.js';
-import { fitShapeText, textRegion } from './shape-text.js';
+import { fitShapeText, namedBoxes, textRegion } from './shape-text.js';
 
 const measurer = new FixedTextMeasurer(0.5);
 const font = { family: 'Inter', size: 10 };
@@ -55,5 +55,30 @@ describe('shape text regions and fitting (ADR-0018, FR-SHP-006)', () => {
       measurer,
     );
     expect(bad.ok).toBe(false);
+  });
+});
+
+// FR-SHP-007: every named text region and icon slot of a definition in pixels (ADR-0054, M19.17).
+describe('named regions and slots (FR-SHP-007)', () => {
+  const card: ShapeDef = {
+    id: 't:card',
+    outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' },
+    params: { inset: { type: 'number', default: 0.1, min: 0, max: 0.5 } },
+    textRegions: [
+      { name: 'title', x: 0, y: 0, w: 1, h: 0.25 },
+      { name: 'body', x: 'inset', y: 0.5, w: '1 - 2 * inset', h: 0.5 },
+    ],
+    iconSlots: [{ name: 'icon', x: 0.75, y: 0, w: 0.25, h: 0.25 }],
+    defaultSize: { w: 200, h: 100 },
+  };
+
+  it('FR-SHP-007: regions and slots come back in order, scaled to the size, expressions read with the params', () => {
+    expect(namedBoxes(card, { w: 200, h: 100 }, 'textRegions')).toEqual([
+      { name: 'title', x: 0, y: 0, w: 200, h: 25 },
+      { name: 'body', x: 20, y: 50, w: 160, h: 50 },
+    ]);
+    expect(namedBoxes(card, { w: 200, h: 100 }, 'textRegions', { inset: 0.25 })[1]).toEqual({ name: 'body', x: 50, y: 50, w: 100, h: 50 });
+    expect(namedBoxes(card, { w: 200, h: 100 }, 'iconSlots')).toEqual([{ name: 'icon', x: 150, y: 0, w: 50, h: 25 }]);
+    expect(namedBoxes({ id: 't:plain', outline: card.outline, defaultSize: { w: 200, h: 100 } }, { w: 200, h: 100 }, 'iconSlots')).toEqual([]);
   });
 });

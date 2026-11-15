@@ -165,10 +165,12 @@ export function registerPackConnectors(
  * artwork fonts is refused: the catalog neither registers nor saves font faces, and drawing it with another face would be silent.
  */
 async function definitionOf(loader: ArtworkShapePackLoader, id: string): Promise<Result<ShapeDef, string>> {
+  // read off the index before any category or font is fetched: the catalog serves no font files, so acquiring one would fail
+  // on the font read with a reason that hides this one (M19.36 r1 F1)
+  const bindings = 'definitionFonts' in loader.index ? loader.index.definitionFonts : [];
+  if (bindings.some((b) => b.definitionId === id && b.faceIds.length > 0)) return err('its artwork fonts are not loaded from the bundled catalog');
   const got = await loader.acquire(id);
-  if (!got.ok) return err(got.error.map((d) => d.message).join('; '));
-  if (got.value.fonts.length > 0) return err('its artwork fonts are not loaded from the bundled catalog');
-  return ok(got.value.definition);
+  return got.ok ? ok(got.value.definition) : err(got.error.map((d) => d.message).join('; '));
 }
 
 /**

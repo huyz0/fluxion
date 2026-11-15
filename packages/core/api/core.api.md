@@ -594,6 +594,16 @@ export type MessageDescriptor = {
 };
 
 // @public
+export type NamedBox = Box & {
+    readonly name: string;
+};
+
+// @public
+export function namedBoxes(def: ShapeDef, size: Size, key: "textRegions" | "iconSlots", params?: {
+    readonly [key: string]: unknown;
+}): NamedBox[];
+
+// @public
 export interface NamespacedLogger extends Logger {
     child(namespace: string): NamespacedLogger;
 }

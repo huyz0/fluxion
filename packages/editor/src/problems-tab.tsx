@@ -7,6 +7,7 @@ import { type ReactNode, useMemo } from 'react';
 import type { Execute } from './pointer.js';
 import { useRevision } from './present.js';
 import { type Problem, problemsOf } from './problems.js';
+import type { ShapeDefLookup } from './region-problems.js';
 import type { Session } from './session.js';
 
 /** Props of {@link ProblemsTab}. */
@@ -17,6 +18,8 @@ export type ProblemsTabProps = {
   readonly session: Session;
   /** Runs a command: Fix goes through it, so it is one undo step. */
   readonly execute: Execute;
+  /** Where shape definitions are looked up: with them, a `texts` entry no region draws is reported too (FR-SHP-007). */
+  readonly shapeDefs?: ShapeDefLookup | undefined;
 };
 
 /** The severity's name, looked up when shown (after i18n is active). */
@@ -26,10 +29,10 @@ function severityLabel(severity: Problem['severity']): string {
 
 /** The list of problems; "No problems found." when there are none. */
 export function ProblemsTab(props: ProblemsTabProps): ReactNode {
-  const { store, session, execute } = props;
+  const { store, session, execute, shapeDefs } = props;
   const revision = useRevision(store);
   // biome-ignore lint/correctness/useExhaustiveDependencies: the revision says the document changed
-  const problems = useMemo(() => problemsOf(store.toDocument()), [store, revision]);
+  const problems = useMemo(() => problemsOf(store.toDocument(), shapeDefs), [store, revision, shapeDefs]);
   if (problems.length === 0) return <p className="fx-chrome-placeholder">{t`No problems found.`}</p>;
   const fix = (p: Problem) => {
     if (p.fix !== undefined) execute(p.fix.command, p.fix.args);

@@ -44,6 +44,40 @@ export function textRegion(
 }
 
 /**
+ * A named box of a definition's text regions or icon slots, in px of the element's box.
+ *
+ * @public
+ */
+export type NamedBox = Box & {
+  /** The region's or slot's name. */
+  readonly name: string;
+};
+
+/**
+ * Every text region (`'textRegions'`) or icon slot (`'iconSlots'`) of `def` for an element of `size` with `params`, in px of the
+ * element's box and in the definition's order (FR-SHP-007, ADR-0054). The first text region holds the element's `text`, each other
+ * one `texts[name]`; a slot holds `icons[name]`. One whose expressions fail is left out; none when the definition declares none.
+ *
+ * @public
+ */
+export function namedBoxes(def: ShapeDef, size: Size, key: 'textRegions' | 'iconSlots', params: { readonly [key: string]: unknown } = {}): NamedBox[] {
+  const budget: ExprBudget = { steps: DEFAULT_OUTLINE_BUDGET };
+  const defs = def[key] ?? [];
+  if (defs.length === 0) return [];
+  const scope = scopeOf(def, size, params);
+  return defs.flatMap((region, i) => {
+    const out: number[] = [];
+    for (const axis of ['x', 'y', 'w', 'h'] as const) {
+      const r = fraction(region[axis], scope, budget, [key, i, axis]);
+      if (!r.ok) return [];
+      out.push(r.value);
+    }
+    const [x, y, w, h] = out as [number, number, number, number];
+    return [{ name: region.name, x: x * size.w, y: y * size.h, w: w * size.w, h: h * size.h }];
+  });
+}
+
+/**
  * A shape's text fitted to its region.
  *
  * @public

@@ -152,6 +152,24 @@ export const shapes: readonly ShapeDef[] = [
     describe: 'A card for one headline number above its label: a KPI.',
     keywords: ['stat', 'kpi', 'metric', 'number', 'card'],
   }),
+  piece('feature-card', {
+    category: 'labels',
+    outline: {
+      path: `M {${r}} 0 H {w - ${r}} A {${r}} {${r}} 0 0 1 {w} {${r}} V {h - ${r}} A {${r}} {${r}} 0 0 1 {w - ${r}} {h} H {${r}} A {${r}} {${r}} 0 0 1 0 {h - ${r}} V {${r}} A {${r}} {${r}} 0 0 1 {${r}} 0 Z`,
+    },
+    decorations: [{ path: 'M {w * 0.08} {h * 0.8} H {w * 0.92}' }],
+    // three text regions (FR-SHP-007, ADR-0054): the title holds the element's text, the body and caption `texts.body`/`texts.caption`
+    textRegions: [
+      { name: 'title', x: 0.32, y: 0.06, w: 0.62, h: 0.28 },
+      { name: 'body', x: 0.06, y: 0.38, w: 0.88, h: 0.4 },
+      { name: 'caption', x: 0.06, y: 0.82, w: 0.88, h: 0.14 },
+    ],
+    // an icon slot filled by `icons.icon`: another definition (an icon pack's) or an image
+    iconSlots: [{ name: 'icon', x: 0.06, y: 0.06, w: 0.2, h: 0.28 }],
+    defaultSize: { w: 240, h: 180 },
+    describe: 'A card with an icon, a title, a body and a caption: one feature or benefit.',
+    keywords: ['card', 'feature', 'benefit', 'icon', 'title', 'caption'],
+  }),
   piece('banner', {
     category: 'labels',
     outline: {

@@ -237,6 +237,7 @@ export { FREEHAND_STEP_PX, freehandTool, MAX_PATH_POINTS, type PathBox, pathBox,
 export type { Execute, PointerInfo, PointerPhase } from './pointer.js';
 export type { ModeSwitch } from './present.js';
 export { type Problem, type ProblemFix, problemsOf } from './problems.js';
+export type { ShapeDefLookup } from './region-problems.js';
 export { screenLabel, shownScreen, switchScreen } from './screen-switch.js';
 export { deleteSelection, nudgeSelection, selectAll } from './select-actions.js';
 export { selectSame } from './select-same.js';

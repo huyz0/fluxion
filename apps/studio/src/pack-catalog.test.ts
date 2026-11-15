@@ -362,16 +362,20 @@ describe('later pack versions in the studio library (M19.36)', () => {
     expect(doc.sources().map((s) => (s.kind === 'distribution' ? s.index.formatVersion : s.kind))).toEqual(['1.3']);
   });
 
-  it('FR-LIB-009: a definition bound to artwork fonts is reported and not registered', async () => {
+  it('FR-LIB-009: a definition bound to artwork fonts is reported and not registered, nothing of it fetched', async () => {
     const f = slottedPack();
     const [loader] = (await loadPackCatalog(hasher, f.indexes, f.categories, {})).loaders;
     if (loader === undefined) throw new Error('the pack was refused');
-    const font = { faceId: 'f', family: 'Inter', weight: 400, style: 'normal', resourceId: 'r', sha256: '0'.repeat(64) };
+    // the index binds the card to a face, as a 1.1+ pack with artwork text does; an acquire would fetch its category and fonts
+    const acquired: string[] = [];
     const fonted = {
-      ...loader,
-      index: loader.index,
+      identity: loader.identity,
+      index: { ...loader.index, definitionFonts: [{ definitionId: 'slotted:card', faceIds: ['inter-400'] }] },
       search: loader.search,
-      acquire: async () => ({ ok: true, value: { definition: card, fonts: [font], fontCredits: [] } }),
+      acquire: async (id: string) => {
+        acquired.push(id);
+        return loader.acquire(id);
+      },
     } as unknown as typeof loader;
     const defs = createCoreRegistries().shapeDefs;
     const problems: string[] = [];
@@ -380,5 +384,6 @@ describe('later pack versions in the studio library (M19.36)', () => {
     expect(problems).toEqual(['The shape slotted:card could not be loaded: its artwork fonts are not loaded from the bundled catalog']);
     expect(defs.get('slotted:card')).toBeUndefined();
     expect(await doc.installed('slotted:card')).toBeUndefined();
+    expect(acquired).toEqual([]);
   });
 });

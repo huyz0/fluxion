@@ -3,7 +3,17 @@
 // path filling the wrapper's box, filled and stroked with the resolved style; its text is a centred
 // plain-text label. An unknown `defId`, or an outline that does not evaluate, renders the placeholder.
 
-import { fitShapeText, growsText, type ShapeDef, type StyledBlock, shrinksText, TEXT_FIT_DEFAULTS, type TextMeasurer, textRegion } from '@fluxion/core';
+import {
+  fitShapeText,
+  growsText,
+  namedBoxes,
+  type ShapeDef,
+  type StyledBlock,
+  shrinksText,
+  TEXT_FIT_DEFAULTS,
+  type TextMeasurer,
+  textRegion,
+} from '@fluxion/core';
 import { roundCorners } from '@fluxion/geometry';
 import type { ShapeElement, TextElement } from '@fluxion/schema';
 import { type ResolvedFont, type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
@@ -15,6 +25,7 @@ import { EffectsFilter } from './effects.js';
 import { PlaceholderView } from './elements.js';
 import { labelStyle, plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
+import { RegionsAndSlots } from './region-views.js';
 import type { ElementViewProps } from './registries.js';
 import { styledBlocks } from './rich-layout.js';
 import { RichText } from './rich-text.js';
@@ -252,7 +263,7 @@ export function grownHeight(input: {
 
 /**
  * The CSS of the label an element's text is drawn in, at its styled size (a `shrink` shape is not shrunk): the
- * region and padding of a shape's text, the whole box of a `text` element. The inline editor draws its text in
+ * region and padding of a shape's text (or of its text region named `region`, after the first), the whole box of a `text` element. The inline editor draws its text in
  * a box of this style, so it is where the view puts it.
  *
  * @public
@@ -261,6 +272,7 @@ export function labelBox(
   element: ShapeElement | TextElement,
   registries: { readonly shapeDefs: { get(id: string): ShapeDef | undefined } },
   theme: Theme,
+  region?: string,
 ): CSSProperties | undefined {
   if (element.kind === 'text') {
     const { style } = resolveStyle(element.style, 'text', theme, ['records', element.id, 'style']);
@@ -269,14 +281,17 @@ export function labelBox(
   const def = registries.shapeDefs.get(element.defId);
   if (def === undefined) return undefined;
   const { style } = shapeStyle(element, def, theme);
-  const found = textRegion(def, { w: element.transform.w, h: element.transform.h }, element.params);
-  const region = found.ok ? found.value : { x: 0, y: 0, w: element.transform.w, h: element.transform.h };
+  // a named region after the first (FR-SHP-007): its own box; the first, or none named, the text's
+  const size = { w: element.transform.w, h: element.transform.h };
+  const named = region === undefined ? undefined : namedBoxes(def, size, 'textRegions', element.params).find((r, i) => i > 0 && r.name === region);
+  const found = textRegion(def, size, element.params);
+  const box = named ?? (found.ok ? found.value : { x: 0, y: 0, ...size });
   return {
     ...labelStyle(style.font, style.opacity),
-    left: region.x,
-    top: region.y,
-    width: region.w,
-    height: region.h,
+    left: box.x,
+    top: box.y,
+    width: box.w,
+    height: box.h,
     padding: element.textFit?.padding ?? TEXT_FIT_DEFAULTS.padding,
   };
 }
@@ -349,6 +364,7 @@ export function ShapeView(props: ElementViewProps): ReactNode {
           <RichText doc={element.text} />
         </div>
       )}
+      <RegionsAndSlots element={element} def={def} font={style.font} opacity={style.opacity} shapeDefs={registries.shapeDefs} store={store} />
       {props.children}
     </>
   );

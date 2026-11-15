@@ -13,6 +13,12 @@ import { fromPmJson, type PmNode, toPmJson } from './pm-json.js';
 import { markdownRules } from './text-rules.js';
 import { TEXT_SCHEMA } from './text-schema.js';
 
+/** Whether Tab (or Shift+Tab, `back`) would indent (or outdent) a list item at the selection of `state`. */
+export function movesListItem(state: EditorState, back: boolean): boolean {
+  const item = TEXT_SCHEMA.nodes['listItem'] as never;
+  return (back ? liftListItem(item) : sinkListItem(item))(state);
+}
+
 /** The editor's key bindings: the marks, the history, a soft line break, and the list items' keys. */
 const KEYS = keymap({
   // the first Backspace after a shortcut turned into a heading, list or mark gives the typed characters back

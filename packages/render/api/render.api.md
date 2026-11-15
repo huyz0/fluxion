@@ -203,7 +203,7 @@ export function labelBox(element: ShapeElement | TextElement, registries: {
     readonly shapeDefs: {
         get(id: string): ShapeDef | undefined;
     };
-}, theme: Theme): CSSProperties | undefined;
+}, theme: Theme, region?: string): CSSProperties | undefined;
 
 // @public
 export type LoadableFace = {

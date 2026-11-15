@@ -1550,7 +1550,8 @@
   "hG89Ed": {
     "message": "Image",
     "origin": [
-      "packages/editor/src/layers-model.ts"
+      "packages/editor/src/layers-model.ts",
+      "packages/editor/src/slot-section.tsx"
     ]
   },
   "he3ygx": {
@@ -1653,6 +1654,12 @@
     "message": "Add",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "mcmuCe": {
+    "message": "Icons",
+    "origin": [
+      "packages/editor/src/slot-section.tsx"
     ]
   },
   "n2VG3y": {
@@ -1768,6 +1775,12 @@
     "message": "Follows the document",
     "origin": [
       "packages/editor/src/theme-switcher.tsx"
+    ]
+  },
+  "pq-Tbd": {
+    "message": "Icon shape for {0}",
+    "origin": [
+      "packages/editor/src/slot-section.tsx"
     ]
   },
   "qNiGUh": {

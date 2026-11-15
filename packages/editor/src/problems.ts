@@ -5,38 +5,10 @@ import { createRegistry } from '@fluxion/core';
 import { CORE_LINT_RULES, type LintFinding, lint, registerLintRules } from '@fluxion/dsl';
 import { DEFAULT_SCREEN_SIZE, type Diagnostic, type DocumentFile, type RecordId, validate } from '@fluxion/schema';
 import { themeOf } from '@fluxion/theme';
+import type { Problem, ProblemFix } from './problem-types.js';
+import { regionProblems, type ShapeDefLookup } from './region-problems.js';
 
-/**
- * A fix: a document command with its arguments.
- *
- * @public
- */
-export type ProblemFix = {
-  /** What the button says. */
-  readonly title: string;
-  /** The document command to run. */
-  readonly command: string;
-  /** Its arguments. */
-  readonly args: unknown;
-};
-
-/**
- * One problem of the document.
- *
- * @public
- */
-export type Problem = {
-  /** Stable while the problem stands: its code and the records it is about. */
-  readonly id: string;
-  /** How serious it is. */
-  readonly severity: 'error' | 'warning' | 'info';
-  /** One line for people. */
-  readonly message: string;
-  /** The elements it is about (the panel selects them). */
-  readonly elements: readonly RecordId[];
-  /** How to fix it, when a command can. */
-  readonly fix?: ProblemFix;
-};
+export type { Problem, ProblemFix } from './problem-types.js';
 
 type Rec = { readonly id: string; readonly type: string; readonly [field: string]: unknown };
 type Box = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
@@ -144,11 +116,12 @@ function themeOfDocument(doc: DocumentFile) {
 }
 
 /**
- * The problems of `doc`: its validation diagnostics, then the lint findings, in a stable order.
+ * The problems of `doc`: its validation diagnostics, then the lint findings, in a stable order; with the shape definitions,
+ * also the `texts` entries no region draws (FR-SHP-007).
  *
  * @public
  */
-export function problemsOf(doc: DocumentFile): readonly Problem[] {
+export function problemsOf(doc: DocumentFile, shapeDefs?: ShapeDefLookup): readonly Problem[] {
   const stack = stacked(doc);
   const theme = themeOfDocument(doc);
   // elements exactly on top of one another are reported once, by `stacked`, with its fix
@@ -156,5 +129,6 @@ export function problemsOf(doc: DocumentFile): readonly Problem[] {
   const found = lint(doc, CORE_RULES, theme === undefined ? {} : { theme }).findings.filter(
     (f) => !(f.code === 'FLX_LINT_OVERLAP' && covered.has([...f.elements].sort().join('|'))),
   );
-  return [...validate(doc).map((d) => fromDiagnostic(doc, d)), ...stack, ...found.map((f) => fromFinding(doc, f))];
+  const regions = shapeDefs === undefined ? [] : regionProblems(doc, shapeDefs);
+  return [...validate(doc).map((d) => fromDiagnostic(doc, d)), ...stack, ...found.map((f) => fromFinding(doc, f)), ...regions];
 }

@@ -24,7 +24,7 @@ import { isImageFile } from './place-images.js';
 import type { Execute, PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import type { Session } from './session.js';
-import { hasText } from './text-edit.js';
+import { regionAt, textElement } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
 import { CONTEXT_MENU_EVENT } from './touch.js';
 import { touchConsumer } from './touch-input.js';
@@ -220,8 +220,10 @@ function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatc
   const at = screenToPage(session.camera.get(), { x: e.clientX - r.left, y: e.clientY - r.top });
   const hit = tools.ctx.hitTest(at);
   if (hit !== undefined && enterGroup(tools.ctx, hit, at)) return;
-  if (hit === undefined || !hasText(tools.ctx.view, hit)) return;
+  const element = hit === undefined ? undefined : textElement(tools.ctx.view, hit);
+  if (hit === undefined || element === undefined) return;
   session.selection.set([hit]);
+  session.editingRegion.set(regionAt(element, element.kind === 'shape' ? tools.ctx.shapeDefs?.get(element.defId) : undefined, at));
   session.editing.set(hit);
 }
 

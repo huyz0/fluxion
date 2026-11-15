@@ -67,7 +67,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/round.test.ts` +7 |
 | FR-SHP-005 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/hit.test.ts`, `packs/basic/src/hit.test.ts` |
 | FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/text.inline-edit.spec.ts` +9 |
-| FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +6 |
+| FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +10 |
 | FR-SHP-008 | M | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/locks.spec.ts` +3 |
 | FR-SHP-009 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/arrange/flip.test.ts` +3 |
 | FR-SHP-010 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/schema/src/schema-1-8.test.ts` |

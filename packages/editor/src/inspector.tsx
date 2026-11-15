@@ -17,6 +17,7 @@ import { colorTokenRefs, gradientCss, isHex6, optionGlyph, paintKind, paintLabel
 import type { ShapeDefs } from './param-handles.js';
 import { beginGesture, type Execute, type Gesture } from './pointer.js';
 import type { Session } from './session.js';
+import { IconSlotsSection } from './slot-section.js';
 
 /** Props of {@link InspectorFields}. */
 export type InspectorFieldsProps = {
@@ -95,6 +96,7 @@ export function InspectorFields(props: InspectorFieldsProps): ReactNode {
           ))}
         </fieldset>
       ))}
+      {model.ids.length === 1 ? <IconSlotsSection store={store} id={model.ids[0] as RecordId} execute={execute} shapeDefs={shapeDefs} /> : null}
       {model.ids.length === 1 ? <AnchorsSection store={store} id={model.ids[0] as RecordId} execute={execute} shapeDefs={shapeDefs} /> : null}
     </div>
   );

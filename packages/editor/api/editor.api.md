@@ -1417,7 +1417,7 @@ export type ProblemFix = {
 };
 
 // @public
-export function problemsOf(doc: DocumentFile): readonly Problem[];
+export function problemsOf(doc: DocumentFile, shapeDefs?: ShapeDefLookup): readonly Problem[];
 
 // @public
 export function readOption(field: OptionField, entry: string | boolean): OptionEntry;
@@ -1546,6 +1546,7 @@ export type Session = {
     readonly laser: WritableSignal<readonly Vec2[]>;
     readonly imagePick: WritableSignal<Box | undefined>;
     readonly editing: WritableSignal<RecordId | undefined>;
+    readonly editingRegion: WritableSignal<string | undefined>;
     readonly entered: WritableSignal<RecordId | undefined>;
     readonly guides: WritableSignal<readonly SnapGuide[]>;
     readonly dropTarget: WritableSignal<RecordId | undefined>;
@@ -1578,6 +1579,11 @@ export type SettingsStore = {
 
 // @public
 export type ShapeAvailable = (defId: string) => boolean;
+
+// @public
+export type ShapeDefLookup = {
+    get(id: string): ShapeDef | undefined;
+};
 
 // @public
 export type ShapeDefs = {

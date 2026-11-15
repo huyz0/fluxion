@@ -42,6 +42,8 @@ export type Session = {
   readonly imagePick: WritableSignal<Box | undefined>;
   /** The element whose text is being edited in place, if any. */
   readonly editing: WritableSignal<RecordId | undefined>;
+  /** The text region being edited when it is not the shape's first (FR-SHP-007): its name; the first, or the text, undefined. */
+  readonly editingRegion: WritableSignal<string | undefined>;
   /** The group entered to edit its members (double-click; Esc leaves it), if any: a click picks within it. */
   readonly entered: WritableSignal<RecordId | undefined>;
   /** The smart guides of a drag under way, page units (empty outside one). */
@@ -85,6 +87,7 @@ export function createSession(docId: string): Session {
     laser: writable<readonly Vec2[]>([]),
     imagePick: writable<Box | undefined>(undefined),
     editing: writable<RecordId | undefined>(undefined),
+    editingRegion: writable<string | undefined>(undefined),
     entered: writable<RecordId | undefined>(undefined),
     guides: writable<readonly SnapGuide[]>([]),
     dropTarget: writable<RecordId | undefined>(undefined),

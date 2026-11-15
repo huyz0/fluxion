@@ -74,7 +74,7 @@ function leftTabsFor(props: EditBodyProps, library: LibraryPanelProps, onRemap: 
   return (
     <LeftTabs
       screens={{ store, session, shown: screenId, registries, execute, newId }}
-      problems={{ store, session, execute }}
+      problems={{ store, session, execute, shapeDefs: registries.shapeDefs }}
       notes={{ store, execute, screenId }}
       library={library}
       layers={{ store, session, execute, screenId }}

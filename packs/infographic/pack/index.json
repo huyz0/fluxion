@@ -3,19 +3,19 @@
   "categories": {
     "charts": {
       "path": "categories/charts.json",
-      "sha256": "403c638493e8a501445537cdd4fc42f5a40bb6e154b0593798c39c95d917775b"
+      "sha256": "b9276fffba2b61c1bbccf627eaf25acf360a5435714be0548ddca6ed2c47d6fc"
     },
     "diagrams": {
       "path": "categories/diagrams.json",
-      "sha256": "b3f1824017e0d3d89f226f1321c41a64bba4d2486ee4229ad0d717e8868dd43d"
+      "sha256": "9214ba1ccce6b69f7be733a189a730a05fea288386bc175859cff491765ebae4"
     },
     "labels": {
       "path": "categories/labels.json",
-      "sha256": "60b8313bb33dc7a6128e16fe5ac705b92b12511d536e48ab30942eabd9e6939f"
+      "sha256": "1c387d2e6ca1fd5916a7b17e7378df8109cb4e375df3424cf4f99d940efef03e"
     },
     "layers": {
       "path": "categories/layers.json",
-      "sha256": "b9f2e4954c0f82ee68a17a610642595f5ed2e3ac310ff72223f908bc5ce81ed4"
+      "sha256": "4b9dd2eb5b8794bbaef685a8a42c747abb34ecc007a3e0b4d603dad50e4364ab"
     }
   },
   "credits": [
@@ -31,6 +31,7 @@
       }
     }
   ],
+  "definitionFonts": [],
   "definitions": [
     {
       "category": "charts",
@@ -201,6 +202,19 @@
     },
     {
       "category": "labels",
+      "id": "infographic:feature-card",
+      "keywords": [
+        "card",
+        "feature",
+        "benefit",
+        "icon",
+        "title",
+        "caption"
+      ],
+      "name": "Feature card"
+    },
+    {
+      "category": "labels",
       "id": "infographic:banner",
       "keywords": [
         "banner",
@@ -224,8 +238,11 @@
       "name": "Milestone"
     }
   ],
+  "fontCredits": [],
+  "fontFaces": [],
+  "fontResources": [],
   "format": "fluxion-shape-pack",
-  "formatVersion": "1.0",
+  "formatVersion": "1.3",
   "id": "infographic",
   "license": "MIT",
   "name": "Infographic",

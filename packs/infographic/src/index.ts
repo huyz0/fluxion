@@ -25,6 +25,7 @@ const NAMES: Readonly<Record<string, string>> = {
   'infographic:number-badge': 'Number badge',
   'infographic:hexagon-tile': 'Hexagon tile',
   'infographic:stat-card': 'Stat card',
+  'infographic:feature-card': 'Feature card',
   'infographic:banner': 'Banner',
   'infographic:milestone': 'Milestone',
 };
