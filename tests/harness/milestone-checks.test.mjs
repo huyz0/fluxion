@@ -881,6 +881,41 @@ describe('checkPngEvidence (M19.52)', () => {
     assert.match(String(checkPngEvidence(green, { isAncestor: (a) => a !== '819cfaf' })), /before 819cfaf/);
     assert.match(String(checkPngEvidence(green, { isAncestor: (_a, b) => b !== 'HEAD' })), /not an ancestor of HEAD/);
   });
+  it('NFR-DX-003: a nightly read through gh api pages, after gh run view is refused, is recorded green (M19.55, cp7 F2)', async () => {
+    const { ghSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const sb = sandbox(['scripts'], { git: true });
+    try {
+      // the nightly's png-check job at a commit after 819cfaf (a ref of that name in the fixture's history)
+      sb.git('tag', '819cfaf');
+      sb.write(
+        '.github/workflows/nightly.yml',
+        "jobs:\n  png-check:\n    env:\n      FLUXION_PNG_CHECK: '1'\n    steps:\n      - run: pnpm exec playwright test e2e/x.spec.ts --retries=0\n",
+      );
+      sb.git('add', '-A');
+      sb.git('commit', '-q', '-m', 'nightly', '--no-verify');
+      const sha = sb.git('rev-parse', 'HEAD').stdout.trim();
+      const page1 = Array.from({ length: 100 }, (_, i) => ({ id: 1000 + i, name: `visual (${i})`, conclusion: 'failure', steps: [] }));
+      const answers = {
+        'repos/huyz0/fluxion/actions/runs/9': { id: 9, name: 'nightly', head_sha: sha, conclusion: 'failure' },
+        'repos/huyz0/fluxion/actions/runs/9/jobs?per_page=100': { jobs: page1 },
+        'repos/huyz0/fluxion/actions/runs/9/jobs?per_page=100&page=2': { jobs: [{ id: 2000, name: 'png-check', conclusion: 'success', steps: [] }] },
+      };
+      const gh = ghSource((_cmd, args) =>
+        args[0] === 'run'
+          ? { status: 1, stdout: '', stderr: 'HTTP 403: Numeric-ID repository paths' }
+          : { status: 0, stdout: JSON.stringify(answers[args[1]]) },
+      );
+      sb.write('runs.json', JSON.stringify([await gh.view(9)]));
+      const r = sb.node('scripts/gates/check-png-evidence.mjs', ['--record', '9', '--runs-file', sb.path('runs.json'), '--file', sb.path('ev.json')]);
+      assert.equal(r.status, 0, out(r));
+      assert.equal(sb.node('scripts/gates/check-png-evidence.mjs', ['--file', sb.path('ev.json')]).status, 0);
+      const { run, sha: at, job, conclusion } = JSON.parse(sb.read('ev.json'));
+      assert.deepEqual({ run, at, job, conclusion }, { run: 9, at: sha, job: 'png-check', conclusion: 'success' });
+    } finally {
+      sb.cleanup();
+    }
+  });
+
   it('NFR-DX-003: check-png-evidence --record refuses a red nightly and writes no record', () => {
     const sb = sandbox(['scripts'], { git: true });
     try {

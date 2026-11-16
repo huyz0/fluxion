@@ -554,6 +554,43 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
     assert.deepEqual(spawned, [['gh', 'run', 'view', '42', '--json', 'jobs']]);
   });
 
+  it("HARNESS: a run of over 100 jobs is read page by page, and through gh api's repos/ paths when gh run view is refused (M19.55, cp7 F2)", async () => {
+    const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
+    const run = { id: 77, name: 'nightly', head_sha: 'd'.repeat(40), head_branch: 'main', conclusion: 'failure' };
+    // 100 jobs on the first page, png-check alone on the second, as the nightly's
+    const page1 = Array.from({ length: 100 }, (_, i) => ({ id: 1000 + i, name: `visual (${i})`, conclusion: 'failure', steps: [] }));
+    const page2 = [{ id: 2000, name: 'png-check', conclusion: 'success', steps: [] }];
+    const answer = (path) => {
+      if (path.endsWith('/actions/runs/77')) return run;
+      if (path.endsWith('/actions/runs/77/jobs?per_page=100')) return { jobs: page1 };
+      if (path.endsWith('/actions/runs/77/jobs?per_page=100&page=2')) return { jobs: page2 };
+      throw new Error(`unexpected ${path}`);
+    };
+    const fetch = async (url) => ({ ok: true, status: 200, json: async () => answer(url) });
+    const viaRest = await restSource({ fetch }).view(77);
+    assert.equal(viaRest.jobs.length, 101);
+    assert.deepEqual(viaRest.jobs.at(-1), { name: 'png-check', conclusion: 'success', steps: [] });
+    const spawned = [];
+    const refused = 'HTTP 403: Numeric-ID repository paths (repositories/{id}/...) are not supported through this proxy';
+    const gh = ghSource((_cmd, args) => {
+      spawned.push(args);
+      if (args[0] === 'run') return { status: 1, stdout: '', stderr: refused };
+      assert.match(args[1], /^repos\/huyz0\/fluxion\//);
+      return { status: 0, stdout: JSON.stringify(answer(args[1])) };
+    });
+    const viaGh = await gh.view(77);
+    assert.deepEqual(
+      { id: viaGh.databaseId, sha: viaGh.headSha, workflow: viaGh.workflowName, jobs: viaGh.jobs.length },
+      { id: 77, sha: 'd'.repeat(40), workflow: 'nightly', jobs: 101 },
+    );
+    assert.deepEqual(viaGh.jobs.at(-1), { databaseId: 2000, name: 'png-check', conclusion: 'success', steps: [] });
+    assert.deepEqual((await gh.jobs(77)).at(-1), { name: 'png-check', conclusion: 'success' });
+    // a refused api read too names both failures
+    const both = ghSource(() => ({ status: 1, stdout: '', stderr: refused }));
+    await assert.rejects(both.view(77), /gh run view failed.*through gh api: gh api repos\/huyz0\/fluxion\/\S+ failed/s);
+    assert.ok(spawned.every((a) => a[0] === 'run' || a[1].startsWith('repos/huyz0/fluxion/')));
+  });
+
   it("HARNESS: a workflow's newest completed push run is read by status, outside any mixed window (M18.134, cp14 F1)", async () => {
     const { ghSource, restSource } = await import('../../scripts/gates/ci-runs.mjs');
     const red = { id: 31, name: 'ci', head_sha: 'c'.repeat(40), conclusion: 'failure', status: 'completed', event: 'push', created_at: 'T' };

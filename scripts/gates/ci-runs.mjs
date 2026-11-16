@@ -44,6 +44,20 @@ export const toGhRun = (run, jobs) => ({
   })),
 });
 
+/** The most pages of a run's jobs read: a nightly holds over 100 jobs, so one page is not all of them (M19.55, cp7 F2). */
+export const JOB_PAGES = 20;
+/** Every job of run `id`, page by page through `get(path)` (REST answers at most 100 a page), until a page comes back short. */
+export async function pagedJobs(get, id) {
+  const all = [];
+  for (let page = 1; page <= JOB_PAGES; page++) {
+    // the first page as it was always asked for; later pages say which
+    const jobs = (await get(`actions/runs/${id}/jobs?per_page=${PAGE_SIZE}${page === 1 ? '' : `&page=${page}`}`)).jobs ?? [];
+    all.push(...jobs);
+    if (jobs.length < PAGE_SIZE) return all;
+  }
+  throw new Error(`run ${id} has more than ${JOB_PAGES * PAGE_SIZE} jobs`);
+}
+
 /**
  * REST reader. `fetch` is injected (tests pass a fake; nothing touches the network there); the
  * token, when given, is sent as a Bearer header and never logged.
@@ -58,8 +72,8 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
   };
   return {
     view: async (id) => {
-      const [run, { jobs }] = await Promise.all([get(`actions/runs/${id}`), get(`actions/runs/${id}/jobs?per_page=100`)]);
-      return toGhRun(run, jobs ?? []);
+      const [run, jobs] = await Promise.all([get(`actions/runs/${id}`), pagedJobs(get, id)]);
+      return toGhRun(run, jobs);
     },
     list: async (sha) =>
       ((await get(`actions/runs?head_sha=${sha}&per_page=50`)).workflow_runs ?? []).map((r) => ({
@@ -80,10 +94,10 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
         []
       ).map((r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at })),
     // a run's jobs and their conclusions, read while it is still pending: last-ci sees a failed job early (M18.191)
-    jobs: async (id) => ((await get(`actions/runs/${id}/jobs?per_page=100`)).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
+    jobs: async (id) => (await pagedJobs(get, id)).map((j) => ({ name: j.name, conclusion: j.conclusion })),
     // a run's cold-setup job, its cold step's duration and its log text (null when unknown): last-ci reports them (M18.161, M18.164)
     coldSetup: async (id) => {
-      const job = ((await get(`actions/runs/${id}/jobs?per_page=100`)).jobs ?? []).find((j) => j.name === 'cold-setup');
+      const job = (await pagedJobs(get, id)).find((j) => j.name === 'cold-setup');
       if (!job) return undefined;
       const res = await fetch(`${API}/repos/${repo}/actions/jobs/${job.id}/logs`, { headers }).catch(() => undefined);
       const step = (job.steps ?? []).find((s) => s.name === COLD_STEP);
@@ -124,6 +138,33 @@ function hydrateColdStepTimes(job, runId, gh) {
   }));
 }
 
+/**
+ * `gh run view --json jobs` fetches a second page of jobs through repositories/<id>/…, which a proxy may refuse (403): a run whose view
+ * fails is read through gh api's repos/{owner}/{repo} paths instead, page by page (M19.55, cp7 F2). `gh(args)` runs gh and parses JSON.
+ */
+function viaApi(gh) {
+  const api = async (path) => gh(['api', `repos/${REPO}/${path}`]);
+  const viewed = async (id, fields, fallback) => {
+    try {
+      return gh(['run', 'view', String(id), '--json', fields]);
+    } catch (viewError) {
+      try {
+        return await fallback();
+      } catch (apiError) {
+        throw new Error(`${viewError.message}; through gh api: ${apiError.message}`);
+      }
+    }
+  };
+  const apiRun = async (id) => {
+    const jobs = await pagedJobs(api, id);
+    const run = toGhRun(await api(`actions/runs/${id}`), jobs);
+    // gh's shape names a job's id databaseId: coldSetup reads its log by it
+    return { ...run, jobs: run.jobs.map((j, i) => ({ databaseId: jobs[i].id, ...j })) };
+  };
+  const apiJobs = async (id) => ({ jobs: (await apiRun(id)).jobs });
+  return { viewed, apiRun, apiJobs };
+}
+
 /** `gh` reader with the same interface; throws with gh's stderr when a call fails. */
 export function ghSource(spawn = spawnSync) {
   const gh = (args) => {
@@ -132,9 +173,10 @@ export function ghSource(spawn = spawnSync) {
     if (r.error || r.status !== 0) throw new Error(`gh ${args.slice(0, 2).join(' ')} failed (authenticated?): ${(r.stderr || r.error?.message || '').trim()}`);
     return JSON.parse(r.stdout);
   };
+  const { viewed, apiRun, apiJobs } = viaApi(gh);
   return {
     view: async (id) => {
-      const run = gh(['run', 'view', String(id), '--json', FIELDS]);
+      const run = await viewed(id, FIELDS, () => apiRun(id));
       for (const job of run.jobs ?? []) hydrateColdStepTimes(job, id, gh);
       return run;
     },
@@ -158,11 +200,11 @@ export function ghSource(spawn = spawnSync) {
         '--json',
         RUN_FIELDS,
       ]),
-    jobs: async (id) => (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
+    jobs: async (id) => ((await viewed(id, 'jobs', () => apiJobs(id))).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
     // gh run list cannot page, so the REST path is read through gh api, as the REST source reads it (M18.199)
     ciPage: async (name, page, size = PAGE_SIZE) => (gh(['api', `repos/${REPO}/${ciPagePath(name, page, size)}`]).workflow_runs ?? []).map(listed),
     coldSetup: async (id) => {
-      const job = (gh(['run', 'view', String(id), '--json', 'jobs']).jobs ?? []).find((j) => j.name === 'cold-setup');
+      const job = ((await viewed(id, 'jobs', () => apiJobs(id))).jobs ?? []).find((j) => j.name === 'cold-setup');
       if (!job) return undefined;
       // older gh omits step times: fetch them as view() does, so the duration is known (M18.178)
       try {

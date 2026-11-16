@@ -5038,3 +5038,8 @@ round-allowance: M19.25 a fourth review round under Huy's 2026-11-05T11:04:52Z d
 - SPECS gains style-paint, table.cell-text, library.icon-slot-pack and arrange.boolean; style-paint, icon-slot-pack and arrange.boolean now scan with expectAccessible.
 - r1 (pass, minor fixed in-commit): F1 arrange.boolean opens the editor, so it moves to SPECS with an axe scan instead of a no-axe leg.
 - Local m19-complete: 29/48; every unit and browser leg named here passes; the e2e legs fail on Firefox and WebKit, which this container lacks (Chromium passes all three new specs), as at cp5–cp7; CI runs them.
+
+## 2026-11-16 M19.55: a nightly's jobs are read page by page, through gh api when gh run view is refused (cp7 F2)
+- ci-runs.mjs `pagedJobs(get, id)` reads a run's jobs 100 a page until a short page (at most 20 pages; the first page's URL as before). restSource's view, jobs and coldSetup use it: one page held only 100 of the nightly's 304 jobs.
+- ghSource: when `gh run view` fails (gh fetches the second page of jobs through repositories/<id>/…, which the agents' proxy refuses with 403), view, jobs and coldSetup read the run and its pages through `gh api repos/huyz0/fluxion/…`; when that fails too, the error names both. Jobs read that way carry databaseId, so coldSetup still reads the log.
+- Tests: ci-evidence.test.mjs (REST and gh read 101 jobs over two pages; gh's view refused, the api answers; both refused names both), milestone-checks.test.mjs (that view, given to check-png-evidence --record in a fixture repo whose nightly.yml runs png-check, writes a green record that the check accepts). By hand: runSource().view(43699537326) reads 304 jobs from this container.
