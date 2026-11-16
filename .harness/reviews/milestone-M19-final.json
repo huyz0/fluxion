@@ -1,0 +1,46 @@
+{
+  "milestone": "M19",
+  "checkpoint": "final",
+  "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..9bb93abc4e43aab46fa8bcec551999e22d322805",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "cp1 to cp8 covered 5a3d0ee..553bd32. I read the delta since cp8's record 9b9f886 as diffs. a8f273f M19.61: the --all ladder build leaves out @fluxion/docs, and a new 'docs' step after the barrier builds the docs site under BUILD_SETTLE, then checks llms.txt and llms-full.txt with scripts/gates/docs-output.mjs. The FR-AI-011 dist case moves from guide-drift.test.ts, where it was skipIf-guarded, to tests/harness/docs-output.test.mjs, with a Removes-test trailer. The row's acceptance was amended in the same commit, from ci.yml jobs to the ladder, and typecheck overlap was not taken (2.5 s, TypeDoc reads .tsbuild). verifyLeg still needs exit 0 and no SKIP lines, so a failing or skipped docs step fails m19-complete's verify leg. harness-windows (--only harness-tests) turns the step off and verify windows (--skip harness-tests) runs it, so CI still runs it once. ci.yml's build job and the nightly still call `pnpm run build`. f408abf M19.57: FLUXION_E2E_SCANS_CHROMIUM_ONLY is set only for pull_request legs that are not chromium. playwright.config.ts then ignores the fidelity, parity and a11y specs, and expectAccessible returns before axe. The imageRunner passes only explicit -e vars into the container, so the switch cannot leak into the gate's browser legs. With the switch on, the parity leg would see 'no test ran' and fail closed. ci-pr-scans.test.mjs pins the expression and checks that no other workflow sets it. 301a587 M19.60: layering, coverage and api cases share runs with the same assertions. Each case matches its own file or line. The packs overview case now really edits sdk's row; before, its replace never matched. A Removes-test trailer cites the 2026-11-13 allowance. 9bb93ab: three coldReadings (522e499 345 s, 9b9f886 331 s, 301a587 410 s), median 345 s, all on the current lockfile and descended from b7f9ac5. That is a bookkeeping-only commit. Run here: node --test docs-output + ci-pr-scans, 3/3 pass. check-trace --milestone M19: 'every Must of M19 covered'. Whole milestone: the 18 plan tasks and 5 M18 hand-offs each map to done rows with named gate legs. Plan row 23's fix is handed to M20 row 20 (cp8 F1, carried out, and the hand-off leg is green). The plan's gate legs (six e2e specs on three engines with axe, boolean goldens, flip/anchor, geometry coverage, the 1.8 migration fixture, parity with masters, frames and tables, the masters-tables example, editor size, review verdict, no quarantines) are all present in m19-complete, plus later named-case legs. The packet gate reads 30/49. Its red legs are only these: the Firefox/WebKit e2e and parity legs (this container has Chromium only); decodePng (no green nightly png-check recorded yet); ci-evidence (record d11305c and perf 30caa1d are older than HEAD's last non-bookkeeping commit 301a587; the macOS cli-mcp same-tree line belongs to the old record's tree; the nightly job read hit a proxy connection reset and fails closed); M19.31 todo; the missing final review; the roadmap. Every one fails closed, and none can go green without the evidence it names.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "summary": "Plan row 21's speed list was narrowed by the rows' own commits, as cp8 F1 found for M19.29, not by a checkpoint. tests/harness/checkpoint.test.mjs (27 s wall) is in plan row 21's slowest-files list but was left out when M19.28 was split into M19.56 to M19.61. M19.59 left svg-witness-cleanup-windows, commands, font-sources and imported-pack-scaling unchanged. M19.61 dropped the typecheck overlap and moved its scope from ci.yml to the ladder. Each amendment gives a reason that holds. The plan row's SHALL is trace coverage, which holds, and the leg it set, a cold-setup median of 420 s or less, is green. So no requirement is unmet, but the plan and the backlog disagree on checkpoint.test.mjs.",
+      "evidence": "docs/milestones/M19.md:77 (row 21 lists 'checkpoint 27 s wall'); docs/backlog/current.md M19.28/M19.59/M19.60/M19.61 acceptances; .harness/progress.md 'Rank 4 ... not taken'"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "summary": "The only cold-setup reading taken after all of M19.28's speed rows (301a587, after M19.61 and M19.60) is 410 s. That is the highest of the three and 10 s under the 420 s target. The median of 345 s comes from two readings taken before M19.57, M19.60 and M19.61. The leg is honest as M19.28 specified it, but the speed rows have not been shown to lower cold setup. The new parallel docs step after the barrier may add contention on 4-vCPU runners, or the 410 s may be noise.",
+      "evidence": ".harness/budget.json coldReadings (345000, 331000, 410000); 9bb93ab"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "The FR-AI-011 build-output check now runs only inside precommit's buildDocs(). build-settle.test.mjs pins the docs step and its runAsync call by regex, but not the docsOutputProblem call. A mutant that returns `built` without checking the output survives every test. The old guide-drift case was also weak, since it was skipIf'd on a source-only checkout, so this is no regression. The check simply has no constraining test of its wiring.",
+      "evidence": "scripts/gates/precommit.mjs buildDocs(); tests/harness/build-settle.test.mjs M19.61 assertions; tests/harness/docs-output.test.mjs tests the pure function only"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "argue",
+      "note": "No M19 requirement is affected. Plan row 21's EARS SHALL is that every FR/NFR stays traced, which check-trace shows. Its measurable target, cold setup in CI at most 420 s by median of 3, is met. The items list is the row's WHEN condition, and the human allowance covered cuts. Each self-amendment states its measured reason. For later plans: a split row lists every item it takes from its parent, and a checkpoint, not the row's own commit, ratifies any that are left out. checkpoint.test.mjs's speed can go into a later test-speed row if cold setup or verify time comes back over budget."
+    },
+    {
+      "finding": "F2",
+      "disposition": "argue",
+      "note": "M19.28's leg is met as specified (3 readings, median 345 s at most 420 s, all descended from b7f9ac5 on the current lockfile), and budget.json records the 410 s reading openly. Readings vary by about 80 s between runs. If the next CI cold-setup readings in M20 run above 420 s, the first thing to suspect is the docs step's overlap after the barrier (M19.61), and a Fixes row opens. No threshold is raised."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "note": "No gate is weakened: the old case was skipped whenever dist was missing, and the new step fails the ladder when the build or its output falls short. Pinning the docsOutputProblem call in build-settle.test.mjs is a one-line hygiene change that can ride on the next harness row that touches precommit.mjs. It is not a defect of an M19 requirement."
+    }
+  ],
+  "planDelta": "61 rows against 31 planned (1.97x), unchanged since cp8. The delta closed M19.57, M19.60 and M19.61 and recorded the cold readings, and only M19.31 is left. Growth came from M19.28's test-speed split (6 rows, which the plan's own row 21 listed), CI-red fix rows (M19.32, 33, 37, 39, 46, 49, 50), and review minors carried into rows. No feature scope was added. Close order for M19.31: stage this record and the three argued lines, then record a green nightly png-check (check-png-evidence --record) and ci evidence with a nightly perf run at or after 301a587, once the proxy read of the nightly's jobs succeeds. Run the Firefox/WebKit legs on a three-engine host, read last-ci right before the close, run m19-complete 49/49 in one run, then advance the roadmap. Learned: 'final: a split row's children amended their own acceptances three times (M19.59 to M19.61); a checkpoint, not the row's commit, ratifies a narrowed scope, and a speed row's effect is read from readings taken after it, not a median that includes earlier ones.'"
+}

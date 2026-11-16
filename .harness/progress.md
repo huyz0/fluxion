@@ -5105,3 +5105,7 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 
 ## 2026-11-16 M19.31: three CI cold-setup readings after M19.28
 - `check-budget --record --cold-from-ci` for 522e499 (ci:43847313034, 345 s), 9b9f886 (ci:43859912281, 331 s) and 301a587 (ci:43866700311, 410 s): median 345 s against 420 s. Local quick 17.9 s, worst-case staged 388 s. Fills M19.60's Commit cell.
+
+## 2026-11-16 M19.31: final review (5a3d0ee..9bb93ab)
+- Independent final review: pass, 3 minor, all argued (plan row 21 narrowing; cold-setup headroom after the speed rows; docs-step output check unpinned). Every plan task and M18 hand-off maps to a done row; check-trace --milestone M19 covers every Must.
+- Left before M19.31 closes: a green nightly png-check (record), CI evidence and a nightly perf run at or after 301a587, the Firefox/WebKit legs on a three-engine host, then m19-complete in one run and the roadmap advance.
