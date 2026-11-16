@@ -1,0 +1,59 @@
+{
+  "milestone": "M19",
+  "checkpoint": "cp7",
+  "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..0daebf382b4840eaff1ecb8cc2a499d4ab816e60",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "I read each commit after cp6's record 20da2ce as a diff: c8ef3bc M19.40, 5b92102 M19.38, 8d412b4 M19.54, 43736e3 M19.43, 8352799 M19.53, 97bbea4 M19.52 and 0daebf3 M19.35. cp6's dispositions are carried out. F1: M19.52 (97bbea4) makes the decodePng leg read .harness/reviews/png-check-evidence.json through checkPngEvidence, which needs nightly/png-check, success, at or after 819cfaf and an ancestor of HEAD. --record refuses a red run and checks nightly.yml for FLUXION_PNG_CHECK=1 and --retries=0. The leg is red in the packet. F2: 20da2ce adds M20 row 19, a roadmap Deferred row citing 'cp6 F2', and ADR-0219's 'Not covered' line now cites the row. F3: M19.40, M19.38 and M19.43 were amended in 20da2ce, and each one changed 04 section 3.9 and the guide in its own commit. c8ef3bc rewords the undo line. M19.53 (8352799) enforces the carried-minor rule in check-commit-msg and in check-commits --commit. It matches both cp6 wordings ('is carried to M19.40', 'becomes a backlog row'). F4 and F5 have their review-argued lines. M19.35 does every part of its acceptance: the group-key and group-source refusals, placed.ts shared by frames, flip and match, elementFlipped moved to flip.ts, the lock rule written with a locks.test case, dropReparents finding frames once per drag (pinned by a byScreen read count), the region-named editor and tableStyleSchema reused by theme and core. ADR-0220 (M19.54) checks out: size-limit 14's rolldown getFiles follows static imports from the named entry and takes every chunk with no entry. EDITOR_INITIAL_GZIP is unchanged, and the whole bundle stays measured as an advisory, now over its target at 600,752 B (43736e3 body). M32 row 13's lazy-chunk map is where the ADR sends it. last-ci: ci green at 97bbea4, gates green at 0daebf3, cold-setup 339 s at 97bbea4. The last nightly is still 43699537326 at 3e11fb6 (red), and none has run since, so the png-check and perf evidence are still pending. The packet's gate run reads 28/42. Its red legs are the Firefox/WebKit e2e and parity legs (local, as at cp5 and cp6), decodePng (no record), ci-evidence, the backlog (M19.28, M19.29, M19.42, M19.31), the final review and the roadmap. The cold-setup leg passes on one CI reading. That is expected until M19.28 changes it to three readings, so the gate overall is not falsely green. Mutants: dropping pasteStyle's filter of the source is caught (style-paint.test 'the source alone takes nothing'). Dropping the amend branch or the list parsing in check-commit-msg is caught (commit-msg.test r2 and r1 F2 cases). Reverting dropReparents' per-screen cache is caught (frames.test byScreen count). offersStyleLine hiding Paste style after its source is deleted has no case. M19.53's rule matches fixed phrases only: 'goes to M19.x' or 'deferred to M19.x' would pass it (F4).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "summary": "Three feature rows in this delta added the user-facing tests their acceptance names, but m19-complete runs none of them. This breaks cp4's Learned rule ('a feature row adds its named gate cases and e2e legs in its own commit'). The FR-ARR-007 leg still runs only the core match-size and format-painter tests, while FR-ARR-007 now traces to e2e/style-paint.spec.ts (M19.40). e2e/table.cell-text.spec.ts (M19.43, acceptance 'with axe') is not in SPECS, and nothing else covers table cell text editing in the gate. e2e/library.icon-slot-pack.spec.ts, slot-section.browser.test.tsx and pack-catalog.slots.test.ts (M19.38) are on no leg. Each commit says its spec passed on chromium only. CI ran them later (ci green at 97bbea4), but the completion gate would stay green if any of the three were deleted or broke on Firefox or WebKit.",
+      "evidence": "scripts/gates/m19-complete.mjs:136-141 (FR-ARR-007 leg), :240-241 (SPECS); c8ef3bc, 43736e3 and 5b92102 bodies ('passed on chromium', 'passes on chromium'); docs/requirements/40-traceability.md FR-ARR-007 -> e2e/style-paint.spec.ts; M19.42 acceptance (todo) names none of these files"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "summary": "ghSource reads a run with `gh run view <id> --json jobs`. The nightly has more than 100 jobs, so gh fetches a second page through a numeric-ID URL (repositories/<id>/...), and the agents' HTTPS proxy refuses that with 403. So check-png-evidence --record (M19.52) and ci-evidence's nightly read cannot read any nightly from this environment, and runSource uses REST only when gh is absent. Both legs fail closed, so the gate stays honest. But once a green nightly exists, M19 cannot record it here, and two of its final legs stay red.",
+      "evidence": "gh run view 43699537326 --json ...,jobs -> 'HTTP 403: Numeric-ID repository paths (repositories/{id}/...) are not supported through this proxy ... jobs?per_page=100&page=2'; packet gate output ci-evidence leg shows the same 403 for 43578498688; scripts/gates/ci-runs.mjs:137,161,204-205 (runSource picks gh whenever installed; restSource uses repos/{owner}/{repo} paths)"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "M19.38 added two helpers that both pull the definition ids out of a shape's icon slots: apps/studio pack-catalog.ts slotDefIds (inside usedDefIds) and packages/format shape-pack-slots.ts fillDefId/slotIds. They differ: format leaves out builtin and CORE_SHAPE_IDS and studio does not. So what the studio loads and what the save embeds are decided by two rules that can drift apart.",
+      "evidence": "apps/studio/src/pack-catalog.ts:280-294 (5b92102); packages/format/src/shape-pack-slots.ts:1-36 (5b92102)"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "summary": "M19.53's rule matches only the phrases 'carried (on) to M<n>.<k>' and 'becomes a (new) backlog row' / 'carried to a new row'. A body saying a minor 'goes to', 'moves to' or 'is deferred to' a row passes it without changing that row. The acceptance listed exactly these wordings, and git.md rule 12 now names the phrase, so this is a convention plus a check, not a full guard.",
+      "evidence": "scripts/gates/check-commit-msg.mjs (8352799) `lists` and `unnamed` regexes; docs/standards/git.md rule 12"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M19.42",
+      "note": "Amend M19.42 (todo) in the cp7 record commit. m19-complete's FR-ARR-007 leg also runs packages/editor/src/style-paint.test.ts by its three case names. SPECS (three engines, axe, no retries) gains style-paint, table.cell-text and library.icon-slot-pack. The FR-SHP-007 leg names the slot-section.browser.test.tsx load-before-fill and ordering cases, the shape-pack-prepare 'definition an icon slot names is embedded' case and pack-catalog.slots.test.ts. The FR-SHP-014 leg names table-edit.test.ts's editCellAt, locked-table and cp4 F6 line-placement cases. M19.42 runs those legs once on all three engines."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M19.55",
+      "note": "New row M19.55 (HARNESS, blocks M19.31): when `gh run view` fails, or always for jobs, the run reader in scripts/gates/ci-runs.mjs (ghSource view/jobs) reads a run's jobs through `gh api repos/{owner}/{repo}/actions/runs/<id>/jobs?per_page=100` with explicit pages, or falls back to restSource. So check-png-evidence --record and check-ci-evidence's nightly read work behind a proxy that refuses numeric-ID repository paths. tests/harness gets a case with a fake gh whose `run view` fails with that 403 while `gh api repos/...` answers, and expects the record written."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "note": "Both helpers are right today. Studio's extra ids (builtin and core:*) are already registered, so `ensure` does nothing for them, and the save path is the one that filters. Export format's slotIds (or a schema-level slotDefIds) and have studio usedDefIds call it on the next edit of either file."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "The rule catches the two wordings that broke cp5's and cp6's Learned line, and git.md rule 12 now tells authors which phrase to use, so a commit carrying a minor uses it. No phrase list can match free prose. Per-commit review (R11) still reads the body, and the checkpoint review checks each carried minor against the backlog, as cp7 did here."
+    }
+  ],
+  "planDelta": "54 rows against 31 planned (1.74x). cp7's M19.55 makes 55 (1.77x). This delta added one row of its own, M19.54. M19.43 hit the size gate's counting of lazy chunks, and the fix was an ADR plus a harness row, not a feature cut. cp6's M19.52 and M19.53 landed as planned, and M19.35's five-checkpoint hygiene closed in one commit after one changes-requested round. 4 rows remain todo plus M19.55: M19.28 (test-speed, and the cold-setup leg moving to three CI readings), M19.29 (loaded-host first screen), M19.42 (named gate cases, widened by cp7 F1) and M19.31 (final review). Every feature row is done, so what is left is all harness and evidence: three CI cold-setup readings after M19.28, a green nightly png-check and perf run (no nightly since 3e11fb6), and two green macOS cli-mcp runs. Those depend on CI time more than on commits, and M19.55 must land before any nightly can be recorded from this environment. For later milestones, plan the e2e legs of the gate when each feature row lands, not in a catch-all named-cases row. M19.42 has now collected cp2, cp3, cp4 and cp7 additions."
+}

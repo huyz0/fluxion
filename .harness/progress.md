@@ -5028,3 +5028,7 @@ round-allowance: M19.25 a fourth review round under Huy's 2026-11-05T11:04:52Z d
 - The inline editor's accessible name names the open region ("Edit text: body"; "Text" for the element's own text), case in inline-text-editor.browser.test.tsx (cp3 F3).
 - schema exports `tableStyleSchema`; theme `themeSchema` and core `document.setTheme`/`screen.setThemeOverride` check table styles with it, so an image paint in a cell part is refused at the theme boundary (cases in theme table-styles.test.ts and core theme-commands.test.ts).
 - r1 (changes-requested, fixed): F1 a frames.test case counts the store's byScreen reads: a drop of three elements reads it once (red with the per-element lookup). F2 the group-holds-key case uses a group whose box differs from the key's. F3 only a group that holds the key is left out; a frame holding it is sized (case). F4 the core setTheme case checks the refusal is the argument's, at /args/theme/tableStyles/…/fill.
+
+## 2026-11-16 M19.31: checkpoint cp7 (through 0daebf3)
+- Independent milestone review of 20da2ce..0daebf3 (M19.40, M19.38, M19.54, M19.43, M19.53, M19.52, M19.35): pass, 4 minors. cp6's dispositions carried out.
+- F1 reopens M19.42 (amended: style-paint, table.cell-text, icon-slot-pack legs and cases). F2 reopens as new row M19.55 (ci-runs.mjs reads jobs through repos/{owner}/{repo} paths; blocks M19.31). F3, F4 argued. Learned line cp7. Plan 55 rows against 31 (1.77x).
