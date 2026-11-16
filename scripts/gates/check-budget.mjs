@@ -12,6 +12,7 @@
 //                               as --record, but the cold setup is the duration of the cold-setup step of
 //                               <sha>'s green ci run (ADR-0145), so a machine that cannot download
 //                               Chromium can still record; <sha> must have the lockfile being recorded
+//                               and adds it to coldReadings (one per commit, same lockfile; M19.28)
 //   check-budget.mjs --record --cold-pending
 //                               for the commit that changes pnpm-lock.yaml where no cold setup can run:
 //                               quick and staged measured, the previous cold-setup number carried and
@@ -204,13 +205,23 @@ async function ciColdSetup(sha) {
   try {
     const step = await coldStep(runs(), commit);
     if (!step) return { ok: false, lockfile, tail: `no green ci run of ${commit.slice(0, 7)} with a successful "${COLD_STEP}" step` };
-    return { ok: true, ms: step.ms, lockfile, source: `ci:${step.runId}` };
+    return { ok: true, ms: step.ms, lockfile, source: `ci:${step.runId}`, commit };
   } catch (e) {
     return { ok: false, lockfile, tail: `reading CI runs failed: ${e?.message ?? e}` };
   }
 }
 
 const PENDING = 'pending-ci';
+
+/**
+ * The CI cold-setup readings a record keeps (M19.28: one reading proves nothing): the previous record's readings of the same lockfile,
+ * one per commit, with `reading` (a --cold-from-ci reading) added or replacing that commit's. Another lockfile starts the list again.
+ */
+function coldReadings(lockfile, reading) {
+  const previous = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+  const kept = (Array.isArray(previous.coldReadings) ? previous.coldReadings : []).filter((r) => r?.lockfile === lockfile && r.sha !== reading?.sha);
+  return reading === undefined ? kept : [...kept, { ...reading, lockfile }];
+}
 
 /** --cold-pending: the previous record's cold-setup number, carried for the current lockfile. */
 function carriedColdSetup() {
@@ -248,6 +259,7 @@ if (argv.includes('--record')) {
     stagedMs: staged.ok ? staged.ms : null,
     coldSetupMs: cold.ok ? cold.ms : null,
     coldSetupSource: fromCi ? (cold.source ?? null) : pending ? PENDING : 'local',
+    coldReadings: coldReadings(cold.lockfile ?? lockfileHash(), fromCi && cold.ok ? { sha: cold.commit, ms: cold.ms, source: cold.source } : undefined),
   };
   writeFileSync(file, `${JSON.stringify(record, null, 2)}\n`);
   console.log(`budget: recorded ${JSON.stringify(record)}`);

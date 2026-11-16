@@ -978,3 +978,23 @@ export function checkPngEvidence(record, { isAncestor = (a, b) => git(['merge-ba
   if (!isAncestor(sha, 'HEAD')) return `${sha.slice(0, 7)} is not an ancestor of HEAD: record a nightly of this branch`;
   return true;
 }
+
+/**
+ * M19.28's cold-setup evidence (.harness/budget.json coldReadings, check-budget --record --cold-from-ci <sha>): at least `count` CI
+ * readings, each at a commit descended from `from` (the row's own commit) and on this branch, with their median at or under
+ * `limitMs`. One reading proves nothing (M19 cp4 F2). true, or why not.
+ */
+export function checkColdReadings(
+  readings,
+  from,
+  { count = 3, limitMs = 420_000, isAncestor = (a, b) => git(['merge-base', '--is-ancestor', a, b]).status === 0 } = {},
+) {
+  if (!from) return 'no M19.28 commit on this branch to count cold-setup readings from';
+  const list = Array.isArray(readings) ? readings : [];
+  const counted = list.filter((r) => typeof r?.sha === 'string' && typeof r.ms === 'number' && isAncestor(from, r.sha) && isAncestor(r.sha, 'HEAD'));
+  if (counted.length < count)
+    return `${counted.length} CI cold-setup reading(s) at or after ${from.slice(0, 7)} (${list.length} recorded): ${count} needed (check-budget --record --cold-from-ci <sha>)`;
+  const ms = counted.map((r) => r.ms).sort((a, b) => a - b);
+  const median = ms.length % 2 ? ms[(ms.length - 1) / 2] : (ms[ms.length / 2 - 1] + ms[ms.length / 2]) / 2;
+  return median <= limitMs || `median cold setup ${median} ms over ${counted.length} readings > ${limitMs}`;
+}

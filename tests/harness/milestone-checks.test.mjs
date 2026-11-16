@@ -725,6 +725,27 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.ok(dockerArgs(['x'], { out: '/tmp/o', results: true }).includes('FLUXION_E2E_COPY_RESULTS=1'));
   });
 
+  it('M19.28: the cold-setup leg counts 3 readings after the row, by their median', async () => {
+    const { checkColdReadings } = await import('../../scripts/gates/milestone-checks.mjs');
+    // commits in order a < row < b < c < d, all on HEAD's history; x is off it
+    const order = ['a', 'row', 'b', 'c', 'd', 'HEAD'];
+    const isAncestor = (p, q) => order.includes(p) && order.includes(q) && order.indexOf(p) <= order.indexOf(q);
+    const at = (sha, ms) => ({ sha, ms });
+    const check = (readings, opts = {}) => checkColdReadings(readings, 'row', { isAncestor, ...opts });
+    assert.equal(check([at('b', 400_000), at('c', 300_000), at('d', 430_000)]), true);
+    // a reading before the row or off the branch does not count
+    assert.match(
+      String(check([at('a', 300_000), at('b', 300_000), at('c', 300_000)])),
+      /^2 CI cold-setup reading\(s\) at or after row \(3 recorded\): 3 needed/,
+    );
+    assert.match(String(check([at('x', 300_000), at('b', 300_000), at('c', 300_000)])), /^2 CI cold-setup/);
+    // the median, not the best or the latest reading
+    assert.match(String(check([at('b', 300_000), at('c', 430_000), at('d', 440_000)])), /median cold setup 430000 ms over 3 readings > 420000/);
+    assert.equal(check([at('b', 500_000), at('c', 300_000), at('d', 410_000), at('row', 420_000)]), true, 'an even count takes the middle two');
+    assert.match(String(check(undefined)), /^0 CI cold-setup reading/);
+    assert.match(String(checkColdReadings([], '', { isAncestor })), /no M19\.28 commit/);
+  });
+
   it('checkPlaywrightTitles needs each title passed on its first run on every project, in that spec', async () => {
     const { checkPlaywrightTitles } = await import('../../scripts/gates/milestone-checks.mjs');
     const titled = (file, specs) => ({ suites: [{ file, specs: specs.map(([title, projectName, status]) => ({ title, tests: [{ projectName, status }] })) }] });

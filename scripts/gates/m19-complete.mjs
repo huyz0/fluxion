@@ -9,6 +9,7 @@ import {
   backlogTextFor,
   changesetsCoverRange,
   checkBacklogDone,
+  checkColdReadings,
   checkFinalReview,
   checkPngEvidence,
   coverageGaps,
@@ -486,11 +487,20 @@ leg(
       () => checkPngEvidence(exists(PNG_EVIDENCE) ? json(PNG_EVIDENCE) : undefined),
     ),
 );
-// M19.28's target: the recorded cold setup is a CI reading at or under 420 s (477 s at M18's close; plan review r1 F3)
-leg('cold setup recorded from CI at or under 420 s (M19.28)', () => {
+// M19.28's target: three CI cold-setup readings at or after the row's commit, their median at or under 420 s (477 s at M18's close;
+// plan review r1 F3; cp4 F2: one reading proves nothing)
+leg('cold setup: 3 CI readings after M19.28, median at or under 420 s (M19.28)', () => {
   const budget = json('.harness/budget.json');
-  if (!String(budget.coldSetupSource ?? '').startsWith('ci:')) return `cold setup source ${budget.coldSetupSource} is not a CI reading`;
-  return budget.coldSetupMs <= 420_000 || `cold setup ${budget.coldSetupMs} ms > 420000`;
+  // the row's own commit: the oldest whose subject (not a body line) names it, so a later "M19.28: …" bookkeeping commit cannot move it
+  const from = run('git', ['log', '--reverse', '--format=%H%x09%s', '--grep=^M19\\.28: ', 'HEAD'])
+    .stdout.split(/\r?\n/)
+    .find((line) => line.split('\t')[1]?.startsWith('M19.28: '))
+    ?.split('\t')[0];
+  return all(
+    () => checkColdReadings(budget.coldReadings, from),
+    () => namedCases('tests/harness/budget.test.mjs', ['M19.28: --cold-from-ci keeps one reading per commit of the lockfile']),
+    () => namedCases('tests/harness/milestone-checks.test.mjs', ['M19.28: the cold-setup leg counts 3 readings after the row, by their median']),
+  );
 });
 leg('one hand-off spelling; a hand-off target without its row is refused (M18 final F2)', () =>
   namedCases('tests/harness/milestone-checks.test.mjs', ['hand-off without a target row is refused']),

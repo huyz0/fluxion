@@ -282,6 +282,51 @@ describe('check-budget (NFR-DX-001, NFR-DX-002)', () => {
     );
   });
 
+  it('M19.28: --cold-from-ci keeps one reading per commit of the lockfile', () => {
+    sb.cleanup();
+    sb = coldSandbox();
+    sb.git('checkout', '--', 'pnpm-lock.yaml');
+    const first = sb.git('rev-parse', 'HEAD').stdout.trim();
+    sb.write('note.txt', 'a later commit, same lockfile\n');
+    sb.git('add', 'note.txt');
+    sb.git('commit', '-q', '-m', 'later');
+    const second = sb.git('rev-parse', 'HEAD').stdout.trim();
+    const step = (s) => ({
+      name: 'cold setup within COLD_SETUP_MAX_MS',
+      conclusion: 'success',
+      startedAt: '2026-09-27T23:10:00Z',
+      completedAt: `2026-09-27T23:1${s}:00Z`,
+    });
+    const ciRun = (id, sha, s) => ({
+      databaseId: id,
+      workflowName: 'ci',
+      headSha: sha,
+      conclusion: 'success',
+      jobs: [{ name: 'cold-setup', conclusion: 'success', steps: [step(s)] }],
+    });
+    sb.write('runs.json', JSON.stringify([ciRun(7, first, 5), ciRun(8, second, 6)]));
+    const record = (sha) =>
+      sb.node('scripts/gates/check-budget.mjs', ['--record', '--cold-from-ci', sha, '--runs-file', sb.path('runs.json'), '--file', sb.path('budget.json')], {
+        env: { ...fakeEnv(sb), CI: '' },
+      });
+    const readings = () => JSON.parse(sb.read('budget.json')).coldReadings.map((r) => [r.sha, r.ms, r.source]);
+    for (const sha of [first, second, first]) assert.equal(record(sha).status, 0);
+    // the second reading of the first commit replaces its first; the other commit's stays
+    assert.deepEqual(readings(), [
+      [second, 360_000, 'ci:8'],
+      [first, 300_000, 'ci:7'],
+    ]);
+    assert.equal(JSON.parse(sb.read('budget.json')).coldSetupMs, 300_000, 'the record still names the latest reading');
+    // a record for another lockfile starts the list again
+    sb.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n# another dependency set\n");
+    assert.equal(
+      sb.node('scripts/gates/check-budget.mjs', ['--record', '--cold-pending', '--file', sb.path('budget.json')], { env: { ...fakeEnv(sb), CI: 'true' } })
+        .status,
+      0,
+    );
+    assert.deepEqual(JSON.parse(sb.read('budget.json')).coldReadings, []);
+  });
+
   it('pending cold setup: --cold-pending carries the number; staged and CI accept it, a local full check does not (ADR-0145)', () => {
     sb.cleanup();
     sb = coldSandbox(); // the working tree has an uncommitted lockfile change, as in a lockfile commit
