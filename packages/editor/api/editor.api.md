@@ -1591,6 +1591,7 @@ export type Session = {
     readonly tableCells: WritableSignal<TableCellRange | undefined>;
     readonly quickDrop: WritableSignal<QuickDrop | undefined>;
     readonly find: WritableSignal<FindState | undefined>;
+    readonly styleSource: WritableSignal<RecordId | undefined>;
 };
 
 // @public

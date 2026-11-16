@@ -19,6 +19,7 @@ import { deleteSelected, editSelectedPath, leaveEditing } from './path-edit-stat
 import { presentFrom } from './present-mode.js';
 import { deleteSelection, nudgeSelection, selectAll } from './select-actions.js';
 import { selectSame } from './select-same.js';
+import { copyStyle, pasteStyle } from './style-paint.js';
 import { TABLE_ACTIONS } from './table-commands.js';
 import { editSelectedText } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
@@ -283,6 +284,9 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   },
   { id: 'selection.sameType', title: 'Select same type', run: (ctx) => selectIdle(ctx) && selectSame(ctx.tools.ctx, 'type') },
   { id: 'selection.sameStyle', title: 'Select same style', run: (ctx) => selectIdle(ctx) && selectSame(ctx.tools.ctx, 'style') },
+  // the format painter (FR-ARR-007): the style of one element, then onto the selection
+  { id: 'selection.copyStyle', title: 'Copy style', run: (ctx) => selectIdle(ctx) && copyStyle(ctx.tools.ctx) },
+  { id: 'selection.pasteStyle', title: 'Paste style', run: (ctx) => selectIdle(ctx) && pasteStyle(ctx.tools.ctx) },
   // while a path is edited, Delete removes its selected vertex, never the shape (FR-SHP-011)
   { id: 'selection.delete', title: 'Delete the selection', run: (ctx) => selectIdle(ctx) && deleteSelected(ctx.tools.ctx) },
   { id: 'selection.editPath', title: 'Edit path', run: (ctx) => selectIdle(ctx) && editSelectedPath(ctx.tools.ctx) },

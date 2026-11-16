@@ -1449,6 +1449,12 @@
       "packages/editor/src/titles.ts"
     ]
   },
+  "command.selection.copyStyle": {
+    "message": "Copy style",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
   "command.selection.delete": {
     "message": "Delete the selection",
     "origin": [
@@ -1517,6 +1523,12 @@
   },
   "command.selection.order.front": {
     "message": "Bring to front",
+    "origin": [
+      "packages/editor/src/titles.ts"
+    ]
+  },
+  "command.selection.pasteStyle": {
+    "message": "Paste style",
     "origin": [
       "packages/editor/src/titles.ts"
     ]

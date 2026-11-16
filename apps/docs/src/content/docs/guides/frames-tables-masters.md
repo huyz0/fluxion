@@ -8,7 +8,8 @@ This guide covers the tools for structured diagrams. Open `examples/masters-tabl
 cell, and has a clipping frame with a child that overflows it. The same deck written in FluxScript is
 `examples/dsl/masters-tables.flux.yaml` (see [Writing FluxScript](../writing-fluxscript/)).
 
-Every action here is one step in the undo history.
+Every change these tools make to the document is one step in the undo history. Opening or closing a master, picking cells and
+finding only change what you see.
 
 ## Frames
 
@@ -50,6 +51,12 @@ screen into a master (masters are listed in their own section and never presente
 dashed hint, and a double-click fills it with your own copy. **Edit master** opens the shown screen's master; editing it updates every
 screen that uses it, and **Close master** goes back. The Problems tab says why a master does not apply, for example when the sizes
 differ.
+
+## Copy style and paste style
+
+Right-click a shape and choose **Copy style**. Select one or more other elements, right-click one of them and choose **Paste style**
+(also in the palette): each takes the copied shape's fill, stroke and other style, theme colours included, but keeps its own text
+and meaning.
 
 ## Quick-connect and find
 

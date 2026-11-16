@@ -64,6 +64,8 @@ export type Session = {
   readonly quickDrop: WritableSignal<QuickDrop | undefined>;
   /** The find bar's state while it is open (FR-EDT-016; Ctrl/Cmd+F); undefined while closed. */
   readonly find: WritableSignal<FindState | undefined>;
+  /** The element Copy style took the style of (FR-ARR-007), for Paste style; undefined until a style is copied. */
+  readonly styleSource: WritableSignal<RecordId | undefined>;
 };
 
 /**
@@ -175,6 +177,7 @@ export function createSession(docId: string): Session {
     tableCells: writable<TableCellRange | undefined>(undefined),
     quickDrop: writable<QuickDrop | undefined>(undefined),
     find: writable<FindState | undefined>(undefined),
+    styleSource: writable<RecordId | undefined>(undefined),
   };
   // path editing ends when its shape stops being the whole selection, however the selection changed (FR-SHP-011)
   // so does a table's cell selection (FR-SHP-014)

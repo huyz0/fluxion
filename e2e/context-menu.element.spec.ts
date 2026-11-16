@@ -30,6 +30,8 @@ test.describe('context menus: mouse', { tag: '@desktop' }, () => {
       /Delete the selection/,
       /Select same type/,
       /Select same style/,
+      // Paste style joins once a style is copied (FR-ARR-007)
+      /Copy style/,
       /Group/,
       /Ungroup/,
       /Align left/,

@@ -380,8 +380,9 @@ Every edit below is one command, so one undo step (ADR-0014); opening or closing
   screen; "Edit master" opens the shown screen's master and "Close master" goes back (`master-edit.ts`). `master-problems.ts` reports
   a master that does not apply and a `fills` with nothing to fill.
 - **Match size and the format painter** (FR-ARR-007): the arrange panel matches width, height or both to a key element its
-  picker chooses among the selection (`element.matchSize`; arrange panel only, no palette entry). Core's `element.pasteStyle` copies `style`
-  only, never `semantic`; its editor UI is backlog row M19.40.
+  picker chooses among the selection (`element.matchSize`; arrange panel only, no palette entry). Copy style takes the one selected element
+  as the source (`session.styleSource`) and Paste style runs core's `element.pasteStyle` on the selection: `style` only, never
+  `semantic` (`style-paint.ts`; the element menu offers each line only where it acts, the palette always).
 - **Quick-connect** (FR-EDT-015): a hovered shape shows a "+" beyond each side; a drag from one draws a connector, dropped on an
   element it joins the two, dropped on nothing it opens the mini library whose choice adds a joined shape (`quick-connect.ts`).
 - **Find** (FR-EDT-016): Ctrl/Cmd+F opens the find bar; `find-model.ts` finds elements by their text (regions and table cells

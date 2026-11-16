@@ -51,6 +51,9 @@ const ELEMENT = [
   'selection.delete',
   'selection.sameType',
   'selection.sameStyle',
+  // the format painter (FR-ARR-007)
+  'selection.copyStyle',
+  'selection.pasteStyle',
   'selection.group',
   'selection.ungroup',
   // a master's element made a placeholder or an ordinary element again (FR-SCR-005)

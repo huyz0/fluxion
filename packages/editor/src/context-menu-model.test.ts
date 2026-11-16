@@ -28,6 +28,9 @@ describe('context menu model (FR-EDT-013)', () => {
       'Delete the selection',
       'Select same type',
       'Select same style',
+      // the format painter (FR-ARR-007)
+      'Copy style',
+      'Paste style',
       'Group',
       'Ungroup',
       // a master's element as a placeholder (FR-SCR-005)

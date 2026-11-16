@@ -67,6 +67,8 @@ export const COMMAND_MESSAGES: Readonly<Record<string, MessageDescriptor>> = {
   'selection.all': msg({ id: 'command.selection.all', message: 'Select all' }),
   'selection.sameType': msg({ id: 'command.selection.sameType', message: 'Select same type' }),
   'selection.sameStyle': msg({ id: 'command.selection.sameStyle', message: 'Select same style' }),
+  'selection.copyStyle': msg({ id: 'command.selection.copyStyle', message: 'Copy style' }),
+  'selection.pasteStyle': msg({ id: 'command.selection.pasteStyle', message: 'Paste style' }),
   'selection.delete': msg({ id: 'command.selection.delete', message: 'Delete the selection' }),
   'clipboard.copy': msg({ id: 'command.clipboard.copy', message: 'Copy' }),
   'clipboard.cut': msg({ id: 'command.clipboard.cut', message: 'Cut' }),
