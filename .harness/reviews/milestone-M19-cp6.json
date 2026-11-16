@@ -1,0 +1,48 @@
+{
+  "milestone": "M19",
+  "checkpoint": "cp6",
+  "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..24a5473c826002a65b40ea601c2cb435dc452941",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "Each commit after cp5's record 303afd0 read as a diff: 0493083 M19.48, a63e0f0 M19.26, 5a7e73e M19.49, 819cfaf M19.27, c37f51d M19.50, d3a64fe M19.51, 24a5473 M19.30. cp5's reopens F1, F2, F3 and F5 are all done in 0493083. placeholdersOf leaves out group and frame (UNFILLABLE_KINDS, shared with the two commands); ModeSwitch is void again and editor.api.md is back; PresentCtx and presentFrom lose @public; Close master's navigator-order case is in place; the FR-SCR-005 leg names the six new cases; no inline role === 'master' is left outside schema isMasterScreen. The CI-red sequence is as stated. a63e0f0 widened the decompiler subset to frames, and its run did not include the source-view e2e (progress.md: only parity ran), so 43778483704 went red and 5a7e73e fixed it. 819cfaf widened vitest.config.ts's node include, which the staged ladder did not map to test-isolation, so 43783755715 went red; c37f51d fixed the assertion and d3a64fe the mapping. last-ci: ci, gates and cold-setup (322 s) green at 24a5473; the latest nightly is red at 3e11fb6 (43699537326), as every nightly since 2026-11-10 has been. In the packet's gate run the Firefox and WebKit e2e legs fail locally, as at cp5; full verification now passes (cp5 F6). Gate 29/42; the red legs are todo rows, the final review, and ci-evidence. I could not see M19.40's held commit in this worktree, so it is not judged here. Mutants: putting Close master's fallback back to dependentsOf().sort()[0] is now caught (master-edit.test.ts navigator-order case picks mid, not low). Dropping test-isolation from NAMED_PATH_HARNESS's vitest.config.ts entry is caught (ladder-scope.test.mjs deepEqual), but a new harness file that loads the config the same way would not be. Making decodePng mis-decode Paeth is caught by image-diff.test.ts, but no gate reads whether the nightly png-check job, the browser cross-check, ever passed (F1).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "summary": "The decodePng leg is titled 'one CI run checks it against the browser', but it passes as soon as some workflow file contains FLUXION_PNG_CHECK: 1. No nightly has run since 819cfaf, so png-check has never run. Every nightly is red for expected reasons (visual-xos per ADR-0202, previous-playwright per ADR-0215), and ci-evidence reads only the nightly's perf job. So a failing png-check would leave m19-complete green. The row's acceptance allows this ('set in its workflow'), but M18 cp51 F4 asked that the browser check actually run.",
+      "evidence": "scripts/gates/m19-complete.mjs:322-329; .github/workflows/nightly.yml png-check job (819cfaf); last-ci: nightly RED at 3e11fb6 (43699537326); gh run list nightly: failure on every run 2026-11-10..15"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "summary": "ADR-0219 says 'Not covered: hideMasterElements, region texts and icons (FR-SHP-007) and the edit language's patch ops; each needs its own row'. No row exists in this backlog or in a later milestone, so the gap is recorded only in an ADR. FluxScript cannot yet write or decompile a screen that hides its master's elements, a card's text regions or its icon slots. The decompiler leaves those records out, so FR-DSL-002's round trip is weaker for M19 documents.",
+      "evidence": "docs/architecture/decisions/ADR-0219-fluxscript-masters-tables-frames.md 'Not covered' line; docs/backlog/current.md (no such row); docs/milestones/M20.md (DSL round-trip, FR-DSL-008) has none"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "cp5's Learned rule (a commit that carries minors creates or amends the receiving row in that commit) was broken twice more in this delta. (a) 24a5473 says its r2 minor goes to M19.40 (the guide line 'Every action here is one step in the undo history' also covers opening a master and finding), but M19.40's row is unchanged. (b) c37f51d says its r1 minor 'becomes a backlog row with the next commit', and M19.51 arrived only in d3a64fe. M19.30 is also marked done while its guide and section 3.9 describe M19.40 (painter UI), M19.43 (cell text editing) and M19.38 (icon-slot loading) as pending or leave them out, and no row is asked to update the docs when those land. After cp1, cp4, cp5 and now cp6, a Learned line is clearly not enough to hold this rule.",
+      "evidence": "24a5473 body and backlog diff (M19.30 and M19.51 cells only); c37f51d body and backlog diff (adds M19.50 only); docs/architecture/04-rendering-and-editor.md:384; apps/docs/src/content/docs/guides/frames-tables-masters.md:33,41-43"
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "summary": "This delta has the third CI-red fix in M19 caused by a feature row that did not run the e2e spec its change affected: M19.37 after M19.16, M19.46 after M19.23, M19.49 after M19.26. cp3 Learned names menus only. Here the trigger was widening the decompiler subset, which source-view.two-way-sync.spec.ts depends on. Nothing in the staged ladder or the tdd/verify skills maps a package change to the e2e specs that cover it.",
+      "evidence": "5a7e73e (Fixes-ci 43778483704); .harness/progress.md 'M19.26's own run missed it: only the parity e2e was run locally'; ec75429, 0eca0b1"
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "summary": "M19.51's vitest.config.ts mapping is a hand-kept list of seven harness files, pinned by a deepEqual of the same literal. It does not catch the next harness file that loads the config in a child process or reads it as text, the same blind spot that let 43783755715 through. At least ten other tests/harness files mention vitest.config.",
+      "evidence": "scripts/gates/ladder-scope.mjs:163-167; tests/harness/ladder-scope.test.mjs:194-199; grep -l vitest.config tests/harness/*.mjs (17 files)"
+    }
+  ],
+  "dispositions": [
+    { "finding": "F1", "disposition": "reopen", "target": "M19.52", "note": "New row M19.52 (HARNESS): the decodePng leg, or ci-evidence's nightly reading, requires a recorded nightly run at or after 819cfaf whose png-check job concluded success (for example check-ci-evidence --record also stores the png-check job's conclusion, and the leg reads it), with a milestone-checks case where a red png-check fails the leg. Until such a nightly is recorded, the leg stays red." },
+    { "finding": "F2", "disposition": "hand-off", "target": "M20", "note": "M20 (DSL round-trip, FR-DSL-008) gets a row citing 'M19 cp6 F2': FluxScript keys and decompile for hideMasterElements, region texts and icon slots, and the edit language's patch ops for masters, placeholders, tables and frames, under ADR-0219 or a successor. Add a roadmap Deferred row citing 'cp6 F2' that names M19 and M20. The ADR-0219 'Not covered' line is then amended to cite that row." },
+    { "finding": "F3", "disposition": "reopen", "target": "M19.53", "note": "Amend M19.40 now, in the cp6 record commit: the guide's undo line is reworded so that opening a master and finding are not called undo steps. Amend M19.43 and M19.38: each updates 04-rendering-and-editor.md section 3.9 and guides/frames-tables-masters.md for its feature. New row M19.53 (HARNESS): check-commit-msg or check-digest refuses a task commit whose body says a minor is 'carried to <row>' or 'becomes a backlog row' unless that commit's backlog diff adds or changes the named row, with a harness case. The c37f51d instance needs nothing more: M19.51 exists and is done." },
+    { "finding": "F4", "disposition": "argue", "note": "Each repeat was caught by CI and fixed with a Fixes-ci row, so no requirement was lost. Running every e2e spec in the staged ladder would break NFR-DX-002. The cp6 Learned line widens cp3's rule from menus to any change that alters what a spec reads (decompiler subset, menus, writable keys): grep e2e/ for the changed feature's name and run those specs before review. M19.28's test-speed work is where an affected-spec map belongs, if one is built." },
+    { "finding": "F5", "disposition": "argue", "note": "The list is correct at 24a5473, and a miss fails CI, not the product, so it is caught one commit late, as 43783755715 was. A derived mapping (harness files whose source names vitest.config) is a cheap follow-up for the next edit of ladder-scope.mjs's NAMED_PATH_HARNESS, with a case that adds a sandbox harness file reading the config and expects it in scope." }
+  ],
+  "planDelta": "51 rows against 31 planned (1.65x); cp6's M19.52 and M19.53 make 53 (1.71x). This delta added four rows: M19.48 (cp5's reopens), M19.49 (CI red from an unrun source-view e2e), and M19.50 and M19.51 (CI red, then the staged ladder's blind spot for vitest.config.ts). The pattern from cp5 holds: each feature or harness row costs about two commits, and the second is now as often a CI-red fix as a review-minors row. 8 rows remain todo plus the two new ones: M19.28 (cold setup, contract with the gate leg), M19.29, M19.35, M19.38, M19.40 (reviewed and held), M19.42, M19.43 and M19.31. M19.35 and M19.42 still hold five checkpoints of hygiene, so cp4's advice to split them stands. M19.30 closed before four feature rows did, so M19.38, M19.40 and M19.43 now carry the doc updates. Later milestones should plan docs last, after every feature row, and budget a CI-red row for each feature that changes something an e2e spec reads."
+}

@@ -57,7 +57,7 @@ Options 2, 4 and 5.
   is left out of the subset, like any record the subset cannot say (M19.26 r1 follow-up, noted in M19.30). A table cell with a style, or rich text the subset cannot say, leaves the table out as before.
 - The key table (`fluxScriptKeys`), the JSON schema (`specs/schema/fluxscript.schema.json`), the TextMate grammar, the cheat sheet and the
   authoring guide list the new keys.
-- Not covered: `hideMasterElements`, region `texts` and `icons` (FR-SHP-007) and the edit language's patch ops; each needs its own row.
+- Not covered: `hideMasterElements`, region `texts` and `icons` (FR-SHP-007) and the edit language's patch ops; M20 row 19 holds them (M19 cp6 F2).
 
 ## Consequences
 
