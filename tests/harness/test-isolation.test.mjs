@@ -73,7 +73,7 @@ describe('node test isolation (ADR-0218, M18.290)', () => {
     const isolated = ps.find((p) => p.name === 'node-isolated');
     assert.equal(node.isolate, false);
     // the node globs are unchanged, so node and node-isolated together run every node file once
-    assert.deepEqual(node.include, ['{packages,packs,apps}/*/src/**/*.test.{ts,tsx}', 'scripts/examples/*.test.ts']);
+    assert.deepEqual(node.include, ['{packages,packs,apps}/*/src/**/*.test.{ts,tsx}', 'scripts/examples/*.test.ts', 'e2e/pages/image-diff.test.ts']);
     assert.deepEqual(node.exclude, ['{packages,packs,apps}/*/src/**/*.browser.test.{ts,tsx}', ...list]);
     assert.deepEqual(isolated.include, list);
     // default isolation, the same environment, and beside the node project before the browser one
