@@ -127,9 +127,10 @@ describe('coverage floors (NFR-MNT-004)', () => {
 
   // Two coverage runs serve every case (each run takes seconds; one per case kept the ladder over
   // budget): one where a floored package (geometry, with its tests) meets its floor while cli (no
-  // floor) is uncovered, and one where each floored package under test is uncovered at once (core
-  // with its own tests: below the floor all the same). Every case asserts its own package's outcome
-  // from the shared run.
+  // floor) is uncovered, and one where each floored package under test is uncovered at once. The
+  // failing run runs one small geometry test, not core's suite (M19.60: that suite was most of this
+  // file's CPU); the floored packages' files are reported from the include globs, untested or not.
+  // Every case asserts its own package's outcome from the shared run.
   const runs = {};
   const passing = () => {
     runs.passing ??= withUncovered(['packages/cli'], ['packages/geometry/src'], ['packages/geometry', 'packages/cli']);
@@ -137,7 +138,7 @@ describe('coverage floors (NFR-MNT-004)', () => {
   };
   const failing = () => {
     const floored = ['packages/core', 'packages/render', 'packages/player', 'packages/editor'];
-    runs.failing ??= withUncovered(floored, ['packages/core/src'], floored);
+    runs.failing ??= withUncovered(floored, ['packages/geometry/src/box.test.ts'], floored);
     return runs.failing;
   };
 

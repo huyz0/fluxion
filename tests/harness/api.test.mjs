@@ -143,27 +143,44 @@ describe('check-api on a subpath entry (NFR-MNT-008)', () => {
     assert.equal(schemaApi().status, 0);
   });
 
+  // the three entry-list refusals share one run on one sandbox (M19.60: an API Extractor run per case); check-api reports every
+  // problem of a package, and each case asserts the line its own edit causes
+  let refusals;
+  const refused = () => {
+    if (refusals === undefined) {
+      const own = sandbox(['scripts', 'tools', 'packages/schema']);
+      try {
+        // an export with no types file, the ./testing entry gone (its report stays committed), and a report no entry produces
+        own.edit('packages/schema/package.json', (t) => {
+          const pkg = JSON.parse(t);
+          delete pkg.exports['./testing'];
+          return JSON.stringify({ ...pkg, exports: { ...pkg.exports, './bare': './dist/bare.js' } }, null, 2);
+        });
+        own.write('packages/schema/api/schema.ghost.api.md', '## API Report File for "@fluxion/schema/ghost"\n');
+        refusals = own.node('scripts/gates/check-api.mjs', ['--dir', own.dir, '--package', 'packages/schema'], {
+          env: { ...process.env, FLUXION_TOOLS_ROOT: REPO },
+        });
+      } finally {
+        own.cleanup();
+      }
+    }
+    return refusals;
+  };
+
   it('NFR-MNT-008: a subpath export with no types file fails instead of dropping out of the gate', () => {
-    sb.edit('packages/schema/package.json', (t) => t.replace('"exports": {', '"exports": {\n    "./bare": "./dist/bare.js",'));
-    const r = schemaApi();
+    const r = refused();
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /the export "\.\/bare" has no "types" file/);
   });
 
   it('NFR-MNT-007: an entry the gate no longer finds fails on its committed report instead of comparing fewer reports (M16.32)', () => {
-    sb.edit('packages/schema/package.json', (t) => {
-      const pkg = JSON.parse(t);
-      delete pkg.exports['./testing'];
-      return JSON.stringify(pkg, null, 2);
-    });
-    const r = schemaApi();
+    const r = refused();
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /api\/schema\.testing\.api\.md is committed but no entry of the package reports it/);
   });
 
   it('NFR-MNT-007: a stale committed report fails (M16.32)', () => {
-    sb.write('packages/schema/api/schema.ghost.api.md', '## API Report File for "@fluxion/schema/ghost"\n');
-    const r = schemaApi();
+    const r = refused();
     assert.equal(r.status, 1, out(r));
     assert.match(r.stderr, /api\/schema\.ghost\.api\.md is committed but no entry of the package reports it/);
   });

@@ -86,10 +86,25 @@ describe('check-layering (NFR-MNT-001)', () => {
     if (planted === undefined) {
       for (const [path, text] of Object.values(violations)) put(path, text);
       put('packages/core/src/b.ts', "import { a } from './a.ts';\nexport const b = (): number => a() - 1;\n");
-      planted = layering();
+      // shipped source importing a devDependency (M1 cp2 F7), in geometry so core's undeclared-vitest case keeps its own rule
+      put(DEV_DEP, "import { expect } from 'vitest';\nexport const e = expect;\n");
+      // a browser test may import DOM libraries (only T0 tests are restricted)
+      put(BROWSER_TEST, "import { render } from '@testing-library/react';\nexport const r = render;\n");
+      const manifest = sb.read('packages/geometry/package.json');
+      sb.edit('packages/geometry/package.json', (t) => {
+        const pkg = JSON.parse(t);
+        return JSON.stringify({ ...pkg, devDependencies: { ...pkg.devDependencies, vitest: '5.0.2' } }, null, 2);
+      });
+      try {
+        planted = layering();
+      } finally {
+        sb.write('packages/geometry/package.json', manifest);
+      }
     }
     return planted;
   };
+  const DEV_DEP = 'packages/geometry/src/devdep.ts';
+  const BROWSER_TEST = 'packages/render/src/View.browser.test.ts';
   for (const [name, [path, , expected]] of Object.entries(violations)) {
     it(`fails on ${name}`, () => {
       const r = plantedRun();
@@ -99,16 +114,9 @@ describe('check-layering (NFR-MNT-001)', () => {
   }
 
   it('fails on shipped source importing a devDependency (M1 cp2 F7)', () => {
-    const manifest = sb.read('packages/core/package.json');
-    sb.edit('packages/core/package.json', (t) => JSON.stringify({ ...JSON.parse(t), devDependencies: { vitest: '5.0.2' } }, null, 2));
-    put('packages/core/src/bad.ts', "import { expect } from 'vitest';\nexport const e = expect;\n");
-    try {
-      const r = layering();
-      assert.equal(r.status, 1, out(r));
-      assert.match(r.stderr, /not-to-dev-dep/);
-    } finally {
-      sb.write('packages/core/package.json', manifest);
-    }
+    const r = plantedRun();
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /not-to-dev-dep: packages\/geometry\/src\/devdep\.ts(?![\w.])/);
   });
 
   it('fails loudly when the dependency-cruiser config is missing (M1.11 review F1)', () => {
@@ -129,9 +137,10 @@ describe('check-layering (NFR-MNT-001)', () => {
   });
 
   it('a browser test may import DOM libraries (only T0 tests are restricted)', () => {
-    put('packages/render/src/View.browser.test.ts', "import { render } from '@testing-library/react';\nexport const r = render;\n");
-    const r = layering();
-    assert.doesNotMatch(r.stderr, /t0-tests-no-dom/, out(r));
+    const r = plantedRun();
+    // the planted T0 tests break the rule in the same run, so the run did judge it
+    assert.match(r.stderr, /t0-tests-no-dom: packages\/render\/src\/view\.test\.ts/);
+    assert.doesNotMatch(r.stderr, /t0-tests-no-dom: packages\/render\/src\/View\.browser\.test\.ts/, out(r));
   });
 
   describe('workspaces.json against the overview map', () => {
@@ -145,25 +154,39 @@ describe('check-layering (NFR-MNT-001)', () => {
       sb.write('docs/architecture/01-overview.md', sb.readRepo('docs/architecture/01-overview.md'));
     });
 
+    // one run with the three edits, each on its own workspace (a dependency-cruiser run per case was most of this block's time, M19.60);
+    // each case asserts its own line, and only the unlisted edge is reported as differing from the overview
+    let mapRun;
+    const mapped = () => {
+      if (mapRun === undefined) {
+        const add = { 'packages/core': 'theme', 'packages/theme': 'render', 'packages/sdk': 'basic' };
+        edit((j) => ({ ...j, workspaces: j.workspaces.map((w) => (add[w.dir] ? { ...w, dependsOn: [...w.dependsOn, add[w.dir]] } : w)) }));
+        sb.edit('docs/architecture/01-overview.md', (t) =>
+          t
+            .replace('| schema | ✅ |', '| schema, render | ✅ |')
+            .replace('| core, render (types), schema, theme |', '| core, render (types), schema, theme, basic |'),
+        );
+        mapRun = layering();
+      }
+      return mapRun;
+    };
+
     it('fails when a dependsOn edge is not in the overview', () => {
-      edit((j) => ({ ...j, workspaces: j.workspaces.map((w) => (w.dir === 'packages/core' ? { ...w, dependsOn: [...w.dependsOn, 'theme'] } : w)) }));
-      const r = layering();
+      const r = mapped();
       assert.equal(r.status, 1, out(r));
       assert.match(r.stderr, /core dependsOn \[schema,geometry,theme\] != overview/);
+      // the listed edges match the overview, so they are not reported as differing
+      assert.doesNotMatch(r.stderr, /(theme|sdk) dependsOn .* != overview/);
     });
 
     it('fails when an edge points at a higher layer, even if the overview lists it', () => {
-      edit((j) => ({ ...j, workspaces: j.workspaces.map((w) => (w.dir === 'packages/core' ? { ...w, dependsOn: [...w.dependsOn, 'render'] } : w)) }));
-      sb.edit('docs/architecture/01-overview.md', (t) => t.replace('| schema, geometry | ✅ |', '| schema, geometry, render | ✅ |'));
-      const r = layering();
+      const r = mapped();
       assert.equal(r.status, 1, out(r));
-      assert.match(r.stderr, /core \(L1\) depends on higher layer render \(L3\)/);
+      assert.match(r.stderr, /theme \(L1\) depends on higher layer render \(L3\)/);
     });
 
     it('packs sit at the host layer: a package below it may not bundle one, even if listed (ADR-0017)', () => {
-      edit((j) => ({ ...j, workspaces: j.workspaces.map((w) => (w.dir === 'packages/sdk' ? { ...w, dependsOn: [...w.dependsOn, 'basic'] } : w)) }));
-      sb.edit('docs/architecture/01-overview.md', (t) => t.replace('| core, render (types), schema |', '| core, render (types), schema, basic |'));
-      const r = layering();
+      const r = mapped();
       assert.equal(r.status, 1, out(r));
       assert.match(r.stderr, /sdk \(L4\) depends on higher layer basic \(Pack\)/);
     });
