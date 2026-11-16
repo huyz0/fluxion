@@ -6,7 +6,7 @@ type Box = { x: number; y: number; width: number; height: number };
 
 // the context menu and the pointer: desktop input
 test.describe('boolean operations from the UI', { tag: '@desktop' }, () => {
-  test('FR-SHP-010: Union from the context menu makes one shape of two overlapping ones, in one undo step', async ({ page }) => {
+  test('FR-SHP-010: Union from the context menu makes one shape of two overlapping ones, in one undo step', async ({ page, expectAccessible }) => {
     const editor = new EditorPage(page);
     await editor.open('new');
     await shapeAt(page, editor, 0.1, 1);
@@ -23,5 +23,6 @@ test.describe('boolean operations from the UI', { tag: '@desktop' }, () => {
     expect(union.x + union.width).toBeCloseTo(Math.max(...before.map((b) => b.x + b.width)), -1);
     await editor.toolbarButton('Undo').click();
     await expect(editor.shapes).toHaveCount(2);
+    await expectAccessible();
   });
 });

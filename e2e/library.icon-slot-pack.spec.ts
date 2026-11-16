@@ -3,7 +3,7 @@ import { expect, test } from './test.js';
 
 // the inspector and the library: desktop input
 test.describe('icon slots and the first-party packs', { tag: '@desktop' }, () => {
-  test('FR-LIB-009: an icon slot filled with a first-party pack icon nothing has loaded yet loads it and draws it', async ({ page }) => {
+  test('FR-LIB-009: an icon slot filled with a first-party pack icon nothing has loaded yet loads it and draws it', async ({ page, expectAccessible }) => {
     const editor = new EditorPage(page);
     await editor.open('new');
     const left = editor.panel('Screens, library and layers');
@@ -18,5 +18,6 @@ test.describe('icon slots and the first-party packs', { tag: '@desktop' }, () =>
     await slot.press('Enter');
     await expect(card.locator('svg.fx-icon-slot[data-slot="icon"] path').first()).toBeAttached();
     await expect(slot).toHaveValue('lucide:server');
+    await expectAccessible();
   });
 });

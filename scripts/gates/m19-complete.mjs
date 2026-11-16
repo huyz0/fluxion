@@ -128,19 +128,55 @@ leg('FR-ARR-006 frames carry children by the same delta and reparent on drop, un
 );
 leg('FR-ARR-006 a clipping frame hides and does not hit or marquee an overflowing child', () =>
   all(
-    () => tests('packages/editor/src/frame-hit.test.ts'),
+    () =>
+      tests('packages/editor/src/frame-hit.test.ts', {
+        named: [
+          'a member overflowing a clipping frame is hit inside the frame only',
+          'a marquee touches or contains a clipped member by what the frame shows of it',
+          'the clip follows the frame: moved, turned, or inside another clipping frame',
+        ],
+      }),
     () => tests('packages/editor/src/overlay.browser.test.tsx', { project: 'browser', named: 'the frame a drag would drop into is outlined' }),
     () => tests('packages/render/src/frame-clip.browser.test.tsx', { project: 'browser' }),
   ),
 );
 leg('FR-ARR-007 match size per mode; the format painter copies style only', () =>
   all(
-    () => tests('packages/core/src/commands/match-size.test.ts'),
-    () => tests('packages/core/src/commands/format-painter.test.ts'),
+    // each a named case (M19 cp3 F5, M19.42)
+    () =>
+      tests('packages/core/src/commands/match-size.test.ts', {
+        named: [
+          "width, height and both give each element the key's dimension",
+          'a group scales its members',
+          'a turned member of a group stretches along its own axes',
+          'a listed group that holds the key is left out',
+          'nothing left to size is refused',
+        ],
+      }),
+    () =>
+      tests('packages/core/src/commands/format-painter.test.ts', {
+        named: [
+          'the format painter copies style with its tokens and never semantic',
+          "painting from an unstyled element clears the target's style",
+          'a group as the source is refused',
+        ],
+      }),
+    // the editor's Copy style and Paste style (M19.40, M19 cp7 F1)
+    () =>
+      tests('packages/editor/src/style-paint.test.ts', {
+        named: [
+          'Paste style gives every selected element the copied style, tokens as written, in one undo step',
+          'Copy style needs exactly one element; Paste style needs a copied style and another element',
+          'the element menu offers Copy style for one element and Paste style once a style is copied',
+        ],
+      }),
   ),
 );
 leg('M8 handoff: align to a key object, distribute by centres and tidy to equal gaps from the arrange UI', () =>
-  tests('packages/editor/src/arrange-panel.browser.test.tsx', { project: 'browser' }),
+  tests('packages/editor/src/arrange-panel.browser.test.tsx', {
+    project: 'browser',
+    named: ['picking a key object aligns the others to it, the key staying', 'distribute by centres spaces the centres evenly'],
+  }),
 );
 leg('FR-SHP-009 a flipped e anchor resolves to the west side and a bound connector follows', () =>
   all(
@@ -149,11 +185,117 @@ leg('FR-SHP-009 a flipped e anchor resolves to the west side and a bound connect
   ),
 );
 leg('FR-SHP-007 a card shape renders three editable text regions and an icon slot', () =>
-  tests('packages/render/src/text-regions.browser.test.tsx', { project: 'browser' }),
+  all(
+    () =>
+      tests('packages/render/src/text-regions.browser.test.tsx', {
+        project: 'browser',
+        named: ['a card shape renders three editable text regions and an icon slot', 'a texts key naming the first region is not drawn'],
+      }),
+    () => tests('packages/editor/src/text-regions.test.ts', { named: 'a texts entry naming the first region is reported' }),
+    // icon slots load the pack definitions they name and the save embeds them (M19.38, M19 cp7 F1)
+    () =>
+      tests('packages/editor/src/slot-section.browser.test.tsx', {
+        project: 'browser',
+        named: [
+          'a slot naming a catalog definition loads and registers it before the slot is filled',
+          'a slow load does not overwrite a later commit of the same slot',
+          'a slow load on one shape still fills it after a commit to the same slot of another shape',
+        ],
+      }),
+    () => tests('packages/format/src/shape-pack-prepare.test.ts', { named: 'a definition an icon slot names is embedded with the shapes' }),
+    () => tests('apps/studio/src/pack-catalog.slots.test.ts', { named: 'loads it and the save embeds it' }),
+  ),
 );
-leg('FR-SHP-010 boolean ops match their goldens (area within 0.5 % of reference)', () => tests('packages/geometry/src/boolean.test.ts'));
+// the lock cases by name, core's arranging commands and the editor's tools (M19 cp2 F5, M19.42)
+leg('FR-SHP-008 locks stop drags, nudges, handles, arranging, the painter and path edits', () =>
+  all(
+    () =>
+      tests('packages/core/src/arrange/locks.test.ts', {
+        named: [
+          'align leaves a position-locked element where it is',
+          'distribute leaves a position-locked element in place',
+          'match size skips a size-locked element and keeps the ratio of an aspect-locked one',
+          'the format painter skips an edit-locked element',
+          'a flip reads no lock',
+          'hasLock reads one element; lockedWithin also reads the groups it sits in',
+        ],
+      }),
+    () =>
+      tests('packages/editor/src/locks-tool.test.ts', {
+        named: [
+          'a position-locked element does not move by drag or arrow nudge',
+          'a rotation lock keeps the turn; a size lock keeps the size; an aspect lock keeps the ratio',
+          'a selection-locked element is not picked by a click, a marquee or select-all',
+          'a locked element neither snaps with a drag of the others nor stops its own resize',
+          'a handle gesture on several elements leaves a position-locked one where it is',
+        ],
+      }),
+    () => tests('packages/editor/src/path-edit.test.ts', { named: 'a path locked against edit, size or position is not reshaped' }),
+  ),
+);
+leg('FR-SHP-010 boolean ops match their goldens (area within 0.5 % of reference)', () =>
+  all(
+    () =>
+      tests('packages/geometry/src/boolean.test.ts', {
+        named: [
+          'every golden case gives its committed bytes',
+          'a star and a rounded rectangle combine within 0.5 % of their reference areas',
+          'the same operands give the same bytes',
+        ],
+      }),
+    () =>
+      tests('packages/core/src/shape/boolean-command.test.ts', {
+        named: [
+          'the operands become one path shape in their place',
+          // a bound connector keeps its segment-bound place only where it still lies on the result
+          'a connector keeps its place where that place still lies on the result outline',
+          'refuses fewer than two shapes',
+        ],
+      }),
+  ),
+);
+// the browsers give Node's golden bytes (M19 cp4 F1): a computation spec that opens no editor page to scan; the context-menu
+// Union (arrange.boolean) is in SPECS, with axe
+leg('FR-SHP-010 boolean goldens in the browsers: Chromium, Firefox, WebKit; no retries', () =>
+  playwrightSpecs(['e2e/geometry.boolean-engines.spec.ts'], BROWSERS, { runner: imageRunner() }),
+);
+// core:path draws, hits and reports its own path, and a path on another definition is ignored (M19.41, M19 cp4 F1)
+leg('core:path: the path shape is drawn and hit by its own path; a path on another definition is ignored', () =>
+  all(
+    () =>
+      tests('packages/core/src/shape/path-shape.test.ts', {
+        named: ['scales d from its w × h box to the element box', 'only a core:path element draws its path: on another definition it is ignored'],
+      }),
+    () => tests('packages/editor/src/path-shape.test.ts', { named: 'a path on another definition is ignored' }),
+    () =>
+      tests('packages/render/src/path-shape.browser.test.tsx', {
+        project: 'browser',
+        named: ['draws its own path scaled from w × h to its box', 'a path on another definition is ignored'],
+      }),
+  ),
+);
 leg('FR-SHP-014 tables render merged cells and three theme table styles', () =>
-  tests('packages/render/src/table-view.browser.test.tsx', { project: 'browser' }),
+  all(
+    () =>
+      tests('packages/render/src/table-view.browser.test.tsx', {
+        project: 'browser',
+        named: [
+          'merged cells span theirs and the cells they cover are not drawn',
+          'the built-in plain, banded and grid table styles draw to their goldens',
+          'a cell’s style wins over its table-style part, which wins over the theme',
+        ],
+      }),
+    () => tests('packages/render/src/table-layout.test.ts', { named: 'a span reaching past the grid is cut at its edge' }),
+    // editing: cell text opens in place, not on a locked table; each line lands where it says (M19.43, cp4 F6, M19 cp7 F1)
+    () =>
+      tests('packages/editor/src/table-edit.test.ts', {
+        named: [
+          'a double-click on a cell, or Enter with one picked, opens that cell',
+          'a covered cell or a locked table opens none',
+          'each row and column line beside the picked cell lands where it says',
+        ],
+      }),
+  ),
 );
 // ADR-0054's master outcomes, each a named case (M19.22 r1 F1)
 leg('FR-SCR-005 a master change updates every dependent screen', () =>
@@ -240,7 +382,22 @@ leg('FR-EDT-016 element search finds by text, name and semantic label and jumps 
     ],
   }),
 );
-const SPECS = ['layers.reorder', 'locks', 'text-regions.edit', 'path.edit-vertex', 'table.edit', 'masters.propagate', 'quick-connect', 'search.find-element'];
+const SPECS = [
+  'layers.reorder',
+  'locks',
+  'text-regions.edit',
+  'path.edit-vertex',
+  'table.edit',
+  'masters.propagate',
+  'quick-connect',
+  'search.find-element',
+  // M19 cp7 F1: the format painter UI, cell text and icon-slot packs
+  'style-paint',
+  'table.cell-text',
+  'library.icon-slot-pack',
+  // M19 cp4 F1: Union from the context menu
+  'arrange.boolean',
+];
 for (const spec of SPECS) leg(`${spec}: Chromium, Firefox, WebKit; axe clean; no retries`, () => e2e([`e2e/${spec}.spec.ts`]));
 leg('FluxScript table, frame and master: examples/dsl/masters-tables.flux.yaml renders to its golden', () => {
   for (const file of ['examples/dsl/masters-tables.flux.yaml', 'examples/dsl/__golden__/masters-tables.svg']) if (!exists(file)) return `missing ${file}`;

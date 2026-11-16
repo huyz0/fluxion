@@ -31,7 +31,10 @@ const menuItem = (page: Page, name: string) => page.getByRole('menu', { name: 'C
 
 // the context menu, the pointer and the palette: desktop input
 test.describe('copy style and paste style', { tag: '@desktop' }, () => {
-  test('FR-ARR-007: Copy style on one shape and Paste style on two others restyles both in one undo step; the palette pastes too', async ({ page }) => {
+  test('FR-ARR-007: Copy style on one shape and Paste style on two others restyles both in one undo step; the palette pastes too', async ({
+    page,
+    expectAccessible,
+  }) => {
     const editor = new EditorPage(page);
     await editor.open('example-shapes-gallery');
     const [first, second, third] = [await centre(editor, 0), await centre(editor, 1), await centre(editor, 2)];
@@ -60,5 +63,6 @@ test.describe('copy style and paste style', { tag: '@desktop' }, () => {
     await page.keyboard.press('Enter');
     await expect.poll(() => fillOf(editor, SHAPES[2])).toBe(RED);
     expect(await fillOf(editor, SHAPES[1])).not.toBe(RED);
+    await expectAccessible();
   });
 });
