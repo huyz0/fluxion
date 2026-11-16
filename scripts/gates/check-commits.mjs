@@ -40,7 +40,7 @@ for (const sha of shas) {
   writeFileSync(msgFile, git(['log', '-1', '--format=%B', sha]).stdout);
   const subject = git(['log', '-1', '--format=%s', sha]).stdout.trim();
   const results = [
-    ['commit-msg', node('scripts/gates/check-commit-msg.mjs', [msgFile])],
+    ['commit-msg', node('scripts/gates/check-commit-msg.mjs', [msgFile, '--commit', sha])],
     ['checkpoint', node('scripts/gates/check-checkpoint.mjs', ['--commit', sha])],
     ['tests-kept', node('scripts/gates/check-tests-kept.mjs', ['--commit', sha])],
     ['drift', node('scripts/gates/check-drift.mjs', ['--commit', sha])],

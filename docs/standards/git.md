@@ -41,7 +41,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 | 9 | `type` is one of `feat fix refactor perf test docs build ci chore`. `scope` is a package folder name (`core`, `routing`, `studio`), `harness`, `gates`, or `docs`. | `check-commit-msg.mjs` |
 | 10 | Summary is specific and imperative: `add`, `route`, `reject`, not `update stuff`/`wip`/`fixes`. Subject ≤ 72 chars. | `check-commit-msg.mjs` (denylist + length) |
 | 11 | Body (optional, ≤ ~20 lines, wrapped at 72) says **why**, what was rejected, and what is **not** done. It never narrates the diff or restates the backlog row. | no gate — judgement |
-| 12 | Minor review findings not fixed are listed in the body, one line each. | no gate — judgement ([review.md](review.md) R11) |
+| 12 | Minor review findings not fixed are listed in the body, one line each. A minor the body says is carried to a row ("carried to M<n>.<k>") changes that row in the same commit's backlog diff, and one that "becomes a backlog row" adds a row in it (M19.53). | judgement ([review.md](review.md) R11); the carry rule: `check-commit-msg.mjs` (staged diff; `check-commits.mjs` per commit in CI) |
 | 13 | Reference ADRs by number (`ADR-0005`) when implementing or amending a decision. | no gate — judgement |
 
 ### Trailers
