@@ -1,8 +1,8 @@
 // The studio shell (04 §4): History API routes to the home page, the editor and present mode. A
 // document id opens through documents.ts and bootstrap.ts; the roots come from editor and player.
 
-import { type Core, writable } from '@fluxion/core';
-import { type ArrangePort, type AssetStore, createAssetStore, createGlobalRouting, createSession, EditorRoot, type GlobalRouting } from '@fluxion/editor';
+import type { Core } from '@fluxion/core';
+import { type ArrangePort, type AssetStore, createAssetStore, createSession, EditorRoot } from '@fluxion/editor';
 import { embeddedConnectors } from '@fluxion/format';
 import { PlayerRoot } from '@fluxion/player';
 import { connectorDefOf } from '@fluxion/routing';
@@ -13,6 +13,7 @@ import { AiPanel } from './ai/ai-panel.js';
 import { registerStoredKeys } from './ai/client.js';
 import { createArrangeRunner, layoutOptionsSchemaOf } from './arrange-port.js';
 import { AutosaveBar } from './autosave/autosave-bar.js';
+import { bootMark } from './boot-phase.js';
 import { cryptoRandom, type OpenDocument, openDocument } from './bootstrap.js';
 import { studioLogger } from './dev-logger.js';
 import { DiagnosticButton } from './diagnostic-button.js';
@@ -22,6 +23,7 @@ import { FileBar, OpenControl, openPicked, pickedFromDrop } from './file-bar.js'
 import { browserFileHost } from './file-host.js';
 import { fontSources } from './font-sources.js';
 import { loadBundledFonts } from './fonts.js';
+import { useGlobalRouting } from './global-routing.js';
 import { rememberSaved } from './library/library-service.js';
 import { RecentFiles } from './library/recent-files.js';
 import { studioLibraryImports } from './library-import.js';
@@ -34,7 +36,6 @@ import { type DocumentCatalog, withPackEntries } from './pack-catalog.js';
 import { CreditsButton } from './pack-credits.js';
 import { journalId } from './protection-logic.js';
 import { RecoveryHost } from './recovery-host.js';
-import { createRoutePort } from './route-port.js';
 import { routeOf } from './routes.js';
 import { noArtworkFonts, noSavedPacks, useSavedShapePacks } from './saved-shape-packs.js';
 import { installTestHooks } from './test-hooks.js';
@@ -119,27 +120,6 @@ function useArrangeRunner(core: Core): ArrangePort {
   return runner.port;
 }
 
-/**
- * `registries` with the global routing pass's routes (FR-RTE-003): once the document settles, a routing worker routes every orthogonal
- * connector as one batch and the editor draws those routes while the document is unchanged; they are the routes present mode and the
- * `.flux.html` draw (M16.28). The worker ends when the document closes.
- */
-function useGlobalRouting(core: Core, registries: OpenDocument['registries']): OpenDocument['registries'] {
-  // the pass and its worker belong to the effect (a StrictMode remount disposes one, starts the next); registries read it via `live`
-  const live = useMemo(() => writable<{ readonly refined: GlobalRouting['refined'] } | undefined>(undefined), [core, registries]);
-  useEffect(() => {
-    const port = createRoutePort();
-    const global = createGlobalRouting(core.store, registries, port);
-    live.set({ refined: global.refined });
-    return () => {
-      live.set(undefined);
-      global.dispose();
-      port.dispose();
-    };
-  }, [core, registries, live]);
-  return useMemo(() => ({ ...registries, refined: () => live.get()?.refined() }), [registries, live]);
-}
-
 /** The AI panel's frame: bounded by the viewport and scrolling its own content, so a taller panel keeps every control reachable (M18.206). */
 const AI_PANEL_STYLE: CSSProperties = {
   position: 'fixed',
@@ -175,6 +155,7 @@ function ProtectedEditor(props: {
     void registerStoredKeys();
   }, []);
   useEffect(() => installTestHooks({ store: core.store, execute: core.execute, registries: core.registries, session }), [core, session]);
+  useEffect(() => bootMark('editor'), []);
   const { autosave, state } = useProtection({ id: journalId(docId, entry, instance), store: core.store, assets, entry, title, guard });
   // SVG libraries imported here (FR-LIB-004): registered into this document, their sources saved with it, released when it closes
   const imports = useMemo(() => studioLibraryImports(opened, { document, fetch: (...args) => fetch(...args), now: () => Date.now() }), [opened]);
@@ -281,7 +262,9 @@ function OpenedDocument(props: { readonly docId: string; readonly mode: 'edit' |
   const connectors = usePackConnectors(opened.ok ? opened.value.registries.routers : undefined, entry?.file.extraEntries);
   if (!opened.ok) return <Problem message={opened.error} />;
   if (packs.phase === 'refused') return <Problem message={packs.message} />;
-  if (packs.phase === 'registering' || !connectors) return <main data-testid="studio-root" aria-busy="true" />;
+  // waiting on the document's saved packs or the first-party pack connectors: the boot phase says which (M19.29)
+  if (packs.phase === 'registering' || !connectors) return <main data-testid="studio-root" aria-busy="true" data-boot="packs" />;
+  bootMark('packs');
   return mode === 'edit' ? (
     <ProtectedEditor opened={opened.value} docId={docId} entry={entry} guard={guard} instance={instance} catalog={catalog} />
   ) : (
@@ -295,7 +278,8 @@ function DocumentPage(props: { readonly docId: string; readonly mode: 'edit' | '
   // one id per page load: a new or bundled document is its own document in each tab
   const instance = useMemo(() => crypto.randomUUID(), []);
   const guard = useGuard(journalId(docId, openedEntry(docId), instance), mode === 'edit');
-  if (mode === 'edit' && guard.phase === 'starting') return <main data-testid="studio-root" aria-busy="true" />;
+  if (mode === 'edit' && guard.phase === 'starting') return <main data-testid="studio-root" aria-busy="true" data-boot="lock" />;
+  bootMark('lock');
   return <OpenedDocument docId={docId} mode={mode} guard={guard} instance={instance} />;
 }
 

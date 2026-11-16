@@ -789,12 +789,24 @@ function playwrightTests(report) {
   const walk = (suite, file) => {
     const here = suite.file ?? file;
     for (const spec of suite.specs ?? []) {
-      for (const t of spec.tests ?? []) out.push({ file: String(here ?? '').replace(/\\/g, '/'), project: t.projectName, status: t.status, title: spec.title });
+      for (const t of spec.tests ?? [])
+        out.push({ file: String(here ?? '').replace(/\\/g, '/'), project: t.projectName, status: t.status, title: spec.title, boot: bootNote(t) });
     }
     for (const child of suite.suites ?? []) walk(child, here);
   };
   for (const s of report?.suites ?? []) walk(s, s.file);
   return out;
+}
+
+/**
+ * The studio's boot report a failed test left (M19.29: e2e/pages/editor.ts annotates `boot-phases` when the first screen does not
+ * come), from its last run or the test; '' when there is none.
+ */
+function bootNote(test) {
+  const runs = test.results ?? [];
+  const notes = [...(runs.at(-1)?.annotations ?? []), ...(test.annotations ?? [])];
+  const note = notes.find((a) => a?.type === 'boot-phases' && a.description);
+  return note ? ` (studio boot: ${note.description})` : '';
 }
 
 /** The first six problems of a Playwright leg and how many more. */
@@ -825,7 +837,7 @@ export function checkPlaywrightReport(report, specs, projects) {
     for (const project of projects) {
       const mine = tests.filter((t) => (t.file === name || t.file.endsWith(`/${name}`)) && t.project === project);
       if (mine.length === 0) bad.push(`${spec} [${project}]: no test ran`);
-      for (const t of mine.filter((x) => x.status !== 'expected')) bad.push(`${spec} [${project}] "${t.title}": ${t.status}`);
+      for (const t of mine.filter((x) => x.status !== 'expected')) bad.push(`${spec} [${project}] "${t.title}": ${t.status}${t.boot}`);
     }
   }
   return bad.length === 0 || summarize(bad) + (bad.some((b) => b.endsWith(': no test ran')) ? noTestCause(report) : '');
@@ -844,7 +856,8 @@ export function checkPlaywrightTitles(report, spec, titles, projects) {
     for (const project of projects) {
       const run = tests.filter((t) => t.title === title && t.project === project);
       if (run.length === 0) bad.push(`${spec} [${project}]: no test titled "${title}"`);
-      else if (run.some((t) => t.status !== 'expected')) bad.push(`${spec} [${project}] "${title}": ${run.map((t) => t.status).join(', ')}`);
+      else if (run.some((t) => t.status !== 'expected'))
+        bad.push(`${spec} [${project}] "${title}": ${run.map((t) => t.status).join(', ')}${run.map((t) => t.boot).find(Boolean) ?? ''}`);
     }
   }
   return bad.length === 0 || summarize(bad) + (tests.length === 0 ? noTestCause(report) : '');

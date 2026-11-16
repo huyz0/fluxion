@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs inside the pinned Playwright image (ci.yml's): the repo is mounted read-only at /src, copied
 # without installs and builds, installed, built, and tested with the Playwright arguments given.
-# Reports and snapshots written under /out reach the host (scripts/e2e/image.mjs).
+# Reports, snapshots and (when asked) a failed run's test-results written under /out reach the host (scripts/e2e/image.mjs).
 set -euo pipefail
 mkdir -p /work
 cd /src
@@ -13,6 +13,8 @@ pnpm install --frozen-lockfile >/tmp/install.log 2>&1 || { tail -30 /tmp/install
 pnpm run build >/tmp/build.log 2>&1 || { tail -30 /tmp/build.log; exit 1; }
 status=0
 pnpm exec playwright test "$@" || status=$?
+# a failed run's test-results (error-context.md, traces) go back to the host when asked (image.mjs --out)
+if [ "$status" -ne 0 ] && [ "${FLUXION_E2E_COPY_RESULTS:-}" = "1" ]; then cp -r test-results /out/ 2>/dev/null || true; fi
 # updated snapshots go back to the host when asked
 if [ "${FLUXION_E2E_COPY_SNAPSHOTS:-}" = "1" ]; then cp -r e2e/*-snapshots /out/ 2>/dev/null || true; fi
 exit "$status"

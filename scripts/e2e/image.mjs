@@ -3,7 +3,8 @@
 // with Docker: the same browsers everywhere, including where a local browser cannot launch.
 //   node scripts/e2e/image.mjs [--out <dir>] [--snapshots] -- <playwright test args>
 // --out: a host directory mounted at /out (a JSON report named by PLAYWRIGHT_JSON_OUTPUT_NAME lands
-// there when that variable points into it); --snapshots: copy e2e/*-snapshots into --out afterwards.
+// there when that variable points into it, and a failed run's test-results/ do); --snapshots: copy
+// e2e/*-snapshots into --out afterwards. The gates' runs keep no test-results: they read the report (M19.29).
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -22,11 +23,13 @@ export function pinnedImage(root = ROOT) {
  * The docker arguments that run `args` in the pinned image; `report` (a host file) receives the JSON
  * report when given.
  */
-export function dockerArgs(args, { root = ROOT, out, report, snapshots = false } = {}) {
+export function dockerArgs(args, { root = ROOT, out, report, snapshots = false, results = false } = {}) {
   const outDir = report ? dirname(report) : out;
   const env = [];
   if (report) env.push('-e', `PLAYWRIGHT_JSON_OUTPUT_NAME=/out/${basename(report)}`);
   if (snapshots) env.push('-e', 'FLUXION_E2E_COPY_SNAPSHOTS=1');
+  // a failed run's test-results (error-context.md, traces) back to --out, for a person reading them (M19.29)
+  if (results) env.push('-e', 'FLUXION_E2E_COPY_RESULTS=1');
   return [
     'run',
     '--rm',
@@ -59,6 +62,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const rest = sep < 0 ? [] : argv.slice(sep + 1);
   const outAt = own.indexOf('--out');
   const out = outAt >= 0 ? resolve(own[outAt + 1]) : undefined;
-  const r = spawnSync('docker', dockerArgs(rest, { out, snapshots: own.includes('--snapshots') }), { stdio: 'inherit' });
+  const r = spawnSync('docker', dockerArgs(rest, { out, snapshots: own.includes('--snapshots'), results: out !== undefined }), { stdio: 'inherit' });
   process.exit(r.status ?? 1);
 }

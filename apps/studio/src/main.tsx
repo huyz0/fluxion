@@ -2,8 +2,10 @@ import { I18nProvider } from '@lingui/react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.js';
+import { bootMark } from './boot-phase.js';
 import { i18n } from './i18n.js';
 
+bootMark('start');
 const root = document.getElementById('root');
 if (!root) throw new Error('studio: #root is missing from index.html');
 createRoot(root).render(

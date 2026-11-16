@@ -87,6 +87,7 @@ receiving milestone's plan.
 | Item | From | To | Reason |
 |---|---|---|---|
 | FluxScript keys for `hideMasterElements`, region texts and icon slots, and edit-language patch ops for masters, placeholders, tables and frames (M20 row 19) | M19 | M20 | cp6 F2: ADR-0219 left them out and no row held them; M20's decompiler v1 (FR-DSL-008) is where they belong |
+| The editor first-screen stall's fix, once an e2e run meets it again with a boot report (M20 row 20) | M19 | M20 | M19.29: the one occurrence (2026-11-14, Firefox, a loaded Windows host) kept no trace and 50 loaded reruns at 2571ca8 passed; M19.29 makes the next one readable |
 | decodePng unit test and a FLUXION_PNG_CHECK run (M19 row 20) | M18 | M19 | cp51 F4: the decoder is correct today (222/222 with the check on); a test file now would restart the M18 freeze |
 | Deferred test-speed and cold-setup headroom work (M19 row 21) | M18 | M19 | cp51 F6: kept out of M18 so the freeze holds; Huy's 2026-11-13 allowance to cut low-risk tests applies |
 | One hand-off spelling; hand-off targets checked by the gate (M19 row 22) | M18 | M19 | final F2: a false red only (the final record uses the gate's 'hand-off'); every M18 hand-off target exists today |

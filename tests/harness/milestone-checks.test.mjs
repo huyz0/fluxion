@@ -700,6 +700,31 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.equal(checkPlaywrightReport(nested, ['e2e/x.spec.ts'], ['chromium']), true);
   });
 
+  it('NFR-PORT-001 (M19.29): a failed Playwright leg names the studio boot report the test left, and only the image CLI keeps test-results', async () => {
+    const { checkPlaywrightReport, checkPlaywrightTitles } = await import('../../scripts/gates/milestone-checks.mjs');
+    const { dockerArgs } = await import('../../scripts/e2e/image.mjs');
+    const note = { type: 'boot-phases', description: 'marks start@227; waiting on lock; now 25000' };
+    const failed = (where) => ({
+      suites: [{ file: 'editor.boot.spec.ts', specs: [{ title: 'boots', tests: [{ projectName: 'firefox', status: 'unexpected', ...where }] }] }],
+    });
+    // the reporter puts a runtime annotation on the run and on the test; either is read
+    for (const report of [failed({ results: [{ annotations: [note] }] }), failed({ annotations: [note] })]) {
+      assert.match(
+        String(checkPlaywrightReport(report, ['e2e/editor.boot.spec.ts'], ['firefox'])),
+        /"boots": unexpected \(studio boot: marks start@227; waiting on lock;/,
+      );
+      assert.match(
+        String(checkPlaywrightTitles(report, 'e2e/editor.boot.spec.ts', ['boots'], ['firefox'])),
+        /"boots": unexpected \(studio boot: marks start@227;/,
+      );
+    }
+    // a failure with no boot report reads as before
+    assert.match(String(checkPlaywrightReport(failed({}), ['e2e/editor.boot.spec.ts'], ['firefox'])), /"boots": unexpected$/);
+    // the gates' runs (a report, no results) never ask the image for test-results; the CLI's --out does
+    assert.ok(!dockerArgs(['x'], { report: '/tmp/g/report.json' }).includes('FLUXION_E2E_COPY_RESULTS=1'));
+    assert.ok(dockerArgs(['x'], { out: '/tmp/o', results: true }).includes('FLUXION_E2E_COPY_RESULTS=1'));
+  });
+
   it('checkPlaywrightTitles needs each title passed on its first run on every project, in that spec', async () => {
     const { checkPlaywrightTitles } = await import('../../scripts/gates/milestone-checks.mjs');
     const titled = (file, specs) => ({ suites: [{ file, specs: specs.map(([title, projectName, status]) => ({ title, tests: [{ projectName, status }] })) }] });

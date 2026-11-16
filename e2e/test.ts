@@ -1,12 +1,28 @@
 import { AxeBuilder } from '@axe-core/playwright';
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type TestInfo } from '@playwright/test';
 
 const LOCAL = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
 // a `file:` URL is the machine's own disk, not the network (the .flux.html specs open files), and a `blob:` or `data:` URL is the page's
 // own memory (WebKit routes a Blob worker's script through the context: M16.28); everything remote stays blocked
 const isLocal = (url: URL): boolean => ['file:', 'blob:', 'data:'].includes(url.protocol) || LOCAL.has(url.hostname);
 
+// when each test started (M19.29), so a page object can stop waiting before the test's own timeout closes the page it would report on
+const startedAt = new WeakMap<TestInfo, number>();
+// what a wait leaves for reading the page and failing with what it read: one evaluate and an annotation, well under a second
+const REPORT_MARGIN_MS = 2_000;
+
+/**
+ * The time a wait in `info`'s test may take and still leave the page open to report on (M19.29): the test's timeout less what has
+ * passed and a margin, at least 1 s; undefined when the test has no timeout.
+ */
+export function timeLeft(info: TestInfo, now: number = Date.now()): number | undefined {
+  if (info.timeout === 0) return undefined;
+  return Math.max(1_000, info.timeout - (now - (startedAt.get(info) ?? now)) - REPORT_MARGIN_MS);
+}
+
 interface Fixtures {
+  /** Notes when the test started, for `timeLeft`. */
+  started: undefined;
   /** URLs the network block stopped in this test (requests and WebSockets, every page). */
   blocked: string[];
   /** axe on the page's current state: no serious or critical violation (testing.md §7, NFR-A11Y-001). */
@@ -17,6 +33,14 @@ interface Fixtures {
 // page, popup and WebSocket; service workers are blocked in playwright.config.ts), so a test can never
 // pass because of a live third-party service (testing.md §5).
 export const test = base.extend<Fixtures>({
+  started: [
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures must destructure their dependencies
+    async ({}, use, testInfo) => {
+      startedAt.set(testInfo, Date.now());
+      await use(undefined);
+    },
+    { auto: true },
+  ],
   // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures must destructure their dependencies
   blocked: async ({}, use) => {
     await use([]);
