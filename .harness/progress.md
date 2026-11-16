@@ -5102,3 +5102,6 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 ## 2026-11-16 M19.60: harness-tests CPU in layering, coverage and api
 - User CPU-seconds, one `node --test` of the file on 4 cores, before → after: layering 55.9 → 24.3 (8 dependency-cruiser runs → 4: the devDependency and browser-test cases join the planted run, the three overview-map cases share one run on three workspaces); coverage 22.0 → 9.3 (the failing run runs geometry's box test, not core's suite; the floored packages are reported from the include globs); api 61.4 → 55.9 (the three entry-list refusals share one check-api run). land 47.9 unchanged (one shared git rig already; the time is the real hooks per landing).
 - Same assertions, each case naming its own file or line; the map case now also checks the listed edges are not reported as differing, and the packs case's overview edit matches sdk's real row (it never matched before, so "even if listed" was untested).
+
+## 2026-11-16 M19.31: three CI cold-setup readings after M19.28
+- `check-budget --record --cold-from-ci` for 522e499 (ci:43847313034, 345 s), 9b9f886 (ci:43859912281, 331 s) and 301a587 (ci:43866700311, 410 s): median 345 s against 420 s. Local quick 17.9 s, worst-case staged 388 s. Fills M19.60's Commit cell.
