@@ -10,6 +10,7 @@ import {
   checkDistArtifacts,
   checkDryRuns,
   checkExitChecklist,
+  checkPngEvidence,
   checkReviewerSmoke,
   checkRowsDone,
   checkRowsTitled,
@@ -862,5 +863,38 @@ describe('checkRowsTitled (NFR-DX-003, M12 cp1 F1)', () => {
     assert.match(String(checkRowsTitled(text, 'M12', lists, { ...exempt, 'M12.99': 'gone' })), /exemption names no row: M12\.99/);
     assert.match(String(checkRowsTitled(text, 'M12', [...lists, [['M12.98', 'x', 'dsl']]], exempt)), /a title names no row: M12\.98/);
     assert.match(String(checkRowsTitled('# empty\n', 'M12', lists, exempt)), /no M12 rows/);
+  });
+});
+
+// M19.52, cp6 F1: the decodePng leg reads a recorded nightly png-check; a workflow that holds the job is not evidence
+describe('checkPngEvidence (M19.52)', () => {
+  const green = { run: 1, sha: 'a'.repeat(40), workflow: 'nightly', job: 'png-check', conclusion: 'success' };
+  const ancestry = { isAncestor: () => true };
+  it('NFR-DX-003: a green nightly png-check on a commit at or after 819cfaf on this branch passes the leg', () => {
+    assert.equal(checkPngEvidence(green, ancestry), true);
+  });
+  it('NFR-DX-003: a red png-check fails the leg, as do no record, another job and a commit before 819cfaf or off this branch', () => {
+    assert.match(String(checkPngEvidence({ ...green, conclusion: 'failure' }, ancestry)), /png-check concluded failure/);
+    assert.match(String(checkPngEvidence(undefined, ancestry)), /no nightly png-check recorded/);
+    assert.match(String(checkPngEvidence({ ...green, job: 'perf' }, ancestry)), /not nightly \/ png-check/);
+    assert.match(String(checkPngEvidence({ ...green, workflow: 'ci' }, ancestry)), /not nightly \/ png-check/);
+    assert.match(String(checkPngEvidence(green, { isAncestor: (a) => a !== '819cfaf' })), /before 819cfaf/);
+    assert.match(String(checkPngEvidence(green, { isAncestor: (_a, b) => b !== 'HEAD' })), /not an ancestor of HEAD/);
+  });
+  it('NFR-DX-003: check-png-evidence --record refuses a red nightly and writes no record', () => {
+    const sb = sandbox(['scripts'], { git: true });
+    try {
+      const sha = sb.git('rev-parse', 'HEAD').stdout.trim();
+      sb.write(
+        'runs.json',
+        JSON.stringify([{ databaseId: 7, workflowName: 'nightly', headSha: sha, conclusion: 'failure', jobs: [{ name: 'png-check', conclusion: 'failure' }] }]),
+      );
+      const r = sb.node('scripts/gates/check-png-evidence.mjs', ['--record', '7', '--runs-file', sb.path('runs.json'), '--file', sb.path('ev.json')]);
+      assert.equal(r.status, 1, out(r));
+      assert.match(r.stderr, /png-check concluded failure/);
+      assert.equal(sb.node('scripts/gates/check-png-evidence.mjs', ['--file', sb.path('ev.json')]).status, 1);
+    } finally {
+      sb.cleanup();
+    }
   });
 });

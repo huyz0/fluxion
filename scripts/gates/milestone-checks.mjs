@@ -947,3 +947,21 @@ export function upFrontViolations(entry, read, forbidden = FORBIDDEN_UP_FRONT) {
   }
   return bad;
 }
+
+/** The first commit whose nightly png-check runs the pixel specs with the browser decode (M19.27). */
+export const PNG_CHECK_FROM = '819cfaf';
+
+/**
+ * A recorded nightly png-check (.harness/reviews/png-check-evidence.json, check-png-evidence.mjs --record <run-id>) as the
+ * evidence that the Node PNG decoder agrees with the browser: the nightly workflow's png-check job, concluded success, on a
+ * commit at or after PNG_CHECK_FROM and on this branch (M19.52, cp6 F1). true, or why not.
+ */
+export function checkPngEvidence(record, { isAncestor = (a, b) => git(['merge-base', '--is-ancestor', a, b]).status === 0 } = {}) {
+  if (!record?.run || !record.sha) return 'no nightly png-check recorded: check-png-evidence.mjs --record <run-id>';
+  if (record.workflow !== 'nightly' || record.job !== 'png-check') return `run ${record.run} is ${record.workflow} / ${record.job}, not nightly / png-check`;
+  if (record.conclusion !== 'success') return `nightly run ${record.run}: png-check concluded ${record.conclusion}`;
+  const sha = String(record.sha);
+  if (!isAncestor(PNG_CHECK_FROM, sha)) return `png-check ran ${sha.slice(0, 7)}, before ${PNG_CHECK_FROM} where its job came in`;
+  if (!isAncestor(sha, 'HEAD')) return `${sha.slice(0, 7)} is not an ancestor of HEAD: record a nightly of this branch`;
+  return true;
+}

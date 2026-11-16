@@ -58,6 +58,7 @@ node scripts/gates/check-budget.mjs --record --cold-pending | --cold-from-ci <sh
 pnpm mutate [--package packages/<n>] [--from <ref>]   mutation testing (tzap, ADR-0146)
 node scripts/gates/check-ci-evidence.mjs --record <sha>  record a green three-OS CI run (gh, else GitHub REST)
 node scripts/gates/check-font-engine-evidence.mjs --record <run-id>  record a green font-engine WASM rebuild run
+node scripts/gates/check-png-evidence.mjs --record <run-id>  record a nightly whose png-check job passed (decodePng leg)
 node scripts/harness/last-ci.mjs                      main's last completed CI; 1 = red: fix first (while a blocks-landing row is open, only it and harness paths), 2 = fix pending: wait, 3 = unknown
 node scripts/harness/review.mjs context --task M3.4     reviewer packet
 node scripts/harness/run-reviewer.mjs --task M3.4       optional cross-vendor reviewer (default: isolated subagent)

@@ -10,6 +10,7 @@ import {
   changesetsCoverRange,
   checkBacklogDone,
   checkFinalReview,
+  checkPngEvidence,
   coverageGaps,
   imageRunner,
   loadMilestoneReviews,
@@ -22,6 +23,7 @@ import { t } from './thresholds.mjs';
 const result = (r) => r.status === 0 || (r.stderr || r.stdout).trim().split(/\r?\n/).slice(-4).join(' | ') || `exit ${r.status}`;
 const command = (file, args = []) => (exists(file) ? result(node(file, args)) : `missing ${file}`);
 const json = (file) => JSON.parse(readText(file));
+const PNG_EVIDENCE = '.harness/reviews/png-check-evidence.json';
 const BROWSERS = ['chromium', 'firefox', 'webkit'];
 
 // The first failing test's full name and first failure line from a Vitest JSON report (as m18-complete).
@@ -319,13 +321,13 @@ leg('last-ci tests read node:test output on Node 22 and Node 24', () => namedCas
 leg('changesets count every path a published workspace ships (M18 cp45 F5)', () =>
   namedCases('tests/harness/milestone-checks.test.mjs', ['pack-only change is a gap', 'grammar change is a gap', 'test file under src is none']),
 );
-leg('decodePng pinned by a unit test over all five row filters, and one CI run checks it against the browser (M18 cp51 F4)', () =>
-  all(
-    () => tests('e2e/pages/image-diff.test.ts'),
-    () =>
-      readdirSync(repoPath('.github/workflows')).some((f) => /FLUXION_PNG_CHECK:\s*['"]?1/.test(readText(`.github/workflows/${f}`))) ||
-      'no workflow runs the pixel specs with FLUXION_PNG_CHECK=1',
-  ),
+leg(
+  'decodePng pinned by a unit test over all five row filters, and a recorded green nightly png-check checks it against the browser (M18 cp51 F4, M19.52)',
+  () =>
+    all(
+      () => tests('e2e/pages/image-diff.test.ts'),
+      () => checkPngEvidence(exists(PNG_EVIDENCE) ? json(PNG_EVIDENCE) : undefined),
+    ),
 );
 // M19.28's target: the recorded cold setup is a CI reading at or under 420 s (477 s at M18's close; plan review r1 F3)
 leg('cold setup recorded from CI at or under 420 s (M19.28)', () => {
