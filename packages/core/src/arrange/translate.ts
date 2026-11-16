@@ -4,6 +4,7 @@
 import type { RecordId } from '@fluxion/schema';
 import type { CommandContext } from '../commands.js';
 import { hasLock } from './locks.js';
+import { withMembers } from './placed.js';
 
 type Vec = { readonly x: number; readonly y: number };
 type Moving = {
@@ -33,22 +34,6 @@ export function translateFields(record: Moving, d: Vec): Record<string, unknown>
   return fields;
 }
 
-/** `id` and its members, all the way down, in order. */
-export function withMembers(ctx: CommandContext, id: RecordId): RecordId[] {
-  return [id, ...ctx.store.members('byParent', id).flatMap((m) => withMembers(ctx, m))];
-}
-
-/** Of `ids`, each once, those with none of the others above them (an element whose group is also listed moves with the group). */
-export function outermost(ctx: CommandContext, ids: readonly RecordId[]): RecordId[] {
-  const listed = new Set(ids);
-  const above = (id: RecordId) => {
-    for (let p = (ctx.store.get(id) as Moving | undefined)?.parentId; p !== undefined; p = (ctx.store.get(p) as Moving | undefined)?.parentId)
-      if (listed.has(p)) return true;
-    return false;
-  };
-  return [...new Set(ids)].filter((id) => !above(id));
-}
-
 /**
  * The moves that put each of `deltas` (element → vector) and its members away: one patch per record that has something to move. An
  * element with a position lock stays where it is (FR-SHP-008); its box still counts where the command measures (an align's bounds).
@@ -57,7 +42,7 @@ export function movesFor(ctx: CommandContext, deltas: ReadonlyMap<RecordId, Vec>
   const out: Array<{ id: RecordId; fields: Record<string, unknown> }> = [];
   for (const [id, d] of deltas) {
     if ((d.x === 0 && d.y === 0) || hasLock(ctx.store, id, 'position')) continue;
-    for (const member of withMembers(ctx, id)) {
+    for (const member of withMembers(ctx.store, id)) {
       const fields = translateFields(ctx.store.get(member) as Moving, d);
       if (Object.keys(fields).length > 0) out.push({ id: member, fields });
     }

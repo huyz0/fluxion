@@ -95,7 +95,12 @@ export type PluginRefRecord = Extensible<{
 }>;
 
 const tree = z.record(z.string(), z.unknown());
-/** Schema of a theme table style (ADR-0054). @internal */
+/**
+ * Schema of a theme table style (ADR-0054): its parts are asset-free styles. The theme package's `themeSchema` and core's theme
+ * commands reuse it, so a theme is checked the same way wherever it enters (M19.35).
+ *
+ * @public
+ */
 export const tableStyleSchema: z.ZodType<TableStyle> = checkedSchema<TableStyle>()(
   z.looseObject({
     header: assetFreeStyleSchema.optional(),

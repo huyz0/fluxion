@@ -2,7 +2,7 @@
 // is an object with `$value` and `$type`; everything else is a group. M4 carries the minimal set
 // (colour roles, font families and scale, spacing, radii, stroke widths); M9 adds shadows, motion and
 // theme records without renaming anything here.
-import { colorSchema } from '@fluxion/schema';
+import { colorSchema, tableStyleSchema } from '@fluxion/schema';
 import { z } from 'zod';
 import { FAMILY } from './token-check.js';
 
@@ -76,9 +76,6 @@ export function tokenEntries(group: TokenGroup, prefix = ''): Array<readonly [st
   });
 }
 
-/** A style fragment of a table style part. */
-const fragment = z.record(z.string(), z.unknown());
-
 /**
  * Schema of a {@link Theme} (FR-THM-001: "Theme JSON validates"). Two tokens whose CSS properties
  * coincide (`a.b-c` and `a-b.c` are both `--fx-a-b-c`) are refused (review F1).
@@ -90,9 +87,8 @@ export const themeSchema: z.ZodType<Theme> = z
     name: z.string().min(1),
     tokens: groupSchema,
     defaults: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
-    tableStyles: z
-      .record(z.string().min(1), z.object({ header: fragment.optional(), band: fragment.optional(), border: fragment.optional(), cell: fragment.optional() }))
-      .optional(),
+    // the schema's own table-style check, as a stored theme record gets: asset-free parts, no image paint (M19.35)
+    tableStyles: z.record(z.string().min(1), tableStyleSchema).optional(),
   })
   .superRefine((theme, ctx) => {
     const seen = new Map<string, string>();

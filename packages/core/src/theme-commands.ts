@@ -1,7 +1,7 @@
 // Theme and metadata commands (FR-THM-004, FR-DOC-006, M9.9, ADR-0152): the chosen theme is copied into the document as a
 // `theme-<slug>` record (never overwritten), the document or one screen points at it, and a metadata edit stamps `modified`
 // with the time the host read from its Clock port (core draws no time of its own). Each is one transaction, so one undo step.
-import type { RecordId } from '@fluxion/schema';
+import { type RecordId, tableStyleSchema } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from './command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from './commands.js';
@@ -24,7 +24,13 @@ export function themeRecordId(name: string): string {
 }
 
 const tree = z.record(z.string(), z.unknown());
-const themeArg = z.object({ name: z.string().min(1), tokens: tree, defaults: tree.optional(), tableStyles: tree.optional() });
+// table styles are checked by the schema's own `tableStyleSchema`, as a stored theme record is: no image paint in a part (M19.35)
+const themeArg = z.object({
+  name: z.string().min(1),
+  tokens: tree,
+  defaults: tree.optional(),
+  tableStyles: z.record(z.string().min(1), tableStyleSchema).optional(),
+});
 type ThemeArg = z.infer<typeof themeArg>;
 
 /** The id `theme` is stored under, written first unless a record holds that id already (it is then used as it is). */

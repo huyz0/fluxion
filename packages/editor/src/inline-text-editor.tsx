@@ -7,12 +7,14 @@ import type { Store } from '@fluxion/core';
 import { grownHeight, labelBox, type RenderRegistries, useValue } from '@fluxion/render';
 import type { RecordId, RichTextDoc, ShapeElement, TextElement } from '@fluxion/schema';
 import { LIGHT_THEME, toCssVars } from '@fluxion/theme';
+import { t } from '@lingui/core/macro';
 import { EditorView } from 'prosemirror-view';
 import { type ReactNode, useEffect, useMemo, useRef } from 'react';
 import { type Camera, pageToScreen } from './camera.js';
 import { type Placed, placements } from './overlay-geometry.js';
 import type { Execute } from './pointer.js';
 import type { Session } from './session.js';
+import './i18n.js';
 import { regionAfter, textElement } from './text-edit.js';
 import { edited, movesListItem, textOf, textState } from './text-pm.js';
 
@@ -142,7 +144,8 @@ function openEditor(parent: HTMLElement, ctx: InlineTextEditorProps & { readonly
   const def = defId === undefined ? undefined : registries.shapeDefs.get(defId);
   return openInPlace(parent, {
     text: textIn(initial, region),
-    name: 'Text',
+    // the accessible name says which region is open (M19.17 r2 F1, cp3 F3)
+    name: region === undefined ? t`Text` : t`Edit text: ${region}`,
     closed: () => {
       session.editingRegion.set(undefined);
       session.editing.set(undefined);

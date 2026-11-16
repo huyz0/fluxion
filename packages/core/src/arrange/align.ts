@@ -7,7 +7,8 @@ import { DEFAULT_SCREEN_SIZE, type RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from '../commands.js';
-import { movesFor, outermost } from './translate.js';
+import { outermost } from './placed.js';
+import { movesFor } from './translate.js';
 
 /**
  * What aligns: the left or right edge or the horizontal centre, the top or bottom edge or the vertical middle.
@@ -73,7 +74,7 @@ export const ALIGN_COMMANDS: readonly AnyCommand[] = [
         args.ids.map((x, i) => [['ids', i], x] as const),
       );
       if (bad) return bad;
-      const movers = outermost(ctx, args.ids as RecordId[]).filter((x) => drawnBounds(ctx, x) !== undefined);
+      const movers = outermost(ctx.store, args.ids as RecordId[]).filter((x) => drawnBounds(ctx, x) !== undefined);
       if (movers.length === 0) return refuse('element.align', ['ids'], 'no element has a box to align');
       const boxes = new Map(movers.map((x) => [x, drawnBounds(ctx, x) as Box]));
       let reference: Box;

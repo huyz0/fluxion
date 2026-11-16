@@ -52,4 +52,11 @@ describe('element.pasteStyle, the format painter (FR-ARR-007)', () => {
     ])
       expect(core.execute('element.pasteStyle', args).ok).toBe(false);
   });
+
+  it("FR-ARR-007: a group as the source is refused, so no target's style is cleared (M19 cp2 F6)", () => {
+    const { core, g, t, u, at } = setup();
+    const r = core.execute('element.pasteStyle', { from: g, ids: [t, u] });
+    expect(r.ok).toBe(false);
+    expect([at(t)['style'], core.store.history.undoDepth]).toEqual([{ fill: '#00ff00' }, 0]);
+  });
 });

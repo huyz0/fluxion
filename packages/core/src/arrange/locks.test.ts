@@ -86,6 +86,17 @@ describe('locks in core commands (FR-SHP-008)', () => {
     expect([member.fill(member.p), member.fill(member.c)]).toEqual(['#111111', '#ff0000']);
   });
 
+  it('FR-SHP-008: a flip reads no lock: the flipped group keeps its turn and a rotation-locked member takes the mirrored turn (M19 cp3 F4)', () => {
+    const { core, g, p, t } = setup({ G: { rotation: true }, p: { rotation: true, position: true } });
+    expect(core.execute('element.update', { id: p, fields: { transform: { x: 0, y: 400, w: 60, h: 50, rot: 30 } } }).ok).toBe(true);
+    const [gc, pc] = [t(g).x + t(g).w / 2, t(p).x + t(p).w / 2];
+    expect(core.execute('element.flip', { ids: [g], axis: 'x' }).ok).toBe(true);
+    // p's centre is mirrored about G's centre line and its turn 30 → 330, though it holds rotation and position locks; G keeps its turn
+    expect(t(p)).toMatchObject({ y: 400, rot: 330, flipX: true });
+    expect(t(p).x + t(p).w / 2).toBeCloseTo(2 * gc - pc, 9);
+    expect(t(g).rot).toBe(0);
+  });
+
   it('FR-SHP-008: hasLock reads one element; lockedWithin also reads the groups it sits in', () => {
     const { core, g, p, a } = setup({ G: { select: true } });
     expect(hasLock(core.store, g, 'select')).toBe(true);

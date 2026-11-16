@@ -71,6 +71,24 @@ function setup(extra: { readonly frame?: Record<string, unknown>; readonly inner
 const near = (a: number, b: number) => Math.abs(a - b) <= 1e-9;
 
 describe('frames carry their members (FR-ARR-006, ADR-0052)', () => {
+  it("FR-ARR-006: a drop of several elements finds and orders the screen's frames once, not once per dragged element (M19 cp2 F7)", () => {
+    const s = setup();
+    let screenReads = 0;
+    const counting = new Proxy(s.core.store, {
+      get(target, key) {
+        const v = Reflect.get(target, key, target);
+        if (key !== 'members' || typeof v !== 'function') return typeof v === 'function' ? v.bind(target) : v;
+        return (index: string, value: string) => {
+          if (index === 'byScreen') screenReads++;
+          return v.call(target, index, value);
+        };
+      },
+    });
+    // a and b stay in F, c stays at the top level: three drop lookups, no reparent
+    expect(dropReparents(counting, [s.a, s.b, s.c])).toEqual([]);
+    expect(screenReads).toBe(1);
+  });
+
   it('FR-ARR-006: a frame move carries its members by the same delta, in one undo step', () => {
     const s = setup();
     const before = [s.frame, s.a, s.b].map((id) => s.el(id).transform);

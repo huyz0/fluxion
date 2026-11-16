@@ -1,15 +1,14 @@
 // Frames carry their members (FR-ARR-006, ADR-0052, M19.10). Members keep screen coordinates, as a group's do, so a frame's move
 // is the move of every element below it (translate.ts `movesFor`), its turn the editor's rotate handle (which turns a group's members
-// the same way), and its flip is computed here (`elementFlipped`, which flips any element with what is below it): each member's centre
-// mirrored about the frame's centre and its own turn and flips changed to match, so the frame and its content stay one picture. A frame's resize changes its box alone (the editor's resize handle). A pointer drag that ends with an element's centre
+// the same way), and its flip flip.ts `elementFlipped` (which flips any element with what is below it). A frame's resize changes its
+// box alone (the editor's resize handle). A pointer drag that ends with an element's centre
 // inside a frame makes it that frame's member; one whose centre leaves its frame joins the frame's container. All of it is a list
 // of `element.updateMany` updates, so a gesture writes it in its own transaction: one undo step.
 import type { Vec2 } from '@fluxion/geometry';
 import { compareKeys, keyBetween, type RecordId } from '@fluxion/schema';
 import type { ReadView } from '../store.js';
+import { below, centreOf, outermost, type Placed, rad, type Vec } from './placed.js';
 
-type Vec = { readonly x: number; readonly y: number };
-type Placed = Vec & { readonly w: number; readonly h: number; readonly rot?: number; readonly flipX?: boolean; readonly flipY?: boolean };
 type El = {
   readonly type?: unknown;
   readonly kind?: unknown;
@@ -20,9 +19,6 @@ type El = {
   readonly clip?: boolean;
   readonly layout?: { readonly live?: boolean };
   readonly transform?: Placed;
-  readonly freeSource?: Vec;
-  readonly freeTarget?: Vec;
-  readonly route?: { readonly waypoints?: readonly Vec[] } & { readonly [field: string]: unknown };
 };
 
 /**
@@ -38,60 +34,7 @@ export type FrameUpdate = {
 };
 
 const el = (view: ReadView, id: RecordId | undefined): El | undefined => (id === undefined ? undefined : (view.get(id) as El | undefined));
-const below = (view: ReadView, id: RecordId): RecordId[] => view.members('byParent', id).flatMap((m) => [m, ...below(view, m)]);
-const centreOf = (t: Placed): Vec => ({ x: t.x + t.w / 2, y: t.y + t.h / 2 });
-const turnOf = (deg: number): number => ((deg % 360) + 360) % 360;
-const rad = (deg: number): number => (deg * Math.PI) / 180;
-
-/** The point map `at` applied to every placed field of `r` (its box's centre with `box`, a connector's free ends and waypoints). */
-function carried(r: El, at: (p: Vec) => Vec, box: (t: Placed, centre: Vec) => Record<string, unknown>): Record<string, unknown> {
-  const fields: Record<string, unknown> = {};
-  if (r.transform) fields['transform'] = box(r.transform, at(centreOf(r.transform)));
-  if (r.freeSource) fields['freeSource'] = at(r.freeSource);
-  if (r.freeTarget) fields['freeTarget'] = at(r.freeTarget);
-  if (r.route?.waypoints) fields['route'] = { ...r.route, waypoints: r.route.waypoints.map(at) };
-  return fields;
-}
-
-/** Element `top` and every element below it, each with the fields `map` gives it; none when `top` has no box. */
-function carry(view: ReadView, top: RecordId, map: (r: El) => Record<string, unknown>): FrameUpdate[] {
-  if (el(view, top)?.transform === undefined) return [];
-  return [top, ...below(view, top)].flatMap((id) => {
-    const r = el(view, id);
-    const fields = r?.type === 'element' ? map(r) : {};
-    return Object.keys(fields).length === 0 ? [] : [{ id, fields }];
-  });
-}
-
-/**
- * The updates that flip element `id` with what is below it (FR-SHP-009, ADR-0052): horizontally (`'x'`) each one's centre is mirrored
- * across the element's vertical centre line (turned with it, at `φ`), its `flipX` toggled and its `rot` θ mapped to `2φ − θ`;
- * vertically (`'y'`) the same across the horizontal centre line with `flipY`. The element itself keeps its place and turn
- * (2φ − φ = φ); a group's or a frame's members are carried. None when `id` has no box. `element.flip` runs it; a frame's turn is the
- * editor's rotate handle, which carries members as it carries a group's (one path each, M19 cp2 F1, M19.16 r1 F1).
- *
- * @public
- */
-export function elementFlipped(view: ReadView, id: RecordId, axis: 'x' | 'y'): FrameUpdate[] {
-  const t = el(view, id)?.transform;
-  if (t === undefined) return [];
-  const c = centreOf(t);
-  const phi = t.rot ?? 0;
-  // the mirror line through the centre: the element's own y axis for a horizontal flip, its x axis for a vertical one
-  const line = rad(axis === 'x' ? phi + 90 : phi);
-  // a quarter turn's cosine is 6e-17, not 0: exact axes keep an unturned flip free of float noise
-  const exact = (v: number): number => (Math.abs(v) < 1e-12 ? 0 : v);
-  const u = { x: exact(Math.cos(line)), y: exact(Math.sin(line)) };
-  const at = (p: Vec): Vec => {
-    const d = { x: p.x - c.x, y: p.y - c.y };
-    const along = d.x * u.x + d.y * u.y;
-    return { x: c.x + 2 * along * u.x - d.x, y: c.y + 2 * along * u.y - d.y };
-  };
-  const flip = axis === 'x' ? 'flipX' : 'flipY';
-  return carry(view, id, (r) =>
-    carried(r, at, (b, m) => ({ ...b, x: m.x - b.w / 2, y: m.y - b.h / 2, rot: turnOf(2 * phi - (b.rot ?? 0)), [flip]: !b[flip] })),
-  );
-}
+const isFrame = (r: El | undefined): boolean => r?.kind === 'frame';
 
 /** The ids from the screen's top level down to `id`, as their index keys: the order elements are drawn in. */
 function paintPath(view: ReadView, id: RecordId): string[] {
@@ -122,9 +65,19 @@ function takes(view: ReadView, id: RecordId, p: Vec): boolean {
   if (frame?.transform === undefined || !inside(frame.transform, p)) return false;
   for (let at: El | undefined = frame; at !== undefined; at = el(view, at.parentId)) {
     if (at.hidden === true) return false;
-    if (at !== frame && at.kind === 'frame' && at.clip !== false && (at.transform === undefined || !inside(at.transform, p))) return false;
+    if (at !== frame && isFrame(at) && at.clip !== false && (at.transform === undefined || !inside(at.transform, p))) return false;
   }
   return true;
+}
+
+/** The frames of `screen` that may take a drop, leaving out those in `moving`, topmost first (the deepest of nested ones first). */
+function dropFrames(view: ReadView, screen: RecordId, moving: ReadonlySet<RecordId>): RecordId[] {
+  return view
+    .members('byScreen', screen)
+    .filter((id) => isFrame(el(view, id)) && !moving.has(id))
+    .map((id) => ({ id, path: paintPath(view, id) }))
+    .sort((a, b) => comparePaths(b.path, a.path))
+    .map((f) => f.id);
 }
 
 /**
@@ -135,27 +88,13 @@ function takes(view: ReadView, id: RecordId, p: Vec): boolean {
  * @public
  */
 export function frameDropTarget(view: ReadView, screen: RecordId, p: Vec2, moving: ReadonlySet<RecordId>): RecordId | undefined {
-  const frames = view.members('byScreen', screen).filter((id) => el(view, id)?.kind === 'frame' && !moving.has(id) && takes(view, id, p));
-  return frames
-    .map((id) => ({ id, path: paintPath(view, id) }))
-    .sort((a, b) => comparePaths(a.path, b.path))
-    .at(-1)?.id;
-}
-
-/** Of `ids`, each once, those with none of the others above them. */
-function outermost(view: ReadView, ids: readonly RecordId[]): RecordId[] {
-  const listed = new Set(ids);
-  const above = (id: RecordId) => {
-    for (let p = el(view, id)?.parentId; p !== undefined; p = el(view, p)?.parentId) if (listed.has(p)) return true;
-    return false;
-  };
-  return [...listed].filter((id) => !above(id));
+  return dropFrames(view, screen, moving).find((id) => takes(view, id, p));
 }
 
 /** Where an element whose centre left its frames goes: its first container above that is no frame (a group), else the screen. */
 function containerOutside(view: ReadView, r: El): RecordId | undefined {
   let at = r.parentId;
-  while (at !== undefined && el(view, at)?.kind === 'frame') at = el(view, at)?.parentId;
+  while (at !== undefined && isFrame(el(view, at))) at = el(view, at)?.parentId;
   return at;
 }
 
@@ -179,12 +118,19 @@ export function dropReparents(view: ReadView, ids: readonly RecordId[]): FrameUp
     .filter((id) => el(view, id)?.type === 'element')
     .sort((a, b) => comparePaths(paintPath(view, a), paintPath(view, b)));
   const moving = new Set(dragged.flatMap((id) => [id, ...below(view, id)]));
+  // the screen's frames are found and ordered once per drag, not once per dragged element (M19 cp2 F7)
+  const framesOf = new Map<RecordId, RecordId[]>();
+  const targetOf = (screen: RecordId, p: Vec): RecordId | undefined => {
+    const frames = framesOf.get(screen) ?? dropFrames(view, screen, moving);
+    framesOf.set(screen, frames);
+    return frames.find((id) => takes(view, id, p));
+  };
   const next = new Map<string, { screen: RecordId; parent: RecordId | undefined; ids: RecordId[] }>();
   for (const id of dragged) {
     const r = el(view, id) as El;
     if (r.transform === undefined || r.screenId === undefined) continue; // a connector has no box: it stays where it is
     if (el(view, r.parentId)?.kind === 'group') continue;
-    const parent = frameDropTarget(view, r.screenId, centreOf(r.transform), moving) ?? containerOutside(view, r);
+    const parent = targetOf(r.screenId, centreOf(r.transform)) ?? containerOutside(view, r);
     if (parent === r.parentId) continue;
     const key = `${r.screenId}\u0000${parent ?? ''}`;
     const entry = next.get(key) ?? { screen: r.screenId, parent, ids: [] };

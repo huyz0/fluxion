@@ -5,8 +5,8 @@ import { compareKeys, keyBetween, type RecordId } from '@fluxion/schema';
 import { z } from 'zod';
 import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, type CommandContext, defineCommand } from '../commands.js';
+import { outermost } from './placed.js';
 import { type El, element, siblings } from './siblings.js';
-import { outermost } from './translate.js';
 
 /**
  * Where an element goes among its siblings: the very top, one place up, one place down, the very bottom.
@@ -108,7 +108,7 @@ export const Z_ORDER_COMMANDS: readonly AnyCommand[] = [
       if (bad) return bad;
       // each sibling list on its own: the picked elements of one parent of one screen
       const lists = new Map<string, Set<RecordId>>();
-      for (const x of outermost(ctx, args.ids as RecordId[])) {
+      for (const x of outermost(ctx.store, args.ids as RecordId[])) {
         const e = element(ctx, x);
         const key = `${e.screenId}|${e.parentId ?? ''}`;
         lists.set(key, (lists.get(key) ?? new Set()).add(x));

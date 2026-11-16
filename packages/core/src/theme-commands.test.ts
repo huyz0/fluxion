@@ -38,6 +38,18 @@ describe('theme commands (FR-THM-004, ADR-0152)', () => {
     expect((core.store.get(themeRecordId(dark.name) as RecordId) as unknown as { tableStyles?: unknown }).tableStyles).toEqual(tableStyles);
   });
 
+  it('FR-SHP-014 FR-THM-004: a theme whose table style paints a cell with an image is refused and writes nothing (M19.35)', () => {
+    const { core } = setup();
+    const tableStyles = { banded: { cell: { fill: { type: 'image', assetId: 'img1' } } } };
+    const r = core.execute('document.setTheme', { theme: { ...dark, tableStyles } });
+    // refused at the argument, by the schema's tableStyleSchema, before any record is written (r1 F4)
+    expect(r.ok ? undefined : [r.error.code, r.error.diagnostics?.map((d) => [d.path, d.message])]).toEqual([
+      'COMMAND_ARGS',
+      [['/args/theme/tableStyles/banded/cell/fill', 'an image paint is not allowed here']],
+    ]);
+    expect([core.store.get(themeRecordId(dark.name) as RecordId), core.store.history.undoDepth]).toEqual([undefined, 0]);
+  });
+
   it('FR-THM-004: switching back never duplicates or overwrites the theme record', () => {
     const { core, doc, field } = setup();
     core.execute('document.setTheme', { theme: dark });

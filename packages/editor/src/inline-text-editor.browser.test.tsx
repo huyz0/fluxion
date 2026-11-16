@@ -1,4 +1,4 @@
-import { createCore } from '@fluxion/core';
+import { createCore, type ShapeDef } from '@fluxion/core';
 import { renderRegistriesFor } from '@fluxion/player';
 import type { ElementRecord, RecordId, RichTextDoc, TextElement } from '@fluxion/schema';
 import { documentBuilder } from '@fluxion/schema/testing';
@@ -129,5 +129,45 @@ describe('inline text editing (FR-TXT-003)', () => {
     await act(frame);
     expect(session.editing.get()).toBe(text);
     expect(session.entered.get()).toBe('TextGroup0000001');
+  });
+
+  it('FR-SHP-007: the open editor is named for the region it edits, and plainly for the element text', async () => {
+    const card: ShapeDef = {
+      id: 'test:card',
+      outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' },
+      textRegions: [
+        { name: 'title', x: 0.05, y: 0.05, w: 0.9, h: 0.3 },
+        { name: 'body', x: 0.05, y: 0.4, w: 0.9, h: 0.5 },
+      ],
+      defaultSize: { w: 200, h: 100 },
+    };
+    const b = documentBuilder({ seed: 73 });
+    const screen = b.screen({ size: { w: 800, h: 600 } });
+    const id = b.rect(screen, { x: 100, y: 100, w: 200, h: 100 });
+    const file = b.build();
+    const records = { ...file.records, [id]: { ...(file.records[id] as object), defId: card.id } } as typeof file.records;
+    const core = createCore({ ...file, records });
+    core.registries.shapeDefs.register(card.id, card, 'test');
+    const session = createSession('t');
+    await act(async () =>
+      root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />),
+    );
+    await act(frame);
+    const named = () => host.querySelector('[role="textbox"][aria-multiline="true"]')?.getAttribute('aria-label');
+    await act(async () => {
+      session.selection.set([id]);
+      session.editingRegion.set('body');
+      session.editing.set(id);
+    });
+    await act(frame);
+    expect(named()).toBe('Edit text: body');
+    await act(async () => {
+      session.editing.set(undefined);
+      session.editingRegion.set(undefined);
+    });
+    await act(frame);
+    await act(async () => session.editing.set(id));
+    await act(frame);
+    expect(named()).toBe('Text');
   });
 });

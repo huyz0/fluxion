@@ -87,6 +87,21 @@ describe('element.matchSize (FR-ARR-007)', () => {
     expect(near(t(g))).toEqual([0, 300, 200, 100]);
   });
 
+  it('FR-ARR-007: a listed group that holds the key is left out, so the key keeps its size; a frame holding it is sized (M19 cp2 F6)', () => {
+    const { core, k, a, r, g, p, f, m, t } = setup();
+    // group O holds the key k (200 wide) and a: sizing O to k's width would shrink k with it
+    expect(core.execute('element.group', { ids: [k, a], groupId: 'O' }).ok).toBe(true);
+    const o = 'O' as RecordId;
+    expect(core.execute('element.matchSize', { ids: [o, r], key: k, mode: 'width' }).ok).toBe(true);
+    expect([t(k), t(a), t(o).w, t(r).w]).toEqual([{ x: 0, y: 0, w: 200, h: 100, rot: 0 }, { x: 300, y: 0, w: 50, h: 40, rot: 0 }, 350, 200]);
+    // the group alone leaves nothing to size
+    expect(core.execute('element.matchSize', { ids: [o], key: k, mode: 'both' }).ok).toBe(false);
+    expect(core.execute('element.matchSize', { ids: [g], key: p, mode: 'both' }).ok).toBe(false);
+    // a frame's resize leaves its members alone, so a frame holding the key takes its size
+    expect(core.execute('element.matchSize', { ids: [f], key: m, mode: 'width' }).ok).toBe(true);
+    expect([t(f).w, t(m)]).toEqual([40, { x: 560, y: 360, w: 40, h: 40, rot: 0 }]);
+  });
+
   it('FR-ARR-007: a key or element that is no element, a key without a box, or nothing left to size is refused and changes nothing', () => {
     const { core, k, a, c } = setup();
     const before = core.store.history.undoDepth;

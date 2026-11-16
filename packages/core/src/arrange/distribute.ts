@@ -7,7 +7,8 @@ import { checkIds, id, refuse, title, write } from '../command-helpers.js';
 import { type AnyCommand, defineCommand } from '../commands.js';
 import { drawnBounds } from './align.js';
 import { hasLock } from './locks.js';
-import { movesFor, outermost } from './translate.js';
+import { outermost } from './placed.js';
+import { movesFor } from './translate.js';
 
 type Box = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
 
@@ -83,7 +84,7 @@ export const DISTRIBUTE_COMMANDS: readonly AnyCommand[] = [
         args.ids.map((x, i) => [['ids', i], x] as const),
       );
       if (bad) return bad;
-      const ordered = outermost(ctx, args.ids as RecordId[]);
+      const ordered = outermost(ctx.store, args.ids as RecordId[]);
       const screens = new Set(ordered.map((x) => (ctx.store.get(x) as unknown as { screenId?: unknown }).screenId));
       if (screens.size > 1) return refuse('element.distribute', ['ids'], 'the elements are on different screens');
       // a position-locked element keeps its place and is left out of the spacing: the others are spaced among themselves (FR-SHP-008)

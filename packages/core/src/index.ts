@@ -1,7 +1,8 @@
 // Public entry of @fluxion/core; the package comment is the dts banner in tsdown.config.ts.
 
 export type { Random } from '@fluxion/schema';
-export { dropReparents, elementFlipped, type FrameUpdate, frameDropTarget } from './arrange/frames.js';
+export { elementFlipped } from './arrange/flip.js';
+export { dropReparents, type FrameUpdate, frameDropTarget } from './arrange/frames.js';
 export { hasLock, type LockName, lockedWithin } from './arrange/locks.js';
 export { type Core, createCore } from './bootstrap.js';
 export { CORE_COMMANDS, registerCoreCommands } from './builtin-commands.js';

@@ -67,7 +67,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-SHP-004 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/geometry/src/round.test.ts` +7 |
 | FR-SHP-005 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/shape/hit.test.ts`, `packs/basic/src/hit.test.ts` |
 | FR-SHP-006 | M | R1 | M5 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/text.inline-edit.spec.ts` +9 |
-| FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +12 |
+| FR-SHP-007 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `apps/studio/src/pack-catalog.test.ts` +13 |
 | FR-SHP-008 | M | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/locks.spec.ts` +4 |
 | FR-SHP-009 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `packages/core/src/arrange/flip.test.ts` +3 |
 | FR-SHP-010 | S | R3 | M19 | [11-shapes-and-library.md](11-shapes-and-library.md) | `e2e/arrange.boolean.spec.ts` +13 |
@@ -138,7 +138,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-ARR-004 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/arrange.align-distribute-order.spec.ts` +3 |
 | FR-ARR-005 | M | R1 | M8 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/snapping.smart-guides.spec.ts` +3 |
 | FR-ARR-006 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `packages/core/src/commands/frames.test.ts` +6 |
-| FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/style-paint.spec.ts` +4 |
+| FR-ARR-007 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/style-paint.spec.ts` +5 |
 | FR-ARR-008 | S | R3 | M19 | [13-layout-and-arrange.md](13-layout-and-arrange.md) | `e2e/layers.reorder.spec.ts` +3 |
 | FR-THM-001 | M | R1 | M4, M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/render/src/ssr.test.ts` +6 |
 | FR-THM-002 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/derive.test.ts` |

@@ -211,3 +211,28 @@ describe('rounding what a gesture writes (FR-EDT-022)', () => {
     expect((full[0]?.fields['transform'] as { rot: number } | undefined)?.rot).toBe(0);
   });
 });
+
+// M19 cp2 F4: core's match size scales a group's members as the editor's group resize does; one test pins the two equal
+describe("match size and the group resize carry a group's members the same way (FR-ARR-007)", () => {
+  it("FR-ARR-007: element.matchSize on a group gives each member the fields reframed gives it, within the editor's rounding", () => {
+    const b = documentBuilder({ seed: 1935 });
+    const screen = b.screen({ size: { w: 1000, h: 800 } });
+    const key = b.rect(screen, { x: 600, y: 600, w: 300, h: 130 });
+    const p = b.rect(screen, { x: 100, y: 100, w: 80, h: 40 });
+    const q = b.rect(screen, { x: 220, y: 160, w: 60, h: 60 });
+    const core = createCore(b.build());
+    expect(core.execute('element.update', { id: q, fields: { transform: { x: 220, y: 160, w: 60, h: 60, rot: 30 } } }).ok).toBe(true);
+    expect(core.execute('element.group', { ids: [p, q], groupId: 'MatchGroup000001' }).ok).toBe(true);
+    const g = 'MatchGroup000001' as RecordId;
+    const box = (id: RecordId) => (core.store.get(id) as unknown as { transform: { x: number; y: number; w: number; h: number; rot?: number } }).transform;
+    const before = { ...box(g), rot: box(g).rot ?? 0 };
+    const after = { ...before, w: 300, h: 130 };
+    const expected = reframed(starts(core.store, [p, q]), before, after);
+    expect(core.execute('element.matchSize', { ids: [g], key, mode: 'both' }).ok).toBe(true);
+    for (const e of expected) {
+      const t = box(e.id);
+      const want = e.fields['transform'] as Record<string, number>;
+      for (const f of ['x', 'y', 'w', 'h', 'rot'] as const) expect(t[f] ?? 0).toBeCloseTo(want[f] ?? 0, 1);
+    }
+  });
+});

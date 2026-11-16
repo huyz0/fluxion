@@ -915,6 +915,9 @@ export type TableStyle = Extensible<{
 }>;
 
 // @public
+export const tableStyleSchema: z.ZodType<TableStyle>;
+
+// @public
 export type Tagged = Extensible<{
     readonly kind: string;
 }>;
