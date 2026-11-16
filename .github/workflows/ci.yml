@@ -293,6 +293,8 @@ jobs:
           BROWSER: ${{ matrix.browser }}
           MOBILE: ${{ matrix.mobile }}
           SHARD: ${{ matrix.shard }}
+          # M19.57: on a pull request only chromium runs the fidelity, parity and axe scans; push and nightly run every engine
+          FLUXION_E2E_SCANS_CHROMIUM_ONLY: ${{ github.event_name == 'pull_request' && matrix.browser != 'chromium' && '1' || '' }}
       - if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

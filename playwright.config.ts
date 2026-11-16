@@ -5,10 +5,15 @@ import { defineConfig, devices } from '@playwright/test';
 // Retries are detect-only: a retried pass is reported as flaky by scripts/ci/flake-report.mjs (M1.20).
 // not vite preview's default 4173, so a preview of another project is never reused by mistake
 const PORT = 4317;
+// M19.57: a pull request's firefox and webkit legs leave the fidelity, parity and a11y specs to chromium
+// (ci.yml sets FLUXION_E2E_SCANS_CHROMIUM_ONLY there); main's push runs and the nightly run them on every engine
+const CHROMIUM_ONLY_SCANS = ['**/file.fidelity.spec.ts', '**/parity.edit-vs-present.spec.ts', '**/a11y.*.spec.ts'];
+const scansElsewhere = process.env.FLUXION_E2E_SCANS_CHROMIUM_ONLY === '1';
 
 export default defineConfig({
   testDir: 'e2e',
   testMatch: '**/*.spec.ts',
+  testIgnore: scansElsewhere ? CHROMIUM_ONLY_SCANS : [],
   fullyParallel: true,
   forbidOnly: true,
   retries: 1,

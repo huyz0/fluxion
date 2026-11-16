@@ -69,6 +69,7 @@ jobs:
   build:             # turbo run build --affected; uploads dist/ artifact
   e2e:               # needs build; matrix browser: [chromium, firefox, webkit] × shard: [1/3..3/3]; the chromium
                      # shards are the a11y gate: every spec, axe (0 serious/critical) included (ADR-0207)
+                     # on a pull request the firefox/webkit legs skip fidelity, parity and axe (M19.57)
     container: mcr.microsoft.com/playwright:v1.62.0-noble
     steps: [... , pnpm test:e2e --project=$browser --shard=$shard, upload blob-report]
   e2e-report:        # needs e2e; playwright merge-reports; flake-report

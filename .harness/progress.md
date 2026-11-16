@@ -5093,3 +5093,8 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 - Local `precommit.mjs --all --no-coverage`: PASS, docs 5.1 s (warm turbo cache), 354 s.
 - build-settle.test.mjs pins ALL_BUILD, DOCS_BUILD and the settled docs step; tests/harness/docs-output.test.mjs the output check.
 - r1 (changes-requested, fixed): F1 the test step ran apps/docs/src/guide-drift.test.ts's FR-AI-011 dist case while the docs step rebuilt apps/docs/dist (Astro empties it first): on a fresh checkout it skipped, locally it could read a half-written file. The case moves out of the test step: the docs step checks the output once built (`docsOutputProblem`), and guide-drift keeps its source checks; nothing else read the dist but m1/m14-complete, which build it first.
+
+## 2026-11-16 M19.57: a pull request's firefox and webkit legs leave the scans to chromium
+- ci.yml e2e: `FLUXION_E2E_SCANS_CHROMIUM_ONLY` is '1' only when the event is a pull request and the leg is not chromium. playwright.config.ts then ignores file.fidelity, parity.edit-vs-present and a11y.*; e2e/test.ts's expectAccessible returns before axe. Push runs and the nightly never set it.
+- Test: tests/harness/ci-pr-scans.test.mjs (the expression in ci.yml only, `playwright test --list --project=firefox` with and without the switch, the fixture's early return). ci-cd.md notes the rule.
+- Saves nothing on this repo's push-to-main flow (cp8 F3); it applies once work goes through pull requests.

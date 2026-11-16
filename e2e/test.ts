@@ -64,6 +64,8 @@ export const test = base.extend<Fixtures>({
   },
   expectAccessible: async ({ page }, use) => {
     await use(async () => {
+      // M19.57: a pull request's firefox and webkit legs leave axe to the chromium leg (playwright.config.ts)
+      if (process.env['FLUXION_E2E_SCANS_CHROMIUM_ONLY'] === '1') return;
       const { violations } = await new AxeBuilder({ page }).analyze();
       const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
       // each violation with the elements it names, so a failure on one engine says where to look

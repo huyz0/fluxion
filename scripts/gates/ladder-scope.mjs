@@ -55,6 +55,8 @@ export const SOURCE_HARNESS = [
 export const SAMPLE_HARNESS = [
   'adapters',
   'api',
+  // reads ci.yml, nightly.yml, gates.yml and e2e/test.ts and lists e2e specs, no package source: their change runs the whole harness
+  'ci-pr-scans',
   'coverage',
   // copies the font-engine assets (wasm, manifest), not sources: a change to them runs the whole harness
   'font-engine-evidence',
