@@ -17,36 +17,52 @@ const cases = [
   },
   { name: 'viewport-aspect-fit', source: '<svg width="200" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="blue"/></svg>' },
 ];
-for (const { name, source } of cases) {
-  test(`FR-LIB-004: frozen SVG ${name} has actual isolated renderer paint @desktop`, async ({ page, blocked }, info) => {
+// M19.56: the cases run in batches, one editor per batch (an editor open costs a few seconds on Firefox and WebKit), each case its own
+// step with every assertion it had as its own test; the batch's budget is 15 s a case, under the 30 s each case had alone
+const BATCH = 6;
+const batches = Array.from({ length: Math.ceil(cases.length / BATCH) }, (_, i) => cases.slice(i * BATCH, (i + 1) * BATCH));
+for (const [b, batch] of batches.entries()) {
+  test(`FR-LIB-004: frozen SVGs batch ${b + 1}/${batches.length} (${batch[0]?.name} to ${batch.at(-1)?.name}) have actual isolated renderer paint @desktop`, async ({
+    page,
+    blocked,
+  }, info) => {
+    test.setTimeout(batch.length * 15_000);
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.addInitScript(() => Object.assign(window, { __FLUXION_TEST_HOOKS__: true }));
     await new EditorPage(page).open('new');
     await loadImportFont(page);
-    let witnessFailure: unknown;
-    const result = await importSvgShape(source, {
-      id: 'test:imported',
-      fonts: [importFace],
-      defaultFont: importFace.sha256,
-      witness: async (request) => {
-        try {
-          await mountImportPaint(page, request);
-          await page.keyboard.press('F5');
-          const { receipt, screenshots } = await observeImportPaint(page, request);
-          expect(receipt.status).toBe('painted');
-          await info.attach('isolated-artwork-black', { body: screenshots[0], contentType: 'image/png' });
-          await info.attach('isolated-artwork-white', { body: screenshots[1], contentType: 'image/png' });
-          await compareImportSource(page, source, request, { actual: screenshots, controls: name === 'lucide-accessibility.svg' });
-          return receipt;
-        } catch (error) {
-          witnessFailure = error;
-          throw error;
-        }
-      },
-    });
-    expect(witnessFailure).toBeUndefined();
-    expect(result.ok, JSON.stringify(result)).toBe(true);
-    expect(blocked).toEqual([]);
+    for (const [i, { name, source }] of batch.entries()) {
+      await test.step(name, async () => {
+        let witnessFailure: unknown;
+        const result = await importSvgShape(source, {
+          id: 'test:imported',
+          fonts: [importFace],
+          defaultFont: importFace.sha256,
+          witness: async (request) => {
+            try {
+              await mountImportPaint(page, request, b * BATCH + i + 1);
+              await page.keyboard.press('F5');
+              const { receipt, screenshots } = await observeImportPaint(page, request);
+              expect(receipt.status).toBe('painted');
+              await info.attach(`${name} isolated-artwork-black`, { body: screenshots[0], contentType: 'image/png' });
+              await info.attach(`${name} isolated-artwork-white`, { body: screenshots[1], contentType: 'image/png' });
+              await compareImportSource(page, source, request, { actual: screenshots, controls: name === 'lucide-accessibility.svg' });
+              return receipt;
+            } catch (error) {
+              witnessFailure = error;
+              throw error;
+            } finally {
+              // back to the editor for the next case
+              await page.keyboard.press('Escape');
+              await expect(page.getByTestId('present-in-place')).toHaveCount(0);
+            }
+          },
+        });
+        expect(witnessFailure).toBeUndefined();
+        expect(result.ok, JSON.stringify(result)).toBe(true);
+        expect(blocked).toEqual([]);
+      });
+    }
   });
 }
 

@@ -34,32 +34,39 @@ export async function loadImportFont(page: Page): Promise<void> {
   }, bytes.toString('base64'));
 }
 
-export async function mountImportPaint(page: Page, request: SvgPaintRequest): Promise<void> {
+/**
+ * Draw `request`'s artwork as the screen's one shape. `slot` names a fresh definition, so a page that mounts several requests in
+ * turn (svg-import's batches, M19.56) never redraws an earlier one: the shape element is replaced, its definition is new.
+ */
+export async function mountImportPaint(page: Page, request: SvgPaintRequest, slot = 0): Promise<void> {
   expect(request.fonts.every((f) => f.sha256 === importFace.sha256 && f.family === importFace.family && f.weight === 400 && f.style === 'normal')).toBe(true);
   expect(
-    await page.evaluate(({ artwork, width, height }) => {
-      const hooks = (window as unknown as { __fluxion: Hooks }).__fluxion;
-      const failure = hooks.registerShape({
-        id: 'test:import-witness',
-        defaultSize: { w: width, h: height },
-        artwork,
-        outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' },
-        anchors: [],
-      });
-      if (failure) return failure;
-      const screen = Object.values(hooks.records()).find((r) => r['type'] === 'screen');
-      return hooks.applyRecords([
-        {
-          id: 'ImportWitness01',
-          type: 'element',
-          kind: 'shape',
-          screenId: screen?.['id'],
-          index: 'a0',
-          defId: 'test:import-witness',
-          transform: { x: 0, y: 0, w: width, h: height },
-        },
-      ]);
-    }, request),
+    await page.evaluate(
+      ({ artwork, width, height, defId }) => {
+        const hooks = (window as unknown as { __fluxion: Hooks }).__fluxion;
+        const failure = hooks.registerShape({
+          id: defId,
+          defaultSize: { w: width, h: height },
+          artwork,
+          outline: { path: 'M 0 0 L {w} 0 L {w} {h} L 0 {h} Z' },
+          anchors: [],
+        });
+        if (failure) return failure;
+        const screen = Object.values(hooks.records()).find((r) => r['type'] === 'screen');
+        return hooks.applyRecords([
+          {
+            id: 'ImportWitness01',
+            type: 'element',
+            kind: 'shape',
+            screenId: screen?.['id'],
+            index: 'a0',
+            defId,
+            transform: { x: 0, y: 0, w: width, h: height },
+          },
+        ]);
+      },
+      { ...request, defId: slot === 0 ? 'test:import-witness' : `test:import-witness-${slot}` },
+    ),
   ).toBeUndefined();
 }
 
