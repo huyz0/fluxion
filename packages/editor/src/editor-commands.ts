@@ -21,6 +21,7 @@ import { deleteSelection, nudgeSelection, selectAll } from './select-actions.js'
 import { selectSame } from './select-same.js';
 import { copyStyle, pasteStyle } from './style-paint.js';
 import { TABLE_ACTIONS } from './table-commands.js';
+import { editPickedCell } from './table-edit.js';
 import { editSelectedText } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
 
@@ -323,7 +324,8 @@ export const EDITOR_COMMANDS: readonly EditorCommand[] = [
   {
     id: 'text.edit',
     title: 'Edit the text',
-    run: (ctx) => selectIdle(ctx) && editSelectedText(ctx.tools.ctx.session, ctx.tools.ctx.view),
+    // with a table's cell picked, Enter edits that cell's text (FR-SHP-014, M19.43)
+    run: (ctx) => selectIdle(ctx) && (editPickedCell(ctx.tools.ctx.session, ctx.tools.ctx.view) || editSelectedText(ctx.tools.ctx.session, ctx.tools.ctx.view)),
   },
   {
     id: 'help.keys',

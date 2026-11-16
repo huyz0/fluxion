@@ -8,7 +8,7 @@ import { commandMap, dispatchKey, EDITOR_COMMANDS } from './editor-commands.js';
 import { DEFAULT_KEYMAP, type KeyPress } from './keymap.js';
 import type { PointerInfo, PointerPhase } from './pointer.js';
 import { createSession } from './session.js';
-import { pickForMenu } from './table-edit.js';
+import { editCellAt, editPickedCell, openCell, pickForMenu } from './table-edit.js';
 import { createToolDispatcher, createToolRegistry, type ToolCtx } from './tools.js';
 
 /** A 3 × 3 table of 300 × 90 at (100, 100) (cells 100 × 30), with the select tool over it. */
@@ -222,5 +222,66 @@ describe('table editing in the editor (FR-SHP-014, ADR-0054)', () => {
     expect(t.session.tableCells.get()).toEqual({ id, row: 0, col: 0, toRow: 0, toCol: 0 });
     t.core.store.history.undo();
     expect(t.core.store.get(id as RecordId)).toBeUndefined();
+  });
+  it('FR-SHP-014: each row and column line beside the picked cell lands where it says, the picked cell moving with its own (cp4 F6)', () => {
+    const t = setup();
+    t.session.selection.set([t.id]);
+    // the middle cell holds text, so each case can tell which line moved
+    const text = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'x' }] }] };
+    expect(t.core.execute('element.update', { id: t.id, fields: { cells: { '1:1': { text } } } }).ok).toBe(true);
+    t.core.store.history.seal();
+    const keys = () => Object.keys(t.table().cells);
+    click(t, 250, 145);
+    expect(t.run('table.insertRowAbove')).toBe(true);
+    // the new row goes before row 1, so the text and the picked cell move down to row 2
+    expect([t.table().rows.length, keys()]).toEqual([4, ['2:1']]);
+    expect(t.session.tableCells.get()).toEqual({ id: t.id, row: 2, col: 1, toRow: 2, toCol: 1 });
+    t.core.store.history.undo();
+    click(t, 250, 145);
+    expect(t.run('table.insertColumnRight')).toBe(true);
+    // the new column goes after column 1: the text and the picked cell stay at 1:1
+    expect([t.table().cols.length, keys()]).toEqual([4, ['1:1']]);
+    expect(t.session.tableCells.get()).toEqual({ id: t.id, row: 1, col: 1, toRow: 1, toCol: 1 });
+    t.core.store.history.undo();
+    click(t, 250, 115);
+    expect(t.run('table.deleteRow')).toBe(true);
+    // row 0 goes: the text moves up to row 0 and the picked cell stays on the row that took the deleted one's place
+    expect([t.table().rows.length, keys()]).toEqual([2, ['0:1']]);
+    expect(t.session.tableCells.get()).toEqual({ id: t.id, row: 0, col: 1, toRow: 0, toCol: 1 });
+    t.core.store.history.undo();
+    click(t, 350, 145);
+    expect(t.run('table.deleteColumn')).toBe(true);
+    // column 2 goes: the text keeps its place, and the picked cell steps back inside the grid
+    expect([t.table().cols.length, keys()]).toEqual([2, ['1:1']]);
+    expect(t.session.tableCells.get()).toEqual({ id: t.id, row: 1, col: 1, toRow: 1, toCol: 1 });
+  });
+
+  it("FR-SHP-014: a double-click on a cell, or Enter with one picked, opens that cell's text; a covered cell or a locked table opens none (M19.43)", () => {
+    const t = setup();
+    // a double-click on an unselected table selects it and opens the cell there, picked
+    expect(editCellAt(t.session, t.core.store, t.id, { x: 250, y: 145 })).toBe(true);
+    expect(t.session.selection.get()).toEqual([t.id]);
+    expect(t.session.tableCells.get()).toEqual({ id: t.id, row: 1, col: 1, toRow: 1, toCol: 1 });
+    expect(t.session.editingCell.get()).toEqual({ id: t.id, row: 1, col: 1 });
+    expect(editCellAt(t.session, t.core.store, t.id, { x: 50, y: 50 })).toBe(false);
+    expect(editCellAt(t.session, t.core.store, t.rect, { x: 620, y: 620 })).toBe(false);
+    // another selection closes it
+    t.session.selection.set([t.rect]);
+    expect(t.session.editingCell.get()).toBeUndefined();
+    // Enter with a range picked across a merged cell opens the merged cell's own
+    t.core.execute('element.update', { id: t.id, fields: { cells: { '0:0': { rowSpan: 2, colSpan: 2 } } } });
+    t.session.selection.set([t.id]);
+    expect(editPickedCell(t.session, t.core.store)).toBe(false);
+    t.session.tableCells.set({ id: t.id, row: 1, col: 1, toRow: 1, toCol: 2 });
+    expect(t.key('enter')).toBe(true);
+    expect(t.session.editingCell.get()).toEqual({ id: t.id, row: 0, col: 0 });
+    // a cell a merged one covers is no cell of its own
+    t.session.editingCell.set(undefined);
+    expect(openCell(t.session, t.core.store, { id: t.id, row: 1, col: 1 })).toBe(false);
+    expect(t.session.editingCell.get()).toBeUndefined();
+    // locked against editing, no cell opens
+    t.core.execute('element.update', { id: t.id, fields: { locks: { edit: true } } });
+    expect(openCell(t.session, t.core.store, { id: t.id, row: 2, col: 2 })).toBe(false);
+    expect(editCellAt(t.session, t.core.store, t.id, { x: 350, y: 175 })).toBe(false);
   });
 });

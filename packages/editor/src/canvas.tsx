@@ -27,6 +27,8 @@ import type { Execute, PointerInfo } from './pointer.js';
 import { type PointerConsumer, usePointerInput } from './pointer-input.js';
 import { QuickConnectMenu } from './quick-connect-menu.js';
 import type { Session } from './session.js';
+import { TableCellEditor } from './table-cell-editor.js';
+import { editCellAt } from './table-edit.js';
 import { regionAt, textElement } from './text-edit.js';
 import { SELECT_TOOL, type ToolDispatcher } from './tools.js';
 import { CONTEXT_MENU_EVENT } from './touch.js';
@@ -215,7 +217,7 @@ function canvasConsumer(session: Session, space: RefObject<boolean>, drag: RefOb
 
 /**
  * A double-click on a group enters it, to edit its members (Esc leaves it); on a path shape it edits its vertices (FR-SHP-011);
- * on an element with text it opens the text for editing in place; on a master's placeholder hint it fills the placeholder (the select
+ * on an element with text it opens the text for editing in place, and on a table the cell's; on a master's placeholder hint it fills the placeholder (the select
  * tool, between gestures).
  */
 function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatcher | undefined): void {
@@ -223,7 +225,8 @@ function editAt(e: MouseEvent<HTMLElement>, session: Session, tools: ToolDispatc
   const r = e.currentTarget.getBoundingClientRect();
   const at = screenToPage(session.camera.get(), { x: e.clientX - r.left, y: e.clientY - r.top });
   const hit = tools.ctx.hitTest(at);
-  if (hit !== undefined && (enterGroup(tools.ctx, hit, at) || enterPathEdit(tools.ctx, hit))) return;
+  // on a table, the cell there opens for its text (FR-SHP-014, M19.43)
+  if (hit !== undefined && (enterGroup(tools.ctx, hit, at) || enterPathEdit(tools.ctx, hit) || editCellAt(session, tools.ctx.view, hit, at))) return;
   // on no element of the screen, a master's placeholder hint is filled (FR-SCR-005)
   if (hit === undefined && fillAt(tools.ctx, at)) return;
   const element = hit === undefined ? undefined : textElement(tools.ctx.view, hit);
@@ -321,6 +324,7 @@ export function Canvas(props: CanvasProps): ReactNode {
           />
           {overlay ? <Overlay store={store} session={session} box={box} shapeDefs={registries.shapeDefs} routes={registries} /> : null}
           {execute === undefined ? null : <InlineTextEditor store={store} registries={registries} session={session} execute={execute} />}
+          {execute === undefined ? null : <TableCellEditor store={store} session={session} execute={execute} />}
           {tools === undefined ? null : <QuickConnectMenu tools={tools} shapeDefs={registries.shapeDefs} canvas={ref} />}
         </>
       )}

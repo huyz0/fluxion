@@ -393,6 +393,9 @@ export type TableCellBox = {
 };
 
 // @public
+export function tableCellLabel(table: Pick<TableElement, "id" | "tableStyle">, row: number, style: Style | undefined, theme: Theme): CSSProperties;
+
+// @public
 export function tableCells(table: Pick<TableElement, "rows" | "cols" | "cells">, size: {
     readonly w: number;
     readonly h: number;

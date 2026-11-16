@@ -49,6 +49,10 @@ Choose **Insert table** from the palette. With the table selected, click a cell 
 **Insert row above/below**, **Insert column left/right**, **Delete row**, **Delete column**, **Merge cells** and **Split cell**.
 **Tab** and **Shift+Tab** move to the next and previous cell; drag a border between two rows or columns to resize them.
 
+To type in a cell, double-click it, or pick it and press **Enter**. While you type, **Tab** and **Shift+Tab** keep what you wrote
+and open the next or previous cell, skipping the cells a merged cell covers. **Esc**, or clicking elsewhere, finishes. Each cell
+you change is one step in the undo history. A table locked against editing keeps its text as it is.
+
 ## Master screens
 
 A master screen holds a background and elements that other screens share. In the screen navigator's menu, **Make master** turns a

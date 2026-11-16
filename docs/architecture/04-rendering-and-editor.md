@@ -377,7 +377,11 @@ Every edit below is one command, so one undo step (ADR-0014); opening or closing
   and the transform so the points that did not move stay put.
 - **Tables** (FR-SHP-014, ADR-0054): `table-edit.ts` picks a cell with a click on a selected table (Shift extends the range); the
   table commands insert and delete rows and columns, merge and split; Tab and Shift+Tab step the picked cell; a drag on an inner
-  border resizes the rows or columns beside it (`table-resize.ts`). The grid maths is core's (`table-ops.ts`).
+  border resizes the rows or columns beside it (`table-resize.ts`). The grid maths is core's (`table-ops.ts`). A double-click on a
+  cell, or Enter with one picked, opens its rich text in place (`table-cell-editor.tsx`, `session.editingCell`; M19.43): a
+  ProseMirror view over the cell's box, laid out with render's `tableCellLabel`. Esc or focus leaving commits one `element.update`
+  of the table's cells (one undo step); Tab and Shift+Tab commit and open the next or previous cell in reading order (`stepCell`,
+  so cells a merged one covers are skipped). A table locked against editing opens no cell.
 - **Masters** (FR-SCR-005, ADR-0054): the navigator lists masters in their own section and its menu makes a screen a master, uses
   one or drops it; "Make placeholder" names a master's element a placeholder; a double-click on a placeholder hint fills it on that
   screen; "Edit master" opens the shown screen's master and "Close master" goes back (`master-edit.ts`). `master-problems.ts` reports

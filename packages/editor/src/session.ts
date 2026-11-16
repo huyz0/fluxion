@@ -60,6 +60,8 @@ export type Session = {
   readonly pathEdit: WritableSignal<PathEditing | undefined>;
   /** The selected cells of the one selected table (FR-SHP-014; a click on a selected table picks one, shift-click extends), if any. */
   readonly tableCells: WritableSignal<TableCellRange | undefined>;
+  /** The table cell whose text is being edited in place (FR-SHP-014, M19.43; double-click it, or Enter with it picked), if any. */
+  readonly editingCell: WritableSignal<TableCellAt | undefined>;
   /** A quick-connect drag dropped on nothing (FR-EDT-015): where, waiting for the mini library's choice; undefined otherwise. */
   readonly quickDrop: WritableSignal<QuickDrop | undefined>;
   /** The find bar's state while it is open (FR-EDT-016; Ctrl/Cmd+F); undefined while closed. */
@@ -98,6 +100,20 @@ export type QuickDrop = {
   readonly at: Vec2;
   /** The same point on the canvas, px from its top-left (where the mini library opens). */
   readonly screen: Vec2;
+};
+
+/**
+ * A cell of a table: the table and the row and column the cell starts at (a merged cell's first).
+ *
+ * @public
+ */
+export type TableCellAt = {
+  /** The table. */
+  readonly id: RecordId;
+  /** The cell's row. */
+  readonly row: number;
+  /** Its column. */
+  readonly col: number;
 };
 
 /**
@@ -175,6 +191,7 @@ export function createSession(docId: string): Session {
     grid: writable(false),
     pathEdit: writable<PathEditing | undefined>(undefined),
     tableCells: writable<TableCellRange | undefined>(undefined),
+    editingCell: writable<TableCellAt | undefined>(undefined),
     quickDrop: writable<QuickDrop | undefined>(undefined),
     find: writable<FindState | undefined>(undefined),
     styleSource: writable<RecordId | undefined>(undefined),
@@ -187,6 +204,8 @@ export function createSession(docId: string): Session {
     if (editing !== undefined && (only !== editing.id || rest.length > 0)) session.pathEdit.set(undefined);
     const cells = session.tableCells.get();
     if (cells !== undefined && (only !== cells.id || rest.length > 0)) session.tableCells.set(undefined);
+    const cell = session.editingCell.get();
+    if (cell !== undefined && (only !== cell.id || rest.length > 0)) session.editingCell.set(undefined);
   });
   return session;
 }

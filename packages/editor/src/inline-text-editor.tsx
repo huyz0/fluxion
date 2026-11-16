@@ -9,8 +9,8 @@ import type { RecordId, RichTextDoc, ShapeElement, TextElement } from '@fluxion/
 import { LIGHT_THEME, toCssVars } from '@fluxion/theme';
 import { EditorView } from 'prosemirror-view';
 import { type ReactNode, useEffect, useMemo, useRef } from 'react';
-import { pageToScreen } from './camera.js';
-import { placements } from './overlay-geometry.js';
+import { type Camera, pageToScreen } from './camera.js';
+import { type Placed, placements } from './overlay-geometry.js';
 import type { Execute } from './pointer.js';
 import type { Session } from './session.js';
 import { regionAfter, textElement } from './text-edit.js';
@@ -71,40 +71,48 @@ function write(deps: Pick<InlineTextEditorProps, 'store' | 'registries' | 'execu
 }
 
 /**
- * Open the ProseMirror editor in `parent` on the text of `id` (its region `region`, when named); returns what closes it, which
- * writes what was typed. Esc or focus leaving closes it too.
+ * What an in-place editor edits (an element's text or region, a table cell's, M19.43): the text it opens on, its accessible name,
+ * what its closing does in the session, where a changed text is written, and where Tab and Shift+Tab (`back`) go.
  */
-function openEditor(parent: HTMLElement, ctx: InlineTextEditorProps & { readonly id: RecordId; readonly region: string | undefined }): () => void {
-  const { store, registries, session, execute, id, region } = ctx;
-  const initial = textElement(store, id);
-  if (initial === undefined) return () => undefined;
+export type InPlaceText = {
+  /** The text the editor opens on. */
+  readonly text: RichTextDoc | undefined;
+  /** The editor's accessible name. */
+  readonly name: string;
+  /** The editor closed: the session forgets what was being edited (before the text is written). */
+  readonly closed: () => void;
+  /** Writes the text typed, as one undo step; called only when it changed. */
+  readonly write: (text: RichTextDoc) => void;
+  /** What opens next once this text is committed, or false to leave Tab to the focus. */
+  readonly next: (back: boolean) => (() => void) | false;
+};
+
+/**
+ * Open the ProseMirror editor in `parent` on `it`; returns what closes it, which writes what was typed. Esc or focus leaving closes
+ * it too; Tab and Shift+Tab commit and open what `it.next` names, unless they indent or outdent a list item.
+ */
+export function openInPlace(parent: HTMLElement, it: InPlaceText): () => void {
   let open = true;
   const close = (view: EditorView) => {
     if (!open) return;
     open = false;
     const state = view.state;
     view.destroy();
-    session.editingRegion.set(undefined);
-    session.editing.set(undefined);
-    if (edited(state)) write({ store, registries, execute }, id, textOf(state), region);
+    it.closed();
+    if (edited(state)) it.write(textOf(state));
   };
-  // Tab and Shift+Tab move to a shape's next and previous text region (FR-SHP-007, M19.17 r1 F1), committing this one, unless
-  // they indent or outdent a list item; past the last region Tab leaves the editor as before
-  const defId = (initial as Partial<Pick<ShapeElement, 'defId'>>).defId;
-  const def = defId === undefined ? undefined : registries.shapeDefs.get(defId);
   const tabTo = (v: EditorView, e: KeyboardEvent): boolean => {
     if (e.altKey || e.ctrlKey || e.metaKey || movesListItem(v.state, e.shiftKey)) return false;
-    const to = regionAfter(def, region, e.shiftKey);
-    if (to === false) return false;
+    const then = it.next(e.shiftKey);
+    if (then === false) return false;
     e.preventDefault();
     close(v);
-    session.editingRegion.set(to);
-    session.editing.set(id);
+    then();
     return true;
   };
   const view = new EditorView(parent, {
-    state: textState(textIn(initial, region)),
-    attributes: { class: 'fx-chrome-textroot', role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Text' },
+    state: textState(it.text),
+    attributes: { class: 'fx-chrome-textroot', role: 'textbox', 'aria-multiline': 'true', 'aria-label': it.name },
     handleKeyDown: (v, e) => {
       if (e.key === 'Tab') return tabTo(v, e);
       if (e.key !== 'Escape') return false;
@@ -123,11 +131,39 @@ function openEditor(parent: HTMLElement, ctx: InlineTextEditorProps & { readonly
   };
 }
 
+/** Open the editor in `parent` on the text of `id` (its region `region`, when named); returns what closes it. */
+function openEditor(parent: HTMLElement, ctx: InlineTextEditorProps & { readonly id: RecordId; readonly region: string | undefined }): () => void {
+  const { store, registries, session, execute, id, region } = ctx;
+  const initial = textElement(store, id);
+  if (initial === undefined) return () => undefined;
+  // Tab and Shift+Tab move to a shape's next and previous text region (FR-SHP-007, M19.17 r1 F1), committing this one; past the
+  // last region Tab leaves the editor as before
+  const defId = (initial as Partial<Pick<ShapeElement, 'defId'>>).defId;
+  const def = defId === undefined ? undefined : registries.shapeDefs.get(defId);
+  return openInPlace(parent, {
+    text: textIn(initial, region),
+    name: 'Text',
+    closed: () => {
+      session.editingRegion.set(undefined);
+      session.editing.set(undefined);
+    },
+    write: (text) => write({ store, registries, execute }, id, text, region),
+    next: (back) => {
+      const to = regionAfter(def, region, back);
+      return to === false
+        ? false
+        : () => {
+            session.editingRegion.set(to);
+            session.editing.set(id);
+          };
+    },
+  });
+}
+
 /** The open editor of the element `id`. */
 function Editing(props: InlineTextEditorProps & { readonly id: RecordId; readonly region: string | undefined }): ReactNode {
   const { store, registries, session, execute, id, region } = props;
   const host = useRef<HTMLDivElement>(null);
-  const wrapper = useRef<HTMLDivElement>(null);
   const camera = useValue(session.camera.get);
   const element = useValue(useMemo(() => store.query((view) => textElement(view, id)), [store, id]));
   const placed = useValue(useMemo(() => store.query((view) => placements(view, [id])[0]), [store, id]));
@@ -140,18 +176,38 @@ function Editing(props: InlineTextEditorProps & { readonly id: RecordId; readonl
     () => (host.current === null ? undefined : openEditor(host.current, { store, registries, session, execute, id, region })),
     [store, registries, session, execute, id, region],
   );
-  useEffect(() => (wrapper.current === null ? undefined : keepPointer(wrapper.current)), []);
   if (element === undefined || placed === undefined) return null;
   const label = labelBox(element, registries, LIGHT_THEME, region);
-  const at = pageToScreen(camera, { x: placed.x, y: placed.y });
   // only the label being edited hides: a named region's own, or the first's (the others stay drawn)
   const which = region === undefined ? '.fx-label:not(.fx-region)' : `.fx-region[data-region="${CSS.escape(region)}"]`;
-  const hideLabel = `.fx-el[data-el-id="${CSS.escape(id)}"] ${which} { visibility: hidden; }`;
+  return (
+    <InPlaceFrame testId="text-editor" camera={camera} placed={placed} hide={`.fx-el[data-el-id="${CSS.escape(id)}"] ${which}`}>
+      <div ref={host} className="fx-label" style={label} />
+    </InPlaceFrame>
+  );
+}
+
+/**
+ * The frame an in-place editor sits in: the element's placed box through the camera and its turn, the label `hide` names hidden
+ * while it is open, and the canvas's pointer input stopped at it.
+ */
+export function InPlaceFrame(props: {
+  readonly testId: string;
+  readonly camera: Camera;
+  readonly placed: Placed;
+  readonly hide: string;
+  readonly children: ReactNode;
+}): ReactNode {
+  const { camera, placed } = props;
+  const wrapper = useRef<HTMLDivElement>(null);
+  useEffect(() => (wrapper.current === null ? undefined : keepPointer(wrapper.current)), []);
+  const at = pageToScreen(camera, { x: placed.x, y: placed.y });
+  const hidden = `${props.hide} { visibility: hidden; }`;
   return (
     <div
       ref={wrapper}
       className="fx-chrome-textedit"
-      data-testid="text-editor"
+      data-testid={props.testId}
       style={{
         left: at.x,
         top: at.y,
@@ -161,9 +217,9 @@ function Editing(props: InlineTextEditorProps & { readonly id: RecordId; readonl
         ...toCssVars(LIGHT_THEME),
       }}
     >
-      <style>{hideLabel}</style>
+      <style>{hidden}</style>
       <div className="fx-chrome-textedit-box" style={{ width: placed.w, height: placed.h, transform: `scale(${camera.z})` }}>
-        <div ref={host} className="fx-label" style={label} />
+        {props.children}
       </div>
     </div>
   );

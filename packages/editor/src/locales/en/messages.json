@@ -2334,6 +2334,12 @@
       "packages/editor/src/layout-picker-section.tsx"
     ]
   },
+  "y2EUBL": {
+    "message": "Cell text, row {row}, column {col}",
+    "origin": [
+      "packages/editor/src/table-cell-editor.tsx"
+    ]
+  },
   "yMI9iJ": {
     "message": "The collection's own license and author credit it.",
     "origin": [

@@ -253,6 +253,7 @@ export {
   type QuickDrop,
   type Session,
   type Sessions,
+  type TableCellAt,
   type TableCellRange,
 } from './session.js';
 export { memorySettings, type SettingsStore } from './settings.js';

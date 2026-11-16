@@ -12,4 +12,7 @@ export function followRemap(session: Session, remap: ReadonlyMap<RecordId, Recor
     const to = at === undefined ? undefined : remap.get(at);
     if (to !== undefined) signal.set(to);
   }
+  const cell = session.editingCell.get();
+  const table = cell === undefined ? undefined : remap.get(cell.id);
+  if (cell !== undefined && table !== undefined) session.editingCell.set({ ...cell, id: table });
 }

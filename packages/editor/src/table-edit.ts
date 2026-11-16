@@ -1,7 +1,8 @@
 // Table editing in the editor (FR-SHP-014, ADR-0054): a click on a selected table picks the cell under it (shift-click extends
 // the range); the table commands insert and delete rows and columns beside the picked cells, merge the range and split a merged
 // cell; Tab and Shift+Tab move the picked cell in reading order; a drag on a border between two rows or columns resizes them. Each
-// operation is one `element.update` of the table's grid (one undo step), refused on a table locked against editing. The grid
+// operation is one `element.update` of the table's grid (one undo step), refused on a table locked against editing. A double-click
+// on a cell, or Enter with one picked, opens its text (`openCell`; the editor itself is table-cell-editor.tsx, M19.43). The grid
 // maths is core's (table-ops.ts); the cell boxes are render's (`tableCells`).
 import {
   type CellArea,
@@ -17,10 +18,10 @@ import {
   type TableGrid,
 } from '@fluxion/core';
 import { apply, elementMatrix, invert, type Vec2 } from '@fluxion/geometry';
-import { tableCells } from '@fluxion/render';
+import { type TableCellBox, tableCells } from '@fluxion/render';
 import type { RecordId, TableElement } from '@fluxion/schema';
 import { createElement } from './create-tool.js';
-import type { TableCellRange } from './session.js';
+import type { Session, TableCellAt, TableCellRange } from './session.js';
 import type { ToolCtx } from './tools.js';
 
 /**
@@ -184,6 +185,58 @@ export function stepPicked(ctx: ToolCtx, step: 1 | -1): boolean {
   if (on === undefined || to === undefined) return false;
   ctx.session.tableCells.set({ id: on.table.id, row: to.row, col: to.col, toRow: to.row, toCol: to.col });
   return true;
+}
+
+/**
+ * The box of the cell starting at `row`, `col` of `table`, in the table's own frame; undefined for a covered or missing cell.
+ *
+ * @public
+ */
+export function cellBox(table: TableElement, row: number, col: number): TableCellBox | undefined {
+  const { w, h } = table.transform;
+  return tableCells(table, { w, h }).find((c) => c.row === row && c.col === col);
+}
+
+/**
+ * Open the cell `cell` (the table and the row and column it starts at) for editing in place, the table selected and the cell
+ * picked; false when it is no table's, the cell is covered by a merged one or missing, or the table is locked against editing.
+ *
+ * @public
+ */
+export function openCell(session: Session, view: ReadView, cell: TableCellAt): boolean {
+  const { id, row, col } = cell;
+  const table = tableOf(view, id);
+  if (table === undefined || lockedWithin(view, id, 'edit') || cellBox(table, row, col) === undefined) return false;
+  session.selection.set([id]);
+  session.tableCells.set({ id, row, col, toRow: row, toCol: col });
+  session.editingCell.set({ id, row, col });
+  return true;
+}
+
+/**
+ * A double-click at page point `p` on the table `id`: open the cell there. False off the table's cells or when `id` is no table.
+ *
+ * @public
+ */
+export function editCellAt(session: Session, view: ReadView, id: RecordId, p: Vec2): boolean {
+  const table = tableOf(view, id);
+  const cell = table === undefined ? undefined : cellAt(table, p);
+  return cell !== undefined && openCell(session, view, { id, ...cell });
+}
+
+/**
+ * Enter on the one selected table with cells picked: open the first cell of the picked range (a merged one's own). False with no
+ * cell picked.
+ *
+ * @public
+ */
+export function editPickedCell(session: Session, view: ReadView): boolean {
+  const now = session.tableCells.get();
+  const [only, ...rest] = session.selection.get();
+  const table = now === undefined || only !== now.id || rest.length > 0 ? undefined : tableOf(view, only);
+  if (now === undefined || table === undefined) return false;
+  const area = coveringArea(table, fitRange(table, now));
+  return openCell(session, view, { id: table.id, row: area.row, col: area.col });
 }
 
 /** The size a new table takes, page units. */

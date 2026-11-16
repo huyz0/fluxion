@@ -1589,6 +1589,7 @@ export type Session = {
     readonly grid: WritableSignal<boolean>;
     readonly pathEdit: WritableSignal<PathEditing | undefined>;
     readonly tableCells: WritableSignal<TableCellRange | undefined>;
+    readonly editingCell: WritableSignal<TableCellAt | undefined>;
     readonly quickDrop: WritableSignal<QuickDrop | undefined>;
     readonly find: WritableSignal<FindState | undefined>;
     readonly styleSource: WritableSignal<RecordId | undefined>;
@@ -1837,6 +1838,13 @@ export type SystemItem = {
 // @public
 export type SystemPasteDeps = PasteDeps & {
     readonly assets: AssetStore;
+};
+
+// @public
+export type TableCellAt = {
+    readonly id: RecordId;
+    readonly row: number;
+    readonly col: number;
 };
 
 // @public
