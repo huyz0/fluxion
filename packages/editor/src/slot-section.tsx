@@ -5,11 +5,17 @@ import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
 import './i18n.js';
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo, useRef } from 'react';
 import { commitKeys } from './inspector-keys.js';
 import type { ShapeDefs } from './param-handles.js';
 import type { Execute } from './pointer.js';
 import { fillSlot, slotRows } from './slot-inspector.js';
+
+/** Load `defId` through `ensure` when it is not registered yet; whatever the outcome, the slot is filled after (an unknown id is reported). */
+async function loadFirst(defId: string, ensure: ((defId: string) => Promise<boolean>) | undefined, defs: ShapeDefs | undefined): Promise<void> {
+  if (defId === '' || ensure === undefined || defs?.get(defId) !== undefined) return;
+  await ensure(defId).catch(() => false);
+}
 
 /** A selected shape's icon slots; nothing when its definition has none. Each change is one undo step. */
 export function IconSlotsSection(props: {
@@ -17,9 +23,15 @@ export function IconSlotsSection(props: {
   readonly id: RecordId;
   readonly execute: Execute;
   readonly shapeDefs: ShapeDefs | undefined;
+  /** Loads and registers a definition the host's catalog has (a first-party pack's, M19.38) before a slot names it. */
+  readonly ensureDef?: ((defId: string) => Promise<boolean>) | undefined;
 }): ReactNode {
-  const { store, id, execute, shapeDefs } = props;
+  const { store, id, execute, shapeDefs, ensureDef } = props;
   const rows = useValue(useMemo(() => store.query((view) => slotRows(view, id, shapeDefs)), [store, id, shapeDefs]));
+  // the latest commit of each shape's slot: a commit whose load ends after a later one of the same slot was made is dropped
+  // (M19.38 r1 F3); keyed by shape too, since the section stays mounted while the selection moves (r2)
+  const latest = useRef(new Map<string, number>());
+  const turn = useRef(0);
   if (rows === undefined) return null;
   const fill = (name: string, defId: string): boolean => {
     const c = fillSlot(store, id, name, defId);
@@ -43,8 +55,18 @@ export function IconSlotsSection(props: {
                 defaultValue={text}
                 onKeyDown={(e) => commitKeys(e, text)}
                 onBlur={(e) => {
-                  const typed = e.currentTarget.value.trim();
-                  if (typed !== text && !fill(row.name, typed)) e.currentTarget.value = text;
+                  const input = e.currentTarget;
+                  const typed = input.value.trim();
+                  if (typed === text) return;
+                  // a definition the catalog has is loaded first, so the slot draws it and the save embeds it (M19.38)
+                  turn.current += 1;
+                  const mine = turn.current;
+                  const slot = `${id}:${row.name}`;
+                  latest.current.set(slot, mine);
+                  void loadFirst(typed, ensureDef, shapeDefs).then(() => {
+                    if (latest.current.get(slot) !== mine) return;
+                    if (!fill(row.name, typed)) input.value = text;
+                  });
                 }}
               />
             ) : (

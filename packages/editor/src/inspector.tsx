@@ -31,6 +31,8 @@ export type InspectorFieldsProps = {
   readonly inspectors?: Inspectors | undefined;
   /** Where shape definitions are looked up: selected shapes of one definition get a section for its params. */
   readonly shapeDefs?: ShapeDefs | undefined;
+  /** Loads a definition the host's catalog has before an icon slot names it (M19.38); absent, a slot takes registered ones only. */
+  readonly ensureDef?: ((defId: string) => Promise<boolean>) | undefined;
 };
 
 /** What a widget does to the selection: a one-step change, or a drag's changes as one step. */
@@ -47,7 +49,7 @@ const COLOR_TOKENS = colorTokenRefs(LIGHT_THEME);
 
 /** The inspector's sections for the selection, or nothing when no element is selected. */
 export function InspectorFields(props: InspectorFieldsProps): ReactNode {
-  const { store, session, execute, inspectors, shapeDefs } = props;
+  const { store, session, execute, inspectors, shapeDefs, ensureDef } = props;
   const ids = useValue(session.selection.get);
   const model = useValue(useMemo(() => store.query((view) => inspect(view, ids, inspectors, shapeDefs)), [store, ids, inspectors, shapeDefs]));
   const gesture = useRef<Gesture | undefined>(undefined);
@@ -96,7 +98,9 @@ export function InspectorFields(props: InspectorFieldsProps): ReactNode {
           ))}
         </fieldset>
       ))}
-      {model.ids.length === 1 ? <IconSlotsSection store={store} id={model.ids[0] as RecordId} execute={execute} shapeDefs={shapeDefs} /> : null}
+      {model.ids.length === 1 ? (
+        <IconSlotsSection store={store} id={model.ids[0] as RecordId} execute={execute} shapeDefs={shapeDefs} ensureDef={ensureDef} />
+      ) : null}
       {model.ids.length === 1 ? <AnchorsSection store={store} id={model.ids[0] as RecordId} execute={execute} shapeDefs={shapeDefs} /> : null}
     </div>
   );

@@ -238,3 +238,20 @@ it('FR-SHP-010: a core:path shape is built in wherever a file is saved: no pack 
   expect(unpack(out.extraEntries).flatMap((s) => s.definitions.map((d) => d.id))).toEqual(['sample:s0']);
   expect((await prepared(document(['core:path']), [])).extraEntries.size).toBe(0);
 });
+
+it('FR-SHP-007 FR-LIB-009: a definition an icon slot names is embedded with the shapes, and a slot no source holds refuses nothing (M19.38)', async () => {
+  const pack = source('sample', 4);
+  const doc = document(['sample:s0']);
+  const card = Object.keys(doc.records).find((k) => (doc.records[k] as { defId?: string }).defId === 'sample:s0') as string;
+  const records = {
+    ...doc.records,
+    [card]: { ...required(doc.records[card]), icons: { icon: { defId: 'sample:s2' }, badge: { defId: 'missing:icon' }, mark: { defId: 'basic:rect' } } },
+  } as DocumentFile['records'];
+  const out = await prepared({ ...doc, records }, [pack]);
+  const saved = required(unpack(out.extraEntries)[0]);
+  // the slot's definition joins the shape's own; the host's built-in and an id no source holds are not carried
+  expect(saved.definitions.map((d) => d.id)).toEqual(['sample:s0', 'sample:s2']);
+  // a document whose only pack reference is a slot still embeds that pack
+  const onlySlot = { ...doc, records: { ...records, [card]: { ...required(records[card]), defId: 'basic:rect' } } } as DocumentFile;
+  expect(unpack((await prepared(onlySlot, [pack])).extraEntries).map((s) => s.definitions.map((d) => d.id))).toEqual([['sample:s2']]);
+});

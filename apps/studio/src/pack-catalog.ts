@@ -275,9 +275,22 @@ export function bundledPackCatalog(hasher: Hasher, read: (hasher: Hasher) => Pro
   return bundled;
 }
 
-/** Every shape definition id the records use. */
-export function usedDefIds(records: Readonly<Record<string, { readonly type?: unknown; readonly kind?: unknown; readonly defId?: unknown }>>): string[] {
-  return Object.values(records).flatMap((r) => (r.type === 'element' && r.kind === 'shape' && typeof r.defId === 'string' ? [r.defId] : []));
+type UsedRecord = { readonly type?: unknown; readonly kind?: unknown; readonly defId?: unknown; readonly icons?: unknown };
+
+/** The shape definitions a shape's icon slots name (FR-SHP-007, M19.38): each slot filled by `{ defId }`. */
+function slotDefIds(icons: unknown): string[] {
+  if (typeof icons !== 'object' || icons === null) return [];
+  return Object.values(icons).flatMap((fill: unknown) => {
+    const defId = typeof fill === 'object' && fill !== null ? (fill as { readonly defId?: unknown }).defId : undefined;
+    return typeof defId === 'string' ? [defId] : [];
+  });
+}
+
+/** Every shape definition id the records use: each shape's own, and those its icon slots name (M19.38). */
+export function usedDefIds(records: Readonly<Record<string, UsedRecord>>): string[] {
+  return Object.values(records).flatMap((r) =>
+    r.type === 'element' && r.kind === 'shape' && typeof r.defId === 'string' ? [r.defId, ...slotDefIds(r.icons)] : [],
+  );
 }
 
 /** Nothing to load: every entry {@link withPackEntries} adds is registered already. */

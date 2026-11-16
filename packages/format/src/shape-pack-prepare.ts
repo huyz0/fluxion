@@ -19,6 +19,7 @@ import { type Diagnostic, type DocumentFile, err, ok, type Result } from '@fluxi
 import { encodeBase64 } from './base64.js';
 import { canonicalJson } from './canonical-json.js';
 import type { ContentHasher } from './flux-write-types.js';
+import { addSlotDefinitions } from './shape-pack-slots.js';
 import { encodeUtf8 } from './utf8.js';
 
 /** Explicit provenance for used geometry; embedded sources need no reconstructed index. @public */
@@ -300,6 +301,12 @@ function pendingEntries(
   const used = selected.value;
   const resolved = checkResolved(sources, used, preserved, diagnostics);
   if (!resolved.ok) return resolved;
+  addSlotDefinitions(
+    document,
+    builtinIds,
+    [...sources.values()].flatMap((source) => source.subset.definitions),
+    used,
+  );
   const entries: Pending[] = [];
   for (const { subset: source, fonts } of [...sources.values()].sort((a, b) => byId(a.subset, b.subset))) {
     if (!source.definitions.some((d) => used.has(d.id))) continue;

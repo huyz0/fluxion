@@ -85,13 +85,19 @@ function leftTabsFor(props: EditBodyProps, library: LibraryPanelProps, onRemap: 
 
 /** The inspector: the selection's fields, and the layout options form when the host gives the layouts' options schemas. */
 function inspectorFor(props: EditBodyProps): ReactNode {
-  const { store, session, execute, screenId, registries, layoutOptionsSchema, sourceRegistries, arrange } = props;
+  const { store, session, execute, screenId, registries, layoutOptionsSchema, sourceRegistries, arrange, catalog } = props;
   const choices = [...LAYOUT_CHOICES.map(([name]) => name), ...registeredLayoutIds(sourceRegistries?.layouts.list() ?? [])];
   const templates = registeredTemplateIds(sourceRegistries?.templates.list() ?? []);
   return (
     <Inspector
       session={session}
-      fields={{ store, execute, shapeDefs: registries.shapeDefs, inspectors: connectorTypeInspectors(registries.routers) }}
+      fields={{
+        store,
+        execute,
+        shapeDefs: registries.shapeDefs,
+        inspectors: connectorTypeInspectors(registries.routers),
+        ensureDef: catalog?.ensure,
+      }}
       layout={layoutOptionsSchema === undefined ? undefined : { store, execute, screenId, schemaOf: layoutOptionsSchema, choices, templates, arrange }}
     />
   );

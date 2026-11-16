@@ -31,6 +31,12 @@ The Layers lock is the everyday one. A file (written by hand, the CLI or an AI c
 position, size, rotation, aspect ratio and selection, and the canvas respects each one. **Flip horizontally** and **Flip vertically**
 in the palette mirror the selection; a flipped frame mirrors its contents with it.
 
+## Text regions and icon slots
+
+Some shapes, such as the infographic feature card, have more than one text region and an icon slot. Double-click a region to type
+in it. With the shape selected, type a shape's name into its slot in the inspector, for example `lucide:server`: any shape or icon
+from the library works, even one you have not placed yet, and it is saved with the file.
+
 ## Combining and editing paths
 
 Select two or more shapes and choose **Union**, **Subtract**, **Intersect** or **Exclude** from the command palette (`Ctrl+K`).

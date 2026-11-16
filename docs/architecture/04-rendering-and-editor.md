@@ -367,7 +367,10 @@ Every edit below is one command, so one undo step (ADR-0014); opening or closing
   through resize handles, rotation through the rotate handle, aspect as Shift does, select through clicks, marquee and select-all).
   Flip horizontally and vertically mirror the transform; a frame's flip carries its members (ADR-0052).
 - **Text regions and icon slots** (FR-SHP-007, ADR-0054): a double-click edits the region under it (the first is the element's
-  `text`, the rest its `texts`); the inspector fills or empties an icon slot. `region-problems.ts` reports entries nothing draws.
+  `text`, the rest its `texts`); the inspector fills or empties an icon slot. A slot naming a definition the host's catalog has but has not loaded (a
+  first-party pack's) loads and registers it first (`ensureDef`, the studio's catalog `ensure`), so it draws and the save embeds it;
+  the studio also loads the definitions the slots of an opened document name (`usedDefIds`, M19.38). `region-problems.ts` reports
+  entries nothing draws.
 - **Booleans and the path tool** (FR-SHP-010, FR-SHP-011, ADR-0053): `boolean-edit.ts` resolves each selected operand's outline,
   placed by its transform, and core replaces the operands by one `core:path` shape (Union, Subtract, Intersect, Exclude). "Edit path"
   (`path-edit.ts`, `path-edit-states.ts`) shows a path shape's vertices and bezier handles; an edit rewrites `d` and refits `w`, `h`
