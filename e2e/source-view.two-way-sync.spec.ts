@@ -275,7 +275,8 @@ test.describe('source view', { tag: '@desktop' }, () => {
     const { editor, left, text } = await openSource(page);
     const screen = screenOf(await recordsOf(page), 'one');
     await addRecords(page, [
-      { id: 'kept-frame', type: 'element', kind: 'frame', screenId: screen, index: 'a8', transform: { x: 900, y: 600, w: 200, h: 120 } },
+      // a frame with padding: frames are written since ADR-0219, padding is still outside the subset
+      { id: 'kept-frame', type: 'element', kind: 'frame', screenId: screen, index: 'a8', transform: { x: 900, y: 600, w: 200, h: 120 }, padding: 8 },
       { id: 'kept-note', type: 'comment', targetId: 'kept-frame', author: 'ada', body: 'keep me' },
     ]);
     // the view is clean: it shows the frame as left out

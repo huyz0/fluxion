@@ -4970,3 +4970,6 @@ round-allowance: M19.25 a fourth review round under Huy's 2026-11-05T11:04:52Z d
 - Place lays a frame's loose members out inside its pinned box. Decompile v0 writes all of them back; a frame with padding or a turn, and a cell with a style, stay outside the subset.
 - examples/dsl/masters-tables.flux.yaml with its golden; examples/masters-tables.flux.json is its compile (a test keeps them equal) and joins the parity EXAMPLES; the every-screen parity case counts slides only (a master is not presented).
 - Key table, JSON schema (specs/schema), TextMate grammar, cheat sheet, authoring guide and the Writing FluxScript guide list the keys. The source-merge fixture's frame gets padding so it stays outside the subset.
+
+## 2026-11-16 M19.49: main green again (ci 43778483704)
+- M19.26 made frames writable; e2e/source-view.two-way-sync.spec.ts's "outside the subset" case still added a bare frame, so the view wrote it and the kept-records line was gone (chromium, firefox and webkit shards). Its frame now carries padding (outside the subset since ADR-0219), as the unit fixture does. M19.26's own run missed it: only the parity e2e was run locally.
