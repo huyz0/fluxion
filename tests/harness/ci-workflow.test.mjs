@@ -336,8 +336,9 @@ describe('ci workflow (NFR-PORT-005, NFR-SEC-005)', () => {
         );
       });
     }
-    // ci: verify, harness-windows (ADR-0214) and cli-mcp; nightly: both mutation chains, properties, node-shuffle (M18.291), perf, visual-xos and previous-playwright
-    assert.equal(installs, 10);
+    // ci: verify, harness-windows (ADR-0214) and cli-mcp; nightly: both mutation chains, properties, node-shuffle (M18.291), perf, png-check (M19.27),
+    // visual-xos and previous-playwright
+    assert.equal(installs, 11);
     const cold = /^ {2}cold-setup:[\s\S]*?(?=^ {2}\S)/m.exec(ci)[0];
     assert.doesNotMatch(cold, /actions\/cache|^ +cache: |playwright install/m, 'the cold setup measures an empty store and browser cache (NFR-DX-001)');
   });
@@ -473,6 +474,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
       'node-shuffle',
       'perf',
       'eval-live',
+      'png-check',
       'visual-xos',
       'previous-playwright',
       'report',
@@ -505,7 +507,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
     assert.match(aggregate, /merge-multiple: false/);
 
     const report = /^ {2}report:[\s\S]*/m.exec(nightly)[0];
-    assert.match(report, /needs: \[mutation, properties, node-shuffle, perf, eval-live, visual-xos, previous-playwright\]/);
+    assert.match(report, /needs: \[mutation, properties, node-shuffle, perf, eval-live, png-check, visual-xos, previous-playwright\]/);
     // NFR-PORT-001 (M11.23): the previous-major job points the catalog at the older Playwright, runs all five projects (three engines and their mobile presets), and commits nothing
     const previous = /^ {2}previous-playwright:[\s\S]*?(?=^ {2}report:)/m.exec(nightly)[0];
     assert.match(previous, /node scripts\/ci\/previous-playwright\.mjs/);
@@ -552,7 +554,7 @@ describe('security, nightly and release workflows and Renovate (NFR-SEC-005)', (
 
   it('HARNESS: every nightly Playwright path keeps failure artifacts and explicit JSON output', () => {
     const nightly = workflow('nightly.yml');
-    for (const name of ['perf', 'visual-xos', 'previous-playwright']) {
+    for (const name of ['perf', 'png-check', 'visual-xos', 'previous-playwright']) {
       const job = new RegExp(`^ {2}${name}:[\\s\\S]*?(?=^ {2}\\S)`, 'm').exec(nightly)[0];
       assert.match(job, /PLAYWRIGHT_JSON_OUTPUT_NAME: test-results\/e2e\.json/, name);
       assert.match(job, /playwright test[^\n]*--retries=0[^\n]*--reporter=list,json,github/, name);

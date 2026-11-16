@@ -80,7 +80,7 @@ export default defineConfig({
           // the node project first, then the browser one: Chromium never runs beside node's bounded-time tests (M18.117)
           sequence: { groupOrder: 0 },
           environment: 'node',
-          include: [`${SRC}/*.test.{ts,tsx}`, 'scripts/examples/*.test.ts'],
+          include: [`${SRC}/*.test.{ts,tsx}`, 'scripts/examples/*.test.ts', 'e2e/pages/image-diff.test.ts'],
           exclude: [`${SRC}/*.browser.test.{ts,tsx}`, ...ISOLATED],
           // ADR-0218: files in one worker share the module registry, so a file's imports load once per worker, not once per file
           // (39 % of the project's time); the files that change process-wide state run in node-isolated. Select both as `node*`.
