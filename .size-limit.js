@@ -12,5 +12,8 @@ export default [
   // lean reader and the inert zod of the script (ADR-0026 amendment, M11.42), 140.54 kB with touch (M11.15), 141.05 kB with the screen reader words (M11.16)
   { name: 'player-inline', path: 'packages/player-inline/dist/player.inline.js', limit: kB(t('PLAYER_CORE_GZIP')), gzip: true },
   { name: 'fluxion-player script', path: 'packages/player-inline/dist/fluxion-player.js', limit: kB(t('PLAYER_CORE_GZIP')), gzip: true },
-  { name: 'editor initial', path: 'packages/editor/dist/index.js', limit: kB(t('EDITOR_INITIAL_GZIP')), gzip: true },
+  // the initial bundle NFR-SIZE-002 limits: the entry and the chunks it imports statically, not its lazy chunks (the source view's
+  // CodeMirror, M12.18); the same bundle with every lazy chunk is measured beside it, advisory (ADR-0220)
+  { name: 'editor initial', path: 'packages/editor/dist/index.js', entry: ['index'], limit: kB(t('EDITOR_INITIAL_GZIP')), gzip: true },
+  { name: 'editor with lazy chunks', path: 'packages/editor/dist/index.js', limit: kB(t('EDITOR_INITIAL_GZIP')), gzip: true },
 ];

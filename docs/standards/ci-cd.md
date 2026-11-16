@@ -26,9 +26,10 @@ its review packet: the packet runs it. Run the full milestone command at checkpo
 closeout, after a rebase affecting its evidence, or when a changed leg needs investigation;
 intermediate commits do not each repeat the entire milestone suite. Report unrun checks honestly.
 
-`check-bundle-size.mjs` retains all four raw size-limit measurements. Player core 150000 and
-editor initial 600000 bytes are blocking; player-inline and the embedding script keep 150000-byte
-advisory targets. Overruns print ADVISORY with actual bytes, never a fabricated passing target.
+`check-bundle-size.mjs` retains all five raw size-limit measurements. Player core 150000 and
+editor initial 600000 bytes are blocking (the editor's entry and its static imports, ADR-0220);
+player-inline and the embedding script keep 150000-byte advisory targets, and the editor with its
+lazy chunks a 600000-byte one. Overruns print ADVISORY with actual bytes, never a fabricated passing target.
 Missing/duplicate/unknown/invalid reports and tool failures fail closed. Document size, loading
 performance, lazy-loading, correctness, coverage, security and license gates remain blocking.
 

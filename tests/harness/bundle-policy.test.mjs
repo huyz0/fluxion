@@ -12,6 +12,7 @@ const report = () => [
   { name: 'player-inline', passed: true, size: 148636, sizeLimit: 150000 },
   { name: 'fluxion-player script', passed: true, size: 149877, sizeLimit: 150000 },
   { name: 'editor initial', passed: true, size: 436404, sizeLimit: 600000 },
+  { name: 'editor with lazy chunks', passed: true, size: 553272, sizeLimit: 600000 },
 ];
 
 describe('ADR-0176 bundle policy', () => {
@@ -27,6 +28,7 @@ describe('ADR-0176 bundle policy', () => {
         ['player-inline', true, 148636, 150000],
         ['fluxion-player script', true, 149877, 150000],
         ['editor initial', false, 436404, 600000],
+        ['editor with lazy chunks', true, 553272, 600000],
       ],
     );
     assert.deepEqual(input, copy);
@@ -44,6 +46,20 @@ describe('ADR-0176 bundle policy', () => {
       ],
     );
     assert.equal(input[2].passed, false);
+  });
+  it('NFR-SIZE-002: the editor with its lazy chunks over the target is an advisory; its initial bundle over it still fails (ADR-0220)', () => {
+    const lazy = report();
+    Object.assign(lazy[4], { size: 600001, passed: false });
+    const advisory = judgeBundleReport(lazy, 1, '');
+    assert.equal(advisory.ok, true);
+    assert.deepEqual(
+      advisory.results.filter((r) => !r.passed).map((r) => [r.name, r.overrun, r.advisory]),
+      [['editor with lazy chunks', 1, true]],
+    );
+    const initial = report();
+    Object.assign(initial[3], { size: 600001, passed: false });
+    Object.assign(initial[4], { size: 600001, passed: false });
+    assert.equal(judgeBundleReport(initial, 1, '').ok, false);
   });
   it('NFR-SIZE-001/002: one-byte hard overruns still fail beside an advisory overrun', () => {
     for (const index of [0, 3]) {

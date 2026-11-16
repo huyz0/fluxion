@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// ADR-0176: core/editor are hard budgets; the two embedding targets are measured advisories.
+// ADR-0176: core/editor are hard budgets; the two embedding targets are measured advisories. ADR-0220: the editor's hard budget is its
+// initial bundle; the same bundle with its lazy chunks is a measured advisory.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { repoPath, run } from './lib.mjs';
@@ -10,6 +11,7 @@ const policy = new Map([
   ['player-inline', { limit: t('PLAYER_CORE_GZIP'), advisory: true }],
   ['fluxion-player script', { limit: t('PLAYER_CORE_GZIP'), advisory: true }],
   ['editor initial', { limit: t('EDITOR_INITIAL_GZIP'), advisory: false }],
+  ['editor with lazy chunks', { limit: t('EDITOR_INITIAL_GZIP'), advisory: true }],
 ]);
 const invalid = (detail) => {
   throw new Error(`bundle measurement: ${detail}`);
@@ -17,7 +19,7 @@ const invalid = (detail) => {
 
 /** Validate the complete tool result before treating any target overrun as advisory. */
 export function judgeBundleReport(report, status, stderr = '') {
-  if (!Array.isArray(report) || report.length !== policy.size) invalid('expected all four artifacts exactly once');
+  if (!Array.isArray(report) || report.length !== policy.size) invalid(`expected all ${policy.size} artifacts exactly once`);
   if (![0, 1].includes(status) || stderr.trim()) invalid(`unexpected tool failure (exit ${status}): ${stderr.trim()}`);
   const seen = new Set();
   const results = report.map((item) => {

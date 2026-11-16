@@ -18,6 +18,11 @@ describe('the editor budgets (NFR-SIZE-002)', () => {
     assert.ok(editor, 'a size-limit entry for the editor');
     assert.equal(editor.limit, `${Math.floor(t('EDITOR_INITIAL_GZIP') / 1000)} kB`);
     assert.equal(editor.gzip, true);
+    // the initial bundle: the entry and its static imports, not its lazy chunks; the whole is measured beside it (ADR-0220)
+    assert.deepEqual(editor.entry, ['index']);
+    const whole = config.find((e) => e.name === 'editor with lazy chunks');
+    assert.ok(whole, 'a size-limit entry for the editor with its lazy chunks');
+    assert.deepEqual([whole.path, whole.limit, whole.gzip, whole.entry], [editor.path, editor.limit, true, undefined]);
     const assertion = lighthouse.ci.assert.assertions.interactive;
     assert.equal(assertion[0], 'error');
     assert.equal(assertion[1].maxNumericValue, t('EDITOR_TTI_MS'));
