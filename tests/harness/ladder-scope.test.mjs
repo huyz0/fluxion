@@ -191,8 +191,12 @@ describe('staged ladder scope (NFR-DX-002)', () => {
     assert.deepEqual(harnessFiles(['specs/format/flux-1.0.md'], ALL), only(['docs-consistency', 'format-spec']));
     // an app's page and static files are built by the Vite build step, which the ladder runs
     assert.deepEqual(harnessFiles(['apps/studio/index.html', 'apps/studio/public/manifest.webmanifest'], ALL), []);
-    // the Vitest config is judged by the Vitest step itself, which runs everything for it; only the scope test names it
-    assert.deepEqual(harnessFiles(['vitest.config.ts'], ALL), only(['ladder-scope']));
+    // the Vitest config is judged by the Vitest step itself, which runs everything for it; the scope test names it, and the harness
+    // files that load it, match it as text or run Vitest with a copy (M19.51: CI run 43783755715 went red on a change the ladder let through)
+    assert.deepEqual(
+      harnessFiles(['vitest.config.ts'], ALL),
+      only(['dom-free', 'ladder-scope', 'mutate', 'pack-goldens', 'test-idle', 'test-isolation', 'windows-test-scheduling']),
+    );
     // the security corpus is read by the sanitizer's tests alone, which the Vitest step runs
     assert.deepEqual(
       harnessFiles(['specs/security/corpus/svg-x.svg', 'specs/security/corpus/links.json', 'specs/security/corpus/expected/svg-x.svg'], ALL),

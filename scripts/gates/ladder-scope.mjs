@@ -160,8 +160,11 @@ export const NAMED_PATH_HARNESS = [
   [/^examples\/(embed\/|r1-mvp-deck\.flux\.html$)/, []],
   // an app's page and static files (its web manifest, icons): read by the Vite build, which the ladder's `build` step runs, and by its e2e specs; no harness file reads them
   [/^apps\/[^/]+\/(index\.html|public\/.+)$/, []],
-  // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test names it
-  [/^vitest\.config\.ts$/, ['ladder-scope']],
+  // the Vitest config: the staged Vitest step runs the whole suite for it (VITEST_GLOBAL) and judges the real coverage floors; the scope test
+  // names it; these read it where no path search sees them (M19.51): test-isolation and windows-test-scheduling load it in a child
+  // process and pin its projects, test-idle and dom-free match its reporters and aliases as text, pack-goldens runs Vitest with a copy,
+  // and mutate runs the real config with FLUXION_VITEST_CACHE set, which the staged Vitest step never sets (its cacheDir)
+  [/^vitest\.config\.ts$/, ['dom-free', 'ladder-scope', 'mutate', 'pack-goldens', 'test-idle', 'test-isolation', 'windows-test-scheduling']],
   // the security corpus: hostile inputs read only by Vitest tests (the sanitizer's, in format and editor), which the staged Vitest step runs
   // for any change under specs/security/ (VITEST_GLOBAL), so no harness file needs to
   [/^specs\/security\/corpus\/.+/, []],
