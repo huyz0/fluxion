@@ -174,7 +174,13 @@ leg('SVG sanitizer, outlines, color mapping and >=4 anchors', () => {
 // FR-LIB-004 batch import through the CLI host (ADR-0206, M18.171): the format batch suite and the corpus/bounds suite against the built bin, not an editor wrapper (cp9 F3)
 leg('50 SVG batch imports, bounded ZIP and traversal rejection', () => {
   const batch = tests('packages/format/src/svg-batch.test.ts');
-  return batch === true ? tests('packages/cli/src/e2e/cli.pack-import.test.ts') : batch;
+  if (batch !== true) return batch;
+  // the CLI suite is three files since M19.59 (corpus and badge; names and many members; refusals), which Vitest's own runs take in parallel
+  for (const file of ['cli.pack-import.test.ts', 'cli.pack-import-small.test.ts', 'cli.pack-import-refusals.test.ts']) {
+    const r = tests(`packages/cli/src/e2e/${file}`);
+    if (r !== true) return r;
+  }
+  return true;
 });
 
 leg('imported artwork retains exact licensed fonts offline', () => {

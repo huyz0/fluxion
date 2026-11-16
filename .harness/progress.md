@@ -5068,3 +5068,9 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 - A stale drawing cannot pass: each case's capture is compared with the browser's own rendering of that case's source.
 - Chromium, 2 workers, --retries=0: 54 tests 112 s test-time, 62.5 s wall → 11 tests 79 s test-time, 45.7 s wall. Firefox and WebKit run in CI (not installed here); an editor open there cost about 5 s under load (M19.29), so the 43 opens saved weigh more.
 - The two authored-invisibility cases are unchanged.
+
+## 2026-11-16 M19.59: Vitest's two long poles split to run in parallel
+- packages/cli/src/e2e/cli.pack-import.test.ts (31.7 s alone, 19 tests) is three files: the corpus folder and ZIP (they share the folder's pack) with the badge font case (16.3 s), cli.pack-import-small.test.ts (folder names, 129 members; 8.8 s) and cli.pack-import-refusals.test.ts (8.4 s). Helpers moved to pack-import-fixture.ts (`testDir()` per file). Same 19 tests, titles unchanged; together 18.7 s wall. m18-complete's batch-import leg runs the three files.
+- packages/cli/src/e2e/svg-witness.test.ts runs its installed-witness probe as three processes at once (`--test-name-pattern` for the 128-observation session, 12.5 s, and the held-reply deadline, 10.3 s; `--test-skip-pattern` for the other five), each in its own directory, each expected to pass its count with no failure, the counts summing to the probe's 7: 28 s to 14.1 s.
+- Left as they are (row amended): svg-witness-cleanup-windows 17.6 s (its cases wait the real 2 s reserves they test; now the longest file), commands 8.9 s, imported-pack-scaling 7.1 s, font-sources 9 s (each ends well inside the poles).
+- r1 (pass, minor fixed in-commit): F1 the badge case stayed in cli.pack-import.test.ts while the small file's header and this entry placed it there; headers and timings corrected, and the amendment names cleanup-windows as the longest file.
