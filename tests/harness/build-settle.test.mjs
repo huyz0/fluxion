@@ -117,7 +117,12 @@ describe('a build that reported success and does not exit is ended (M18.281, NFR
 
   test('NFR-PORT-005: the ladder build and the cli-mcp build are settled, and verify, harness-windows and cli-mcp upload the reports', () => {
     const precommit = readFileSync(join(REPO_ROOT, 'scripts/gates/precommit.mjs'), 'utf8');
-    assert.match(precommit, /runAsync\('pnpm', mode === 'all' \? \['run', 'build'\] : \['turbo', 'run', 'build', [^\n]*\{ settle: BUILD_SETTLE \}\)/);
+    assert.match(precommit, /runAsync\('pnpm', mode === 'all' \? ALL_BUILD : \['turbo', 'run', 'build', [^\n]*\{ settle: BUILD_SETTLE \}\)/);
+    // the docs site leaves the build for its own settled step after the barrier, so --all still builds every workspace (M19.61)
+    assert.match(precommit, /const ALL_BUILD = \['turbo', 'run', 'build', '--filter=!@fluxion\/docs'\];/);
+    assert.match(precommit, /const DOCS_BUILD = \['turbo', 'run', 'build', '--filter=@fluxion\/docs'\];/);
+    assert.match(precommit, /\['docs', \(m\) => m === 'all', [^\n]*\(\) => buildDocs\(\)\]/);
+    assert.match(precommit, /const built = await runAsync\('pnpm', DOCS_BUILD, \{ settle: BUILD_SETTLE \}\);/);
     assert.match(precommit, /const BUILD_SETTLE = \{ done: TURBO_ALL_SUCCESSFUL, ms: 60_000, reportDir: repoPath\('\.harness\/tmp\/stuck-build'\)/);
     const ci = readFileSync(join(REPO_ROOT, '.github/workflows/ci.yml'), 'utf8');
     const job = (name) => new RegExp(`^ {2}${name}:\\n[\\s\\S]*?(?=^ {2}\\S)`, 'm').exec(ci)?.[0] ?? '';

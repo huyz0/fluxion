@@ -2,6 +2,7 @@
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { docsOutputProblem } from './docs-output.mjs';
 import { advisoryAnnotation, advisoryLines, failureAnnotation, failureLines, writeFailureLog } from './failure-report.mjs';
 // The single definition of the pre-commit ladder. Used by .githooks/pre-commit (--staged),
 // by `pnpm verify` / CI (--all), and by agents (--quick while iterating).
@@ -32,7 +33,7 @@ import {
   workspaceCatalogOnly,
 } from './ladder-scope.mjs';
 import { listFlag, splitLadder } from './ladder-split.mjs';
-import { exists, git, inFlight, listFiles, nestedSkip, nodeAsync as node, repoPath, runAsync, TURBO_ALL_SUCCESSFUL, testStepEnv } from './lib.mjs';
+import { exists, git, inFlight, listFiles, nestedSkip, nodeAsync as node, readText, repoPath, runAsync, TURBO_ALL_SUCCESSFUL, testStepEnv } from './lib.mjs';
 import { withLiveStepLog } from './live-step-log.mjs';
 
 const argv = new Set(process.argv.slice(2));
@@ -50,6 +51,16 @@ const pnpm = (...a) => runAsync('pnpm', a);
  * M18.281: a Windows CI build twice printed turbo's summary with every task successful and then did not exit, until the step's
  * limit (ci 42038170007, 42092624276). After the summary the build is done; 60 s later its tree is ended and the run goes on.
  */
+// --all's build: every workspace but the docs site, which its own step builds after the barrier (M19.61)
+const ALL_BUILD = ['turbo', 'run', 'build', '--filter=!@fluxion/docs'];
+const DOCS_BUILD = ['turbo', 'run', 'build', '--filter=@fluxion/docs'];
+/** The docs build, then what it must emit (FR-AI-011: llms.txt, and llms-full.txt holding the authoring guide; M19.61). */
+async function buildDocs() {
+  const built = await runAsync('pnpm', DOCS_BUILD, { settle: BUILD_SETTLE });
+  if (built.status !== 0) return built;
+  const problem = docsOutputProblem((path) => (exists(path) ? readText(path) : undefined));
+  return problem ? { ...built, status: 1, stderr: `${built.stderr}\n${problem}` } : built;
+}
 const BUILD_SETTLE = { done: TURBO_ALL_SUCCESSFUL, ms: 60_000, reportDir: repoPath('.harness/tmp/stuck-build'), label: 'build' };
 /**
  * M18.283: CI's Vitest run logs every file's start and end (tools/vitest/progress-reporter.mjs), so 8 silent minutes is a stall:
@@ -166,17 +177,19 @@ const STEPS = [
   // references, which a fresh checkout has only after tsc -b (M3.5, first cross-workspace import)
   ['typecheck', () => true, () => hasPkg || 'no workspace yet (M1)', () => pnpm('run', 'typecheck')],
   // build before harness-tests and package hygiene: both need dist (turbo-cached, ~1 s when unchanged)
-  // --all (verify, CI) builds everything; a staged commit builds libraries only: later steps read their
-  // dist/ (publint, attw, api, size-limit), and the docs site and studio bundle are too slow for the
-  // pre-commit budget (M1.18)
+  // --all (verify, CI) builds everything but the docs site, which the `docs` step builds after the barrier (no step reads its dist;
+  // M19.61, M18.290 diagnosis rank 3: it ran ~12 s alone at the end of the build); a staged commit builds libraries only: later steps
+  // read their dist/ (publint, attw, api, size-limit), and the docs site and studio bundle are too slow for the pre-commit budget (M1.18)
   [
     'build',
     (m) => m !== 'quick',
     () => hasPkg || 'no workspace yet (M1)',
     // M18.281: a build that printed turbo's all-successful summary and does not exit is ended after BUILD_SETTLE (Windows stalls)
-    () =>
-      runAsync('pnpm', mode === 'all' ? ['run', 'build'] : ['turbo', 'run', 'build', '--filter=./packages/*', '--filter=./packs/*'], { settle: BUILD_SETTLE }),
+    () => runAsync('pnpm', mode === 'all' ? ALL_BUILD : ['turbo', 'run', 'build', '--filter=./packages/*', '--filter=./packs/*'], { settle: BUILD_SETTLE }),
   ],
+  // the docs site (Astro, ~222 pages) beside the other steps after the barrier: still built, still failing the ladder, and its
+  // llms.txt and llms-full.txt (with the authoring guide, FR-AI-011) checked here once built; no other step reads apps/docs/dist (M19.61)
+  ['docs', (m) => m === 'all', () => exists('apps/docs/package.json') || 'no docs site', () => buildDocs()],
   [
     'harness-tests',
     (m) => m !== 'quick',
