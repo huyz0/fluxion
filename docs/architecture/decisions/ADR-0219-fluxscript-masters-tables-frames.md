@@ -53,7 +53,8 @@ Options 2, 4 and 5.
   `pin` or `clip` on a group without `frame: true` is `FLX_SCHEMA_INVALID`.
 - **Decompile (v0)** writes all of these back: `role`, `master`, `placeholder`, `fills`, a table as `rows` (every row its full width,
   `null` where no cell is; `widths` and `heights` only when a weight is not 1), a frame as a group with `frame: true`, its `pin` and,
-  when the record has one, `clip`. A table cell with a style, or rich text the subset cannot say, leaves the table out as before.
+  when the record has one, `clip`. FluxScript has no key for a frame's `padding`, turn or flips, so a frame with any of them
+  is left out of the subset, like any record the subset cannot say (M19.26 r1 follow-up, noted in M19.30). A table cell with a style, or rich text the subset cannot say, leaves the table out as before.
 - The key table (`fluxScriptKeys`), the JSON schema (`specs/schema/fluxscript.schema.json`), the TextMate grammar, the cheat sheet and the
   authoring guide list the new keys.
 - Not covered: `hideMasterElements`, region `texts` and `icons` (FR-SHP-007) and the edit language's patch ops; each needs its own row.

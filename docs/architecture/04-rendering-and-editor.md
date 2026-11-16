@@ -5,7 +5,8 @@
 > shell, or anything that affects edit/present parity or drag performance.
 > Research basis: `research/01` §2 (layering, camera, culling), §3.4 (tools), §4.4 (text), §5.3
 > (decorations), §7.3 (key decisions); `research/03` §8.1 (frame rules). Requirements: `15-editor.md`,
-> FR-CMP-*, NFR-PERF-001/002/006, NFR-SIZE-001/002.
+> FR-CMP-*, NFR-PERF-001/002/006, NFR-SIZE-001/002. Frames, paths, tables and masters: ADR-0052, ADR-0053, ADR-0054
+> (§2.7, §3.9).
 
 ## 1. Responsibilities
 
@@ -157,6 +158,25 @@ Mode differences are an allow-list, enforced by a lint rule that permits reading
 `(step, t)` in edit mode (empty selection, overlay slot unmounted) and in present mode. Two checks:
 (1) the serialized DOM of the `content` layer is equal after stripping an attribute allow-list,
 and (2) the pixel diff is ≤ 0.1 %. Any failure blocks the gate.
+
+### 2.7 Frames, paths, tables and masters (M19)
+
+Each is drawn by the same element views in edit, present and export (ADR-0015), so parity holds without a per-mode path.
+
+- **Frames** (FR-ARR-006, ADR-0052): `container-views.tsx` nests a frame's members in a `<div>` clipped to its box, rounded by
+  the resolved corner radius, unless `clip: false`. The clip turns with the frame. `padding` draws nothing.
+- **Path shapes** (FR-SHP-010, FR-SHP-011, ADR-0053): a `core:path` shape draws its `path.d` scaled from `path.w × path.h` to the
+  element's box, with its `fillRule`; outlines go through `path-data.ts` (coordinates rounded to 1/1000 px).
+- **Tables** (FR-SHP-014, ADR-0054): `table-layout.ts` gives each row and column its share of the box from its weight, each drawn
+  cell's box (spans cover the cells right and below) and the style a cell resolves: its own `style`, over the table style's part for
+  its row (header, band), over the `cell` and `border` parts, over the theme's defaults. A table style the theme does not name falls
+  back to the built-in `plain`, `banded` or `grid`. `table-view.tsx` draws each cell with its rich text; a border is centred on the
+  edge, so neighbours share one line.
+- **Masters** (FR-SCR-005, ADR-0054): `master-view.tsx` is the screen's master layer, under its own elements: the master's
+  background unless the screen has one, then the master's elements that are not placeholders and not filled (none with
+  `hideMasterElements`). Where `modePolicy` sets `placeholderHints` (edit only), each unfilled placeholder draws a dashed hint with its
+  name. The layer is derived from the store (`appliedMaster`, `masterLayers` in core), so editing a master redraws every screen that
+  uses it. Masters are skipped by present mode, navigation and export page lists.
 
 ## 3. `@fluxion/editor`
 
@@ -329,6 +349,43 @@ As built in M6 (M6.20): the edit chrome unmounts, the present-mode tools (the la
 pointer, and their commands go through a read-only guard that refuses every write; the edit keys go
 with the canvas. The store's own `read-only` policy is fixed at creation, so it stays for hosts that
 open a document read-only (the player).
+
+### 3.9 Structured diagramming (M19)
+
+Every edit below is one command, so one undo step (ADR-0014); opening or closing a master only switches the shown screen. Gestures
+(drags, quick-connect, border resizes) and the arrange panel's buttons run the same core commands as the palette entries.
+
+- **Frames** (FR-ARR-006, ADR-0052): the `frame` tool (`F`) draws one. A frame's resize handle resizes its box only (a group's
+  still scales its members). When a pointer drag ends, `dropReparents` (core) moves each dragged element whose centre lies in the
+  deepest frame under it into that frame, or out to the next container. Hit-testing and the marquee honour clipping
+  (`frame-clip.ts`): a member is hit, or touched by a marquee, only inside every clipping frame above it.
+- **Layers panel** (FR-ARR-008): `layers-model.ts` and `layers-tab.tsx` list the shown screen's elements as a tree, front first,
+  members under their group or frame. A drag among siblings is one `element.reorder` (only the moved record's index changes);
+  Alt+ArrowUp/ArrowDown steps an element; the Hide button toggles `hidden` and the lock toggle sets `position`, `size`, `rotation` and
+  `select` together, so a locked element stays put and the canvas does not pick it (the panel still does).
+- **Locks and flips** (FR-SHP-008, FR-SHP-009): the select tool respects each lock (position through drags and nudges, size
+  through resize handles, rotation through the rotate handle, aspect as Shift does, select through clicks, marquee and select-all).
+  Flip horizontally and vertically mirror the transform; a frame's flip carries its members (ADR-0052).
+- **Text regions and icon slots** (FR-SHP-007, ADR-0054): a double-click edits the region under it (the first is the element's
+  `text`, the rest its `texts`); the inspector fills or empties an icon slot. `region-problems.ts` reports entries nothing draws.
+- **Booleans and the path tool** (FR-SHP-010, FR-SHP-011, ADR-0053): `boolean-edit.ts` resolves each selected operand's outline,
+  placed by its transform, and core replaces the operands by one `core:path` shape (Union, Subtract, Intersect, Exclude). "Edit path"
+  (`path-edit.ts`, `path-edit-states.ts`) shows a path shape's vertices and bezier handles; an edit rewrites `d` and refits `w`, `h`
+  and the transform so the points that did not move stay put.
+- **Tables** (FR-SHP-014, ADR-0054): `table-edit.ts` picks a cell with a click on a selected table (Shift extends the range); the
+  table commands insert and delete rows and columns, merge and split; Tab and Shift+Tab step the picked cell; a drag on an inner
+  border resizes the rows or columns beside it (`table-resize.ts`). The grid maths is core's (`table-ops.ts`).
+- **Masters** (FR-SCR-005, ADR-0054): the navigator lists masters in their own section and its menu makes a screen a master, uses
+  one or drops it; "Make placeholder" names a master's element a placeholder; a double-click on a placeholder hint fills it on that
+  screen; "Edit master" opens the shown screen's master and "Close master" goes back (`master-edit.ts`). `master-problems.ts` reports
+  a master that does not apply and a `fills` with nothing to fill.
+- **Match size and the format painter** (FR-ARR-007): the arrange panel matches width, height or both to a key element its
+  picker chooses among the selection (`element.matchSize`; arrange panel only, no palette entry). Core's `element.pasteStyle` copies `style`
+  only, never `semantic`; its editor UI is backlog row M19.40.
+- **Quick-connect** (FR-EDT-015): a hovered shape shows a "+" beyond each side; a drag from one draws a connector, dropped on an
+  element it joins the two, dropped on nothing it opens the mini library whose choice adds a joined shape (`quick-connect.ts`).
+- **Find** (FR-EDT-016): Ctrl/Cmd+F opens the find bar; `find-model.ts` finds elements by their text (regions and table cells
+  included), name or semantic label across screens in navigator order; Enter and Shift+Enter step through matches.
 
 ## 4. Studio app shell
 

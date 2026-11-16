@@ -79,6 +79,18 @@ not in the current schema; until added (minor version) they are preserved but no
 A group's `transform` is the bounds of its members (unturned), which they keep in screen coordinates; the core hook
 `core:5-group-bounds` refits it, and the groups around it, whenever a member is edited, added, removed or taken out.
 
+A frame (ADR-0052) shares that containment model: its members name it as `parentId` and keep screen coordinates, so every reader
+reads one transform and a reparent changes only `parentId` and `index`. Unlike a group's, a frame's box is its own: the group-bounds
+hook stops at it. Moving, turning or flipping a frame carries its members in the same transaction; resizing it changes its box only,
+and what falls outside is clipped. It clips unless `clip: false`, to its box rounded by the resolved corner radius; `padding` is the
+inset its layout keeps (`layout.options.padding ?? padding ?? the algorithm's default`), never drawn. A pointer drag that ends with an
+element's centre inside a frame makes it a member (one undo step); nudge, align, distribute and layout never change membership.
+
+A `core:path` shape (ADR-0053) is the result of a boolean operation (union, subtract, intersect, exclude: `geometry`'s pure
+`boolean.ts` over adaptively flattened outlines, re-fitted to cubics) or the path tool's edit: its `path.d` is drawn in the
+reference box `path.w × path.h` scaled to its transform, and a result is stored `evenodd` with outer rings counter-clockwise.
+`core:path` is core's own definition, in every registry, never embedded in a save.
+
 Record type `section` (schema `1.1`, M8.14): `name`, `index`, `collapsed?`; a named group of screens for the
 navigator and, later, the site's nav. `screen.sectionId` names one (FLX_REF_MISSING otherwise), and sections are ordered
 among themselves by `index` (ADR-0021). The `1.0 → 1.1` migration drops the `sectionId` a 1.0 screen could not have meant.
