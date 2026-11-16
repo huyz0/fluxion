@@ -928,6 +928,28 @@ export function playwrightSpecs(specs, projects, { runner = runPlaywright } = {}
   return typeof report === 'string' ? report : checkPlaywrightReport(report, specs, projects);
 }
 
+/**
+ * One Playwright run for every spec a gate's legs name (M19.58): the first leg that asks runs `allSpecs` once on `projects` (one
+ * studio build; in the pinned image, one install and build instead of one per leg), and each leg is judged on its own specs from that
+ * report with {@link checkPlaywrightReport}. A spec missing from the tree or from `allSpecs` fails its leg without a run. `runner()`
+ * gives the runner when the run starts (the image runner asks Docker), so a gate that never asks never probes.
+ */
+export function sharedPlaywright(allSpecs, projects, { runner = () => runPlaywright } = {}) {
+  let report;
+  return (specs) => {
+    const missing = specs.filter((s) => !exists(s));
+    if (missing.length) return `missing ${missing.join(', ')}`;
+    const outside = specs.filter((s) => !allSpecs.includes(s));
+    if (outside.length) return `not in the gate's shared Playwright run: ${outside.join(', ')}`;
+    report ??= playwrightReport(
+      allSpecs.filter((s) => exists(s)),
+      projects,
+      { runner: runner() ?? runPlaywright },
+    );
+    return typeof report === 'string' ? report : checkPlaywrightReport(report, specs, projects);
+  };
+}
+
 // ── what an entry bundle loads up front (M12.23: CodeMirror and the DSL stay out of the initial chunks) ──
 /**
  * Static `import … from "./x.js"`, `import "./x.js"` and `export … from "./x.js"` (never the dynamic `import("./x.js")`), also as a

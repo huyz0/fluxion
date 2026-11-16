@@ -746,6 +746,51 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.match(String(checkColdReadings([], '', { isAncestor })), /no M19\.28 commit/);
   });
 
+  it('M19.58: the browser legs of a gate share one Playwright run, each judged on its own specs', async () => {
+    const { sharedPlaywright } = await import('../../scripts/gates/milestone-checks.mjs');
+    const a = 'e2e/locks.spec.ts';
+    const b = 'e2e/style-paint.spec.ts';
+    const calls = [];
+    const runner = (args, env) => {
+      calls.push(args);
+      // locks passes on both engines; style-paint fails on firefox
+      const tests = (file, statuses) => ({ file, specs: [{ title: 't', tests: statuses.map(([projectName, status]) => ({ projectName, status })) }] });
+      const suites = [
+        tests('locks.spec.ts', [
+          ['chromium', 'expected'],
+          ['firefox', 'expected'],
+        ]),
+        tests('style-paint.spec.ts', [
+          ['chromium', 'expected'],
+          ['firefox', 'unexpected'],
+        ]),
+      ];
+      writeFileSync(env.PLAYWRIGHT_JSON_OUTPUT_NAME, JSON.stringify({ suites }));
+      return { status: 1, stdout: '', stderr: '' };
+    };
+    let asked = 0;
+    const shared = sharedPlaywright([a, b], ['chromium', 'firefox'], {
+      runner: () => {
+        asked++;
+        return runner;
+      },
+    });
+    assert.equal(asked, 0, 'no runner is asked for before a leg runs');
+    assert.equal(shared([a]), true);
+    assert.match(String(shared([b])), /style-paint\.spec\.ts \[firefox\] "t": unexpected/);
+    // one run over both specs, however many legs ask
+    assert.equal(calls.length, 1);
+    assert.equal(asked, 1);
+    assert.deepEqual(
+      calls[0].filter((x) => x.startsWith('e2e/')),
+      [a, b],
+    );
+    // a spec outside the shared run, or missing from the tree, fails its leg without another run
+    assert.match(String(shared(['e2e/table.edit.spec.ts'])), /not in the gate's shared Playwright run: e2e\/table\.edit\.spec\.ts/);
+    assert.match(String(shared(['e2e/no-such.spec.ts'])), /missing e2e\/no-such\.spec\.ts/);
+    assert.equal(calls.length, 1);
+  });
+
   it('checkPlaywrightTitles needs each title passed on its first run on every project, in that spec', async () => {
     const { checkPlaywrightTitles } = await import('../../scripts/gates/milestone-checks.mjs');
     const titled = (file, specs) => ({ suites: [{ file, specs: specs.map(([title, projectName, status]) => ({ title, tests: [{ projectName, status }] })) }] });

@@ -16,7 +16,7 @@ import {
   imageRunner,
   loadMilestoneReviews,
   namedCases,
-  playwrightSpecs,
+  sharedPlaywright,
   verifyLeg,
 } from './milestone-checks.mjs';
 import { t } from './thresholds.mjs';
@@ -85,7 +85,7 @@ function e2e(specs) {
     if (!exists(spec)) return `missing ${spec}`;
     if (!readText(spec).includes('expectAccessible(')) return `${spec} has no axe scan (expectAccessible)`;
   }
-  return playwrightSpecs(specs, BROWSERS, { runner: imageRunner() });
+  return browsers(specs);
 }
 
 // ── requirements and decisions ────────────────────────────────────────────────────────────────────
@@ -257,9 +257,7 @@ leg('FR-SHP-010 boolean ops match their goldens (area within 0.5 % of reference)
 );
 // the browsers give Node's golden bytes (M19 cp4 F1): a computation spec that opens no editor page to scan; the context-menu
 // Union (arrange.boolean) is in SPECS, with axe
-leg('FR-SHP-010 boolean goldens in the browsers: Chromium, Firefox, WebKit; no retries', () =>
-  playwrightSpecs(['e2e/geometry.boolean-engines.spec.ts'], BROWSERS, { runner: imageRunner() }),
-);
+leg('FR-SHP-010 boolean goldens in the browsers: Chromium, Firefox, WebKit; no retries', () => browsers(['e2e/geometry.boolean-engines.spec.ts']));
 // core:path draws, hits and reports its own path, and a path on another definition is ignored (M19.41, M19 cp4 F1)
 leg('core:path: the path shape is drawn and hit by its own path; a path on another definition is ignored', () =>
   all(
@@ -399,6 +397,12 @@ const SPECS = [
   // M19 cp4 F1: Union from the context menu
   'arrange.boolean',
 ];
+// every browser leg's specs in one Playwright run, one build (M19.58); each leg is still judged on its own specs
+const browsers = sharedPlaywright(
+  [...SPECS.map((spec) => `e2e/${spec}.spec.ts`), 'e2e/geometry.boolean-engines.spec.ts', 'e2e/parity.edit-vs-present.spec.ts'],
+  BROWSERS,
+  { runner: imageRunner },
+);
 for (const spec of SPECS) leg(`${spec}: Chromium, Firefox, WebKit; axe clean; no retries`, () => e2e([`e2e/${spec}.spec.ts`]));
 leg('FluxScript table, frame and master: examples/dsl/masters-tables.flux.yaml renders to its golden', () => {
   for (const file of ['examples/dsl/masters-tables.flux.yaml', 'examples/dsl/__golden__/masters-tables.svg']) if (!exists(file)) return `missing ${file}`;
@@ -416,7 +420,7 @@ leg('edit/present parity within PARITY_MAX_DIFF_PCT includes masters, frames and
   const source = readText(example);
   const lacking = [/^\s*master:/m, /\btable\b/, /\bframe\b/, /\bclip:\s*true\b/].filter((re) => !re.test(source));
   if (lacking.length) return `${example} lacks ${lacking.map(String).join(', ')}`;
-  return playwrightSpecs([spec], BROWSERS, { runner: imageRunner() });
+  return browsers([spec]);
 });
 leg(`size-limit: editor initial ≤ EDITOR_INITIAL_GZIP (${t('EDITOR_INITIAL_GZIP')})`, () => {
   // size-limit exits 1 when any entry is over; this leg judges the editor entry, the verify leg the rest
