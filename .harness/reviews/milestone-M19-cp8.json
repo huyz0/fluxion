@@ -1,0 +1,47 @@
+{
+  "milestone": "M19",
+  "checkpoint": "cp8",
+  "range": "5a3d0ee71878d1c6361c8faf52525d82de210f15..553bd32ec3f37a9185738e70bb12293817c6308e",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "I read each commit after cp7's record 9880455 as a diff: b808e9a M19.42, 2571ca8 M19.55, 6d262e4 M19.29, b7f9ac5 M19.28, 522e499 M19.56, 4ec49e2 M19.59 and 553bd32 M19.58. cp7's dispositions are carried out. In 9880455, F1 amends M19.42's acceptance, F2 adds M19.55 (blocks M19.31), and F3 and F4 have review-argued lines. In this delta, M19.42 (b808e9a) does all of cp7 F1. The FR-ARR-007 leg names style-paint.test.ts's three cases. FR-SHP-007 names the slot-section load-before-fill and ordering cases, shape-pack-prepare's embed case and pack-catalog.slots. FR-SHP-014 names table-edit's open, locked-table and line-placement cases. A new FR-SHP-008 unit leg and a new core:path leg are added. SPECS gains style-paint, table.cell-text, library.icon-slot-pack and arrange.boolean, each with an axe scan. Named cases fail closed: a missing name fails the leg. The packet shows every new unit and browser leg green. CI ran the widened specs on three engines: ci green at 6d262e4 (43843878380). M19.55 (2571ca8) pages jobs 100 at a time until a short page. It reads through `gh api repos/...` when `gh run view` fails and names both errors if both fail, with fake-gh cases for two pages, view refused and both refused. M19.28 (b7f9ac5) keeps coldReadings, one per commit and reset by a lockfile change. The leg needs 3 readings descended from the oldest 'M19.28: ' subject and on HEAD, judged by their median. It reads 0 recorded, so it is honestly red. The row's test-speed items split into M19.56 to M19.61, which its acceptance allows. M19.56 carries a Removes-test trailer citing the 2026-11-13 allowance. Every case keeps its assertions as a test.step, and the FR-LIB-004 title stays. M19.59 keeps 19 tests over three files. Traceability is unchanged: FR-LIB-003 stays at 21 files and FR-LIB-004 goes from 58 to 59 files (+57 to +58). m18-complete's batch leg now runs all three files. M19.58 (553bd32) shares one Playwright run across m19-complete's browser legs. Each leg is still judged on its own specs by checkPlaywrightReport ('no test ran' fails), and a spec outside the shared list or missing fails without a run. M16 to M18 keep one run per leg. M19.29 (6d262e4) adds the boot marks, bootReport, timeLeft and the boot note on failed legs. Its fix is handed to M20 row 20 with a roadmap Deferred row (F1). NFR-PORT-001 goes from 6 to 9 tracing files. No test is removed without a trailer, no FR/NFR loses coverage, and no threshold is loosened. The gate reads 29/49 at 553bd32. Its red legs are the Firefox/WebKit e2e and parity legs (local, as at cp5 to cp7), decodePng (no nightly png-check recorded; the last nightly is still 43699537326 at 3e11fb6, red), cold-setup (0 of 3 readings), ci-evidence, backlog (M19.57, M19.60, M19.61, M19.31), the final review and the roadmap. It is not falsely green. last-ci: ci green at 6d262e4 (2 newer runs pending), gates green at 553bd32, cold-setup 332 s. Mutants: sharedPlaywright without the outside-spec check is caught ('not in the gate's shared Playwright run'). checkColdReadings taking the best reading instead of the median, or dropping the descended-from check, is caught (milestone-checks M19.28 case). pagedJobs stopping after page 1 is caught (101 jobs over two pages). The svg-witness PARTS sum check is a constant (7 = 1+1+5) and does not read the probe. A renamed or added probe case is still caught by each part's exact '# pass N'.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "summary": "M19.29 closes plan row 23 without the fix. Its acceptance said the 2026-11-14 stall's cause 'SHALL be read ... and fixed'. The closing commit rewrote that acceptance to say the fix is handed to M20 row 20. The reason holds: no trace was kept and 50 loaded reruns passed. The instrumentation is the only step possible, and the M20 row and roadmap Deferred row exist. But the scope was cut by the row's own commit, not by a checkpoint disposition. docs/milestones/M19.md 'Handed off from M18' row 23 still says 'and fixed', so the plan and the backlog disagree.",
+      "evidence": "6d262e4 docs/backlog/current.md M19.29 'Amended at M19.29 ... hands the fix to M20 row 20'; docs/milestones/M20.md row 20; docs/milestones/roadmap.md Deferred row citing M19.29; docs/milestones/M19.md:79 (row 23 unchanged)"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "summary": "M19.59 now runs the installed-witness probe as three Node test processes at once, each with its own owned browser. The probe used to run serially. Concurrent browser launches on a loaded runner are what caused the macOS cli-mcp witness transport timeout behind M19.33 (ci 43658352359). m19-complete's ci-evidence leg still needs that macOS job green in 2 later runs, and it has 0 today. The change can make that leg harder to close, though it cannot make it falsely green.",
+      "evidence": "4ec49e2 packages/cli/src/e2e/svg-witness.test.ts (PARTS, Promise.all over probe()); packet gate line 'job cli-mcp (macos-latest, node 22) failure in ci run 43658352359 ... green in 0 later run(s) of 2 needed'; M19.33 row"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "summary": "M19.57 runs fidelity, parity and axe on Chromium only for pull_request runs. This repo lands by pushing straight to main (review-argued M1.24 F2), so main's push runs keep every engine and the row saves no CI time on the path the cold-setup and CI-evidence legs read. It is plan row 21's own item and does no harm, but it is likely work with no effect on M19's remaining evidence.",
+      "evidence": "docs/backlog/current.md M19.57; .github/workflows/ci.yml on: pull_request, merge_group, push main; .harness/baselines/review-argued.txt M1.24 F2 ('this repo pushes to main only')"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "hand-off",
+      "target": "M20",
+      "note": "Ratify M19.29's deferral as a checkpoint hand-off in the cp8 record commit. Amend M20.md row 20 to also cite 'M19 cp8 F1', and the roadmap Deferred row for the first-screen stall to cite 'cp8 F1' (it already names M19 and M20). Annotate docs/milestones/M19.md 'Handed off from M18' row 23 so its fix clause reads as handed to M20 row 20 (cp8 F1), and the plan and backlog agree."
+    },
+    {
+      "finding": "F2",
+      "disposition": "argue",
+      "note": "The ci-evidence leg needs two green macOS cli-mcp runs, so a regression stays red and visible, never falsely green. If a macOS cli-mcp run after 4ec49e2 fails with a witness transport or launch timeout, the first response is to run the probe parts serially on macOS (or all of them serially). No timeout is raised, and the failure counts as an ADR-0176 attempt on a Fixes-ci row."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "note": "The item is listed in plan row 21 (handed from M18), and cutting it is a human scope decision. It does not weaken main's push runs or the nightly, which keep every engine. The driver may ask the human to descope M19.57 rather than spend a commit on it. Otherwise it lands as specified with its ci.yml harness case."
+    }
+  ],
+  "planDelta": "61 rows against 31 planned (1.97x), up from 55 at cp7. All six new rows are M19.28's test-speed split (M19.56 to M19.61), which that row's acceptance allowed and plan row 21 listed item by item. None is new scope. This delta closed M19.42, M19.55, M19.29, M19.28, M19.56, M19.59 and M19.58. M19.42's catch-all, which had gathered cp2, cp3, cp4 and cp7 additions, closed in one commit after two review rounds. M19.29 took four review rounds and handed its fix to M20 (F1). Left: M19.57, M19.60 and M19.61 (CI and harness speed), then M19.31. The final review also waits on evidence that only CI time produces: 3 cold-setup readings after b7f9ac5, a green nightly png-check and perf run (none since 3e11fb6, recordable now that M19.55 has landed), and two green macOS cli-mcp runs (F2). For later milestones, size a handed-off speed row as several rows when the plan is written, not at the row's commit, and leave a row that depends on a non-reproducible failure as instrumentation plus a later-milestone row from the start."
+}

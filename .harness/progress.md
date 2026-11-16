@@ -5080,3 +5080,9 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 - m19-complete: the SPECS legs, the boolean-engines leg and the parity leg (16 specs, 16 image runs before) go through one `browsers` run. Older milestone gates are unchanged.
 - Test: milestone-checks.test.mjs (two legs, one run over both specs, a failure on one engine reported only on its leg, outside and missing specs refused without a second run); red when the report is not kept.
 - r1 (pass, minor fixed in-commit): F1 the row read as every m<N>-complete gate; it now names m19-complete, the closed M16–M18 gates keeping one run per leg.
+
+## 2026-11-16 M19.31: checkpoint cp8 (through 553bd32)
+- Independent review of 9880455..553bd32 (M19.42, M19.55, M19.29, M19.28, M19.56, M19.59, M19.58): pass, 3 minor. cp7's dispositions are carried out.
+- F1 hand-off: M19.29 handed its stall fix to M20 row 20; M20 row 20 and the roadmap Deferred row cite cp8 F1, and M19.md row 23 says the fix went to M20.
+- F2, F3 argued (macOS witness probe parallelism stays visible on ci-evidence; M19.57 lands as specified).
+- Plan: 61 rows against 31 (1.97x). Left: M19.61 (reviewed, re-applied after this), M19.57, M19.60, M19.31 plus CI-only evidence (3 cold readings, a green nightly png-check, 2 green macOS cli-mcp runs).
