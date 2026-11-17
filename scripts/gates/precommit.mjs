@@ -19,6 +19,7 @@ import { advisoryAnnotation, advisoryLines, failureAnnotation, failureLines, wri
 // Steps whose tooling does not exist yet print SKIP with the reason — never a silent pass.
 import { hasRecords, recordFailures, replayRecorded } from './fc-replay.mjs';
 import { gateLatency } from './gate-latency.mjs';
+import { runningSteps } from './ladder-running.mjs';
 import {
   evalNeeded,
   examplesNeeded,
@@ -350,14 +351,23 @@ const started = Date.now();
 // Steps up to and including `build` run in order (later steps read dist/). Every step after it is
 // independent, so they run concurrently; results still print in ladder order (M1.28, NFR-DX-002).
 const BARRIER = 'build';
+// CI only: the running steps, kept in the stuck-build artifact and printed every 2 minutes, so a job killed at its step timeout
+// names the stage it was in (M20.31, cp2 F3); removed when the ladder finishes. One file per process: a nested ladder (harness
+// tests run one) neither overwrites nor removes this one's (M20.31 r1 F1)
+const running =
+  process.env.GITHUB_ACTIONS === 'true' ? runningSteps(repoPath('.harness/tmp/stuck-build', `running-${started}-${process.pid}.json`)) : undefined;
 
 async function runStep([name, , available, exec]) {
   const avail = available();
   if (avail !== true) return { lines: [`SKIP ${name} — ${avail}`], ok: true };
   const t0 = Date.now();
-  const r = await (process.env.GITHUB_ACTIONS === 'true'
-    ? withLiveStepLog(repoPath('.harness/tmp/verify-logs', `${started}-${process.pid}`), name, exec)
-    : exec());
+  running?.start(name);
+  let r;
+  try {
+    r = await (process.env.GITHUB_ACTIONS === 'true' ? withLiveStepLog(repoPath('.harness/tmp/verify-logs', `${started}-${process.pid}`), name, exec) : exec());
+  } finally {
+    running?.end(name);
+  }
   const ms = Date.now() - t0;
   // a tool that exits 0 but reports "<tool>: SKIP — <why>" did not run its check (M1 cp1 F3)
   const nested = r.status === 0 ? nestedSkip(r.stdout) : null;
@@ -396,6 +406,7 @@ const results = [];
 for (const step of applicable.slice(0, cut)) results.push(await runStep(step));
 results.push(...(await Promise.all(applicable.slice(cut).map(runStep))));
 if (packing !== undefined) rmSync((await packing).dir, { recursive: true, force: true });
+running?.done();
 const lines = results.flatMap((r) => r.lines);
 const total = Date.now() - started;
 const timing = gateLatency(

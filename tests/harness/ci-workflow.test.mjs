@@ -2,9 +2,11 @@
 // with SHA-pinned actions, and re-checks every commit. Structural check (no YAML dependency).
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { chmodSync, readdirSync, readFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { describe, it } from 'node:test';
+import { runningSteps } from '../../scripts/gates/ladder-running.mjs';
 import { out, REPO, sandbox } from './helpers.mjs';
 
 const wf = readFileSync(join(REPO, '.github/workflows/gates.yml'), 'utf8');
@@ -667,5 +669,77 @@ describe('milestone-gate workflow (M19.2)', () => {
     assert.match(gate, /\| tee "\$GATE_LOG"$/m);
     assert.match(gate, /^ {10}path: \$\{\{ env\.GATE_LOG \}\}$/m);
     assert.doesNotMatch(gate, /runner\.temp \}\}\/|RUNNER_TEMP\/|tee gate\.log|path: gate\.log/);
+  });
+});
+
+// M20.31 (cp2 F3): a ladder killed at its step timeout leaves the steps it was running, by name.
+describe('running ladder steps (M20.31)', () => {
+  function fake() {
+    let t = 1_000_000;
+    const files = new Map();
+    const printed = [];
+    let beat;
+    const tracker = runningSteps('run.json', {
+      now: () => t,
+      print: (line) => printed.push(line),
+      write: (path, text) => files.set(path, JSON.parse(text)),
+      remove: (path) => files.delete(path),
+      timer: (fn) => {
+        beat = fn;
+        return 1;
+      },
+      clear: () => {
+        beat = undefined;
+      },
+    });
+    return { tracker, files, printed, tick: (ms) => (t += ms), beat: () => beat?.() };
+  }
+
+  it('NFR-DX-001: the running-steps file and heartbeat name each running step with its time so far', () => {
+    const f = fake();
+    f.tracker.start('test');
+    f.tick(5_000);
+    f.tracker.start('lint');
+    f.tick(60_000);
+    f.beat();
+    assert.deepEqual(f.files.get('run.json').running, [
+      { step: 'test', ms: 65_000 },
+      { step: 'lint', ms: 60_000 },
+    ]);
+    assert.deepEqual(f.printed, ['ladder: running test (65 s), lint (60 s)']);
+    f.tracker.end('lint');
+    f.beat();
+    assert.deepEqual(f.files.get('run.json').running, [{ step: 'test', ms: 65_000 }]);
+    assert.equal(f.printed.at(-1), 'ladder: running test (65 s)');
+  });
+
+  it('NFR-DX-001: no step running prints nothing, and a finished ladder leaves no file or heartbeat', () => {
+    const f = fake();
+    f.beat();
+    assert.deepEqual(f.printed, []);
+    f.tracker.start('build');
+    f.tracker.end('build');
+    f.tracker.done();
+    assert.equal(f.files.has('run.json'), false);
+    f.beat();
+    assert.deepEqual(f.printed, []);
+  });
+
+  it('NFR-DX-001: a process killed mid-step leaves the file naming that step on disk', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'fluxion-running-'));
+    try {
+      const file = join(dir, 'stuck-build', 'running.json');
+      const mod = new URL('../../scripts/gates/ladder-running.mjs', import.meta.url).href;
+      const script = `const { runningSteps } = await import(${JSON.stringify(mod)}); const r = runningSteps(${JSON.stringify(file)}); r.start('build'); r.end('build'); r.start('test'); process.kill(process.pid, 'SIGKILL');`;
+      const r = spawnSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8' });
+      assert.notEqual(r.status, 0, 'the probe was killed');
+      assert.equal(existsSync(file), true);
+      assert.deepEqual(
+        JSON.parse(readFileSync(file, 'utf8')).running.map((x) => x.step),
+        ['test'],
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

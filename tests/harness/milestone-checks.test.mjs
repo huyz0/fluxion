@@ -1054,7 +1054,7 @@ describe('m20-complete helpers (M20.30, cp2 F2)', () => {
   });
   it('NFR-DX-003: a governed row with no Commit cell yet is left to check-digest, and the ancestry check runs in real git', () => {
     const asked = [];
-    const probe = (a, b) => {
+    const probe = (_a, b) => {
       asked.push(b);
       return true;
     };
