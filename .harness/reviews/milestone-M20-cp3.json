@@ -1,0 +1,88 @@
+{
+  "milestone": "M20",
+  "checkpoint": "cp3",
+  "range": "f65794988a379033871b5af71948d50c55389f33..7631c8bbe6831b569400234b98aa5537de345620",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "cp2 covered f657949..ea98154. This review read the eight commits in ea98154..7631c8b as diffs: 4882073 (cp2 record), 61217f6 (M20.32) and 59560e9 (M20.33), the palette solver perf fixes for ci 44092127356 and 44104063817, 5ba5217 (M20.34, osv excusal of picomatch GHSA-fc5q-39xc-vjpf to 2026-12-02), bff31c1 (M20.30, cp2 F2), 4d6dfb4 (M20.31, cp2 F3), 430a273 (M20.28, cp2 F1) and 7631c8b (M20.36, Fixes-ci 44159904866). cp2's dispositions were carried out: F1 amended and closed M20.28, F2 became M20.30, F3 became M20.31, F4 and F5 amended M20.7 and M20.12, and F6 is in review-argued.txt. 1. Coherence: the design holds together. m20-complete's named-case and ADR-order checks moved into milestone-checks (missingNamedCases, checkAdrBeforeRows), and coldDuration moved from last-ci into ci-runs.mjs and is shared, so there is no second copy. gamutLuminance (oklch.ts) is a deliberate inline copy of labToLinear+inGamut+intoGamut+relativeLuminance. gamut-luminance.test.ts pins the copy with toBe equality over a grid, at the edges and at NaN, so the two cannot drift apart unnoticed. Two Fixes-ci rows (M20.32, M20.33) dealt with the runtime of one property case. They sped up product code without touching run counts or timeouts. That is legitimate, but it is a warning for M20.6 (planDelta). 2. Spec fidelity: no requirement or plan item was dropped. M20.28's own commit removed the cut its acceptance owed and moved it to the new row M20.35. The backlog header says a checkpoint ratifies that kind of narrowing, so it is ratified here (F5). M20.31 named the stage ('test', with tsc alive) from the job log and the processes orphaned at cleanup, because no test-durations file was written and the artifact host was unreachable. Its acceptance is met in substance. 3. Standards drift: M20.36 changed packages/editor/src/context-menu.tsx with no changeset (git.md rule 6). That turned the changesets leg, green at cp2, red (F2). Every other code commit kept the convention: theme changes stay under ea98154's theme changeset, and harness and ci paths need none. 4. Gate honesty: the gate reads 8/38 (packet). The green legs are the 3 ADR legs, the FR-THM-005 seed leg, spec folders, quarantines, verify and the new cold-setup leg. The changesets leg went from green to red. I ran ciColdReadings/checkColdMedian read-only against GitHub. There are 16 readings 66b5a51..430a273 (313-507 s) with a median of 397 s, and last-ci adds 488 s at 7631c8b, so the median stays 397. The leg is honest as specified, but 8 of the 17 readings are over 420 s, so it passes on runner speed until M20.35 lands. Mutants, judged by reading the code against its tests: (a) checkColdMedian taking the lower middle reading is killed by the 410/430 case. (b) missingNamedCases ignoring status is killed by the skipped case. (c) gamutLuminance skipping the clamp or the bisection is killed by the exact grid. (d) dropping ciColdReadings' on-HEAD filter survives (F4). Nothing is falsely green today. 5. Architecture: theme stays pure. gamutLuminance is exported from oklch.ts but not from index.ts, so the public API does not grow. There are no new dependencies. The osv excusal names one id, with a date that check-osv-expiry watches. ladder-running.mjs is CI-only, injectable and tested. CI: main was red at ea98154, 61217f6, 59560e9, 5ba5217, bff31c1, 4d6dfb4 and 430a273. The last four reds include a macOS job that GitHub never assigned to a runner (annotation 'The job was not acquired by Runner of type hosted even after multiple attempts'; 'capacity constraints ... macOS arm64'). No row or argued line covers that (F1). last-ci reads ci, gates and cold-setup green at 7631c8b (run 44166431665, cold 488 s), so the hold on M20.6 can lift.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": ".github/workflows/ci.yml",
+      "line": 36,
+      "summary": "In four consecutive main ci runs (44127277869 at 5ba5217, 44140945585 at bff31c1, 44150996065 at 4d6dfb4, 44159904866 at 430a273), a macos-latest job (verify or cli-mcp) was cancelled with zero steps after 16-20 min. The job annotation says 'The job was not acquired by Runner of type hosted even after multiple attempts', with GitHub's macOS arm64 capacity notice. last-ci and check-ci-evidence count these as product reds. Nothing in the harness recognises the cause (no 'not acquired' match in last-ci.mjs or scripts/gates). No row, diagnosis or argued line covers it. The driver held M20.6 for hours on a red that no commit could fix.",
+      "evidence": "gh api repos/huyz0/fluxion/check-runs/134310594949/annotations; gh run view --json jobs for the four runs: macOS jobs cancelled, steps=0, runner_name empty; grep 'not acquired' scripts/: no match; last-ci at 7631c8b: ci green (44166431665)",
+      "suggestion": "Open a harness row. last-ci and check-ci-evidence should name a job that no runner acquired (zero steps, the 'not acquired' annotation) separately from a product failure, and print the remedy: re-run the failed jobs on the same sha. A job that never ran never counts as green, and the ci-evidence leg's green-run requirement stays as it is. If the starvation continues across re-runs, set blockedReason. Changing the macOS runner label or the matrix is a human cost decision."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "packages/editor/src/context-menu.tsx",
+      "line": 38,
+      "summary": "M20.36 changes @fluxion/editor source (the ContextMenu effect now reads onClose from a ref) and adds no changeset. git.md rule 6 says changesets travel with the code. m20-complete's 'changesets cover changed packages' leg was green at cp2 and is now red: 'no changeset for @fluxion/editor (changed since 66b5a512)'. No per-commit gate caught it.",
+      "evidence": "git diff --stat 66b5a51 7631c8b -- packages/editor .changeset: only context-menu.tsx/.browser.test.tsx and editor-root.browser.test.tsx, no editor changeset; packet gate output",
+      "suggestion": "Add a patch changeset for @fluxion/editor in the commit that fills M20.36's Commit cell, and check the changesets leg goes green again."
+    },
+    {
+      "id": "F3",
+      "severity": "nit",
+      "file": ".harness/progress.md",
+      "line": 5182,
+      "summary": "M20.36's acceptance says the Firefox FR-SCR-003 flake is 'fixed at its cause'. progress.md calls the cause 'likely ... not confirmed', because the trace artifact was unreachable. The new browser case proves a real defect: a re-render refocused the first line and reset the scroll. It does not prove that defect caused the Delete miss in a 480 px window.",
+      "evidence": "progress.md M20.36 entry; 7631c8b body",
+      "suggestion": "Accept the fix of a proven defect. If 'FR-SCR-003: the screen menu stays reachable from a row near the bottom of a short window' flakes again in any M20 e2e-report, reopen M20.36 rather than quarantine the case, and the final review checks the flake reports."
+    },
+    {
+      "id": "F4",
+      "severity": "nit",
+      "file": "scripts/gates/milestone-checks.mjs",
+      "line": 1056,
+      "summary": "No harness case kills a mutant that drops ciColdReadings' on-HEAD filter (isAncestor(r.headSha, 'HEAD')). The fixture's only off-history sha ('x') already fails the descends-from-first test. Separately, completedSince stops paging at any run on a page that does not descend from 'from'. That is right for main's linear history, but the code does not say it relies on it.",
+      "evidence": "tests/harness/milestone-checks.test.mjs 'M20.28: the cold-setup readings are every completed ci run since the first commit' (order array, run 4 'x')",
+      "suggestion": "Add a fixture run that descends from 'first' but is not on HEAD, and expect no reading for it. Add a comment that the paging stop assumes main's linear history."
+    },
+    {
+      "id": "F5",
+      "severity": "nit",
+      "file": "docs/backlog/current.md",
+      "line": 147,
+      "summary": "M20.28's own commit amended its acceptance from 'cold setup is cut' to 'no cut is owed here while the leg passes' and moved the cut to the new row M20.35. The backlog header requires a checkpoint, not the row's commit, to ratify a narrowed scope. The cut is moved, not dropped. M20.35 is a dependency of M20.25 and has a measurable target: the slower of verify:test and verify:harness-tests under 250 s in three runs, with COLD_SETUP_MAX_MS unchanged.",
+      "evidence": "git show 430a273 -- docs/backlog/current.md",
+      "suggestion": "Ratify with an argued line."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M20.37",
+      "note": "New harness row M20.37. last-ci and check-ci-evidence report a job that no hosted runner acquired (zero steps, the 'not acquired by Runner' annotation) as an infrastructure miss distinct from a product red, and name the remedy: wait for the next push's run (a re-run of the same sha is never counted as evidence, the owner's standing rule). A never-run job never counts as green, and the ci-evidence green-run counts are unchanged. If the starvation persists across later runs, set blockedReason and hand back: changing the macOS runner label or the matrix is a human cost decision. Harness cases cover both classifications."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M20.36",
+      "note": "Amend M20.36. The commit that fills its Commit cell adds a patch changeset for @fluxion/editor (the context-menu focus and scroll fix), and m20-complete's changesets leg is green again."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "M20 cp3 F3: M20.36 fixes a proven defect (the ContextMenu effect re-ran on each new onClose, refocusing line 0 and resetting the scroll; the browser case fails on the old code). Its link to the Firefox FR-SCR-003 flake is unconfirmed because the trace was unreachable. If that case flakes again in any M20 e2e-report, M20.36 reopens and the case is not quarantined. The final review checks the flake reports."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M20.35",
+      "note": "Amend M20.35. Add a ciColdReadings harness case with a run that descends from the first commit but is not on HEAD (no reading), and a comment that completedSince's paging stop relies on main's linear history."
+    },
+    {
+      "finding": "F5",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "M20 cp3 F5: ratified. M20.28's in-commit amendment moved the cold-setup cut to M20.35 (a dependency of M20.25, with a measured target and COLD_SETUP_MAX_MS unchanged) rather than dropping it. The leg's median over every M20 main ci run is 397 s (17 readings to 7631c8b, 8 of them over 420 s), so it passes on runner speed until M20.35 lands."
+    }
+  ],
+  "planDelta": "Planned 25 rows. There are 36 now, and 37 with M20.37, 1.48x, just under the 1.5x limit. One more reopening or Fixes-ci row crosses it. The growth since cp2 is five Fixes-ci rows (M20.32, M20.33, M20.34, M20.36, plus M20.29 earlier), cp2's two reopenings and M20.35, the split from M20.28. There is no new feature scope. 14 of 36 rows are done (M20.1-M20.5, M20.27-M20.34, M20.36), but only one feature row (M20.5) after three checkpoints. Since cp2, harness and CI repair has used every commit. Risks: (1) M20.6 adds image k-means cases to packages/theme under the same 20 s timeout and V8 coverage that needed two perf rows for one palette property case. Measure its cases under coverage before landing, not after a red. (2) macOS runner starvation (F1) can stall landing again. (3) The cold-setup median passes with 8 of 17 readings over 420 s, so M20.35 should not wait until the end. (4) M20.19, M20.20 and M20.23 still need CI-time evidence and have not started, which cp1 and cp2 both flagged. The feature chain M20.6-M20.18 is still mostly ahead. Expect the ADR-governed rows (M20.7, M20.12-M20.16) to take several review rounds each."
+}
