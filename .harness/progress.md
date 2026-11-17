@@ -5121,3 +5121,6 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 
 ## 2026-11-17 M20.1: fix main's CI red at 66b5a51 (commit-msg harness test)
 - ci 44021189553 red on every OS: commit-msg.test.mjs's M19.53 cases name M19.52/M19.53 rows, which M20.1 archived out of current.md. The suite now pins docs/backlog/archive/M19.md as its sandbox backlog; no assertion changed. 17/17 locally.
+
+## 2026-11-17 M20.25: checkpoint cp1 (f657949..48abd80)
+- Independent review: pass, 3 minor, all reopened: M20.26 (sandboxes read a fixed backlog/roadmap), M20.27 (exact case names in m20-complete), M20.28 (cold setup median ≤ 420 s; 492 s at 48abd80). Early checkpoint: main's ci needs a second green run on the 66b5a51 product tree before M20.2 can land.

@@ -1,0 +1,58 @@
+{
+  "milestone": "M20",
+  "checkpoint": "cp1",
+  "range": "f65794988a379033871b5af71948d50c55389f33..48abd80d73ff8afd87fa9331235e53a666c30117",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "I read both commits as diffs. 66b5a51 (M20.1) archives M19's backlog to docs/backlog/archive/M19.md, writes 25 M20 rows and adds scripts/gates/m20-complete.mjs. 48abd80 (M20.1 fix, Fixes-ci 44021189553) makes the commit-msg carried-minor suite write the archived M19 backlog into its sandbox, with commit cells emptied. No assertion changed, and the row's Commit cell is filled. Every plan task (1-18, 15a) and both M19 hand-offs (rows 19, 20 as M20.17, M20.23) has a row. The three ADRs come first, and each feature row names its test file, so no plan item is dropped. Out-of-scope items (FR-THM-010/011, the PDF/PNG/PPTX exporters) have no row, which is correct. The gate reads 4/36 at 48abd80 (the commit body said 3/36; the changesets leg went green once an M20 commit existed). Every feature leg is red because its file is missing or a named case is absent. The closeout legs (backlog, final review, roadmap, ci-evidence) are red. The boot-phases leg is red locally on Firefox and WebKit, an environment limit seen in M19 cp5 to cp8. Nothing is falsely green. Mutants: dropping `named` from tests() turns the decompile and patch legs green on any passing file, and nothing catches that, because m20-complete, like m19-complete, has no harness case (F2 context). Removing packages/core from the floor list is not caught either, but check-mutation-evidence still checks every recorded floor. A mutated sharedPlaywright is caught by milestone-checks' M19.58 case. tests(), failedTest() and accepted() are now in their third copy (m18, m19, m20), an existing convention that has not drifted. Layering, contracts and dependencies are unchanged in this range. last-ci at 48abd80: ci and gates are green (44024254871, 44024254854). It exits 1 because the jobs that went red at 66b5a51 are green in only 1 of the 2 later runs needed (it labels them 'INTERMITTENT'). The cause was deterministic, so the driver waits for one more green run, as last-ci says. The cold-setup job read 492 s at 48abd80 (F3).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "scripts/gates/ladder-scope.mjs",
+      "line": 326,
+      "summary": "48abd80 fixes the symptom but not why the pre-commit ladder let 66b5a51 through. docs/backlog/ is in BOOKKEEPING_PATHS, so harnessFiles() maps a backlog change to no harness tests (ladder-scope.test.mjs:92 asserts this). Yet sandbox() copies the live docs/backlog and roadmap into every harness sandbox by default (helpers.mjs DEFAULT_PATHS), so harness tests do read them. Only CI's --all ladder ran commit-msg.test.mjs against the moved backlog, and main went red on all three OSes. Every milestone close archives the backlog the same way, and each row edit changes it. So any test written in M20 that names a live M20 row will break M21's plan commit the same way. No gate or plan-milestone step stops it. 48abd80 also copies the sandbox's commit-cell regex (helpers.mjs, M18.207) inline instead of reusing it.",
+      "evidence": "ci 44021189553 red at 66b5a51 (harness tests windows, verify macos/ubuntu); scripts/gates/milestone-checks.mjs:10 BOOKKEEPING_PATHS includes /^docs\\/backlog\\//; tests/harness/helpers.mjs:26 DEFAULT_PATHS, :66-69; tests/harness/commit-msg.test.mjs:63-65 (48abd80)",
+      "suggestion": "Pick one: (a) ladder-scope maps docs/backlog/** and docs/milestones/roadmap.md to the harness files whose sandboxes copy them (or to all of them when an archive file is added); (b) plan-milestone's archive step runs the full harness suite before commit; (c) sandbox() writes a fixed fixture backlog unless a test asks for the live one. Add a ladder-scope case either way."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/gates/m20-complete.mjs",
+      "line": 104,
+      "summary": "Several legs can go green while their row's acceptance is unmet, because they name only the requirement ID. A single passing case can satisfy the leg. The convention (M18.244, cp36 F3) is that a leg judges the cases it names, and M20.16/M20.17/M20.21 follow it. Unmet so far: NFR-A11Y-005, where M20.10 asks for 'one case per combination' (text 4.5:1, large text 3:1, strokes 3:1) and a fix action. FR-THM-005, where the locked role through shuffle (M20.5) is unnamed. FR-THM-007, where pack themes listed in the picker (M20.8) is unnamed. M20.18 has no leg: nothing checks that CLI decompile, MCP get_screen and the Source view use v1, only the outline-token case. The ADR legs say 'accepted before its feature rows' but check status only. The backlog-done leg and per-commit review still keep the whole gate from going falsely green, so this is about leg precision, not overall honesty. Substring matching is loose: 'golden' or 'no overlap' matches any title that contains it.",
+      "evidence": "m20-complete.mjs:104-130 (named: ['FR-THM-00x'] / ['NFR-A11Y-005'] only), :96-101 (accepted()), :152-161 (M20.16/17 named cases); docs/backlog/current.md M20.5, M20.8, M20.10, M20.18 acceptance",
+      "suggestion": "Amend M20.5, M20.8, M20.10 and M20.18 so the row that writes the test adds exact case names to its leg: per-combination contrast cases plus 'fix action', 'locked role survives shuffle', 'pack themes listed', and a v1-use case for each of CLI, MCP and Source view. Retitle the ADR legs or have them check the ADR commit precedes the first feature row's commit."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": ".harness/baselines/review-argued.txt",
+      "line": 231,
+      "summary": "The cold-setup job at 48abd80 read 492 s (ci 44024254871). That triggers the commitment in argued line 'M19 final F2': 'if M20's CI cold setup runs above 420 s, suspect M19.61's docs step first and open a Fixes row, never raise the limit.' M20 has no such row, and m20-complete has no cold-setup leg. Only COLD_SETUP_MAX_MS (600 s) bounds it now, so the 420 s that M19.28 achieved can be lost without any check failing. This is one reading, and the run before it went red for the unrelated harness failure, so it may be runner variance. The commitment still asks for action.",
+      "evidence": "last-ci at 48abd80: 'cold-setup green at 48abd80 (run 44024254871) (492 s)'; .harness/budget.json coldReadings 345/331/410 s at M19; scripts/gates/thresholds.mjs:27 COLD_SETUP_MAX_MS 600_000",
+      "suggestion": "Open a Fixes row as the argued line says, or record the 492 s reading and the next two in progress.md. Open the row if the median of three stays above 420 s."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M20.26",
+      "note": "New row M20.26: harness sandboxes get a fixed backlog and roadmap fixture by default (tests that need the live ones opt in), and the helpers' commit-cell regex is reused rather than copied, so a milestone's archive commit cannot break a harness test that only CI's --all ladder runs. ladder-scope also runs the harness tests that opt into the live backlog or roadmap when either is staged."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M20.27",
+      "note": "New row M20.27: m20-complete names exact cases for NFR-A11Y-005 (one per combo and the fix action), FR-THM-005 (a locked role survives shuffle), FR-THM-007 (pack themes in the picker) and M20.18 (CLI, MCP and Source view on decompiler v1); named-case matching becomes exact-title rather than substring; the ADR legs check that each ADR's commit precedes its feature rows' commits."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M20.28",
+      "note": "New row M20.28: record CI cold-setup readings at three M20 commits in .harness/budget.json (48abd80's 492 s is the first) and add an m20-complete leg that fails unless their median is at most 420 s, as the M19 final F2 argued line set; above it, cut cold setup (M19.61's docs step first) without raising COLD_SETUP_MAX_MS."
+    }
+  ],
+  "planDelta": "25 rows planned, 25 now (1.0x). The 18 plan tasks plus 2 M19 hand-offs give 20 items, and the 1.25x split is deliberate: one row per ADR, Inkscape evidence apart from fonts and parity, docs and the final review on their own rows. The split follows M19's Learned lines, and no row is new scope. The risk is the evidence that only time produces: M20.19's mutation nightly, M20.20's three consecutive route-drag nightlies after its decision, M20.14's Inkscape nightly (behind the exporter chain M20.3, M20.12, M20.13) and M20.23's three runs at distinct M20 shas. M20.19, M20.20 and M20.23 depend only on M20.1. Start them early so the final review does not wait on CI time, which is what happened at M19's close. M20.20 may need a human runner decision (blockedReason), so raise it early."
+}
