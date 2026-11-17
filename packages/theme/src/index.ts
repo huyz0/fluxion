@@ -1,6 +1,14 @@
 // Public entry of @fluxion/theme; the package comment is the dts banner in tsdown.config.ts.
 
 export { type ColorResolver, colorResolver, followColor } from './alias.js';
+export {
+  CONTRAST_GRAPHIC,
+  CONTRAST_TEXT,
+  type ContrastMiss,
+  type ContrastPair,
+  PALETTE_CONTRAST_PAIRS,
+  type PaletteRole,
+} from './contrast.js';
 export type { ResolvedEffect, ResolvedShadow } from './effects.js';
 export type { ThemeError, ThemeErrorCode } from './errors.js';
 export { FONT_MAX_BYTES, type FontFileInfo, type FontFormat, readFontFile } from './font-file.js';
@@ -16,6 +24,7 @@ export {
   relativeLuminance,
   rgbToOklch,
 } from './oklch.js';
+export { applyPalette, generatePalette, type Palette, type PaletteOptions } from './palette.js';
 export { cssValue, resolveToken, toCssVars, tokenPath } from './resolve.js';
 export {
   type NoPaint,

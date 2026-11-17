@@ -17,7 +17,8 @@ export type ThemeErrorCode =
   | 'FONT_DUPLICATE'
   | 'FONT_FORMAT'
   | 'FONT_TOO_LARGE'
-  | 'FONT_CORRUPT';
+  | 'FONT_CORRUPT'
+  | 'PALETTE_INPUT';
 
 /**
  * An expected failure of token resolution or theme validation.

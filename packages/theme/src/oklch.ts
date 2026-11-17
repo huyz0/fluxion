@@ -90,8 +90,11 @@ function oklchToLinear({ l, c, h }: Oklch): [number, number, number] {
 
 const inGamut = (rgb: readonly number[]): boolean => rgb.every((v) => v >= -1e-6 && v <= 1 + 1e-6);
 
-/** `color` brought into the sRGB gamut by reducing its chroma at the same lightness and hue (lightness is clamped to [0, 1] first). */
-function intoGamut(color: Oklch): Oklch {
+/**
+ * `color` brought into the sRGB gamut by reducing its chroma at the same lightness and hue (lightness is clamped to [0, 1] first).
+ * Module-internal: the palette solver (contrast.ts) re-clamps chroma at each lightness it tries.
+ */
+export function intoGamut(color: Oklch): Oklch {
   const base = { ...color, l: clamp01(color.l) };
   if (inGamut(oklchToLinear(base))) return base;
   let [lo, hi] = [0, base.c];
@@ -253,4 +256,11 @@ export function contrastRatio(a: string, b: string): number | undefined {
   if (ca === undefined || cb === undefined) return undefined;
   const [la, lb] = [relativeLuminance(ca), relativeLuminance(cb)];
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/** The Euclidean distance of two colours in OKLab (alpha ignored). Module-internal: the palette keeps its fills apart by it. */
+export function oklabDistance(a: Oklch, b: Oklch): number {
+  const ab = (c: Oklch): [number, number] => [c.c * Math.cos((c.h * Math.PI) / 180), c.c * Math.sin((c.h * Math.PI) / 180)];
+  const [[a1, b1], [a2, b2]] = [ab(a), ab(b)];
+  return Math.hypot(a.l - b.l, a1 - a2, b1 - b2);
 }

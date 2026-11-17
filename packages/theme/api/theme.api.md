@@ -11,6 +11,9 @@ import { TokenRef } from '@fluxion/schema';
 import { z } from 'zod';
 
 // @public
+export function applyPalette(theme: Theme, palette: Palette): Theme;
+
+// @public
 export const BUILTIN_TABLE_STYLES: {
     readonly [name: string]: ThemeTableStyle;
 };
@@ -33,6 +36,27 @@ export type ColorStep = {
         readonly with: Oklch;
         readonly amount: number;
     };
+};
+
+// @public
+export const CONTRAST_GRAPHIC: number;
+
+// @public
+export const CONTRAST_TEXT: number;
+
+// @public
+export type ContrastMiss = {
+    readonly role: PaletteRole;
+    readonly against: PaletteRole;
+    readonly ratio: number;
+    readonly target: number;
+};
+
+// @public
+export type ContrastPair = {
+    readonly role: PaletteRole;
+    readonly against: PaletteRole;
+    readonly target: number;
 };
 
 // @public
@@ -109,6 +133,9 @@ export type FontRegistry = {
 export type FontSource = "bundled" | "google" | "upload";
 
 // @public
+export function generatePalette(options: PaletteOptions): Result<Palette, ThemeError>;
+
+// @public
 export const isToken: (node: Token | TokenGroup | undefined) => node is Token;
 
 // @public
@@ -138,6 +165,26 @@ export type PaintResolution = {
     readonly paint: ResolvedPaint;
     readonly diagnostics: readonly Diagnostic[];
 };
+
+// @public
+export type Palette = {
+    readonly colors: Readonly<Record<PaletteRole, string>>;
+    readonly adjusted: readonly PaletteRole[];
+    readonly unmet: readonly ContrastMiss[];
+};
+
+// @public
+export const PALETTE_CONTRAST_PAIRS: readonly ContrastPair[];
+
+// @public
+export type PaletteOptions = {
+    readonly seeds: readonly string[];
+    readonly locks?: Partial<Record<PaletteRole, string>>;
+    readonly shuffle?: number;
+};
+
+// @public
+export type PaletteRole = "background" | "surface" | "text" | "muted" | "connector" | "primary" | "secondary" | "accent-1" | "accent-2" | "accent-3" | "accent-4" | "accent-5" | "accent-6" | "success" | "warning" | "danger" | "info";
 
 // @public
 export function parseColor(text: string): Oklch | undefined;
@@ -291,7 +338,7 @@ export type ThemeError = {
 };
 
 // @public
-export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE" | "FONT_FORMAT" | "FONT_TOO_LARGE" | "FONT_CORRUPT";
+export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE" | "FONT_FORMAT" | "FONT_TOO_LARGE" | "FONT_CORRUPT" | "PALETTE_INPUT";
 
 // @public
 export function themeOf(value: unknown): Theme | undefined;

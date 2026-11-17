@@ -87,7 +87,17 @@ constraint that cannot be met (only possible when locked colours make it empty) 
 against, ratio, target }` in `unmet`.
 
 **Lock and shuffle.** `locks: Partial<Record<Role, string>>` sets a role verbatim (no gamut clamp, no repair); it becomes an anchor,
-and an unlocked partner is solved against it. `shuffle: uint32` (default 0 = canonical): a Fisher–Yates permutation drawn from
+and an unlocked partner is solved against it, whatever the solve order. A lock can call for the opposite polarity (white text, a
+dark surface, a light primary): **whenever any role is locked**, the palette is solved twice, with the light neutrals of the table
+above and with the inverted set (background 0.16, surface 0.20, text 0.96, muted 0.74, connector 0.70; C and H as above), and the
+result kept is the one with the fewest `unmet` pairs, then the smallest total lightness movement of the unlocked roles from their
+own set's initial L (the solver's L), then light. With no lock only the light set is solved, so lock-free output is unchanged.
+Under locks the fills (`secondary`, `accent-1…6`, status roles) are also kept apart: an unlocked fill whose solved hex is within
+OKLab distance 0.02 of a locked fill or of a fill solved before it is replaced by the feasible L nearest its own (scanned every
+0.004; at each, chroma × 1, 0.75, 0.5, 0.25, hue kept) that meets its targets and is 0.02 from those fills; when none is, it keeps
+its colour. Fills can still come closer than 0.02 (or be equal) when a lock leaves them under 0.04 of grey lightness band within
+OKLab L 0.25–0.9: then only near-black or near-white colours, where chroma collapses, or too little room for two achromatic fills. This is a polarity choice under locks, not FR-THM-010's paired dark themes (M20.5 review r1 F1, r2 F1).
+`shuffle: uint32` (default 0 = canonical): a Fisher–Yates permutation drawn from
 `rng(shuffle)` over the **unlocked** members of the hue slots (`secondary`, `accent-1…6`); a locked slot keeps its position.
 Primary, neutrals and status roles are never shuffled. Same `(seeds, locks, shuffle)` ⇒ byte-identical palette. The studio's
 Shuffle increments the number; it is never stored in the document. `applyPalette(theme, palette)` writes the 17 role tokens as
@@ -204,7 +214,8 @@ colours are emitted as their resolved literal; `defaults` and variants are not C
 ### Confirmation
 
 - `packages/theme/src/palette.prop.test.ts` (FR-THM-005): over random 1–3 seeds at the CI seed, every text pair ≥ 4.5:1 and every
-  graphic pair ≥ 3:1 on the emitted hex, `unmet` empty; a locked role keeps its colour through any shuffle; same input ⇒ same palette.
+  graphic pair ≥ 3:1 on the emitted hex, `unmet` empty; a locked role keeps its colour through any shuffle; same input ⇒ same palette;
+  under one random lock the fills are distinct hexes ≥ 0.02 apart in OKLab wherever that mid-lightness band is ≥ 0.04 wide.
 - `packages/theme/src/palette-image.test.ts` (FR-THM-005): a fixture image gives the same palette twice and its AA pairs hold.
 - `packages/theme/src/variants.test.ts` and `packages/render/src/variant-style.browser.test.tsx` (FR-THM-006): the 8-layer order;
   `variant: emphasis` via FluxScript and via patch renders the theme's style; a theme edit restyles with no element change.
