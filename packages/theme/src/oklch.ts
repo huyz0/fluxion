@@ -120,6 +120,48 @@ const hex2 = (v: number): string =>
     .padStart(2, '0');
 
 /**
+ * `l => relativeLuminance(intoGamut({ l, c, h }))` for one chroma and hue: the same numbers step for step, with the hue's cosine
+ * and sine taken once and every helper written inline. The palette solver calls it at every lightness its boundary bisections try,
+ * so a step makes one call and no object or array (under CI's V8 coverage every call and block is counted). Module-internal.
+ */
+export function gamutLuminance(c: number, h: number): (l: number) => number {
+  const cos = Math.cos((h * Math.PI) / 180);
+  const sin = Math.sin((h * Math.PI) / 180);
+  // the channels at lightness L and chroma k into rgb, and whether they are in gamut (inGamut's test): one call per bisection step
+  const rgb = new Float64Array(3);
+  const at = (L: number, k: number): boolean => {
+    const a = k * cos;
+    const b = k * sin;
+    const x = L + 0.3963377774 * a + 0.2158037573 * b;
+    const y = L - 0.1055613458 * a - 0.0638541728 * b;
+    const z = L - 0.0894841775 * a - 1.291485548 * b;
+    const lp = x * x * x;
+    const mp = y * y * y;
+    const sp = z * z * z;
+    rgb[0] = 4.0767416621 * lp - 3.3077115913 * mp + 0.2309699292 * sp;
+    rgb[1] = -1.2684380046 * lp + 2.6097574011 * mp - 0.3413193965 * sp;
+    rgb[2] = -0.0041960863 * lp - 0.7034186147 * mp + 1.707614701 * sp;
+    return Math.min(rgb[0], rgb[1], rgb[2]) >= -1e-6 && Math.max(rgb[0], rgb[1], rgb[2]) <= 1 + 1e-6;
+  };
+  return (l) => {
+    const L = clamp01(l);
+    if (!at(L, c)) {
+      let [lo, hi] = [0, c];
+      for (let i = 0; i < 24; i++) {
+        const mid = (lo + hi) / 2;
+        if (at(L, mid)) lo = mid;
+        else hi = mid;
+      }
+      at(L, lo);
+    }
+    return luminanceOf(rgb[0] as number, rgb[1] as number, rgb[2] as number);
+  };
+}
+
+/** Relative luminance of linear-light sRGB, each channel clamped to [0, 1] first. */
+const luminanceOf = (r: number, g: number, b: number): number => 0.2126 * clamp01(r) + 0.7152 * clamp01(g) + 0.0722 * clamp01(b);
+
+/**
  * A colour as CSS: `#rrggbb` when opaque, else `rgb(r g b / a)` (alpha to three places), brought into the sRGB gamut.
  *
  * @public

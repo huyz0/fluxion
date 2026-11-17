@@ -1,7 +1,7 @@
 // Contrast thresholds, the palette's contrast pairs and the lightness solver (FR-THM-005, NFR-A11Y-005, ADR-0055). One table of
 // thresholds serves the palette generator and the contrast linter. The solver keeps a colour's chroma and hue and looks for the
 // lightness nearest its own at which it reaches every target against its anchors; pure, and it never throws.
-import { intoGamut, type Oklch, oklchToCss, parseColor, relativeLuminance } from './oklch.js';
+import { gamutLuminance, intoGamut, type Oklch, oklchToCss, parseColor, relativeLuminance } from './oklch.js';
 
 /**
  * The WCAG AA contrast a text colour needs against its background (NFR-A11Y-005).
@@ -199,7 +199,7 @@ function closest(candidates: readonly number[], start: number, shortfall: (l: nu
  */
 export function solveLightness(initial: Oklch, anchors: readonly Anchor[], accept?: (hex: string) => boolean): Solved {
   const at = (l: number): Oklch => intoGamut({ l, c: initial.c, h: initial.h, alpha: 1 });
-  const lum = (l: number): number => relativeLuminance(at(l));
+  const lum = gamutLuminance(initial.c, initial.h);
   const ys = anchors.map((a) => lumOfHex(a.hex));
   const start = Math.min(1, Math.max(0, initial.l));
   const sets = anchors.map((a, i) => feasible(lum, ys[i] as number, a.target));

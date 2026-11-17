@@ -144,7 +144,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-002 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/derive.test.ts` |
 | FR-THM-003 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/sdk/src/pack.test.ts` +2 |
 | FR-THM-004 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/theme.switch-and-override.spec.ts` +6 |
-| FR-THM-005 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/palette.prop.test.ts`, `packages/theme/src/palette.test.ts` |
+| FR-THM-005 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/gamut-luminance.test.ts` +2 |
 | FR-THM-006 | M | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-007 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/font-embed.test.ts` +22 |
