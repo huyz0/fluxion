@@ -8,11 +8,13 @@ import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs }
 import {
   backlogTextFor,
   changesetsCoverRange,
+  checkAdrBeforeRows,
   checkBacklogDone,
   checkExitChecklist,
   checkFinalReview,
   imageRunner,
   loadMilestoneReviews,
+  missingNamedCases,
   sharedPlaywright,
   verifyLeg,
 } from './milestone-checks.mjs';
@@ -57,8 +59,7 @@ function tests(file, { project = 'node*', config, named = [] } = {}) {
     const assertions = report.testResults.flatMap((suite) => suite.assertionResults);
     if (!(report.numFailedTestSuites === 0 && assertions.length > 0 && assertions.every((a) => a.status === 'passed')))
       return `${file}: empty, failed, skipped or todo tests`;
-    const titles = new Set(assertions.map((a) => String(a.title ?? '')));
-    const missing = [named].flat().filter((n) => !titles.has(n));
+    const missing = missingNamedCases(assertions, named);
     return missing.length === 0 || `${file}: no passed case named ${missing.map((n) => `'${n}'`).join(', ')}`;
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -71,21 +72,15 @@ const all = (...checks) => {
   }
   return true;
 };
-// Accepted, and committed before every feature row it governs: each such row's Commit cell descends from the commit that added
-// the ADR (M20.27, cp1 F2). A row with no Commit cell yet is not judged here; the backlog-done leg holds it.
+// Accepted, and committed before every feature row it governs (checkAdrBeforeRows: each filled Commit cell descends from the
+// commit that added the ADR; an empty cell is check-digest's to hold).
 function accepted(number, rows) {
   const name = readdirSync(repoPath('docs/architecture/decisions')).find((n) => n.startsWith(`ADR-${number}-`));
   if (!name) return `missing ADR-${number}`;
   const file = `docs/architecture/decisions/${name}`;
   if (!/^status: accepted\b/m.test(readText(file))) return `ADR-${number} not accepted`;
   const added = run('git', ['log', '--diff-filter=A', '--format=%H', '--', file]).stdout.trim().split(/\r?\n/).filter(Boolean).at(-1);
-  if (!added) return `ADR-${number} is not committed`;
-  const backlog = readText('docs/backlog/current.md');
-  for (const row of rows) {
-    const cell = new RegExp(`^\\| ${row.replace('.', '\\.')} \\|.*\\| ([0-9a-f]{7,40}) \\|$`, 'm').exec(backlog)?.[1];
-    if (cell && run('git', ['merge-base', '--is-ancestor', added, cell]).status !== 0) return `${row} (${cell}) was committed before ADR-${number}`;
-  }
-  return true;
+  return checkAdrBeforeRows(readText('docs/backlog/current.md'), rows, { number, added });
 }
 // every browser leg's specs in one Playwright run, one build (M19.58); each leg is still judged on its own specs (plan review r1 F3)
 const browsers = sharedPlaywright(

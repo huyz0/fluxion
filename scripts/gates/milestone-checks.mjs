@@ -1020,3 +1020,26 @@ export function checkColdReadings(
   const median = ms.length % 2 ? ms[(ms.length - 1) / 2] : (ms[ms.length / 2 - 1] + ms[ms.length / 2]) / 2;
   return median <= limitMs || `median cold setup ${median} ms over ${counted.length} readings > ${limitMs}`;
 }
+
+/**
+ * The `named` titles that no passed case of a Vitest JSON report's `assertions` carries as its own whole title: exact, so a case
+ * whose title only contains a named text does not stand in for it (M20.27, cp1 F2; M20.30, cp2 F2).
+ */
+export function missingNamedCases(assertions, named) {
+  const titles = new Set(assertions.filter((a) => a?.status === 'passed').map((a) => String(a.title ?? '')));
+  return [named].flat().filter((n) => !titles.has(n));
+}
+
+/**
+ * An ADR governs feature rows only if it came first: each row's backlog Commit cell must descend from `added`, the commit that
+ * added the ADR (M20.27, cp1 F2; M20.30, cp2 F2). A row with no Commit cell yet is not judged here: check-digest (precommit and
+ * --head) refuses a `done` row whose cell is still empty once a later commit exists, and the cell is judged here once filled. true, or why not.
+ */
+export function checkAdrBeforeRows(backlogText, rows, { number, added, isAncestor = (a, b) => git(['merge-base', '--is-ancestor', a, b]).status === 0 }) {
+  if (!added) return `ADR-${number} is not committed`;
+  for (const row of rows) {
+    const cell = new RegExp(`^\\| ${row.replace('.', '\\.')} \\|.*\\| ([0-9a-f]{7,40}) \\|$`, 'm').exec(backlogText)?.[1];
+    if (cell && !isAncestor(added, cell)) return `${row} (${cell}) was committed before ADR-${number}`;
+  }
+  return true;
+}

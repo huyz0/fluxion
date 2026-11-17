@@ -5,6 +5,7 @@ import { writeFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import {
   changesetGaps,
+  checkAdrBeforeRows,
   checkAllowlistEmpty,
   checkBacklogDone,
   checkDistArtifacts,
@@ -15,6 +16,7 @@ import {
   checkRowsDone,
   checkRowsTitled,
   checkVerifyOutput,
+  missingNamedCases,
   passingTestTitles,
 } from '../../scripts/gates/milestone-checks.mjs';
 import { out, sandbox } from './helpers.mjs';
@@ -1019,6 +1021,58 @@ describe('checkPngEvidence (M19.52)', () => {
       assert.equal(r.status, 1, out(r));
       assert.match(r.stderr, /png-check concluded failure/);
       assert.equal(sb.node('scripts/gates/check-png-evidence.mjs', ['--file', sb.path('ev.json')]).status, 1);
+    } finally {
+      sb.cleanup();
+    }
+  });
+});
+
+describe('m20-complete helpers (M20.30, cp2 F2)', () => {
+  const named = 'FR-THM-005: an image palette holds its AA pairs';
+  it('NFR-DX-003: a named case passes only under its whole title, not inside a longer one or when it failed', () => {
+    assert.deepEqual(missingNamedCases([{ title: named, status: 'passed' }], [named]), []);
+    assert.deepEqual(missingNamedCases([{ title: `${named} in dark mode`, status: 'passed' }], [named]), [named]);
+    assert.deepEqual(missingNamedCases([{ title: `x ${named}`, status: 'passed' }], named), [named]);
+    assert.deepEqual(missingNamedCases([{ title: named, status: 'skipped' }], [named]), [named]);
+    assert.deepEqual(missingNamedCases([{ title: 'a', status: 'passed' }], ['a', 'b']), ['b']);
+  });
+
+  const backlog = [
+    '| M20.5 | ADR | FR-THM-005 | ... | T0 | done | 1111111 |',
+    '| M20.6 | Image palette | FR-THM-005 | ... | T0 | done | 2222222 |',
+    '| M20.7 | Variants | FR-THM-006 | ... | T0 | todo | |',
+  ].join('\n');
+  const after = (descendants) => (a, b) => a === 'aaaaaaa' && descendants.includes(b);
+  it('NFR-DX-003: an ADR passes only when every governed row with a Commit cell descends from the commit that added it', () => {
+    const rows = ['M20.5', 'M20.6', 'M20.7'];
+    assert.equal(checkAdrBeforeRows(backlog, rows, { number: '0055', added: 'aaaaaaa', isAncestor: after(['1111111', '2222222']) }), true);
+    assert.equal(
+      checkAdrBeforeRows(backlog, rows, { number: '0055', added: 'aaaaaaa', isAncestor: after(['1111111']) }),
+      'M20.6 (2222222) was committed before ADR-0055',
+    );
+    assert.equal(checkAdrBeforeRows(backlog, rows, { number: '0055', added: undefined, isAncestor: () => true }), 'ADR-0055 is not committed');
+  });
+  it('NFR-DX-003: a governed row with no Commit cell yet is left to check-digest, and the ancestry check runs in real git', () => {
+    const asked = [];
+    const probe = (a, b) => {
+      asked.push(b);
+      return true;
+    };
+    assert.equal(checkAdrBeforeRows(backlog, ['M20.7'], { number: '0055', added: 'aaaaaaa', isAncestor: probe }), true);
+    assert.deepEqual(asked, []);
+    const sb = sandbox(['scripts'], { git: true });
+    try {
+      const first = sb.git('rev-parse', 'HEAD').stdout.trim();
+      sb.write('b.txt', '2');
+      sb.git('add', '-A');
+      sb.git('commit', '-q', '--no-verify', '-m', 'second');
+      const second = sb.git('rev-parse', 'HEAD').stdout.trim();
+      const rows = `| M20.6 | x | y | z | T0 | done | ${first.slice(0, 7)} |`;
+      assert.equal(inRepo(sb, `c.checkAdrBeforeRows(${JSON.stringify(rows)}, ['M20.6'], { number: '0055', added: '${first}' })`), true);
+      assert.equal(
+        inRepo(sb, `c.checkAdrBeforeRows(${JSON.stringify(rows)}, ['M20.6'], { number: '0055', added: '${second}' })`),
+        `M20.6 (${first.slice(0, 7)}) was committed before ADR-0055`,
+      );
     } finally {
       sb.cleanup();
     }
