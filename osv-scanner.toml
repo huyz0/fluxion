@@ -1,6 +1,6 @@
 # Known vulnerabilities with no fixed version, accepted until the date given and then checked again (M8.38).
 # scripts/gates/check-osv-expiry.mjs fails the security workflow 7 days before any date below (M18.219).
-# Both remaining entries arrive only through development and docs tooling; neither is in the player, the editor, the CLI,
+# Every entry arrives only through development, build and docs tooling; none is in the player, the editor, the CLI,
 # the studio or any published package.
 
 # Re-checked 2026-11-02 (M18.219): braces 3.0.3 is still the latest release, and micromatch 4 pins braces ^3.
@@ -26,3 +26,14 @@ reason = "sprintf-js 1.0.3 via argparse via @rushstack/ts-command-line via @micr
 id = "GHSA-g3hv-75wg-m249"
 ignoreUntil = 2026-12-02
 reason = "minimatch 10.2.6 via typedoc and 3.1.5 via glob 7 under @lhci/cli (development tooling only); no fix below 11, and both consumers fail on minimatch 11"
+
+# M20.34 (ci 44118254413): GHSA-fc5q-39xc-vjpf (CVE-2026-112366, published 2026-10-19, unreviewed) is a ReDoS in picomatch "through
+# 4.0.7" when the glob pattern itself is attacker-supplied (single-branch repeated extglobs such as +(*)). No fixed version is
+# published: 4.0.7 is the latest 4.x and 2.3.2 the latest 2.x (npm, checked 2026-11-17). Both arrive only through build, test and docs
+# tooling (vite, vitest, tsdown, knip, astro, changesets, dependency-cruiser, fdir/tinyglobby; micromatch and anymatch on 2.3.2);
+# `pnpm why picomatch -r --prod` finds no production path, and no Fluxion source imports a glob matcher. Every pattern is our own
+# config, never input. The excusal names this one advisory, so any other picomatch advisory still fails the scan.
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2026-12-02
+reason = "picomatch 4.0.7 and 2.3.2 via build, test and docs tooling only (no production path); ReDoS needs an attacker-supplied glob pattern; no fixed version published"
