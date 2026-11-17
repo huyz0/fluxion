@@ -13,7 +13,9 @@ import { createCoreRegistries } from '@fluxion/core';
 import { createFontRegistry } from '@fluxion/theme';
 import { Diagnostic } from '@fluxion/schema';
 import { Disposable } from '@fluxion/core';
+import { DtcgImportOptions } from '@fluxion/theme';
 import { DtcgWarning } from '@fluxion/theme';
+import { DtcgWarningCode } from '@fluxion/theme';
 import { EnumParam } from '@fluxion/core';
 import { EvaluatedOutline } from '@fluxion/core';
 import { evaluateOutline } from '@fluxion/core';
@@ -151,7 +153,11 @@ export function definePack(spec: PackSpec): Pack;
 
 export { Disposable }
 
+export { DtcgImportOptions }
+
 export { DtcgWarning }
+
+export { DtcgWarningCode }
 
 export { EnumParam }
 

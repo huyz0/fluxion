@@ -56,7 +56,9 @@ export {
 export {
   contrastRatio,
   createFontRegistry,
+  type DtcgImportOptions,
   type DtcgWarning,
+  type DtcgWarningCode,
   type ExportedTheme,
   exportDtcg,
   type FileTheme,

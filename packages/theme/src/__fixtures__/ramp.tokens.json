@@ -1,0 +1,25 @@
+{
+  "color": {
+    "$type": "color",
+    "primary": {
+      "100": { "$value": { "colorSpace": "srgb", "components": [0.8588, 0.9176, 0.9961], "hex": "#dbeafe" } },
+      "300": { "$value": { "colorSpace": "srgb", "components": [0.5765, 0.7725, 0.9922], "hex": "#93c5fd" } },
+      "500": { "$value": { "colorSpace": "srgb", "components": [0.2314, 0.5098, 0.9647], "hex": "#3b82f6" } },
+      "700": { "$value": { "colorSpace": "srgb", "components": [0.1137, 0.3059, 0.8471], "hex": "#1d4ed8" } },
+      "900": { "$value": { "colorSpace": "srgb", "components": [0.1176, 0.2275, 0.5412], "hex": "#1e3a8a" } }
+    },
+    "bg": { "$value": "#ffffff", "$description": "page background, as CSS text" },
+    "link": { "$value": "{color.primary.700}" },
+    "visited": { "$value": "{color.missing}" }
+  },
+  "font": {
+    "size": { "md": { "$type": "number", "$value": 16 } }
+  },
+  "space": {
+    "4": { "$type": "number", "$value": 16 }
+  },
+  "radius": {
+    "$type": "dimension",
+    "card": { "$value": { "value": 0.5, "unit": "rem" } }
+  }
+}

@@ -163,7 +163,15 @@ When the CSS text of a literal colour differs from what import would rebuild fro
 omitted). Import resolves group-level `$type` onto tokens and writes `$type` on every token (canonical form); group `$description`
 and `$extensions`, `$extends`, `$ref` and the types `typography`, `border`, `gradient`, `transition`, `strokeStyle` are dropped with
 `DTCG_UNSUPPORTED` warnings naming the path; so are `$root` tokens and `$deprecated` (ignored, warned). The DTCG 2025.10 details
-here (colour-object fields, weight names, `$root`, `$deprecated`, `$extends`, `$ref`) are to be verified against the spec in M20.9.
+were checked against the spec in M20.9 (designtokens.org/TR/2025.10 format and color, 2026-11-17): colour objects are `colorSpace`,
+`components` (a number or `"none"`, read as 0), optional `alpha` (default 1) and optional six-digit `hex`; the weight names are the
+list above, matched exactly (a case variant is not one); `$root` is a group's base token, `$extends` group inheritance, `$ref` a
+JSON Pointer reference, `$deprecated` a token or group flag; a shadow may also be a list or `inset` (both dropped, warned); an untyped
+token takes its nearest group's `$type`, and an untyped reference its target's (one reaching no typed token is `DTCG_ALIAS_BROKEN`).
+**Import choices (M20.9):** a colour given as CSS text (files before 2025.10) is read when the token check accepts it; a non-colour
+alias is replaced by the literal it reaches (the theme model aliases colours only); a `rem` conversion warns `DTCG_UNSUPPORTED`; a
+foreign colour dropped in step 4 over a `base` path restores `base`'s token; group-level warnings at the root name the path `(root)`.
+`themesFromFiles` takes Fluxion theme files only, since a pack's themes are exact.
 
 **Foreign files.** `importDtcg(json, { name?, fileName?, base = LIGHT_THEME })`. A file with the root `dev.fluxion` entry is a
 Fluxion theme file, read as is (no base; an invalid one is `DTCG_INVALID`). Any other file (Tokens Studio, Style Dictionary,

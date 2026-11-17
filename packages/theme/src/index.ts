@@ -9,17 +9,18 @@ export {
   PALETTE_CONTRAST_PAIRS,
   type PaletteRole,
 } from './contrast.js';
+export { type ThemeCssOptions, themeToCss } from './css-export.js';
 export {
-  type DtcgWarning,
+  type DtcgImportOptions,
   type ExportedTheme,
   exportDtcg,
   type FileTheme,
-  type ImportedTheme,
   importDtcg,
   type ThemeFile,
   themeFileName,
   themesFromFiles,
 } from './dtcg.js';
+export type { DtcgWarning, DtcgWarningCode, ImportedTheme } from './dtcg-types.js';
 export type { ResolvedEffect, ResolvedShadow } from './effects.js';
 export type { ThemeError, ThemeErrorCode } from './errors.js';
 export { FONT_MAX_BYTES, type FontFileInfo, type FontFormat, readFontFile } from './font-file.js';

@@ -88,11 +88,21 @@ export type Dimension = {
 };
 
 // @public
+export type DtcgImportOptions = {
+    readonly name?: string;
+    readonly fileName?: string;
+    readonly base?: Theme;
+};
+
+// @public
 export type DtcgWarning = {
-    readonly code: "DTCG_UNSUPPORTED";
+    readonly code: DtcgWarningCode;
     readonly path: string;
     readonly message: string;
 };
+
+// @public
+export type DtcgWarningCode = "DTCG_UNSUPPORTED" | "DTCG_PATH_RENAMED" | "DTCG_TYPE_MISMATCH" | "DTCG_ALIAS_BROKEN" | "DTCG_ROLE_MAPPED" | "DTCG_ROLE_DEFAULTED";
 
 // @public
 export type Duration = {
@@ -164,7 +174,7 @@ export type FontSource = "bundled" | "google" | "upload";
 export function generatePalette(options: PaletteOptions): Result<Palette, ThemeError>;
 
 // @public
-export function importDtcg(json: unknown): Result<ImportedTheme, ThemeError>;
+export function importDtcg(json: unknown, options?: DtcgImportOptions): Result<ImportedTheme, ThemeError>;
 
 // @public
 export type ImportedTheme = {
@@ -382,6 +392,11 @@ export type Theme = {
 };
 
 // @public
+export type ThemeCssOptions = {
+    readonly selector?: string;
+};
+
+// @public
 export function themeDiagnostics(theme: unknown): readonly Diagnostic[];
 
 // @public
@@ -432,6 +447,9 @@ export type ThemeTableStyle = {
         readonly [field: string]: unknown;
     };
 };
+
+// @public
+export function themeToCss(theme: Theme, options?: ThemeCssOptions): string;
 
 // @public
 export function toCssVars(theme: Theme): Record<string, string>;

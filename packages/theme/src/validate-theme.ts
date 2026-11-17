@@ -73,8 +73,8 @@ function roleProblems(t: Theme): ThemeProblem[] {
   return out;
 }
 
-/** The type a token at `path` must have, from its group, or undefined when the path is in no typed group. */
-const expectedType = (path: string): string | undefined =>
+/** The type a token at `path` must have, from its group, or undefined when the path is in no typed group (package-internal). */
+export const expectedType = (path: string): string | undefined =>
   GROUP_TYPES.find(([prefix]) => path.startsWith(prefix))?.[1] ?? (FONT_FAMILIES.has(path) ? 'fontFamily' : undefined);
 
 /** The wrong-typed tokens and the broken aliases of `t`. */

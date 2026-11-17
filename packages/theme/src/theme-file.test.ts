@@ -72,9 +72,9 @@ describe('theme files (FR-THM-007)', () => {
   it('FR-THM-007: a file that is not a Fluxion theme file, or is broken, is DTCG_INVALID', () => {
     const good = saved(LIGHT_THEME) as Dict;
     const cases: unknown[] = [
+      // not JSON objects (a file without the dev.fluxion entry is a foreign file: dtcg.test.ts)
       null,
       [],
-      { color: {} },
       { ...good, $extensions: { 'dev.fluxion': { ...good.$extensions['dev.fluxion'], version: 2 } } },
       { ...good, $extensions: { 'dev.fluxion': { version: 1 } } },
       { ...good, color: { ...good.color, primary: { $type: 'color', $value: { colorSpace: 'display-p3', components: [1, 0, 0] } } } },
