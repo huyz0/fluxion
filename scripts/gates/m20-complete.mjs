@@ -201,11 +201,29 @@ leg('FR-EXP-004 a recorded green nightly opens the exported fixtures in Inkscape
 // ── decompiler v1 (plan tasks 13-14, M19 hand-off row 19) ──────────────────────────────────────────
 leg('FR-DSL-008 compile(decompile(doc)) is doc over the fixture corpus and generated documents (property)', () =>
   tests('packages/dsl/src/decompile/decompile.prop.test.ts', {
-    named: ['FR-DSL-008: compile(decompile(doc)) is doc over the fixture corpus', 'FR-DSL-008: compile(decompile(doc)) is doc over generated documents'],
+    named: [
+      'FR-DSL-008: compile(decompile(doc)) is doc over the fixture corpus',
+      'FR-DSL-008: compile(decompile(doc)) is doc over generated documents',
+      // ADR-0057's I2 contract (M20.4 review r1)
+      'FR-DSL-008: decompile(compile(src)) is a fixpoint',
+      // raw records bounded, so a broken key emitter cannot hide in raw: (M20.4 review r1 F1, F2)
+      'FR-DSL-008: compiled documents decompile with no raw records',
+      'FR-DSL-008: key-expressible generated documents decompile with no raw records',
+    ],
   }),
 );
 leg('FR-DSL-008 the decompiler writes raw: escape blocks for inexpressible records and its outline is no larger than v0', () =>
-  tests('packages/dsl/src/decompile/decompile.test.ts', { named: ['raw: escape block', 'outline tokens not worse than v0'] }),
+  tests('packages/dsl/src/decompile/decompile.test.ts', {
+    named: [
+      'raw: escape block',
+      'outline tokens not worse than v0',
+      'FR-DSL-008: examples decompile with no raw records',
+      'FR-DSL-008: normalize is idempotent and adds only defaults',
+      'FR-DSL-008: an editor-built document decompiles with no raw records and keeps its ids',
+      'FR-DSL-008: a studio-made document compiles back in restore mode',
+      "FR-DSL-008: an editor-built document's token ratio to canonical JSON does not fall below its recorded baseline",
+    ],
+  }),
 );
 leg('M19 hand-off: hideMasterElements, region texts and icon slots round-trip in FluxScript; patch ops edit masters, placeholders, tables and frames', () =>
   all(
