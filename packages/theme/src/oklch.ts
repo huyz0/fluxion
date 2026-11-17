@@ -74,18 +74,24 @@ export function rgbToOklch(r: number, g: number, b: number, alpha = 1): Oklch {
   return { l: L, c, h: c < ACHROMATIC ? 0 : mod360((Math.atan2(bb, a) * 180) / Math.PI), alpha };
 }
 
-/** OKLCH as unclamped linear-light sRGB (it may lie outside [0, 1]). */
-function oklchToLinear({ l, c, h }: Oklch): [number, number, number] {
-  const a = c * Math.cos((h * Math.PI) / 180);
-  const b = c * Math.sin((h * Math.PI) / 180);
-  const lp = (l + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const mp = (l - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const sp = (l - 0.0894841775 * a - 1.291485548 * b) ** 3;
+// x * x * x, not x ** 3: about twice as fast in the palette solver's bisections (ADR-0055 determinism is per host either way)
+const cube = (x: number): number => x * x * x;
+
+/** OKLab as unclamped linear-light sRGB (it may lie outside [0, 1]). */
+function labToLinear(l: number, a: number, b: number): [number, number, number] {
+  const lp = cube(l + 0.3963377774 * a + 0.2158037573 * b);
+  const mp = cube(l - 0.1055613458 * a - 0.0638541728 * b);
+  const sp = cube(l - 0.0894841775 * a - 1.291485548 * b);
   return [
     4.0767416621 * lp - 3.3077115913 * mp + 0.2309699292 * sp,
     -1.2684380046 * lp + 2.6097574011 * mp - 0.3413193965 * sp,
     -0.0041960863 * lp - 0.7034186147 * mp + 1.707614701 * sp,
   ];
+}
+
+/** OKLCH as unclamped linear-light sRGB (it may lie outside [0, 1]). */
+function oklchToLinear({ l, c, h }: Oklch): [number, number, number] {
+  return labToLinear(l, c * Math.cos((h * Math.PI) / 180), c * Math.sin((h * Math.PI) / 180));
 }
 
 const inGamut = (rgb: readonly number[]): boolean => rgb.every((v) => v >= -1e-6 && v <= 1 + 1e-6);
@@ -97,10 +103,12 @@ const inGamut = (rgb: readonly number[]): boolean => rgb.every((v) => v >= -1e-6
 export function intoGamut(color: Oklch): Oklch {
   const base = { ...color, l: clamp01(color.l) };
   if (inGamut(oklchToLinear(base))) return base;
+  // the hue's cosine and sine once, not per step (c * cos(h) is the number oklchToLinear computes)
+  const [cos, sin] = [Math.cos((base.h * Math.PI) / 180), Math.sin((base.h * Math.PI) / 180)];
   let [lo, hi] = [0, base.c];
   for (let i = 0; i < 24; i++) {
     const mid = (lo + hi) / 2;
-    if (inGamut(oklchToLinear({ ...base, c: mid }))) lo = mid;
+    if (inGamut(labToLinear(base.l, mid * cos, mid * sin))) lo = mid;
     else hi = mid;
   }
   return { ...base, c: lo };
