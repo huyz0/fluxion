@@ -5114,3 +5114,7 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 - png-check: `check-png-evidence --record 43843196920` (nightly at 2571ca8, png-check success).
 - Nightly 44013785495 dispatched at 7eb83ac on Huy's ask (scheduled runs start ~7 h late); its perf job passed. `check-ci-evidence --record 7eb83ac --perf-run 44013785495`: ci 43909637802 and gates 43909637798 green on three OSes; `--milestone M19 --perf` passes.
 - Trial m19-complete at 7eb83ac on Huy's Windows machine in the pinned image: 45/49, every browser leg (Firefox, WebKit) green; red only on the png, ci-evidence, M19.31 and roadmap legs this commit closes. The counted run follows at this commit.
+
+## 2026-11-17 M20.1: plan M20 with an executable completion gate
+- 25 rows (ADRs 0055–0057, theme studio .5–.11, SVG export .12–.15, decompiler v1 + hand-off .16–.18, mutation floors, route-drag decision, R3 demo + exit checklist, docs, final review). M19 backlog archived.
+- `node scripts/gates/m20-complete.mjs`: red (exit 1), as planned; plan review r1 (changes-requested) gave M20.23 a no-recurrence close, one shared Playwright run, and legs for the R3 golden/obstacle-free cases and the docs row.
