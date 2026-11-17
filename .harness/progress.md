@@ -5124,3 +5124,6 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 
 ## 2026-11-17 M20.25: checkpoint cp1 (f657949..48abd80)
 - Independent review: pass, 3 minor, all reopened: M20.26 (sandboxes read a fixed backlog/roadmap), M20.27 (exact case names in m20-complete), M20.28 (cold setup median ≤ 420 s; 492 s at 48abd80). Early checkpoint: main's ci needs a second green run on the 66b5a51 product tree before M20.2 can land.
+
+## 2026-11-17 M20.28: first M20 CI cold-setup reading
+- `check-budget --record --cold-from-ci 48abd80`: 499 s from ci 44024254871: the step's wall-clock span from the GitHub API, which check-budget records (the step's own timer read 492145 ms, the 492 s cp1 F3 cites). It is the first of the three M20 readings M20.28 needs. 6185580 has none: its ci run 44032176009 is red because a macOS verify step hit its 20-min limit.

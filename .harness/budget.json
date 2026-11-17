@@ -1,13 +1,13 @@
 {
-  "recordedAt": "2026-11-16T16:09:47.346Z",
-  "commit": "301a587bfb12f80926ac1019498e23e675540e18",
+  "recordedAt": "2026-11-17T07:55:49.814Z",
+  "commit": "61855806cb622876dd9a5df0b28e08918e227610",
   "lockfile": "50119a86a9cb573fbe347df13c70a05ec1717cb5cbc73a95be99deba54f1fbaf",
   "node": "22.23.5",
   "platform": "linux-x64",
-  "quickMs": 17861,
-  "stagedMs": 388036,
-  "coldSetupMs": 410000,
-  "coldSetupSource": "ci:43866700311",
+  "quickMs": 12640,
+  "stagedMs": 345738,
+  "coldSetupMs": 499000,
+  "coldSetupSource": "ci:44024254871",
   "coldReadings": [
     {
       "sha": "522e499f49df513bf67bafbc7c3ddc63c812b537",
@@ -25,6 +25,12 @@
       "sha": "301a587bfb12f80926ac1019498e23e675540e18",
       "ms": 410000,
       "source": "ci:43866700311",
+      "lockfile": "50119a86a9cb573fbe347df13c70a05ec1717cb5cbc73a95be99deba54f1fbaf"
+    },
+    {
+      "sha": "48abd80d73ff8afd87fa9331235e53a666c30117",
+      "ms": 499000,
+      "source": "ci:44024254871",
       "lockfile": "50119a86a9cb573fbe347df13c70a05ec1717cb5cbc73a95be99deba54f1fbaf"
     }
   ]
