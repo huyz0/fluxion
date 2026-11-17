@@ -123,6 +123,17 @@ const stepMs = (start, end) => {
   return Number.isFinite(ms) && ms >= 0 ? ms : null;
 };
 
+/** The cold run's duration in ms and whether the log calls it over budget; ms null when unknown (last-ci, and
+ * m20-complete's cold-setup leg through ciColdReadings, M20.28). */
+export function coldDuration(cold) {
+  const log = typeof cold.log === 'string' ? cold.log : '';
+  const over =
+    /(?:::warning title=cold setup over budget::|##\[warning\])cold setup (\d+) ms >/.exec(log) ?? /budget: cold setup failed by time \((\d+) ms >/.exec(log);
+  if (over) return { ms: Number(over[1]), over: true };
+  // check-budget's own measure wins over the step's, which also counts the step's start-up
+  const within = /budget: cold setup (\d+) ms <= /.exec(log);
+  return { ms: within ? Number(within[1]) : Number.isFinite(cold.ms) ? cold.ms : null, over: false };
+}
 /** Older gh versions omit step times; request only the exact successful cold job. */
 function hydrateColdStepTimes(job, runId, gh) {
   if (job.name !== 'cold-setup' || job.conclusion !== 'success') return;

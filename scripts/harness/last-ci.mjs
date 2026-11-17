@@ -42,7 +42,7 @@
 // (M18.228), pending runs with a failed job, and the failed runs of an intermittent tree.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { COMPLETED_RUNS, PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
+import { COMPLETED_RUNS, coldDuration, PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
 import { blockingRows } from '../gates/landing-block.mjs';
 import { repoPath } from '../gates/lib.mjs';
 import { describe, intermittent, pagedTreeRuns, productPath, shaTreeRuns } from '../gates/same-tree.mjs';
@@ -462,16 +462,6 @@ async function coldSetupReport(run, newer) {
   }
   if (blame[1] === 'status') return { verdict: 1, line: `last-ci: RED cold-setup ${where}: ${text}; a fresh clone fails, fix it before the next task` };
   return { verdict: 0, line: `last-ci: warning: cold-setup ${where}: ${text}` };
-}
-/** The cold run's duration in ms and whether the log calls it over budget; ms null when unknown. */
-function coldDuration(cold) {
-  const log = typeof cold.log === 'string' ? cold.log : '';
-  const over =
-    /(?:::warning title=cold setup over budget::|##\[warning\])cold setup (\d+) ms >/.exec(log) ?? /budget: cold setup failed by time \((\d+) ms >/.exec(log);
-  if (over) return { ms: Number(over[1]), over: true };
-  // check-budget's own measure wins over the step's, which also counts the step's start-up
-  const within = /budget: cold setup (\d+) ms <= /.exec(log);
-  return { ms: within ? Number(within[1]) : Number.isFinite(cold.ms) ? cold.ms : null, over: false };
 }
 /**
  * A successful cold-setup is green only when its duration is known within budget: the cold step's

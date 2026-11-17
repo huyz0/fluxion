@@ -4,14 +4,17 @@
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { runSource } from './ci-runs.mjs';
 import { currentMilestone, exists, leg, node, readText, repoPath, run, runLegs } from './lib.mjs';
 import {
   backlogTextFor,
   changesetsCoverRange,
   checkAdrBeforeRows,
   checkBacklogDone,
+  checkColdMedian,
   checkExitChecklist,
   checkFinalReview,
+  ciColdReadings,
   imageRunner,
   loadMilestoneReviews,
   missingNamedCases,
@@ -24,6 +27,8 @@ const result = (r) => r.status === 0 || (r.stderr || r.stdout).trim().split(/\r?
 const command = (file, args = []) => (exists(file) ? result(node(file, args)) : `missing ${file}`);
 const json = (file) => JSON.parse(readText(file));
 const BROWSERS = ['chromium', 'firefox', 'webkit'];
+/** M20's plan commit (M20.1): the cold-setup leg counts ci runs from here. */
+const M20_FIRST_COMMIT = '66b5a51';
 
 // The first failing test's full name and first failure line from a Vitest JSON report (as m19-complete).
 function failedTest(out) {
@@ -318,6 +323,8 @@ leg('full verification with all required steps', () =>
     'mode-policy',
   ]),
 );
+// M20.28 (cp1 F3, cp2 F1): every completed main ci run since M20's first commit, read from GitHub, not readings a driver chose
+leg('CI cold setup median at most 420 s over every M20 main ci run', async () => checkColdMedian(await ciColdReadings(runSource(), M20_FIRST_COMMIT), 420_000));
 leg('three-OS CI and nightly perf cover final review range', () => command('scripts/gates/check-ci-evidence.mjs', ['--milestone', 'M20', '--perf']));
 leg('all M20 backlog rows done including review findings', () => checkBacklogDone(backlogTextFor('M20'), 'M20', loadMilestoneReviews('M20')));
 leg('independent final review covers M20', () =>

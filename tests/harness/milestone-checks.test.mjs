@@ -748,6 +748,65 @@ describe('M6 Playwright legs (M6.1)', () => {
     assert.match(String(checkColdReadings([], '', { isAncestor })), /no M19\.28 commit/);
   });
 
+  it('M20.28: the cold-setup readings are every completed ci run since the first commit, read from the source', async () => {
+    const { ciColdReadings } = await import('../../scripts/gates/milestone-checks.mjs');
+    // commits in order old < first < a < b < c < HEAD; x is off HEAD's history
+    const order = ['old', 'first', 'a', 'b', 'c', 'HEAD'];
+    const isAncestor = (p, q) => order.includes(p) && order.includes(q) && order.indexOf(p) <= order.indexOf(q);
+    const run = (databaseId, headSha, status = 'completed') => ({ databaseId, headSha, status });
+    const colds = {
+      1: { conclusion: 'success', ms: 1, log: 'budget: cold setup 300000 ms <= 600000 ms' },
+      2: { conclusion: 'failure', ms: 450_000, log: '' },
+      3: { conclusion: 'success', ms: 380_000, log: null },
+      5: { conclusion: 'cancelled', ms: null, log: null },
+      6: { conclusion: 'success', ms: 999_000, log: '' },
+    };
+    const pages = [[run(1, 'c'), run(9, 'c', 'in_progress'), run(2, 'b'), run(4, 'x'), run(5, 'a'), run(3, 'first'), run(6, 'old')]];
+    const asked = [];
+    const source = {
+      ciPage: async (branch, page, size) => {
+        asked.push([branch, page, size]);
+        return pages[page - 1] ?? [];
+      },
+      coldSetup: async (id) => colds[id],
+    };
+    const readings = await ciColdReadings(source, 'first', { isAncestor });
+    // check-budget's own measure wins; a failed cold-setup still has a duration; a pending, off-branch, cancelled or older run has none
+    assert.deepEqual(readings, [
+      { run: 1, sha: 'c', ms: 300_000 },
+      { run: 2, sha: 'b', ms: 450_000 },
+      { run: 3, sha: 'first', ms: 380_000 },
+    ]);
+    assert.deepEqual(asked, [['main', 1, 100]], 'a run older than the first commit ends the paging');
+    // a full first page that reaches past the first commit is the last one read
+    const full = [...Array.from({ length: 99 }, (_, i) => run(100 + i, 'a', 'in_progress')), run(6, 'old')];
+    const fullAsked = [];
+    const fullSource = {
+      ciPage: async (_b, page) => {
+        fullAsked.push(page);
+        return full;
+      },
+      coldSetup: async () => undefined,
+    };
+    assert.deepEqual(await ciColdReadings(fullSource, 'first', { isAncestor }), []);
+    assert.deepEqual(fullAsked, [1]);
+    // a source with more runs than the pages read is refused, not cut short
+    const endless = { ciPage: async () => Array.from({ length: 100 }, (_, i) => run(i, 'a')), coldSetup: async () => undefined };
+    await assert.rejects(ciColdReadings(endless, 'first', { isAncestor, pages: 2 }), /more than 200 ci runs since first/);
+  });
+
+  it('M20.28: the cold-setup median takes the higher middle reading on an even count, and an unreadable one fails', async () => {
+    const { checkColdMedian } = await import('../../scripts/gates/milestone-checks.mjs');
+    const at = (ms, run = 1) => ({ run, sha: 'a', ms });
+    assert.equal(checkColdMedian([at(300_000), at(420_000), at(500_000)], 420_000), true);
+    assert.match(String(checkColdMedian([at(300_000), at(430_000), at(500_000)], 420_000)), /median cold setup 430000 ms over 3 ci runs > 420000/);
+    // 410 and 430 in the middle: the higher one judges, so a tie never rounds the median down
+    assert.match(String(checkColdMedian([at(300_000), at(410_000), at(430_000), at(500_000)], 420_000)), /median cold setup 430000 ms/);
+    assert.equal(checkColdMedian([at(300_000), at(410_000), at(415_000), at(500_000)], 420_000), true);
+    assert.match(String(checkColdMedian([at(300_000), at(null, 7)], 420_000)), /unreadable in run\(s\) 7/);
+    assert.equal(checkColdMedian([], 420_000), 'no ci cold-setup readings');
+  });
+
   it('M19.58: the browser legs of a gate share one Playwright run, each judged on its own specs', async () => {
     const { sharedPlaywright } = await import('../../scripts/gates/milestone-checks.mjs');
     const a = 'e2e/locks.spec.ts';

@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, sep } from 'node:path';
 import { runInImage } from '../e2e/image.mjs';
+import { coldDuration, PAGE_SIZE } from './ci-runs.mjs';
 import { exists, git, repoPath, run } from './lib.mjs';
 
 /** Paths a commit may touch after the final review range without invalidating the review. */
@@ -1042,4 +1043,54 @@ export function checkAdrBeforeRows(backlogText, rows, { number, added, isAncesto
     if (cell && !isAncestor(added, cell)) return `${row} (${cell}) was committed before ADR-${number}`;
   }
   return true;
+}
+
+/** The most pages of ci's push runs ciColdReadings reads before it gives up (100 runs a page). */
+export const COLD_READING_PAGES = 10;
+
+/** ci's completed push runs on `branch` from `from` to HEAD, newest first; paging stops at the first run older than `from`. */
+async function completedSince(source, from, { branch, pages, isAncestor }) {
+  const runs = [];
+  for (let page = 1; page <= pages; page++) {
+    const listed = await source.ciPage(branch, page, PAGE_SIZE);
+    const since = listed.filter((r) => isAncestor(from, r.headSha));
+    runs.push(...since.filter((r) => r.status === 'completed' && isAncestor(r.headSha, 'HEAD')));
+    if (since.length < listed.length || listed.length < PAGE_SIZE) return runs;
+  }
+  throw new Error(`more than ${pages * PAGE_SIZE} ci runs since ${from.slice(0, 7)}`);
+}
+
+/**
+ * The cold-setup reading of every completed ci push run on `branch` whose head descends from `from` and is on HEAD, fetched
+ * from `source` (ci-runs.mjs) rather than picked by a driver (M20.28, cp2 F1): newest first, `{ run, sha, ms }`, where ms is
+ * check-budget's own measure from the job log, else the cold step's time. A run whose cold-setup job did not run (a replaced
+ * queued run, a cancelled one) has no reading; one that ran with no readable duration is listed with ms null. Paging stops at
+ * the first run older than `from`.
+ */
+export async function ciColdReadings(
+  source,
+  from,
+  { branch = 'main', pages = COLD_READING_PAGES, isAncestor = (a, b) => git(['merge-base', '--is-ancestor', a, b]).status === 0 } = {},
+) {
+  const runs = await completedSince(source, from, { branch, pages, isAncestor });
+  const readings = [];
+  for (const r of runs) {
+    const cold = await source.coldSetup(r.databaseId);
+    if (!cold || !['success', 'failure'].includes(cold.conclusion)) continue;
+    readings.push({ run: r.databaseId, sha: r.headSha, ms: coldDuration(cold).ms });
+  }
+  return readings;
+}
+
+/**
+ * The median cold setup of `readings` (ciColdReadings) at or under `limitMs`, the higher middle reading on an even count, so a
+ * tie never rounds down (M20.28, cp2 F1); a reading with no duration fails it, as do none at all. true, or why not.
+ */
+export function checkColdMedian(readings, limitMs) {
+  if (readings.length === 0) return 'no ci cold-setup readings';
+  const unknown = readings.filter((r) => !Number.isFinite(r.ms));
+  if (unknown.length) return `cold-setup duration unreadable in run(s) ${unknown.map((r) => r.run).join(', ')}`;
+  const ms = readings.map((r) => r.ms).sort((a, b) => a - b);
+  const median = ms[Math.floor(ms.length / 2)];
+  return median <= limitMs || `median cold setup ${median} ms over ${ms.length} ci runs > ${limitMs}`;
 }
