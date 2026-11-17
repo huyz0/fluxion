@@ -5131,3 +5131,9 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 ## 2026-11-17 M20.27: m20-complete names exact cases (cp1 F2)
 - `tests(named)` now needs a passed case whose own title equals each name (was a substring of the full name). Legs that named only a requirement ID now name exact titles: palette (incl. a locked role through shuffle), image palette, variants, theme files + `theme-picker.browser.test.tsx` (pack themes in the picker), DTCG (incl. the foreign ramp file), contrast lint (one per combo, fix offered, fix clears), SVG, CLI render, decompile property.
 - New leg for M20.18: CLI decompile, MCP get_screen and Source view tests on v1. ADR legs check each governed row's Commit cell descends from the ADR's adding commit (exercised: ADR-0054 vs M19.24/25/40 true; ADR-0220 vs M19.24 refused). Rows .5–.18 point at the gate's titles.
+
+## 2026-11-17 M20.2: ADR-0055 palette generation, theme variants and the DTCG mapping
+- No culori: the generator extends theme's own oklch.ts (theme ships in the player; ADR-0152). Seeded sfc32 copied into theme; image k-means (k=5, OKLab, ≤64 px, fixed seed) on pixels the editor decodes.
+- Contrast repair bisects each role's L to 4.5:1 / 3:1; variants keep the shipped `defaults[kind].variants[name]` shape (no schema minor); theme file = DTCG export with `$extensions["dev.fluxion"]`; CSS `--fx-*` via toCssVars. Fills M20.1's Commit cell.
+- Review: r1 (format writer/layering, foreign DTCG import), r2 (token/group ramps, late-failing tokens) changes-requested; r3 pass with one minor (new-path type vs group prefix), fixed in the ADR and passed in r4.
+round-allowance: M20.2 review round 4 under Huy's 2026-11-05T11:04:52Z delegation ("you decide for me and unblock anything, don't ask me unless it is permission access"); r3 passed and its one minor was fixed in the ADR rather than deferred, so r4 only checked that sentence

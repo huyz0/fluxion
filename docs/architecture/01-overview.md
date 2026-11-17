@@ -33,7 +33,7 @@ All packages live in a pnpm + Turborepo monorepo. `@fluxion/*` names; folders un
 | L0 | `schema` | Zod 4 schemas & TS types for every record; IDs; validation errors; JSON Schema generation; migrations | — (zod) | ✅ |
 | L0 | `geometry` | Vectors, matrices, bezier/path ops, outline sampling, intersections, bounding boxes, spatial index (rbush/flatbush wrappers) | — | ✅ |
 | L1 | `core` | Document store (records + signals), transactions, commands, undo/redo, queries, registries (kinds, defs, routers, layouts, effects…), bindings resolution | schema, geometry | ✅ |
-| L1 | `theme` | Token model (DTCG), token resolution, palette generation (OKLCH/culori), contrast checks, CSS-variable emission | schema | ✅ |
+| L1 | `theme` | Token model (DTCG), token resolution, palette generation (OKLCH, in-house; ADR-0055), contrast checks, CSS-variable emission | schema | ✅ |
 | L2 | `layout` | Layout interface + built-in algorithms, worker host, constraint/overlap pass, text-measure port | core, geometry | ✅ (worker glue isolated in `layout/worker`) |
 | L2 | `routing` | Router interface, straight/bezier/orthogonal A* router, anchor selection, nudging, hops, label placement | schema, core, geometry | ✅ |
 | L2 | `anim` | Animation/timeline/interaction **model evaluation**: sampling effects at time t, build-state reduction, morph interpolation, rider LUTs, expression interpreter | core, geometry, theme | ✅ (clock injected) |
