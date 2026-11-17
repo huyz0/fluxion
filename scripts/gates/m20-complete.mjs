@@ -36,8 +36,8 @@ function failedTest(out) {
   }
 }
 
-// A nonempty report, a successful process and every assertion passed; with `named`, a passed case whose full name holds each
-// text, so the leg judges the cases it names (M18.244, cp36 F3).
+// A nonempty report, a successful process and every assertion passed; with `named`, a passed case whose own title is exactly each
+// text, so the leg judges the cases it names (M18.244, cp36 F3); exact, not a substring of a longer title (M20.27, cp1 F2).
 function tests(file, { project = 'node*', config, named = [] } = {}) {
   if (!exists(file)) return `missing ${file}`;
   const dir = mkdtempSync(join(tmpdir(), 'm20-tests-'));
@@ -57,8 +57,8 @@ function tests(file, { project = 'node*', config, named = [] } = {}) {
     const assertions = report.testResults.flatMap((suite) => suite.assertionResults);
     if (!(report.numFailedTestSuites === 0 && assertions.length > 0 && assertions.every((a) => a.status === 'passed')))
       return `${file}: empty, failed, skipped or todo tests`;
-    const names = assertions.map((a) => String(a.fullName ?? a.title ?? ''));
-    const missing = [named].flat().filter((n) => !names.some((name) => name.includes(n)));
+    const titles = new Set(assertions.map((a) => String(a.title ?? '')));
+    const missing = [named].flat().filter((n) => !titles.has(n));
     return missing.length === 0 || `${file}: no passed case named ${missing.map((n) => `'${n}'`).join(', ')}`;
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -71,9 +71,21 @@ const all = (...checks) => {
   }
   return true;
 };
-function accepted(number) {
-  const file = readdirSync(repoPath('docs/architecture/decisions')).find((name) => name.startsWith(`ADR-${number}-`));
-  return file ? /^status: accepted\b/m.test(readText(`docs/architecture/decisions/${file}`)) || `ADR-${number} not accepted` : `missing ADR-${number}`;
+// Accepted, and committed before every feature row it governs: each such row's Commit cell descends from the commit that added
+// the ADR (M20.27, cp1 F2). A row with no Commit cell yet is not judged here; the backlog-done leg holds it.
+function accepted(number, rows) {
+  const name = readdirSync(repoPath('docs/architecture/decisions')).find((n) => n.startsWith(`ADR-${number}-`));
+  if (!name) return `missing ADR-${number}`;
+  const file = `docs/architecture/decisions/${name}`;
+  if (!/^status: accepted\b/m.test(readText(file))) return `ADR-${number} not accepted`;
+  const added = run('git', ['log', '--diff-filter=A', '--format=%H', '--', file]).stdout.trim().split(/\r?\n/).filter(Boolean).at(-1);
+  if (!added) return `ADR-${number} is not committed`;
+  const backlog = readText('docs/backlog/current.md');
+  for (const row of rows) {
+    const cell = new RegExp(`^\\| ${row.replace('.', '\\.')} \\|.*\\| ([0-9a-f]{7,40}) \\|$`, 'm').exec(backlog)?.[1];
+    if (cell && run('git', ['merge-base', '--is-ancestor', added, cell]).status !== 0) return `${row} (${cell}) was committed before ADR-${number}`;
+  }
+  return true;
 }
 // every browser leg's specs in one Playwright run, one build (M19.58); each leg is still judged on its own specs (plan review r1 F3)
 const browsers = sharedPlaywright(
@@ -93,39 +105,72 @@ function e2e(specs) {
 // ── requirements and decisions ────────────────────────────────────────────────────────────────────
 leg('M20 M/S requirements traced to tests', () => command('scripts/gates/check-trace.mjs', ['--milestone', 'M20', '--priority', 'M,S']));
 leg('check-trace --increment R3: every Must requirement of R3 has a test naming it', () => command('scripts/gates/check-trace.mjs', ['--increment', 'R3']));
-for (const [number, what] of [
-  ['0055', 'palette generation and DTCG mapping'],
-  ['0056', 'SVG export strategy'],
-  ['0057', 'decompiler canonical form'],
+const rowsOf = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => `M20.${from + i}`);
+for (const [number, what, rows] of [
+  ['0055', 'palette generation and DTCG mapping', rowsOf(5, 11)],
+  ['0056', 'SVG export strategy', rowsOf(12, 15)],
+  ['0057', 'decompiler canonical form', rowsOf(16, 18)],
 ])
-  leg(`ADR-${number} (${what}) accepted before its feature rows`, () => accepted(number));
+  leg(`ADR-${number} (${what}) accepted before its feature rows (${rows[0]}-${rows.at(-1)})`, () => accepted(number, rows));
 
 // ── theme studio (plan tasks 3-9) ──────────────────────────────────────────────────────────────────
 leg('FR-THM-005 every generated text/background pair from 1-3 seeds is at least 4.5:1 (property)', () =>
-  tests('packages/theme/src/palette.prop.test.ts', { named: ['FR-THM-005'] }),
+  tests('packages/theme/src/palette.prop.test.ts', {
+    named: ['FR-THM-005: every text/background pair from 1-3 seeds is at least 4.5:1', 'FR-THM-005: a locked role keeps its colour through shuffle'],
+  }),
 );
 leg('FR-THM-005 a fixture image gives the same palette twice and its AA pairs hold', () =>
-  tests('packages/theme/src/palette-image.test.ts', { named: ['FR-THM-005'] }),
+  tests('packages/theme/src/palette-image.test.ts', {
+    named: ['FR-THM-005: a fixture image gives the same palette twice', 'FR-THM-005: an image palette holds its AA pairs'],
+  }),
 );
 leg('FR-THM-006 per-kind default styles and variants resolve by reference; variant emphasis renders themed', () =>
   all(
-    () => tests('packages/theme/src/variants.test.ts', { named: ['FR-THM-006'] }),
-    () => tests('packages/render/src/variant-style.browser.test.tsx', { project: 'browser', named: ['FR-THM-006'] }),
+    () =>
+      tests('packages/theme/src/variants.test.ts', {
+        named: ['FR-THM-006: a variant reference resolves by kind', 'FR-THM-006: a shape definition default applies to its shapes'],
+      }),
+    () => tests('packages/render/src/variant-style.browser.test.tsx', { project: 'browser', named: ['FR-THM-006: variant emphasis renders the themed style'] }),
   ),
 );
-leg('FR-THM-007 an exported theme file re-imports deep-equal; a theme pack registers its themes', () =>
-  tests('packages/theme/src/theme-file.test.ts', { named: ['FR-THM-007'] }),
+leg('FR-THM-007 an exported theme file re-imports deep-equal; a theme pack registers its themes and they appear in the theme picker', () =>
+  all(
+    () =>
+      tests('packages/theme/src/theme-file.test.ts', {
+        named: ['FR-THM-007: an exported theme file re-imports deep-equal', 'FR-THM-007: a theme pack registers its themes'],
+      }),
+    () => tests('packages/editor/src/theme-picker.browser.test.tsx', { project: 'browser', named: ['FR-THM-007: pack themes appear in the theme picker'] }),
+  ),
 );
 leg('FR-THM-009 the DTCG fixture round-trips equal and the CSS-variable export matches its golden', () =>
   all(
     () => exists('packages/theme/src/__golden__/theme.css') || 'missing packages/theme/src/__golden__/theme.css',
-    () => tests('packages/theme/src/dtcg.test.ts', { named: ['FR-THM-009'] }),
+    () =>
+      tests('packages/theme/src/dtcg.test.ts', {
+        named: [
+          'FR-THM-009: the canonical DTCG fixture round-trips equal',
+          'FR-THM-009: a foreign ramp file imports with warnings and never fails',
+          'FR-THM-009: the CSS-variable export matches its golden',
+        ],
+      }),
   ),
 );
 leg('NFR-A11Y-005 the contrast linter flags each combo below WCAG AA and the validation panel offers its fix', () =>
   all(
-    () => tests('packages/theme/src/contrast-lint.test.ts', { named: ['NFR-A11Y-005'] }),
-    () => tests('packages/editor/src/validation-contrast.browser.test.tsx', { project: 'browser', named: ['NFR-A11Y-005'] }),
+    () =>
+      tests('packages/theme/src/contrast-lint.test.ts', {
+        named: [
+          'NFR-A11Y-005: text below 4.5:1 is flagged',
+          'NFR-A11Y-005: large text below 3:1 is flagged',
+          'NFR-A11Y-005: a stroke below 3:1 is flagged',
+          'NFR-A11Y-005: a combination at AA is not flagged',
+        ],
+      }),
+    () =>
+      tests('packages/editor/src/validation-contrast.browser.test.tsx', {
+        project: 'browser',
+        named: ['NFR-A11Y-005: the validation panel offers the contrast fix', 'NFR-A11Y-005: applying the fix clears the warning'],
+      }),
   ),
 );
 leg('theme.editor-live: changing primary recolours the canvas within one frame; Chromium, Firefox, WebKit; axe clean', () =>
@@ -134,20 +179,30 @@ leg('theme.editor-live: changing primary recolours the canvas within one frame; 
 
 // ── SVG export (plan tasks 10-12) ──────────────────────────────────────────────────────────────────
 leg('FR-EXP-004 an exported fixture is standalone SVG 1.1: text as measured tspans, no foreignObject, package in metadata', () =>
-  tests('packages/exporters/src/svg.test.ts', { named: ['FR-EXP-004'] }),
+  tests('packages/exporters/src/svg.test.ts', {
+    named: [
+      'FR-EXP-004: an exported fixture is valid SVG 1.1',
+      'FR-EXP-004: text is measured tspans with no foreignObject',
+      'FR-EXP-004: the package is in metadata',
+    ],
+  }),
 );
 leg(`FR-EXP-004 rasterized SVG vs present mode within PARITY_MAX_DIFF_PCT (${t('PARITY_MAX_DIFF_PCT')} %) in three browsers`, () =>
   browsers(['e2e/export.svg-parity.spec.ts']),
 );
 leg('export.svg: the studio downloads an SVG of the screen and of a selection; Chromium, Firefox, WebKit; axe clean', () => e2e(['e2e/export.svg.spec.ts']));
-leg('FR-CLI-002 fluxion render --format svg writes one SVG per screen', () => tests('packages/cli/src/e2e/render-svg.test.ts', { named: ['FR-CLI-002'] }));
+leg('FR-CLI-002 fluxion render --format svg writes one SVG per screen', () =>
+  tests('packages/cli/src/e2e/render-svg.test.ts', { named: ['FR-CLI-002: render --format svg writes one SVG per screen'] }),
+);
 leg('FR-EXP-004 a recorded green nightly opens the exported fixtures in Inkscape (CLI export succeeds)', () =>
   command('scripts/gates/check-inkscape-evidence.mjs'),
 );
 
 // ── decompiler v1 (plan tasks 13-14, M19 hand-off row 19) ──────────────────────────────────────────
 leg('FR-DSL-008 compile(decompile(doc)) is doc over the fixture corpus and generated documents (property)', () =>
-  tests('packages/dsl/src/decompile/decompile.prop.test.ts', { named: ['FR-DSL-008'] }),
+  tests('packages/dsl/src/decompile/decompile.prop.test.ts', {
+    named: ['FR-DSL-008: compile(decompile(doc)) is doc over the fixture corpus', 'FR-DSL-008: compile(decompile(doc)) is doc over generated documents'],
+  }),
 );
 leg('FR-DSL-008 the decompiler writes raw: escape blocks for inexpressible records and its outline is no larger than v0', () =>
   tests('packages/dsl/src/decompile/decompile.test.ts', { named: ['raw: escape block', 'outline tokens not worse than v0'] }),
@@ -157,6 +212,18 @@ leg('M19 hand-off: hideMasterElements, region texts and icon slots round-trip in
     () =>
       tests('packages/dsl/src/decompile/decompile.test.ts', { named: ['hideMasterElements round-trips', 'region texts round-trip', 'icon slots round-trip'] }),
     () => tests('packages/dsl/src/patch/apply.test.ts', { named: ['patch masters', 'patch placeholders', 'patch tables', 'patch frames'] }),
+  ),
+);
+// M20.18: each consumer of the decompiler is on v1 (M20.27, cp1 F2)
+leg('FR-DSL-008 fluxion decompile, MCP get_screen and the Source view use decompiler v1', () =>
+  all(
+    () => tests('packages/cli/src/e2e/decompile-v1.test.ts', { named: ['FR-DSL-008: fluxion decompile writes decompiler v1 source'] }),
+    () => tests('packages/mcp/src/get-screen-v1.test.ts', { named: ['FR-DSL-008: get_screen returns decompiler v1 source'] }),
+    () =>
+      tests('packages/editor/src/source-view/source-v1.browser.test.tsx', {
+        project: 'browser',
+        named: ['FR-DSL-008: the Source view shows decompiler v1 source'],
+      }),
   ),
 );
 

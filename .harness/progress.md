@@ -5127,3 +5127,7 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 
 ## 2026-11-17 M20.28: first M20 CI cold-setup reading
 - `check-budget --record --cold-from-ci 48abd80`: 499 s from ci 44024254871: the step's wall-clock span from the GitHub API, which check-budget records (the step's own timer read 492145 ms, the 492 s cp1 F3 cites). It is the first of the three M20 readings M20.28 needs. 6185580 has none: its ci run 44032176009 is red because a macOS verify step hit its 20-min limit.
+
+## 2026-11-17 M20.27: m20-complete names exact cases (cp1 F2)
+- `tests(named)` now needs a passed case whose own title equals each name (was a substring of the full name). Legs that named only a requirement ID now name exact titles: palette (incl. a locked role through shuffle), image palette, variants, theme files + `theme-picker.browser.test.tsx` (pack themes in the picker), DTCG (incl. the foreign ramp file), contrast lint (one per combo, fix offered, fix clears), SVG, CLI render, decompile property.
+- New leg for M20.18: CLI decompile, MCP get_screen and Source view tests on v1. ADR legs check each governed row's Commit cell descends from the ADR's adding commit (exercised: ADR-0054 vs M19.24/25/40 true; ADR-0220 vs M19.24 refused). Rows .5–.18 point at the gate's titles.
