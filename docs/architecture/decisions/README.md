@@ -46,7 +46,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0033](ADR-0033-layout-engine-contract-v1.md) | Layout engine contract v1: synchronous algorithms, an asynchronous engine, the worker protocol, the fingerprint | accepted | 2026-10-13 |
 | [0034](ADR-0034-overlap-removal-and-determinism.md) | Overlap removal by an own two-stage sweep, determinism rules, and the `@dagrejs/dagre` dependency | accepted | 2026-10-13 |
 | [0035](ADR-0035-ai-patch-format-v1.md) | AI patch format v1: the nine ops, references, atomicity, staleness, the strict schema subset | accepted | 2026-10-16 |
-| [0036](ADR-0036-cli-contract.md) | CLI contract v1: the operation layer, the full command set, exit-code meaning, the optional Chromium peer (extends ADR-0147) | accepted | 2026-10-16 |
+| [0036](ADR-0036-cli-contract.md) | CLI contract v1: the operation layer, the full command set, exit-code meaning, the optional Chromium peer (extends ADR-0147) | accepted (svg rendering: amended by 0056, no browser) | 2026-10-16 |
 | [0037](ADR-0037-fixed-tokenizer-for-budgets.md) | One pinned offline tokenizer (gpt-tokenizer, o200k_base) counts the AI token budgets; its margin is UNDERIVED until M15 | accepted | 2026-10-16 |
 | [0038](ADR-0038-mcp-server-model.md) | MCP server model: document handles, file roots, transports, result shapes, image content | accepted | 2026-10-16 |
 | [0039](ADR-0039-eval-harness.md) | Eval harness: case schema, recordings keyed by content, scorecard metrics, the alt-text metric | accepted | 2026-10-16 |
@@ -63,6 +63,7 @@ Format: [MADR 4](https://adr.github.io/madr/): YAML front matter (`status`, `dat
 | [0053](ADR-0053-boolean-path-operations.md) | Boolean path ops: polybooljs on flattened outlines in geometry, re-fitted to cubics, stored as a core:path shape | accepted | 2026-11-14 |
 | [0054](ADR-0054-masters-tables-regions-schema.md) | Schema 1.8: master screens and placeholders, the table element, text regions and icon slots, aspect and selection locks, the path field | accepted | 2026-11-14 |
 | [0055](ADR-0055-palette-generation-and-dtcg-mapping.md) | Palette generation from seeds or an image, theme variants by reference, and the DTCG and CSS-variable mapping | accepted | 2026-11-17 |
+| [0056](ADR-0056-svg-export-strategy.md) | SVG export: SSR of the export ScreenView to standalone SVG 1.1, measured tspans, embedded subset or outlined fonts, the package in metadata | accepted | 2026-11-17 |
 | [0064](ADR-0064-rich-text-editor-library.md) | The rich-text editor library is ProseMirror, used directly and loaded with the editor only | accepted | 2026-10-01 |
 | [0137](ADR-0137-subagent-review-no-dry-runs.md) | Isolated-subagent review by default; `/goal` dry runs not required (supersedes part of 0009) | accepted | 2026-09-26 |
 | [0138](ADR-0138-pnpm-run-setup.md) | Invoke the repository setup script as `pnpm run setup` | accepted | 2026-09-26 |
