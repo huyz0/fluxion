@@ -1,11 +1,11 @@
 {
   "milestone": "M20",
-  "currentTask": "M20.25",
+  "currentTask": "M20.6",
   "attempts": 0,
   "reviewRound": 0,
   "loopActive": true,
   "blockedReason": null,
-  "updated": "2026-11-17T20:32:16Z",
+  "updated": "2026-11-17T20:38:48Z",
   "rowAttempts": {
     "M19.33": 1,
     "M18.157": 4,

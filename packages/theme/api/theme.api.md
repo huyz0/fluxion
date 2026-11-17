@@ -177,6 +177,9 @@ export type Palette = {
 export const PALETTE_CONTRAST_PAIRS: readonly ContrastPair[];
 
 // @public
+export function paletteFromPixels(pixels: PalettePixels, options?: PixelPaletteOptions): Result<readonly string[], ThemeError>;
+
+// @public
 export type PaletteOptions = {
     readonly seeds: readonly string[];
     readonly locks?: Partial<Record<PaletteRole, string>>;
@@ -184,10 +187,22 @@ export type PaletteOptions = {
 };
 
 // @public
+export type PalettePixels = {
+    readonly width: number;
+    readonly height: number;
+    readonly data: ArrayLike<number>;
+};
+
+// @public
 export type PaletteRole = "background" | "surface" | "text" | "muted" | "connector" | "primary" | "secondary" | "accent-1" | "accent-2" | "accent-3" | "accent-4" | "accent-5" | "accent-6" | "success" | "warning" | "danger" | "info";
 
 // @public
 export function parseColor(text: string): Oklch | undefined;
+
+// @public
+export type PixelPaletteOptions = {
+    readonly seed?: number;
+};
 
 // @public
 export function readFontFile(bytes: Uint8Array): Result<FontFileInfo, ThemeError>;

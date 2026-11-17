@@ -25,6 +25,7 @@ export {
   rgbToOklch,
 } from './oklch.js';
 export { applyPalette, generatePalette, type Palette, type PaletteOptions } from './palette.js';
+export { type PalettePixels, type PixelPaletteOptions, paletteFromPixels } from './palette-image.js';
 export { cssValue, resolveToken, toCssVars, tokenPath } from './resolve.js';
 export {
   type NoPaint,
