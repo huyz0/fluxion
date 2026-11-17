@@ -96,4 +96,34 @@ describe('context menu (FR-EDT-013)', () => {
     expect(menu()).toBeNull();
     opener.remove();
   });
+
+  it('FR-EDT-013: a parent re-render with a new onClose keeps focus and scroll where the person left them', () => {
+    const many = Array.from({ length: 30 }, (_, i) => ({ command: `c${i}`, title: `Item ${i}` }));
+    const closes: string[] = [];
+    // one line per item, as the chrome styles them, so thirty overflow the menu's max height
+    const style = document.createElement('style');
+    style.textContent = '[role="menu"] { position: fixed; } [role="menuitem"] { display: block; height: 24px; }';
+    document.head.append(style);
+    const opener = document.createElement('button');
+    document.body.append(opener);
+    opener.focus();
+    // in the lower half of a window, so it opens upward with a max height and scrolls
+    const at = { x: 20, y: Math.round(window.innerHeight * 0.6) };
+    const render = (n: number) =>
+      act(() => root.render(<ContextMenu items={many} at={at} keysOf={() => []} onPick={() => {}} onClose={() => closes.push(`close ${n}`)} />));
+    render(1);
+    const m = host.querySelector('[role="menu"]') as HTMLElement;
+    expect(m.scrollHeight).toBeGreaterThan(m.clientHeight);
+    key('End');
+    const scrolled = m.scrollTop;
+    expect(scrolled).toBeGreaterThan(0);
+    render(2);
+    expect(document.activeElement?.textContent).toBe('Item 29');
+    expect(m.scrollTop).toBe(scrolled);
+    // the press outside reaches the onClose of the latest render
+    act(() => void document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
+    expect(closes).toEqual(['close 2']);
+    opener.remove();
+    style.remove();
+  });
 });

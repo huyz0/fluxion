@@ -35,11 +35,15 @@ export function ContextMenu(props: ContextMenuProps): ReactNode {
   const { items, at, keysOf, onPick, onClose, label } = props;
   const menu = useRef<HTMLDivElement>(null);
   const buttons = () => [...(menu.current?.querySelectorAll('button') ?? [])];
+  // the latest onClose, read when a press lands outside: callers pass a new one each render, and re-running the effect for it
+  // moved focus back to the first line and scrolled a long menu to its top under the pointer (M20.36, ci 44159904866)
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
     const before = document.activeElement;
-    buttons()[0]?.focus();
+    menu.current?.querySelector('button')?.focus();
     const away = (e: PointerEvent) => {
-      if (!menu.current?.contains(e.target as Node)) onClose();
+      if (!menu.current?.contains(e.target as Node)) close.current();
     };
     // capture: a press the canvas takes still closes the menu
     window.addEventListener('pointerdown', away, true);
@@ -47,7 +51,7 @@ export function ContextMenu(props: ContextMenuProps): ReactNode {
       window.removeEventListener('pointerdown', away, true);
       if (before instanceof HTMLElement) before.focus({ preventScroll: true });
     };
-  }, [onClose]);
+  }, []);
   const key = (e: KeyboardEvent<HTMLElement>) => {
     // the canvas's shortcuts and undo do not act behind the menu
     e.stopPropagation();
