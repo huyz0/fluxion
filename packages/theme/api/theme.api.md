@@ -26,6 +26,9 @@ export const BUILTIN_VARIANTS: {
 };
 
 // @public
+export function checkContrast(check: ContrastCheck): ContrastIssue | undefined;
+
+// @public
 export type ColorResolver = (path: string) => Result<string, ThemeError>;
 
 // @public
@@ -52,6 +55,23 @@ export const CONTRAST_GRAPHIC: number;
 export const CONTRAST_TEXT: number;
 
 // @public
+export type ContrastCheck = {
+    readonly kind: ContrastKind;
+    readonly color: string;
+    readonly against: string;
+};
+
+// @public
+export type ContrastIssue = ContrastCheck & {
+    readonly ratio: number;
+    readonly target: number;
+    readonly fix: string;
+};
+
+// @public
+export type ContrastKind = "text" | "large-text" | "stroke";
+
+// @public
 export type ContrastMiss = {
     readonly role: PaletteRole;
     readonly against: PaletteRole;
@@ -68,6 +88,9 @@ export type ContrastPair = {
 
 // @public
 export function contrastRatio(a: string, b: string): number | undefined;
+
+// @public
+export const contrastTarget: (kind: ContrastKind) => number;
 
 // @public
 export function createFontRegistry(): FontRegistry;
@@ -376,6 +399,9 @@ export type StyleResolution = {
     readonly style: ResolvedStyle;
     readonly diagnostics: readonly Diagnostic[];
 };
+
+// @public
+export const textContrastKind: (size: number, weight: number) => ContrastKind;
 
 // @public
 export type Theme = {

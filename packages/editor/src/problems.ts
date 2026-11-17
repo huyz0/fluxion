@@ -2,9 +2,9 @@
 // rules notice about how they are laid out, each with the fix the panel offers when there is one. Pure: the Problems
 // tab (problems-tab.tsx) shows the list and runs the fixes through the editor's `execute`.
 import { createRegistry, createStore } from '@fluxion/core';
-import { CORE_LINT_RULES, type LintFinding, lint, registerLintRules } from '@fluxion/dsl';
-import { DEFAULT_SCREEN_SIZE, type Diagnostic, type DocumentFile, type RecordId, validate } from '@fluxion/schema';
-import { themeOf } from '@fluxion/theme';
+import { CORE_LINT_RULES, elementContrastIssues, type LintFinding, lint, registerLintRules } from '@fluxion/dsl';
+import { DEFAULT_SCREEN_SIZE, type Diagnostic, type DocumentFile, type RecordId, type Style, validate } from '@fluxion/schema';
+import { LIGHT_THEME } from '@fluxion/theme';
 import { masterProblems } from './master-problems.js';
 import type { Problem, ProblemFix } from './problem-types.js';
 import { regionProblems, type ShapeDefLookup } from './region-problems.js';
@@ -103,17 +103,33 @@ function inside(doc: DocumentFile, id: string): ProblemFix | undefined {
   return { title: 'Move inside the screen', command: 'element.update', args: { id, fields: { transform: moved } } };
 }
 
-/** The problem a lint finding makes, with the fix its rule offers where there is one. */
-function fromFinding(doc: DocumentFile, f: LintFinding): Problem {
-  const fix = f.code === 'FLX_LINT_OFFSCREEN' ? inside(doc, f.elements[0] ?? '') : undefined;
-  const base: Problem = { id: `${f.code}|${f.elements.join('|')}`, severity: SEVERITY[f.code] ?? f.severity, message: f.message, elements: f.elements };
-  return fix === undefined ? base : { ...base, fix };
+/**
+ * The fix for a contrast finding (NFR-A11Y-005): set the failing colour (the text's or the outline's, as the finding's path names)
+ * to the nearest colour that passes, as the element's own style.
+ */
+function contrastFix(doc: DocumentFile, f: LintFinding): ProblemFix | undefined {
+  const id = f.elements[0] ?? '';
+  const e = recordOf(doc, id);
+  if (e === undefined) return undefined;
+  const style = (e['style'] ?? {}) as Style;
+  const issue = elementContrastIssues(doc, id, LIGHT_THEME).find((i) => f.path.endsWith(`/${i.field.replace('.', '/')}`));
+  if (issue === undefined) return undefined;
+  const part = issue.field === 'font.color' ? 'font' : 'stroke';
+  const fields = { style: { ...style, [part]: { ...((style as Record<string, unknown>)[part] as object | undefined), color: issue.fix } } };
+  return { title: 'Fix contrast', command: 'element.update', args: { id, fields } };
 }
 
-/** The document's theme record read as a theme, for the contrast rule. */
-function themeOfDocument(doc: DocumentFile) {
-  const record = (Object.values(doc.records) as Rec[]).find((r) => r.type === 'theme');
-  return record === undefined ? undefined : themeOf(record);
+/** The problem a lint finding makes, with the fix its rule offers where there is one. */
+function fromFinding(doc: DocumentFile, f: LintFinding): Problem {
+  const fix = f.code === 'FLX_LINT_OFFSCREEN' ? inside(doc, f.elements[0] ?? '') : f.code === 'FLX_LINT_CONTRAST' ? contrastFix(doc, f) : undefined;
+  // the path tells apart two findings of one rule about one element (an element's text and its outline)
+  const base: Problem = {
+    id: `${f.code}|${f.path}|${f.elements.join('|')}`,
+    severity: SEVERITY[f.code] ?? f.severity,
+    message: f.message,
+    elements: f.elements,
+  };
+  return fix === undefined ? base : { ...base, fix };
 }
 
 /**
@@ -124,10 +140,9 @@ function themeOfDocument(doc: DocumentFile) {
  */
 export function problemsOf(doc: DocumentFile, shapeDefs?: ShapeDefLookup): readonly Problem[] {
   const stack = stacked(doc);
-  const theme = themeOfDocument(doc);
   // elements exactly on top of one another are reported once, by `stacked`, with its fix
   const covered = new Set(stack.map((p) => [...p.elements].sort().join('|')));
-  const found = lint(doc, CORE_RULES, theme === undefined ? {} : { theme }).findings.filter(
+  const found = lint(doc, CORE_RULES, { theme: LIGHT_THEME }).findings.filter(
     (f) => !(f.code === 'FLX_LINT_OVERLAP' && covered.has([...f.elements].sort().join('|'))),
   );
   const regions = shapeDefs === undefined ? [] : regionProblems(doc, shapeDefs);

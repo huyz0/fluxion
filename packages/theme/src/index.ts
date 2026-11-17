@@ -9,6 +9,14 @@ export {
   PALETTE_CONTRAST_PAIRS,
   type PaletteRole,
 } from './contrast.js';
+export {
+  type ContrastCheck,
+  type ContrastIssue,
+  type ContrastKind,
+  checkContrast,
+  contrastTarget,
+  textContrastKind,
+} from './contrast-lint.js';
 export { type ThemeCssOptions, themeToCss } from './css-export.js';
 export {
   type DtcgImportOptions,

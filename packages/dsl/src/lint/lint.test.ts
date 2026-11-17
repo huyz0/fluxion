@@ -2,6 +2,7 @@ import { createCoreRegistries } from '@fluxion/core';
 import type { DocumentFile } from '@fluxion/schema';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { describe, expect, it } from 'vitest';
+import { elementContrastIssues } from './contrast.js';
 import { CORE_LINT_RULES, lint, registerLintRules } from './lint.js';
 import type { LintContext, LintReport } from './types.js';
 
@@ -93,6 +94,80 @@ describe('the quality linter (FR-AI-005)', () => {
     const plain = el('a', { text: text('hello') });
     expect(only(run(docOf(plain), byDef), 'CONTRAST')).toHaveLength(1);
     expect(only(run(docOf({ ...plain, defId: 'basic:ellipse' }), byDef), 'CONTRAST')).toHaveLength(0);
+  });
+
+  it('NFR-A11Y-005: CONTRAST reports text with no fill against the page, and pale outlines of connectors and unfilled shapes, with the fix', () => {
+    // pale text on a text element (no fill) is read against the theme's background
+    const faint = el('a', { kind: 'text', text: text('hello'), style: { font: { color: '#cccccc', size: 16 } } });
+    const [f] = only(run(docOf(faint), THEMED), 'CONTRAST');
+    expect(f?.path).toBe('/records/a/style/font/color');
+    expect(f?.message).toMatch(/^the text of a has contrast 1\.\d\d:1 \(needs 4\.5:1\)$/);
+    expect(f?.hint).toMatch(/^use #[0-9a-f]{6}, or pick colours with more contrast$/);
+    // large text needs only 3:1
+    const big = el('a', { kind: 'text', text: text('hello'), style: { font: { color: '#8a8a8a', size: 28 } } });
+    expect(only(run(docOf(big), THEMED), 'CONTRAST')).toHaveLength(0);
+    // an outline on no fill, and a connector's line, against the page; a filled shape's outline is not judged
+    const ring = el('a', { style: { fill: 'transparent', stroke: { color: '#e2e8f0', width: 2 } } });
+    const filled = el('a', { style: { fill: '#2563eb', stroke: { color: '#e2e8f0', width: 2 } } });
+    const line = {
+      id: 'c',
+      type: 'element',
+      kind: 'connector',
+      screenId: 's1',
+      index: 'a2',
+      route: { type: 'straight' },
+      style: { stroke: { color: '#e2e8f0' } },
+    };
+    expect(only(run(docOf(ring), THEMED), 'CONTRAST').map((x) => x.path)).toEqual(['/records/a/style/stroke/color']);
+    expect(only(run(docOf(filled), THEMED), 'CONTRAST')).toHaveLength(0);
+    expect(only(run(docOf(line), THEMED), 'CONTRAST').map((x) => x.message)).toEqual([
+      expect.stringMatching(/^the outline of c has contrast .* \(needs 3:1\)$/),
+    ]);
+    // the light theme's own defaults pass
+    expect(only(run(docOf(el('a', { text: text('ok') })), THEMED), 'CONTRAST')).toHaveLength(0);
+  });
+
+  it("NFR-A11Y-005: CONTRAST reads the theme and page of each screen as the view draws them: its own, its master's, the document's", () => {
+    const on = (screenFields: El, ...rest: El[]): DocumentFile =>
+      ({ records: Object.fromEntries([{ ...screen, ...screenFields }, ...rest].map((r) => [r['id'], r])) }) as unknown as DocumentFile;
+    const label = (color: string) => el('a', { kind: 'text', text: text('hello'), style: { font: { color, size: 16 } } });
+    const paths = (doc: DocumentFile, ctx: LintContext = THEMED) => only(run(doc, ctx), 'CONTRAST').map((f) => f.path);
+    // a dark screen background: white text passes, dark text does not, a pale outline on no fill passes
+    const dark = { background: '#111111' };
+    expect(paths(on(dark, label('#ffffff')))).toEqual([]);
+    expect(paths(on(dark, label('#333333')))).toEqual(['/records/a/style/font/color']);
+    expect(paths(on(dark, el('a', { style: { fill: 'transparent', stroke: { color: '#e2e8f0', width: 2 } } })))).toEqual([]);
+    // a screen with no background of its own shows its applied master's
+    const master = { id: 'm', type: 'screen', index: 'a1', role: 'master', size: { w: 1000, h: 600 }, background: '#111111' };
+    expect(paths(on({ masterId: 'm' }, master, label('#ffffff')))).toEqual([]);
+    // a gradient page is not checked against
+    const gradient = {
+      background: {
+        type: 'linear-gradient',
+        angle: 90,
+        stops: [
+          { offset: 0, color: '#000000' },
+          { offset: 1, color: '#ffffff' },
+        ],
+      },
+    };
+    expect(paths(on(gradient, label('#777777')))).toEqual([]);
+    // the theme: the screen's override, else its master's, else the document's, over the context's fallback
+    const night = {
+      ...LIGHT_THEME,
+      name: 'night',
+      tokens: { ...LIGHT_THEME.tokens, color: { ...LIGHT_THEME.tokens['color'], background: { $type: 'color', $value: '#000000' } } },
+    };
+    const record = { id: 't', type: 'theme', ...night };
+    expect(paths(on({ themeId: 't' }, record, label('#ffffff')))).toEqual([]);
+    expect(paths(on({ masterId: 'm' }, { ...master, background: undefined, themeId: 't' }, record, label('#ffffff')))).toEqual([]);
+    const document = { id: 'd', type: 'document', themeId: 't' };
+    expect(paths(on({}, document, record, label('#ffffff')))).toEqual([]);
+    expect(paths(on({}, label('#ffffff')))).toEqual(['/records/a/style/font/color']);
+    // with no theme record and no fallback there is nothing to resolve against
+    expect(paths(on({}, label('#ffffff')), {})).toEqual([]);
+    expect(elementContrastIssues(on({}, label('#ffffff')), 'a', LIGHT_THEME).map((i) => i.field)).toEqual(['font.color']);
+    expect(elementContrastIssues(on({}, label('#ffffff')), 'a')).toEqual([]);
   });
 
   it('FR-AI-005: DENSITY reports a screen with too many words, not a sparse one', () => {

@@ -6,6 +6,7 @@
 
 import { AnyCommand } from '@fluxion/core';
 import { AnyRecord } from '@fluxion/schema';
+import { ContrastIssue } from '@fluxion/theme';
 import { CoreRegistries } from '@fluxion/core';
 import { Diagnostic } from '@fluxion/schema';
 import { DiagnosticCode } from '@fluxion/schema';
@@ -263,6 +264,14 @@ export type EdgeSpec = {
 
 // @public
 export function editDistance(a: string, b: string): number;
+
+// @public
+export type ElementContrastIssue = ContrastIssue & {
+    readonly field: "font.color" | "stroke.color";
+};
+
+// @public
+export function elementContrastIssues(doc: DocumentFile, id: string, fallback?: Theme): readonly ElementContrastIssue[];
 
 // @public
 export type EvalCase = {

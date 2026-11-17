@@ -95,6 +95,7 @@ export { type Scorecard, scorecard, scorecardJson, scorecardMarkdown } from './e
 export { importMarkdown } from './import/markdown/markdown.js';
 export { importMermaid } from './import/mermaid/mermaid.js';
 export type { ImportOptions, ImportResult } from './import/types.js';
+export { type ElementContrastIssue, elementContrastIssues } from './lint/contrast.js';
 export { CORE_LINT_RULES, lint, registerLintRules } from './lint/lint.js';
 export type { LintContext, LintFinding, LintRegistry, LintReport, LintRule, MeasureText, TextSize } from './lint/types.js';
 export { APPLY_PATCH_COMMAND_ID, type AppliedPatch, applyPatchCommand, registerApplyPatchCommand } from './patch/apply.js';

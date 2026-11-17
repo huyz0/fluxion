@@ -1,71 +1,14 @@
-// The style rules (FR-AI-005): CONTRAST, STYLE_LITERAL, STYLE_INCONSISTENT.
-import type { Style } from '@fluxion/schema';
-import { contrastRatio, resolveStyle, toCssVars } from '@fluxion/theme';
+// The style rules (FR-AI-005, NFR-A11Y-005): CONTRAST, STYLE_LITERAL, STYLE_INCONSISTENT.
+import { CONTRAST } from './contrast.js';
 import { finding } from './rules-layout.js';
-import type { LintContext, LintFinding, LintRule } from './types.js';
+import type { LintFinding, LintRule } from './types.js';
 import { screensOf } from './view.js';
 
-/** WCAG 2.2 minimum contrast of normal text (NFR-A11Y-005). */
-export const CONTRAST_TEXT_MIN = 4.5;
-/** WCAG 2.2 minimum contrast of large text. */
-export const CONTRAST_LARGE_MIN = 3;
-/** Text this size (px) or larger, or bold and 18.66 px or larger, is large. */
-const LARGE_PX = 24;
-const LARGE_BOLD_PX = 18.66;
 /** The most font sizes, and font families, a screen may use before its styling reads as inconsistent. */
 export const MAX_FONT_SIZES = 4;
 export const MAX_FONT_FAMILIES = 2;
 
-const VAR = /^var\((--[A-Za-z0-9_-]+)\)$/;
 const LITERAL_COLOUR = /^(#[0-9a-fA-F]{3,8}|(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(.*\))$/i;
-
-/** The literal colour behind a resolved CSS colour: a `var(--fx-…)` through the theme's variables, else the value itself. */
-function literal(css: string, vars: { readonly [name: string]: string }): string {
-  const name = VAR.exec(css)?.[1];
-  return name === undefined ? css : (vars[name] ?? css);
-}
-
-/** The contrast finding of one element, if its resolved text and fill colours are known and too close. */
-function contrastOf(
-  style: Style | undefined,
-  of: { readonly kind: string; readonly defId?: string },
-  ctx: Required<Pick<LintContext, 'theme'>>,
-  vars: { readonly [name: string]: string },
-): string | undefined {
-  // a shape's definition id: the theme's defaults for that definition and its variants apply, as the view draws them (ADR-0055)
-  const { style: resolved } = resolveStyle(style, of, ctx.theme);
-  if (resolved.fill.type !== 'color') return undefined;
-  const ratio = contrastRatio(literal(resolved.font.color, vars), literal(resolved.fill.css, vars));
-  if (ratio === undefined) return undefined;
-  const size = Number.parseFloat(resolved.font.size);
-  const bold = Number.parseFloat(resolved.font.weight) >= 700;
-  const min = size >= LARGE_PX || (bold && size >= LARGE_BOLD_PX) ? CONTRAST_LARGE_MIN : CONTRAST_TEXT_MIN;
-  return ratio < min ? `${ratio.toFixed(2)}:1 (needs ${min}:1)` : undefined;
-}
-
-const CONTRAST: LintRule = {
-  id: 'CONTRAST',
-  code: 'FLX_LINT_CONTRAST',
-  severity: 'warning',
-  weight: 6,
-  describe: 'text whose colour has too little contrast against its fill (WCAG 4.5:1, large text 3:1)',
-  check(doc, ctx) {
-    const theme = ctx.theme;
-    if (!theme) return [];
-    const vars = toCssVars(theme);
-    return screensOf(doc).flatMap((screen) =>
-      screen.elements.flatMap((e): LintFinding[] => {
-        if (e.text === '') return [];
-        const defId = e.rec['defId'];
-        const of = { kind: String(e.rec['kind']), ...(typeof defId === 'string' ? { defId } : {}) };
-        const found = contrastOf(e.rec['style'] as Style | undefined, of, { theme }, vars);
-        return found === undefined
-          ? []
-          : [finding('FLX_LINT_CONTRAST', e.id, `the text of ${e.id} has contrast ${found}`, 'pick a text colour or a fill with more contrast')];
-      }),
-    );
-  },
-};
 
 /** Every string value of `value` that is a literal colour, by path. */
 function literalColours(value: unknown, path: readonly string[] = []): readonly string[] {
