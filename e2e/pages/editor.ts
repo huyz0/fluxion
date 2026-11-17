@@ -26,6 +26,11 @@ export class EditorPage {
     return this.root.getByRole(name === 'Timeline' ? 'region' : 'complementary', { name, exact: true });
   }
 
+  /** The theme editor beside the canvas (M20.11), once Edit theme opened it. */
+  get themeEditor(): Locator {
+    return this.root.getByRole('dialog', { name: 'Theme editor', exact: true });
+  }
+
   /** The splitter labelled `name`, e.g. "Resize the left panel". */
   splitter(name: string): Locator {
     return this.root.getByRole('separator', { name });

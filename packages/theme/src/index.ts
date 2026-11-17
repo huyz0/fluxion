@@ -7,6 +7,7 @@ export {
   type ContrastMiss,
   type ContrastPair,
   PALETTE_CONTRAST_PAIRS,
+  PALETTE_ROLES,
   type PaletteRole,
 } from './contrast.js';
 export {

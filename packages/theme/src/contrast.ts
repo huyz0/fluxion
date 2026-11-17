@@ -41,7 +41,11 @@ export type PaletteRole =
   | 'danger'
   | 'info';
 
-/** The roles in the order the generator solves them: every pair of a role names only roles before it. */
+/**
+ * The palette's colour roles, in the order the generator solves them: every pair of a role names only roles before it.
+ *
+ * @public
+ */
 export const PALETTE_ROLES: readonly PaletteRole[] = [
   'background',
   'surface',

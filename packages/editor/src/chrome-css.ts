@@ -85,6 +85,16 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-icon { display: inline-block; min-width: 1.2em; text-align: center; line-height: 1; }
 .fx-chrome-choices { display: flex; gap: 2px; flex-wrap: wrap; }
 .fx-chrome-picker { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 4px; min-width: 240px; padding: 12px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-panel); color: var(--ui-text); font: 13px/1.4 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2); }
+.fx-chrome-theme-editor { z-index: 30; top: 48px; left: auto; right: 16px; transform: none; width: 300px; max-height: calc(100vh - 64px); overflow: auto; }
+.fx-chrome-theme-roles, .fx-chrome-variants { list-style: none; margin: 0; padding: 0; display: flex; gap: 4px; }
+.fx-chrome-theme-roles, .fx-chrome-theme-section { flex-direction: column; }
+.fx-chrome-theme-section { display: flex; gap: 4px; }
+.fx-chrome-theme-role, .fx-chrome-theme-lock, .fx-chrome-theme-actions { display: flex; align-items: center; gap: 6px; }
+.fx-chrome-theme-role-name { flex: 1; }
+.fx-chrome-variants { gap: 8px; flex-wrap: wrap; }
+.fx-chrome-variant { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fx-chrome-variant-swatch { display: flex; align-items: center; justify-content: center; width: 48px; height: 32px; box-sizing: border-box; border-radius: 4px; }
+.fx-chrome-variant-text { width: 24px; height: 4px; border-radius: 2px; }
 .fx-chrome-import { z-index: 30; min-width: 360px; max-width: 90vw; max-height: 80vh; overflow: auto; }
 .fx-chrome-import-declaration { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; border: 0; min-width: 0; }
 .fx-chrome-screens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }

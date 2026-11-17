@@ -247,6 +247,9 @@ export type Palette = {
 export const PALETTE_CONTRAST_PAIRS: readonly ContrastPair[];
 
 // @public
+export const PALETTE_ROLES: readonly PaletteRole[];
+
+// @public
 export function paletteFromPixels(pixels: PalettePixels, options?: PixelPaletteOptions): Result<readonly string[], ThemeError>;
 
 // @public

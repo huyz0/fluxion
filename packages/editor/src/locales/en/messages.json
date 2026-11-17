@@ -101,6 +101,12 @@
       "packages/editor/src/library/library-panel.tsx"
     ]
   },
+  "2Tk3Hr": {
+    "message": "{role} colour",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "2ebxwM": {
     "message": "Layout: {type}",
     "origin": [
@@ -203,6 +209,12 @@
       "packages/editor/src/present-mode.ts"
     ]
   },
+  "6YE0P6": {
+    "message": "Editing {0}",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "6YtxFj": {
     "message": "Name",
     "origin": [
@@ -262,6 +274,12 @@
     "message": "Centres",
     "origin": [
       "packages/editor/src/arrange-panel.tsx"
+    ]
+  },
+  "8KndME": {
+    "message": "Palette applied; adjusted for contrast: {0}.",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "8uA5Jn": {
@@ -335,6 +353,12 @@
     "message": "Reset {title}",
     "origin": [
       "packages/editor/src/keymap-dialog.tsx"
+    ]
+  },
+  "AWA6XY": {
+    "message": "optional",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "AWOSPo": {
@@ -489,6 +513,12 @@
       "packages/editor/src/source-view/source-view.tsx"
     ]
   },
+  "EoexhE": {
+    "message": "Theme editor",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "F0lHkW": {
     "message": "text",
     "origin": [
@@ -595,7 +625,8 @@
   "HD2Tiz": {
     "message": "Lock",
     "origin": [
-      "packages/editor/src/layers-tab.tsx"
+      "packages/editor/src/layers-tab.tsx",
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "HemInN": {
@@ -675,6 +706,12 @@
     "message": "Lock {0}",
     "origin": [
       "packages/editor/src/layers-tab.tsx"
+    ]
+  },
+  "JkEyR8": {
+    "message": "Edit theme",
+    "origin": [
+      "packages/editor/src/toolbar-extras.tsx"
     ]
   },
   "JsJ25P": {
@@ -919,6 +956,12 @@
       "packages/editor/src/source-view/source-status.ts"
     ]
   },
+  "SDRhYQ": {
+    "message": "Variants",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "SKRCeO": {
     "message": "Give the version.",
     "origin": [
@@ -1029,6 +1072,12 @@
       "packages/editor/src/metadata-dialog.tsx"
     ]
   },
+  "XT0gYQ": {
+    "message": "Palette applied.",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "Xg7Ykr": {
     "message": "Adding {family}…",
     "origin": [
@@ -1107,6 +1156,12 @@
       "packages/editor/src/source-view/source-status.ts"
     ]
   },
+  "ZyMBtl": {
+    "message": "Palette",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "_8Uv5S": {
     "message": "My shapes file to import",
     "origin": [
@@ -1183,6 +1238,12 @@
     "message": "Edit text: {region}",
     "origin": [
       "packages/editor/src/inline-text-editor.tsx"
+    ]
+  },
+  "bb6_c9": {
+    "message": "Loading the theme editor…",
+    "origin": [
+      "packages/editor/src/toolbar-extras.tsx"
     ]
   },
   "bwRvnp": {
@@ -1745,6 +1806,12 @@
       "packages/editor/src/debug-overlay.tsx"
     ]
   },
+  "gH5Gbn": {
+    "message": "Shuffle",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "gkxXC6": {
     "message": "Distribute by",
     "origin": [
@@ -1780,6 +1847,12 @@
     "message": "Copy",
     "origin": [
       "packages/editor/src/edit-toolbar.tsx"
+    ]
+  },
+  "homFlV": {
+    "message": "Generate palette",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "hpt6PP": {
@@ -1828,6 +1901,18 @@
     "message": "Credits file…",
     "origin": [
       "packages/editor/src/library/library-import-dialog.tsx"
+    ]
+  },
+  "k2iqP-": {
+    "message": "for example #2563eb",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
+  "k3q2mz": {
+    "message": "Lock {role}",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "k4wWXY": {
@@ -2096,6 +2181,12 @@
       "packages/editor/src/font-picker.tsx"
     ]
   },
+  "sS45er": {
+    "message": "Seed colour {0}",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "skj9zM": {
     "message": "Importing…",
     "origin": [
@@ -2322,6 +2413,12 @@
       "packages/editor/src/keymap-dialog.tsx"
     ]
   },
+  "xHwgs0": {
+    "message": "Colours",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "xdA_-p": {
     "message": "Tools",
     "origin": [
@@ -2383,7 +2480,8 @@
       "packages/editor/src/asset-dialog.tsx",
       "packages/editor/src/find-bar.tsx",
       "packages/editor/src/font-picker.tsx",
-      "packages/editor/src/keymap-dialog.tsx"
+      "packages/editor/src/keymap-dialog.tsx",
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "zMnKbN": {

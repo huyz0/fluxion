@@ -5,7 +5,7 @@ import type { Store } from '@fluxion/core';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
-import { type ReactNode, useRef, useState } from 'react';
+import { type ComponentType, lazy, type ReactNode, Suspense, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AssetDialog } from './asset-dialog.js';
 import type { AssetStore } from './asset-store.js';
@@ -13,7 +13,15 @@ import { FontPicker, type FontSources } from './font-picker.js';
 import { MetadataDialog } from './metadata-dialog.js';
 import type { Execute } from './pointer.js';
 import type { Session } from './session.js';
+import type { ThemeEditorProps } from './theme-editor/theme-editor.js';
 import { type ThemeChoice, ThemeSwitcher } from './theme-switcher.js';
+
+/** Load the theme editor's chunk (M20.11): the initial chunk holds only its button. */
+export const loadThemeEditor = async (): Promise<{ default: ComponentType<ThemeEditorProps> }> => ({
+  default: (await import('./theme-editor/theme-editor.js')).ThemeEditor,
+});
+
+const ThemeEditor = lazy(loadThemeEditor);
 
 /** Props of {@link ToolbarExtras}. */
 export type ToolbarExtrasProps = {
@@ -71,6 +79,37 @@ function AssetsControl(props: { readonly store: Store; readonly execute: Execute
   );
 }
 
+/** The Edit theme button with the theme editor beside the canvas (FR-THM-007). */
+function ThemeEditorControl(props: { readonly store: Store; readonly execute: Execute; readonly screenId: RecordId | undefined }): ReactNode {
+  const [editing, setEditing] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    setEditing(false);
+    button.current?.focus();
+  };
+  return (
+    <>
+      <button ref={button} type="button" className="fx-chrome-button" aria-haspopup="dialog" aria-expanded={editing} onClick={() => setEditing((on) => !on)}>
+        {t`Edit theme`}
+      </button>
+      {editing
+        ? dialog(
+            button.current,
+            <Suspense
+              fallback={
+                <p role="status" className="fx-chrome-picker fx-chrome-theme-editor">
+                  {t`Loading the theme editor…`}
+                </p>
+              }
+            >
+              <ThemeEditor store={props.store} execute={props.execute} screenId={props.screenId} onClose={close} />
+            </Suspense>,
+          )
+        : null}
+    </>
+  );
+}
+
 /** The theme switcher, the Fonts button with its dialog and the Details button with its dialog. */
 export function ToolbarExtras(props: ToolbarExtrasProps): ReactNode {
   const { store, execute, session, screenId, themes, fonts, assets } = props;
@@ -82,6 +121,7 @@ export function ToolbarExtras(props: ToolbarExtrasProps): ReactNode {
   return (
     <>
       {themes === undefined ? null : <ThemeSwitcher store={store} execute={execute} themes={themes} screenId={screenId} />}
+      {themes === undefined ? null : <ThemeEditorControl store={store} execute={execute} screenId={screenId} />}
       {fonts === undefined ? null : (
         <button ref={button} type="button" className="fx-chrome-button" aria-haspopup="dialog" title={t`Fonts`} onClick={() => setOpen(true)}>
           {t`Fonts`}
