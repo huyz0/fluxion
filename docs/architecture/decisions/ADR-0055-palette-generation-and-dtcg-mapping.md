@@ -194,6 +194,11 @@ Figma) is merged onto `base` in these steps. Each step drops or renames, never f
 New `ThemeErrorCode`s (additive): `PALETTE_INPUT`, `DTCG_INVALID`. Warning codes on the import result: `DTCG_UNSUPPORTED`,
 `DTCG_PATH_RENAMED`, `DTCG_TYPE_MISMATCH`, `DTCG_ALIAS_BROKEN`, `DTCG_ROLE_MAPPED`, `DTCG_ROLE_DEFAULTED`.
 
+**Theme packs (M20.8).** `themesFromFiles(packId, files)` reads each file with `importDtcg` and gives the pack's themes with ids
+`<packId>:<slug of name>` (all or nothing, `DTCG_INVALID` naming the file's index); `themeFileName(theme)` is `<slug>.tokens.json`.
+A pack imports only `@fluxion/sdk`, so the SDK re-exports `exportDtcg`, `importDtcg`, `themesFromFiles` and `themeFileName`
+(additive public API). The editor's theme switcher lists every theme in the host's themes registry (`themeChoices`).
+
 ### CSS-variable export
 
 `themeToCss(theme, { selector = ':root' })` emits `toCssVars` (the runtime's own emission, so studio and export agree): one

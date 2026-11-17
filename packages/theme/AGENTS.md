@@ -15,6 +15,7 @@ Token model (DTCG), token resolution, palette generation (OKLCH), contrast check
 
 ## Invariants (M4)
 
-- Style resolution order is literal → `defaults[kind].variants[variant]` → `defaults[kind]` → `defaults['*']` → built-in fallback (02 §Style resolution order); an unknown token falls through and reports `FLX_TOKEN_UNKNOWN`, never throws.
+- Style resolution order is the eight layers of ADR-0055 (literal → `defaults[defId].variants[v]` → `defaults[kind].variants[v]` → `defaults[defId]` → definition → `defaults[kind]` → `defaults['*']` → built-in fallback; 02 §Style resolution order); an unknown token falls through and reports `FLX_TOKEN_UNKNOWN`, never throws.
 - Every string `resolveStyle`, `resolveBackground` and `toCssVars` emit is validated (colours through the schema's `colorSchema`, quoted family names, keyword allow-lists, finite numbers): no document or theme value may carry other CSS (ADR-0015 amendment).
 - Token refs become `var(--fx-<path>, <literal fallback>)`, so a theme switch restyles without re-rendering; `cssVarName` is the only mapping from token path to variable name.
+- Theme files (`dtcg.ts`, ADR-0055) round-trip deep-equal: whatever a colour object cannot rebuild exactly travels as `dev.fluxion.css`; the player never imports `dtcg.ts` or `named-colors.ts`.

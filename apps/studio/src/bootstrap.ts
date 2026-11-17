@@ -14,6 +14,7 @@ import {
   type VersionedShapePackSubset,
 } from '@fluxion/core';
 import { registerApplyPatchCommand } from '@fluxion/dsl';
+import { type ThemeChoice, themeChoices } from '@fluxion/editor';
 import type { EmbeddedConnectors } from '@fluxion/format';
 import { registerArrangeCommand, registerBuiltInLayouts, registerBuiltInTemplates } from '@fluxion/layout';
 import { basicPack } from '@fluxion/pack-basic';
@@ -34,12 +35,8 @@ export type OpenDocument = {
   readonly registries: ReturnType<typeof renderRegistriesFor>;
   /** The artwork font bindings of saved 1.1 packs, which the render registries draw with (ADR-0192). */
   readonly artworkFonts: Registry<string, readonly ArtworkFontBinding[]>;
-  /** The themes the bundled packs offer (the theme switcher's choices). */
-  readonly themes: readonly {
-    readonly name: string;
-    readonly tokens: { readonly [key: string]: unknown };
-    readonly defaults?: { readonly [key: string]: unknown };
-  }[];
+  /** The themes the registered packs offer (the theme switcher's choices, FR-THM-007). */
+  readonly themes: readonly ThemeChoice[];
 };
 
 /** The built-in layouts and the `layout.arrange` command (M13.16) in a document's registries, or why one was refused. */
@@ -86,7 +83,7 @@ export function openDocument(
     const types = registerConnectorDefs(registries.routers, input, pack);
     if (!types.ok) options.logger?.log('warn', 'saved connector types were refused', { pack, problems: types.error.map((d) => d.message) });
   }
-  return ok({ core, registries, artworkFonts, themes: themesCorePack.themes });
+  return ok({ core, registries, artworkFonts, themes: themeChoices(core.registries.themes) });
 }
 
 /**

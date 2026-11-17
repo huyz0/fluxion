@@ -56,12 +56,21 @@ export {
 export {
   contrastRatio,
   createFontRegistry,
+  type DtcgWarning,
+  type ExportedTheme,
+  exportDtcg,
+  type FileTheme,
   type FontFaceDef,
   type FontRegistry,
+  type ImportedTheme,
+  importDtcg,
   LIGHT_THEME,
   REQUIRED_COLOR_ROLES,
   type Theme,
+  type ThemeFile,
   type ThemeProblem,
+  themeFileName,
+  themesFromFiles,
   validateTheme,
 } from '@fluxion/theme';
 export {

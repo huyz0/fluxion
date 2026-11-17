@@ -13,15 +13,21 @@ import { createCoreRegistries } from '@fluxion/core';
 import { createFontRegistry } from '@fluxion/theme';
 import { Diagnostic } from '@fluxion/schema';
 import { Disposable } from '@fluxion/core';
+import { DtcgWarning } from '@fluxion/theme';
 import { EnumParam } from '@fluxion/core';
 import { EvaluatedOutline } from '@fluxion/core';
 import { evaluateOutline } from '@fluxion/core';
+import { exportDtcg } from '@fluxion/theme';
+import { ExportedTheme } from '@fluxion/theme';
 import { FaceMetrics } from '@fluxion/core';
+import { FileTheme } from '@fluxion/theme';
 import { FontFaceDef } from '@fluxion/theme';
 import { FontRegistry } from '@fluxion/theme';
 import { HandleDef } from '@fluxion/core';
 import { Hasher } from '@fluxion/core';
 import { hitTestShape } from '@fluxion/core';
+import { importDtcg } from '@fluxion/theme';
+import { ImportedTheme } from '@fluxion/theme';
 import { LIGHT_THEME } from '@fluxion/theme';
 import { MARKER_SIZE } from '@fluxion/core';
 import { MarkerDef } from '@fluxion/core';
@@ -60,7 +66,10 @@ import { SvgArtwork } from '@fluxion/core';
 import { SvgArtworkNode } from '@fluxion/core';
 import { TextRegionDef } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+import { ThemeFile } from '@fluxion/theme';
+import { themeFileName } from '@fluxion/theme';
 import { ThemeProblem } from '@fluxion/theme';
+import { themesFromFiles } from '@fluxion/theme';
 import { validateTheme } from '@fluxion/theme';
 import { VersionedShapePackIndex } from '@fluxion/core';
 
@@ -142,13 +151,21 @@ export function definePack(spec: PackSpec): Pack;
 
 export { Disposable }
 
+export { DtcgWarning }
+
 export { EnumParam }
 
 export { EvaluatedOutline }
 
 export { evaluateOutline }
 
+export { exportDtcg }
+
+export { ExportedTheme }
+
 export { FaceMetrics }
+
+export { FileTheme }
 
 export { FontFaceDef }
 
@@ -157,6 +174,10 @@ export { FontRegistry }
 export { HandleDef }
 
 export { hitTestShape }
+
+export { importDtcg }
+
+export { ImportedTheme }
 
 export { LIGHT_THEME }
 
@@ -280,7 +301,13 @@ export type ThemeDef = Theme & {
     readonly id: string;
 };
 
+export { ThemeFile }
+
+export { themeFileName }
+
 export { ThemeProblem }
+
+export { themesFromFiles }
 
 export { validateTheme }
 

@@ -22,7 +22,36 @@ export type ThemeChoice = {
   readonly tokens: { readonly [key: string]: unknown };
   /** Default styles by element kind. */
   readonly defaults?: { readonly [key: string]: unknown };
+  /** Named table styles (ADR-0054). */
+  readonly tableStyles?: { readonly [key: string]: unknown };
 };
+
+const isChoice = (value: unknown): value is ThemeChoice =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as { name?: unknown }).name === 'string' &&
+  typeof (value as { tokens?: unknown }).tokens === 'object';
+
+/**
+ * The themes a host's themes registry holds, as the switcher's choices (FR-THM-007): every pack's themes, in registry order (by
+ * id); of two themes with one name (one document record id) the first is kept.
+ *
+ * @example
+ * ```tsx
+ * <ThemeSwitcher store={core.store} execute={core.execute} themes={themeChoices(core.registries.themes)} screenId={screen} />
+ * ```
+ * @public
+ */
+export function themeChoices(registry: { list(): ReadonlyArray<readonly [string, unknown]> }): readonly ThemeChoice[] {
+  const seen = new Set<string>();
+  const out: ThemeChoice[] = [];
+  for (const [, value] of registry.list()) {
+    if (!isChoice(value) || seen.has(themeRecordId(value.name))) continue;
+    seen.add(themeRecordId(value.name));
+    out.push(value);
+  }
+  return out;
+}
 
 /**
  * Props of {@link ThemeSwitcher}.
@@ -40,7 +69,12 @@ export type ThemeSwitcherProps = {
   readonly screenId: RecordId | undefined;
 };
 
-const body = (theme: ThemeChoice) => ({ name: theme.name, tokens: theme.tokens, ...(theme.defaults === undefined ? {} : { defaults: theme.defaults }) });
+const body = (theme: ThemeChoice) => ({
+  name: theme.name,
+  tokens: theme.tokens,
+  ...(theme.defaults === undefined ? {} : { defaults: theme.defaults }),
+  ...(theme.tableStyles === undefined ? {} : { tableStyles: theme.tableStyles }),
+});
 
 /** The idle value of a control: the id of the theme record in use (empty for none). */
 function idOf(rec: unknown): string {

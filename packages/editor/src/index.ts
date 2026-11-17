@@ -273,7 +273,7 @@ export {
 } from './snap/snap.js';
 export { type StreamFluxOptions, type StreamFluxResult, streamFluxScript } from './stream-flux.js';
 export { fitImage, type ImageSize, pasteSystemItem, type SystemItem, type SystemPasteDeps } from './system-paste.js';
-export { type ThemeChoice, ThemeSwitcher, type ThemeSwitcherProps } from './theme-switcher.js';
+export { type ThemeChoice, ThemeSwitcher, type ThemeSwitcherProps, themeChoices } from './theme-switcher.js';
 export {
   createToolDispatcher,
   createToolRegistry,

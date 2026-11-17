@@ -88,9 +88,30 @@ export type Dimension = {
 };
 
 // @public
+export type DtcgWarning = {
+    readonly code: "DTCG_UNSUPPORTED";
+    readonly path: string;
+    readonly message: string;
+};
+
+// @public
 export type Duration = {
     readonly value: number;
     readonly unit: "ms";
+};
+
+// @public
+export function exportDtcg(theme: Theme): ExportedTheme;
+
+// @public
+export type ExportedTheme = {
+    readonly file: ThemeFile;
+    readonly warnings: readonly DtcgWarning[];
+};
+
+// @public
+export type FileTheme = Theme & {
+    readonly id: string;
 };
 
 // @public
@@ -141,6 +162,15 @@ export type FontSource = "bundled" | "google" | "upload";
 
 // @public
 export function generatePalette(options: PaletteOptions): Result<Palette, ThemeError>;
+
+// @public
+export function importDtcg(json: unknown): Result<ImportedTheme, ThemeError>;
+
+// @public
+export type ImportedTheme = {
+    readonly theme: Theme;
+    readonly warnings: readonly DtcgWarning[];
+};
 
 // @public
 export const isToken: (node: Token | TokenGroup | undefined) => node is Token;
@@ -361,7 +391,15 @@ export type ThemeError = {
 };
 
 // @public
-export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE" | "FONT_FORMAT" | "FONT_TOO_LARGE" | "FONT_CORRUPT" | "PALETTE_INPUT";
+export type ThemeErrorCode = "TOKEN_UNKNOWN" | "TOKEN_NOT_A_VALUE" | "THEME_INVALID" | "ROLE_MISSING" | "TOKEN_TYPE" | "TOKEN_CYCLE" | "TOKEN_TRANSFORM" | "FONT_INVALID" | "FONT_DUPLICATE" | "FONT_FORMAT" | "FONT_TOO_LARGE" | "FONT_CORRUPT" | "PALETTE_INPUT" | "DTCG_INVALID";
+
+// @public
+export type ThemeFile = {
+    readonly [key: string]: unknown;
+};
+
+// @public
+export const themeFileName: (theme: Pick<Theme, "name">) => string;
 
 // @public
 export function themeOf(value: unknown): Theme | undefined;
@@ -375,6 +413,9 @@ export type ThemeProblem = {
 
 // @public
 export const themeSchema: z.ZodType<Theme>;
+
+// @public
+export function themesFromFiles(packId: string, files: readonly unknown[]): Result<readonly FileTheme[], ThemeError>;
 
 // @public
 export type ThemeTableStyle = {

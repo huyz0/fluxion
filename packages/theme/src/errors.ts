@@ -18,7 +18,8 @@ export type ThemeErrorCode =
   | 'FONT_FORMAT'
   | 'FONT_TOO_LARGE'
   | 'FONT_CORRUPT'
-  | 'PALETTE_INPUT';
+  | 'PALETTE_INPUT'
+  | 'DTCG_INVALID';
 
 /**
  * An expected failure of token resolution or theme validation.

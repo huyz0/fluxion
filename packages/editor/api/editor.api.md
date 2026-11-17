@@ -1874,7 +1874,15 @@ export type ThemeChoice = {
     readonly defaults?: {
         readonly [key: string]: unknown;
     };
+    readonly tableStyles?: {
+        readonly [key: string]: unknown;
+    };
 };
+
+// @public
+export function themeChoices(registry: {
+    list(): ReadonlyArray<readonly [string, unknown]>;
+}): readonly ThemeChoice[];
 
 // @public
 export function ThemeSwitcher(props: ThemeSwitcherProps): ReactNode;

@@ -1,4 +1,14 @@
-import { contrastRatio, createCoreRegistries, LIGHT_THEME, type ThemeDef, validateTheme } from '@fluxion/sdk';
+import {
+  contrastRatio,
+  createCoreRegistries,
+  definePack,
+  exportDtcg,
+  importDtcg,
+  LIGHT_THEME,
+  type ThemeDef,
+  themesFromFiles,
+  validateTheme,
+} from '@fluxion/sdk';
 import { describe, expect, it } from 'vitest';
 import { makeTheme } from './build.js';
 import { THEMES_CORE, themesCorePack } from './index.js';
@@ -90,5 +100,27 @@ describe('makeTheme (FR-THM-003)', () => {
     expect(plain.id).toBe('themes-core:a-b-');
     expect(plain.defaults).toEqual(LIGHT_THEME.defaults);
     expect(makeTheme('C', palette, { defaults: {} }).defaults).toEqual({});
+  });
+});
+
+describe('theme files of the pack (FR-THM-007)', () => {
+  it('FR-THM-007: every themes-core theme exports to a theme file that re-imports deep-equal', () => {
+    for (const { id: _id, ...theme } of THEMES_CORE) {
+      const { file, warnings } = exportDtcg(theme);
+      expect(warnings, theme.name).toEqual([]);
+      const read = importDtcg(JSON.parse(JSON.stringify(file)));
+      expect(read.ok && read.value.theme, theme.name).toEqual(theme);
+    }
+  });
+
+  it('FR-THM-007: a pack made from theme files registers its themes in the host registry', () => {
+    const files = THEMES_CORE.slice(1, 3).map(({ id: _id, ...theme }) => JSON.parse(JSON.stringify(exportDtcg({ ...theme, name: `acme ${theme.name}` }).file)));
+    const themes = themesFromFiles('acme', files);
+    if (!themes.ok) throw new Error(themes.error.message);
+    const registries = createCoreRegistries();
+    const registered = definePack({ id: 'acme', themes: themes.value }).register(registries);
+    expect(registered.ok).toBe(true);
+    expect(registries.themes.list().map(([id]) => id)).toEqual(['acme:acme-corporate', 'acme:acme-dark']);
+    expect(registries.themes.source('acme:acme-dark')).toBe('acme');
   });
 });
