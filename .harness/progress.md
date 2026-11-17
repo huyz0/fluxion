@@ -5109,3 +5109,8 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 ## 2026-11-16 M19.31: final review (5a3d0ee..9bb93ab)
 - Independent final review: pass, 3 minor, all argued (plan row 21 narrowing; cold-setup headroom after the speed rows; docs-step output check unpinned). Every plan task and M18 hand-off maps to a done row; check-trace --milestone M19 covers every Must.
 - Left before M19.31 closes: a green nightly png-check (record), CI evidence and a nightly perf run at or after 301a587, the Firefox/WebKit legs on a three-engine host, then m19-complete in one run and the roadmap advance.
+
+## 2026-11-17 M19.31: close M19 with recorded evidence; roadmap to M20
+- png-check: `check-png-evidence --record 43843196920` (nightly at 2571ca8, png-check success).
+- Nightly 44013785495 dispatched at 7eb83ac on Huy's ask (scheduled runs start ~7 h late); its perf job passed. `check-ci-evidence --record 7eb83ac --perf-run 44013785495`: ci 43909637802 and gates 43909637798 green on three OSes; `--milestone M19 --perf` passes.
+- Trial m19-complete at 7eb83ac on Huy's Windows machine in the pinned image: 45/49, every browser leg (Firefox, WebKit) green; red only on the png, ci-evidence, M19.31 and roadmap legs this commit closes. The counted run follows at this commit.

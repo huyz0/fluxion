@@ -1,0 +1,8 @@
+{
+  "run": 43843196920,
+  "sha": "2571ca8341d789f0a6cafec2720169e7c443eb7d",
+  "workflow": "nightly",
+  "job": "png-check",
+  "conclusion": "success",
+  "recordedAt": "2026-11-17T04:00:20.462Z"
+}
