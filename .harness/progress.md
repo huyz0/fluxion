@@ -5118,3 +5118,6 @@ round-allowance: M19.29 review round 4 under Huy's 2026-11-05T11:04:52Z delegati
 ## 2026-11-17 M20.1: plan M20 with an executable completion gate
 - 25 rows (ADRs 0055–0057, theme studio .5–.11, SVG export .12–.15, decompiler v1 + hand-off .16–.18, mutation floors, route-drag decision, R3 demo + exit checklist, docs, final review). M19 backlog archived.
 - `node scripts/gates/m20-complete.mjs`: red (exit 1), as planned; plan review r1 (changes-requested) gave M20.23 a no-recurrence close, one shared Playwright run, and legs for the R3 golden/obstacle-free cases and the docs row.
+
+## 2026-11-17 M20.1: fix main's CI red at 66b5a51 (commit-msg harness test)
+- ci 44021189553 red on every OS: commit-msg.test.mjs's M19.53 cases name M19.52/M19.53 rows, which M20.1 archived out of current.md. The suite now pins docs/backlog/archive/M19.md as its sandbox backlog; no assertion changed. 17/17 locally.

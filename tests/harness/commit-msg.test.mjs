@@ -60,6 +60,9 @@ describe('check-commit-msg (NFR-DX-003)', () => {
 describe('check-commit-msg: carried review minors change their row (M19.53)', () => {
   const g = sandbox(undefined, { git: true });
   after(() => g.cleanup());
+  // the cases name M19 rows, and the live backlog moves on each milestone: pin the archived M19 one (CI red at 66b5a51)
+  g.write('docs/backlog/current.md', g.read('docs/backlog/archive/M19.md').replace(/^(\|[^|\n]*(?:\|[^|\n]*){5}\|) [0-9a-f]{7,40} \|$/gm, '$1 |'));
+  g.git('commit', '-qam', 'pin the M19 backlog', '--no-verify');
   const SUBJECT = 'M19.53: fix(harness): something';
   const check = (body, args = []) => {
     g.write('.git-msg', `${SUBJECT}\n\n${body}\n`);
