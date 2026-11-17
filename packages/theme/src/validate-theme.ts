@@ -93,9 +93,33 @@ function tokenProblems(t: Theme): ThemeProblem[] {
   return out;
 }
 
+/** A `defaults[key].variants` that is not an object, or an entry of it that is not a style object (ADR-0055). */
+function variantProblems(t: Theme): ThemeProblem[] {
+  const out: ThemeProblem[] = [];
+  const isObject = (v: unknown) => typeof v === 'object' && v !== null && !Array.isArray(v);
+  for (const [key, entry] of Object.entries(t.defaults ?? {})) {
+    const variants = entry['variants'];
+    if (variants === undefined) continue;
+    if (!isObject(variants)) {
+      out.push({ code: 'THEME_INVALID', path: jsonPointer(['defaults', key, 'variants']), message: `defaults.${key}.variants is not an object` });
+      continue;
+    }
+    for (const [name, style] of Object.entries(variants as Record<string, unknown>)) {
+      if (!isObject(style))
+        out.push({
+          code: 'THEME_INVALID',
+          path: jsonPointer(['defaults', key, 'variants', name]),
+          message: `variant ${name} of defaults.${key} is not a style object`,
+        });
+    }
+  }
+  return out;
+}
+
 /**
  * Every problem of `theme`: the schema's refusals, a missing colour role, a token of the wrong type for its group, and an
- * alias that names no token, a token that is not a colour, or itself in a circle. Empty when the theme is sound.
+ * alias that names no token, a token that is not a colour, or itself in a circle, and a `defaults` variant that is not a style
+ * object (ADR-0055). Empty when the theme is sound.
  *
  * @public
  */
@@ -104,7 +128,7 @@ export function validateTheme(theme: unknown): readonly ThemeProblem[] {
   if (!parsed.success) {
     return parsed.error.issues.map((i) => ({ code: 'THEME_INVALID' as const, path: jsonPointer(i.path.map(String)), message: i.message }));
   }
-  return [...roleProblems(parsed.data), ...tokenProblems(parsed.data)];
+  return [...roleProblems(parsed.data), ...tokenProblems(parsed.data), ...variantProblems(parsed.data)];
 }
 
 /** The diagnostic code of a theme problem: the catalogued code a problem of that kind has, else FLX_SCHEMA_INVALID. */

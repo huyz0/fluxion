@@ -24,12 +24,81 @@
           "stroke": {
             "color": "{color.connector}",
             "width": "{stroke.regular}"
+          },
+          "variants": {
+            "emphasis": {
+              "stroke": {
+                "color": "{color.secondary}",
+                "width": "{stroke.thick}"
+              }
+            },
+            "outline": {
+              "stroke": {
+                "color": "{color.primary}",
+                "dash": [
+                  6,
+                  4
+                ]
+              }
+            },
+            "primary": {
+              "stroke": {
+                "color": "{color.primary}"
+              }
+            },
+            "subtle": {
+              "stroke": {
+                "color": "{color.muted}",
+                "width": "{stroke.thin}"
+              }
+            }
           }
         },
         "frame": {
           "fill": "{color.surface}",
           "stroke": {
             "width": 0
+          },
+          "variants": {
+            "emphasis": {
+              "fill": "{color.secondary}",
+              "font": {
+                "color": "{color.background}",
+                "weight": 700
+              },
+              "stroke": {
+                "color": "{color.secondary}",
+                "width": "{stroke.thick}"
+              }
+            },
+            "outline": {
+              "fill": "transparent",
+              "font": {
+                "color": "{color.primary}"
+              },
+              "stroke": {
+                "color": "{color.primary}"
+              }
+            },
+            "primary": {
+              "fill": "{color.primary}",
+              "font": {
+                "color": "{color.background}"
+              },
+              "stroke": {
+                "color": "{color.primary}"
+              }
+            },
+            "subtle": {
+              "fill": "{color.surface}",
+              "font": {
+                "color": "{color.text}"
+              },
+              "stroke": {
+                "color": "{color.muted}",
+                "width": "{stroke.thin}"
+              }
+            }
           }
         },
         "screen": {
@@ -41,6 +110,73 @@
           "stroke": {
             "color": "{color.text}",
             "width": "{stroke.regular}"
+          },
+          "variants": {
+            "emphasis": {
+              "fill": "{color.secondary}",
+              "font": {
+                "color": "{color.background}",
+                "weight": 700
+              },
+              "stroke": {
+                "color": "{color.secondary}",
+                "width": "{stroke.thick}"
+              }
+            },
+            "outline": {
+              "fill": "transparent",
+              "font": {
+                "color": "{color.primary}"
+              },
+              "stroke": {
+                "color": "{color.primary}"
+              }
+            },
+            "primary": {
+              "fill": "{color.primary}",
+              "font": {
+                "color": "{color.background}"
+              },
+              "stroke": {
+                "color": "{color.primary}"
+              }
+            },
+            "subtle": {
+              "fill": "{color.surface}",
+              "font": {
+                "color": "{color.text}"
+              },
+              "stroke": {
+                "color": "{color.muted}",
+                "width": "{stroke.thin}"
+              }
+            }
+          }
+        },
+        "text": {
+          "variants": {
+            "emphasis": {
+              "font": {
+                "color": "{color.text}",
+                "weight": 700
+              }
+            },
+            "outline": {
+              "font": {
+                "color": "{color.primary}",
+                "weight": 400
+              }
+            },
+            "primary": {
+              "font": {
+                "color": "{color.primary}"
+              }
+            },
+            "subtle": {
+              "font": {
+                "color": "{color.muted}"
+              }
+            }
           }
         }
       },

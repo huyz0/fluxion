@@ -60,6 +60,7 @@ export {
   themeSchema,
 } from './tokens.js';
 export { REQUIRED_COLOR_ROLES, type ThemeProblem, themeDiagnostics, validateTheme } from './validate-theme.js';
+export { BUILTIN_VARIANTS } from './variants.js';
 
 /**
  * Version of this package.

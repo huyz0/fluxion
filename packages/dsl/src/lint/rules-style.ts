@@ -28,11 +28,12 @@ function literal(css: string, vars: { readonly [name: string]: string }): string
 /** The contrast finding of one element, if its resolved text and fill colours are known and too close. */
 function contrastOf(
   style: Style | undefined,
-  kind: string,
+  of: { readonly kind: string; readonly defId?: string },
   ctx: Required<Pick<LintContext, 'theme'>>,
   vars: { readonly [name: string]: string },
 ): string | undefined {
-  const { style: resolved } = resolveStyle(style, kind, ctx.theme);
+  // a shape's definition id: the theme's defaults for that definition and its variants apply, as the view draws them (ADR-0055)
+  const { style: resolved } = resolveStyle(style, of, ctx.theme);
   if (resolved.fill.type !== 'color') return undefined;
   const ratio = contrastRatio(literal(resolved.font.color, vars), literal(resolved.fill.css, vars));
   if (ratio === undefined) return undefined;
@@ -55,7 +56,9 @@ const CONTRAST: LintRule = {
     return screensOf(doc).flatMap((screen) =>
       screen.elements.flatMap((e): LintFinding[] => {
         if (e.text === '') return [];
-        const found = contrastOf(e.rec['style'] as Style | undefined, String(e.rec['kind']), { theme }, vars);
+        const defId = e.rec['defId'];
+        const of = { kind: String(e.rec['kind']), ...(typeof defId === 'string' ? { defId } : {}) };
+        const found = contrastOf(e.rec['style'] as Style | undefined, of, { theme }, vars);
         return found === undefined
           ? []
           : [finding('FLX_LINT_CONTRAST', e.id, `the text of ${e.id} has contrast ${found}`, 'pick a text colour or a fill with more contrast')];

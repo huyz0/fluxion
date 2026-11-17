@@ -162,10 +162,13 @@ interface Style {
   font?: FontStyle; variant?: string;               // theme variant name, e.g. 'emphasis'
 }
 ```
-Resolution order, per field: element literal → element token ref → theme
-`defaults[kind].variants[variant]` → the element's definition defaults (a shape's
-`ShapeDef.defaultStyle`, ADR-0016) → theme `defaults[kind]` → theme globals (`defaults['*']`) →
-built-in fallbacks (`@fluxion/theme` `resolveStyle`, ADR-0015). An unknown token reference
+Resolution order, per field (ADR-0055): element literal → element token ref → theme
+`defaults[defId].variants[variant]` → theme `defaults[kind].variants[variant]` → theme `defaults[defId]` (a shape
+definition id such as `flowchart:decision`) → the element's definition defaults (a shape's `ShapeDef.defaultStyle`,
+ADR-0016) → theme `defaults[kind]` → theme globals (`defaults['*']`) → built-in fallbacks (`@fluxion/theme`
+`resolveStyle`, ADR-0015). `variant` is the element's, else its definition's; an unknown variant name falls through. Every
+built-in theme ships `primary`, `subtle`, `outline` and `emphasis` for `shape`, `frame`, `connector` and `text` as token refs
+(`BUILTIN_VARIANTS`), so a theme edit restyles a variant element through CSS variables alone. An unknown token reference
 (FLX_TOKEN_UNKNOWN) or a value that is not valid for its field (a non-colour, a keyword outside its
 set) is skipped and the next layer is used, so no resolved value carries other CSS.
 

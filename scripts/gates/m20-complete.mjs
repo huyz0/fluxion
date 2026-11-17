@@ -130,7 +130,20 @@ leg('FR-THM-006 per-kind default styles and variants resolve by reference; varia
       tests('packages/theme/src/variants.test.ts', {
         named: ['FR-THM-006: a variant reference resolves by kind', 'FR-THM-006: a shape definition default applies to its shapes'],
       }),
-    () => tests('packages/render/src/variant-style.browser.test.tsx', { project: 'browser', named: ['FR-THM-006: variant emphasis renders the themed style'] }),
+    () =>
+      tests('packages/render/src/variant-style.browser.test.tsx', {
+        project: 'browser',
+        named: ['FR-THM-006: variant emphasis renders the themed style', 'FR-THM-006: a theme edit restyles a variant element with no element change'],
+      }),
+    // the tone written by AI reaches the view (cp2 F4)
+    () =>
+      tests('packages/editor/src/variant-tone.browser.test.tsx', {
+        project: 'browser',
+        named: [
+          'FR-THM-006: variant emphasis set through FluxScript renders the themed style',
+          'FR-THM-006: variant emphasis set through a patch renders the themed style',
+        ],
+      }),
   ),
 );
 leg('FR-THM-007 an exported theme file re-imports deep-equal; a theme pack registers its themes and they appear in the theme picker', () =>

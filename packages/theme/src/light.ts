@@ -1,5 +1,6 @@
 // The built-in `light` theme (FR-THM-001 colour roles; FR-THM-003 lists the other built-ins for M9).
 import type { Theme, ThemeTableStyle, Token } from './tokens.js';
+import { BUILTIN_VARIANTS } from './variants.js';
 
 const color = ($value: string): Token => ({ $type: 'color', $value });
 const px = (value: number): Token => ({ $type: 'dimension', $value: { value, unit: 'px' } });
@@ -82,9 +83,15 @@ export const LIGHT_THEME: Theme = {
     },
   },
   defaults: {
-    shape: { fill: '{color.surface}', stroke: { color: '{color.text}', width: '{stroke.regular}' }, radius: '{radius.none}' },
-    connector: { stroke: { color: '{color.connector}', width: '{stroke.regular}' } },
-    frame: { fill: '{color.surface}', stroke: { width: 0 } },
+    shape: {
+      fill: '{color.surface}',
+      stroke: { color: '{color.text}', width: '{stroke.regular}' },
+      radius: '{radius.none}',
+      variants: BUILTIN_VARIANTS['shape'],
+    },
+    connector: { stroke: { color: '{color.connector}', width: '{stroke.regular}' }, variants: BUILTIN_VARIANTS['connector'] },
+    frame: { fill: '{color.surface}', stroke: { width: 0 }, variants: BUILTIN_VARIANTS['frame'] },
+    text: { variants: BUILTIN_VARIANTS['text'] },
     screen: { background: '{color.background}' },
     '*': { font: { family: '{font.body}', size: '{font.size.md}', lineHeight: '{font.line-height.normal}', color: '{color.text}' } },
   },

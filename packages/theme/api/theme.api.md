@@ -19,6 +19,13 @@ export const BUILTIN_TABLE_STYLES: {
 };
 
 // @public
+export const BUILTIN_VARIANTS: {
+    readonly [kind: string]: {
+        readonly [name: string]: Style;
+    };
+};
+
+// @public
 export type ColorResolver = (path: string) => Result<string, ThemeError>;
 
 // @public
@@ -319,6 +326,7 @@ export function styleKey(theme: Theme): string;
 // @public
 export type StyleKind = string | {
     readonly kind: string;
+    readonly defId?: string;
     readonly defaults?: Style;
     readonly defaultsAt?: ReadonlyArray<string | number>;
 };

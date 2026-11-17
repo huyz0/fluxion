@@ -74,6 +74,17 @@ describe('makeTheme (FR-THM-003)', () => {
     connector: '#444444',
   };
 
+  it('FR-THM-006: every theme in the pack ships the four built-in variants for each kind that takes them', () => {
+    for (const theme of THEMES_CORE)
+      for (const kind of ['shape', 'frame', 'connector', 'text'])
+        expect(Object.keys((theme.defaults?.[kind]?.['variants'] ?? {}) as object), `${theme.name} ${kind}`).toEqual([
+          'primary',
+          'subtle',
+          'outline',
+          'emphasis',
+        ]);
+  });
+
   it('FR-THM-003: a theme without extras keeps the light structure; extras replace the defaults', () => {
     const plain = makeTheme('A b!', palette);
     expect(plain.id).toBe('themes-core:a-b-');

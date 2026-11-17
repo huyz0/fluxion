@@ -40,9 +40,10 @@ export function viewStyle(element: ShapeElement, def: ShapeDef | undefined, them
   return style;
 }
 
-/** The style of a shape: the definition's defaults sit under the element's own (02 §2). */
+/** The style of a shape: the theme's defaults for its definition and the definition's own sit under the element's (02 §2, ADR-0055). */
 export function shapeStyle(element: ShapeElement, def: ShapeDef | undefined, theme: Theme): ReturnType<typeof resolveStyle> {
+  // the definition's id: the theme's defaults for it and its variants apply (ADR-0055)
   const defaults = def?.defaultStyle;
-  const of = defaults === undefined ? 'shape' : { kind: 'shape', defaults, defaultsAt: ['shapeDefs', element.defId, 'defaultStyle'] };
+  const of = { kind: 'shape', defId: element.defId, ...(defaults === undefined ? {} : { defaults, defaultsAt: ['shapeDefs', element.defId, 'defaultStyle'] }) };
   return resolveStyle(element.style, of, theme, ['records', element.id, 'style']);
 }

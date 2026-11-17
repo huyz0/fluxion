@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LIGHT_THEME } from './light.js';
 import { validateTheme } from './validate-theme.js';
+import { BUILTIN_VARIANTS } from './variants.js';
 
 // The light theme is the default of every document without a theme, so each of its values is
 // what such a document renders with. This file pins all of them, written out in full rather than
@@ -74,9 +75,16 @@ describe('the light theme (FR-THM-001)', () => {
 
   it('FR-THM-001: has exactly these element defaults', () => {
     expect(LIGHT_THEME.defaults).toStrictEqual({
-      shape: { fill: '{color.surface}', stroke: { color: '{color.text}', width: '{stroke.regular}' }, radius: '{radius.none}' },
-      connector: { stroke: { color: '{color.connector}', width: '{stroke.regular}' } },
-      frame: { fill: '{color.surface}', stroke: { width: 0 } },
+      shape: {
+        fill: '{color.surface}',
+        stroke: { color: '{color.text}', width: '{stroke.regular}' },
+        radius: '{radius.none}',
+        variants: BUILTIN_VARIANTS['shape'],
+      },
+      connector: { stroke: { color: '{color.connector}', width: '{stroke.regular}' }, variants: BUILTIN_VARIANTS['connector'] },
+      frame: { fill: '{color.surface}', stroke: { width: 0 }, variants: BUILTIN_VARIANTS['frame'] },
+      // the built-in variants (FR-THM-006, ADR-0055)
+      text: { variants: BUILTIN_VARIANTS['text'] },
       screen: { background: '{color.background}' },
       '*': {
         font: { family: '{font.body}', size: '{font.size.md}', lineHeight: '{font.line-height.normal}', color: '{color.text}' },

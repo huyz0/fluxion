@@ -1,7 +1,7 @@
 // Resolved styles (FR-THM-001/002, 02 §Style, ADR-0015): an element's style becomes CSS-ready values.
-// Each field resolves through layers, first match wins: element literal or token ref → theme
-// `defaults[kind].variants[variant]` → `defaults[kind]` → `defaults['*']` (theme globals) → built-in
-// fallbacks. A token ref becomes `var(--fx-<path>)`, with no value of its own, so a change of token values
+// Each field resolves through layers, first match wins (ADR-0055): element literal or token ref → theme
+// `defaults[defId].variants[variant]` → `defaults[kind].variants[variant]` → `defaults[defId]` → the shape definition's
+// default style → `defaults[kind]` → `defaults['*']` (theme globals) → built-in fallbacks. A token ref becomes `var(--fx-<path>)`, with no value of its own, so a change of token values
 // restyles through the screen's CSS variables alone (ADR-0015 amendment, M5.13); an unknown token is
 // reported (FLX_TOKEN_UNKNOWN) and the next layer is used.
 import type { Diagnostic, Style } from '@fluxion/schema';
@@ -214,7 +214,7 @@ function paint(r: Resolver, field = 'fill'): ResolvedPaint {
 }
 
 /**
- * The element kind a style is resolved for, optionally with its definition's default style (a shape's
+ * The element kind a style is resolved for, optionally with its shape definition's id and default style (a shape's
  * `ShapeDef.defaultStyle`) and that style's JSON pointer for diagnostics.
  *
  * @public
@@ -224,34 +224,43 @@ export type StyleKind =
   | {
       /** The element kind (`shape`, `connector`, …). */
       readonly kind: string;
-      /** The definition's default style: under the element's style and variant, over the theme. */
+      /** The shape definition's id (`flowchart:decision`): the theme's `defaults[defId]` and its variants apply (ADR-0055). */
+      readonly defId?: string;
+      /** The definition's default style: under the element's style and variant, over the theme's kind defaults. */
       readonly defaults?: Style;
       /** Where `defaults` is, for diagnostics (default `['definition', 'defaultStyle']`). */
       readonly defaultsAt?: ReadonlyArray<string | number>;
     };
 
+/** `defaults[key].variants[variant]` of a theme as a layer, when it is an object. */
+function variantLayer(defaults: NonNullable<Theme['defaults']>, key: string | undefined, variant: string | undefined): Layer[] {
+  if (key === undefined || variant === undefined) return [];
+  const variants = defaults[key]?.['variants'];
+  const values = isObject(variants) ? variants[variant] : undefined;
+  return isObject(values) ? [{ values, at: ['theme', 'defaults', key, 'variants', variant] }] : [];
+}
+
 /**
- * Resolve `style` for an element of `kind` against `theme` (02 §2 resolution order: the element, its
- * theme variant, its definition's defaults, the theme's defaults for the kind, the theme's globals).
- * `at` is the JSON pointer prefix of the style in the document (for diagnostics), e.g.
- * `['records', id, 'style']`.
+ * Resolve `style` for an element of `kind` against `theme` (02 §2 resolution order, ADR-0055; per field the first valid value
+ * wins): the element's literal or token ref, `defaults[defId].variants[v]`, `defaults[kind].variants[v]`, `defaults[defId]`,
+ * the definition's default style, `defaults[kind]`, `defaults['*']`, then built-in fallbacks. `v` is the element's variant,
+ * else its definition's; an unknown variant falls through. `at` is the JSON pointer prefix of the style in the document (for
+ * diagnostics), e.g. `['records', id, 'style']`.
  *
  * @public
  */
 export function resolveStyle(style: Style | undefined, of: StyleKind, theme: Theme, at: ReadonlyArray<string | number> = ['style']): StyleResolution {
-  const { kind, defaults: definition, defaultsAt = ['definition', 'defaultStyle'] } = typeof of === 'string' ? { kind: of } : of;
+  const { kind, defId, defaults: definition, defaultsAt = ['definition', 'defaultStyle'] } = typeof of === 'string' ? { kind: of } : of;
   const defaults = theme.defaults ?? {};
-  const own = defaults[kind];
   // an element's variant, else its definition's (M5.30 review F1)
   const variant = style?.variant ?? definition?.variant;
-  const variants = isObject(own?.['variants']) ? own['variants'] : undefined;
   const layers: Layer[] = [
     { values: style, at },
-    ...(variant !== undefined && variants && isObject(variants[variant])
-      ? [{ values: variants[variant], at: ['theme', 'defaults', kind, 'variants', variant] }]
-      : []),
+    ...variantLayer(defaults, defId, variant),
+    ...variantLayer(defaults, kind, variant),
+    ...(defId === undefined ? [] : [{ values: defaults[defId], at: ['theme', 'defaults', defId] }]),
     { values: definition, at: defaultsAt },
-    { values: own, at: ['theme', 'defaults', kind] },
+    { values: defaults[kind], at: ['theme', 'defaults', kind] },
     { values: defaults['*'], at: ['theme', 'defaults', '*'] },
   ];
   const r = new Resolver(theme, layers, FALLBACK);

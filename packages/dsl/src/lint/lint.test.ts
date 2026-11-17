@@ -87,6 +87,12 @@ describe('the quality linter (FR-AI-005)', () => {
     expect(only(run(docOf(pale), THEMED), 'CONTRAST')).toHaveLength(1);
     expect(only(run(docOf(dark), THEMED), 'CONTRAST')).toHaveLength(0);
     expect(only(run(docOf(pale)), 'CONTRAST')).toHaveLength(0);
+    // the theme's defaults for the shape's definition count, as the view draws them (FR-THM-006, ADR-0055): text-coloured fill
+    // under text-coloured type is flagged for basic:rect only
+    const byDef = { theme: { ...LIGHT_THEME, defaults: { ...LIGHT_THEME.defaults, 'basic:rect': { fill: '{color.text}' } } } };
+    const plain = el('a', { text: text('hello') });
+    expect(only(run(docOf(plain), byDef), 'CONTRAST')).toHaveLength(1);
+    expect(only(run(docOf({ ...plain, defId: 'basic:ellipse' }), byDef), 'CONTRAST')).toHaveLength(0);
   });
 
   it('FR-AI-005: DENSITY reports a screen with too many words, not a sparse one', () => {
