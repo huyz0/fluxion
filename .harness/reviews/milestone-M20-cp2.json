@@ -1,0 +1,103 @@
+{
+  "milestone": "M20",
+  "checkpoint": "cp2",
+  "range": "f65794988a379033871b5af71948d50c55389f33..ea98154134437b728cf5fcc2d94e53af5a49d37d",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "pass",
+  "reviewedDelta": "cp1 covered f657949..48abd80. This review read the eight commits in 48abd80..ea98154 as diffs. 6185580 records cp1. ad2d64f (M20.28) records 48abd80's cold-setup reading, 499 s wall-clock. 9bcd74d (M20.27) makes named cases exact-title, adds the M20.18 leg and checks that each ADR comes before its rows. The three ADRs are d261f2f (0055: in-house OKLCH instead of culori, no schema minor, 01-overview amended), 583c1da (0056: outline-by-default fonts, fontkit, sdk/export subpath, SVG re-open handed to M30 task 5, ADR-0036 amended) and 0ae22eb (0057: raw: blocks bounded to 0 on compiled, example and editor-built docs, I1/I2, amends 0219/0030/0031/0032/0035/0054, more decompile names in the gate). 363ec62 (M20.29) changes the frame wait to count painted frames and leaves the assertions alone. ea98154 (M20.5) adds the palette generator. 1. Coherence: the ADRs agree with each other and with the gate titles. The plan's culori choice was reversed by ADR, the reason is recorded, and 01-overview was updated. rng.ts is a deliberate copy of layout's sfc32 and a known-answer test pins it. m20-complete's local tests() now duplicates milestone-checks' titled({exact}) (F2). 2. Spec fidelity: M20.5 meets FR-THM-005's seed half. The image half is M20.6. FR-THM-006's leg names less than its row asks (F4). ADR-0056's 'not narrowed' claim needs ratifying (F6). No plan item was dropped. 3. Standards drift: M18 gate legs had harness tests (tests/harness/m18-*-leg.test.mjs), and M20.27 adds gate logic without one (F2). Review-carried obligations live only in progress.md and are missing from the receiving row (F5). 4. Gate honesty: the gate reads 8/37 at ea98154 (packet). Green legs are 3 ADR legs (vacuous until the governed rows' Commit cells exist; M20.5's cell is still empty), the FR-THM-005 seed leg, spec folders, quarantines, changesets and verify. Nothing is falsely green today. M20.28 as written can go green on hand-picked readings (F1). Mutants: I ran four on a scratch copy of packages/theme/src with vitest at FC_RUNS 200, baseline 37/37. (a) Never choosing the inverted polarity was killed by 5 cases. (b) Shuffling locked hue slots was killed by 'a locked hue slot is never shuffled into another slot'. (c) Dropping the fills-apart acceptance was killed by 3 cases. (d) Ignoring locks of later-solved partners was killed by 3 cases. The gate legs need every assertion in the file to pass, so (a), which neither named case catches, still fails the leg. A gate mutant was judged by reading the code: reverting m20-complete's tests() to substring matching, or deleting the merge-base check in accepted(), survives. No harness test runs m20-complete (F2). The FR-EDT-001 frame-wait change keeps its assertions, and a frame wait that never resolves fails at the test timeout rather than passing. 5. Architecture: theme stays pure (sfc32 is seeded, there is no Math.random and no DOM). The api report grows by generatePalette, applyPalette, PALETTE_CONTRAST_PAIRS, CONTRAST_TEXT/GRAPHIC, the Palette types and the PALETTE_INPUT code, with a minor changeset. intoGamut and oklabDistance are exported from oklch.ts but not from index.ts. ADR-0056 plans a new public @fluxion/sdk/export subpath and fontkit (MIT) for exporters, not the player. CI: ci is green at 363ec62 (44079883546) and gates are green at ea98154 (44092127220). 44056614633's Windows red has one of the two later greens it needs. verify macos-latest timed out at 20 min at 6185580 (44032176009), which no row or argued line covers (F3). Cold-setup step spans of M20 CI runs, from the GitHub API: 48abd80 499, ad2d64f 473, 9bcd74d 333, d261f2f 514, 583c1da 388, 0ae22eb 315, 363ec62 451 s. The median is 451 s, above 420.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "docs/backlog/current.md",
+      "line": 45,
+      "summary": "M20.28 lets the driver pick which commits' cold-setup readings count. Any three recorded M20 readings decide the median, and checkColdReadings (milestone-checks.mjs:1009) counts whatever is recorded after 'from'. The M20 CI cold-setup spans so far range from 315 to 514 s. Recording 9bcd74d, 583c1da and 0ae22eb gives a median of 333 s and passes. All seven give 451 s and fail. The 420 s commitment (M19 final F2 argued line) therefore looks unmet today, and the leg as specified can still go green on a hand-picked sample.",
+      "evidence": "gh run view: cold-setup step spans 44024254871 499 s, 44043114905 473 s, 44044964269 333 s, 44050549505 514 s, 44053061900 388 s, 44056614633 315 s, 44079883546 451 s; .harness/budget.json coldReadings has only 48abd80 for M20",
+      "suggestion": "Amend M20.28 so the leg counts every completed main CI run's cold-setup reading from the row's first commit to HEAD, or the last N consecutive runs, never a chosen subset. check-budget or the leg can fetch them, so recording is not a selection step. With the readings so far, start the cut now (M19.61's docs step first), with COLD_SETUP_MAX_MS unchanged."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "scripts/gates/m20-complete.mjs",
+      "line": 41,
+      "summary": "M20.27's new gate logic has no harness test. A mutant that reverts tests() to substring matching, or one that drops accepted()'s merge-base --is-ancestor check, survives every test. The M18 convention, still in the tree, tests gate legs by stubbing milestone-checks (tests/harness/m18-svg-import-leg.test.mjs and its siblings). tests() also re-implements exact-title matching that milestone-checks already has (titled(list, { exact })). accepted()'s comment at :75 says a done row with an empty Commit cell is held by the backlog-done leg. checkBacklogDone checks only State. The precommit/check-digest Commit-cell rule is what actually holds it.",
+      "evidence": "git show 9bcd74d --stat (only m20-complete.mjs among code); grep m20-complete tests/harness: no match; milestone-checks.mjs:139-164 (no commit-cell check), :454 titled exact",
+      "suggestion": "Add a harness case in the M18 leg-test pattern. It should feed tests() a Vitest JSON report where a name is only a substring of a title (refused), and feed accepted() a sandbox repo where a governed row's commit predates the ADR (refused). Either move tests()/accepted() into milestone-checks with cases there or reuse titled({exact}). Fix the :75 comment to name the gate that holds the cell."
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": ".github/workflows/ci.yml",
+      "line": 65,
+      "summary": "verify (macos-latest) hit its 20-minute step limit at 6185580 (ci 44032176009, a bookkeeping-only commit). When the runner cleaned up it killed tsc, node and chrome-headless processes that were still running, and the stuck-build artifact was empty. progress.md mentions this only to explain a missing cold reading. There is no Fixes row, diagnosis or argued line. Later macOS verify steps took 9, 5 and 14 min, so the job sits close to its limit with high variance. check-ci-evidence treats the red as healed by later greens, so nothing will look at it again before it recurs.",
+      "evidence": "gh run view 44032176009 --log-failed: '##[error]The action 'Run pnpm verify' has timed out after 20 minutes', orphan tsc pid 96291; 'No files were found with the provided path: .harness/tmp/stuck-build'; verify step 08:18-08:27, 09:13-09:19, 12:21-12:35 on later runs",
+      "suggestion": "Open a row to read the run's test-durations artifact and log, find which ladder stage was running at the kill (tsc was still alive), and record the cause. If it was a stall, fix it or make the stuck-build capture fire for it. Do not raise timeout-minutes."
+    },
+    {
+      "id": "F4",
+      "severity": "minor",
+      "file": "scripts/gates/m20-complete.mjs",
+      "line": 127,
+      "summary": "The FR-THM-006 leg (a Must of R3) names three cases: a variant resolving by kind, a shape-definition default, and emphasis rendering themed. M20.7's acceptance and ADR-0055's Confirmation also ask that variant: emphasis works through FluxScript and through a patch, and that a theme edit restyles with no element change. Neither is named, so the leg can go green without them. M20.27 said rows .5-.18 point at the gate's titles, but this row's titles cover less than the row.",
+      "evidence": "m20-complete.mjs:127-135; docs/backlog/current.md M20.7; ADR-0055 §Confirmation ('variant: emphasis via FluxScript and via patch renders the theme's style; a theme edit restyles with no element change')",
+      "suggestion": "Amend M20.7 and the leg to add exact names for the FluxScript path, the patch path and the theme-edit restyle."
+    },
+    {
+      "id": "F5",
+      "severity": "nit",
+      "file": "docs/backlog/current.md",
+      "line": 29,
+      "summary": "A review obligation lives only in progress.md and a commit body. M20.3 review r3's minor ('M20.12 corrects the ADR's \"peer\" wording: render stays a regular sdk dependency kept external in the export subpath build') is not in M20.12's acceptance. The row is where the M20.12 reviewer looks.",
+      "evidence": ".harness/progress.md M20.3 entry; 583c1da body; M20.12 row text",
+      "suggestion": "Add the ADR-0056 wording fix and the external-render build check to M20.12's acceptance."
+    },
+    {
+      "id": "F6",
+      "severity": "nit",
+      "file": "docs/architecture/decisions/ADR-0056-svg-export-strategy.md",
+      "line": 56,
+      "summary": "ADR-0056 says 'FR-EXP-004 is not narrowed'. Under it, 'opens identically in Inkscape' is checked only for the outlined default. Embedded-font fixtures are only opened in Inkscape, not diffed, because Inkscape ignores @font-face data URLs. That is a defensible reading of 'fonts embedded or outlined option', but it is a narrowing of the embed option's acceptance, and per the backlog header a checkpoint must ratify it.",
+      "evidence": "ADR-0056 lines 56-58, 197-201, 278",
+      "suggestion": "Ratify it at cp2 with an argued line. The final review's R3 checklist should state that the embed option's Inkscape check is open-and-export only."
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M20.28",
+      "note": "Amend M20.28. The leg counts every completed main CI run's cold-setup reading from the row's first commit to HEAD, fetched rather than hand-recorded, and its median must be at most 420 s. The seven spans so far have a median of 451 s, so cut cold setup now (M19.61's docs step first) with COLD_SETUP_MAX_MS unchanged."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M20.30",
+      "note": "New row M20.30. Add harness cases for m20-complete's exact-title tests() (a substring-only title is refused) and accepted() (a governed row committed before its ADR is refused), in the M18 leg-test pattern or by moving both into milestone-checks, reusing titled({exact}). Correct accepted()'s comment about which gate holds an empty Commit cell."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M20.31",
+      "note": "New row M20.31. Diagnose the verify macos-latest 20-min timeout at 6185580 (ci 44032176009) from its log and test-durations artifact. Name the stage that was running, fix it if it was a stall, or make the stuck-build capture cover it, with no timeout raised. Record the cause in progress.md."
+    },
+    {
+      "finding": "F4",
+      "disposition": "reopen",
+      "target": "M20.7",
+      "note": "Amend M20.7 and its m20-complete leg to add exact case names: variant emphasis via FluxScript, via a patch, and a theme edit restyling with no element change (ADR-0055 Confirmation)."
+    },
+    {
+      "finding": "F5",
+      "disposition": "reopen",
+      "target": "M20.12",
+      "note": "Amend M20.12's acceptance to include ADR-0056's render-dependency wording fix and the check that render stays external in the sdk export subpath build (M20.3 review r3 minor)."
+    },
+    {
+      "finding": "F6",
+      "disposition": "argue",
+      "target": ".harness/baselines/review-argued.txt",
+      "note": "M20 cp2 F6: ratified. FR-EXP-004's 'identically in Inkscape' holds for the default outlined export, which is diffed nightly. The embed option is opened and exported in Inkscape but not diffed, because Inkscape ignores @font-face data URLs. The R3 checklist states this."
+    }
+  ],
+  "planDelta": "Planned 25 rows. There are 29 now and 31 with M20.30 and M20.31, 1.24x, which is under the 1.5x limit. The growth is all review reopenings (cp1 F1-F3, cp2 F2-F3) and one Fixes-ci row (M20.29). There is no new scope. 6 of 31 rows are done (M20.1-M20.5, M20.27, M20.29). The three ADRs took four review rounds each under the delegated round allowance. Expect the feature rows they govern (M20.7, M20.12-M20.16) to need similar rounds, because the ADRs fix detailed contracts (sdk/export subpath, raw: bounds, the ids: map, restore mode). Risks to raise early: (1) ADR-0056's open question of whether Inkscape 1.4's cairo raster meets PARITY_MAX_DIFF_PCT 0.1 % on outlined fixtures. If not, that is a threshold or requirement decision, not a quiet re-scope. (2) M20.10's contrast linter should reuse contrast.ts (PALETTE_CONTRAST_PAIRS, solveLightness) rather than grow a second contrast helper. (3) Cold setup is already over 420 s (F1), so its cut competes with feature rows for CI time. (4) M20.19, M20.20 and M20.23 still need CI-time evidence and have not started. Start them before the feature chain, as cp1 advised."
+}
