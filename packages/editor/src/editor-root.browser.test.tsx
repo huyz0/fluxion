@@ -40,16 +40,19 @@ describe('edit-mode root (FR-EDT-001)', () => {
     const session = createSession('local');
     // each animation frame runs just before a paint: a screen in the canvas while the camera is still the unfitted default is painted so
     const seen: string[] = [];
+    // a wait resolves on a count of painted frames, not a clock: a slow first mount (lazy chunks on a cold Windows runner) only delays it;
+    // it resolves in a task after the frame, so the next action lands between frames and the next frame samples it before its paint
+    let wait = { until: Number.POSITIVE_INFINITY, resolve: () => {} };
     let watching = true;
+    const look = () => (session.camera.get() === DEFAULT_CAMERA ? 'unfitted' : 'fitted');
     const watch = () => {
-      if (host.querySelector('main .fx-screen') !== null) seen.push(session.camera.get() === DEFAULT_CAMERA ? 'unfitted' : 'fitted');
+      if (host.querySelector('main .fx-screen') !== null) seen.push(look());
+      if (seen.length >= wait.until) setTimeout(wait.resolve);
       if (watching) requestAnimationFrame(watch);
     };
     requestAnimationFrame(watch);
-    const frames = async (n: number) => {
-      const from = seen.length;
-      await expect.poll(() => seen.length - from).toBeGreaterThan(n);
-    };
+    // more than n frames painted with a screen in the canvas from now on (the test awaits one at a time)
+    const frames = (n: number) => new Promise<void>((resolve) => (wait = { until: seen.length + n + 1, resolve }));
     // not inside act, which would run every effect before the browser could paint: the editor mounts and changes as on a page
     root.render(<EditorRoot store={core.store} execute={core.execute} registries={renderRegistriesFor(core.registries)} session={session} />);
     await frames(2);
