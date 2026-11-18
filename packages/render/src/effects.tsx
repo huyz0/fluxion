@@ -67,6 +67,14 @@ function reach(shadows: readonly ResolvedShadow[], effects: readonly ResolvedEff
 }
 
 /**
+ * How far past its box a style with `shadows` and `effects` and a stroke reaching `margin` px draws: its filter region's margin
+ * when it has any shadow or effect, else `margin` (a selection export's viewBox, ADR-0056 item 6).
+ */
+export function styleReach(shadows: readonly ResolvedShadow[], effects: readonly ResolvedEffect[], margin: number): number {
+  return shadows.length === 0 && effects.length === 0 ? margin : reach(shadows, effects, margin);
+}
+
+/**
  * The filter `id` drawing `shadows` and `effects` for a `box` whose stroke reaches `margin` px beyond
  * it, or null when there are none.
  */

@@ -18,7 +18,7 @@ export function exportSvg(file: DocumentFile, options?: SvgExportOptions, ports?
 export function renumberIds(markup: string, prefix: string): string;
 
 // @public
-export function screenPackage(file: DocumentFile, screenId: RecordId, master?: RecordId): DocumentFile;
+export function screenPackage(file: DocumentFile, screenId: RecordId, master?: RecordId, only?: ReadonlySet<RecordId>): DocumentFile;
 
 // @public
 export const SVG_PACKAGE_MAX_BYTES: number;
@@ -34,6 +34,7 @@ export type SvgExport = {
 export type SvgExportOptions = {
     readonly screenId?: RecordId;
     readonly package?: boolean;
+    readonly selection?: readonly RecordId[];
 };
 
 // @public

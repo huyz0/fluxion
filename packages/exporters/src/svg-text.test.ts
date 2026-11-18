@@ -74,6 +74,22 @@ describe('exportSvg: text marks, tables and regions (ADR-0056 item 3, M20.41)', 
     expect(svg).not.toContain('<a ');
   });
 
+  it('FR-EXP-004: an unsafe link href draws as text, never as <a>', async () => {
+    const b = documentBuilder({ seed: 2044 });
+    const s = b.screen({ size: { w: 400, h: 200 } });
+    const box = b.text(s, 'x', { x: 0, y: 0, w: 300, h: 80 });
+    const built = b.build();
+    const records = built.records as Record<string, Record<string, unknown>>;
+    const linked = (href: string, t: string) => text(t, [{ type: 'link', attrs: { href } }]);
+    (records[box] as Record<string, unknown>)['text'] = doc(para({}, linked('javascript:alert(1)', 'bad'), text(' '), linked('https://example.com/', 'good')));
+    const { svg } = await exportSvg(built, { package: false }, { registries, measurer: tens });
+    expect(svg11Problems(svg)).toEqual([]);
+    expect(svg).not.toContain('javascript:');
+    expect(svg).toMatch(/>bad<\/tspan>/);
+    expect([...svg.matchAll(/<a /g)]).toHaveLength(1);
+    expect(svg).toContain('<a xlink:href="https://example.com/">');
+  });
+
   it('FR-EXP-004: a bullet nested past the second level is a circle, as the html leaf draws it', async () => {
     const b = documentBuilder({ seed: 2043 });
     const s = b.screen({ size: { w: 400, h: 200 } });

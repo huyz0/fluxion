@@ -209,9 +209,13 @@ export type ScreenSvgProps = {
   readonly registries: RenderRegistries;
   readonly theme: Theme;
   readonly hidden?: ReadonlySet<RecordId> | undefined;
+  /** A selection export (ADR-0056 item 6): where its lists start, in paint order, and its viewBox; no master and no background. */
+  readonly selection?:
+    | { readonly roots: readonly RecordId[]; readonly box: { readonly x: number; readonly y: number; readonly w: number; readonly h: number } }
+    | undefined;
 };
 
-/** One screen as an SVG 1.1 document: its background, its master's elements, then its own. */
+/** One screen as an SVG 1.1 document: its background, its master's elements, then its own; a selection's elements alone. */
 export function ScreenSvg(props: ScreenSvgProps): ReactNode {
   const { store, screen, area, background, master, registries, theme } = props;
   const leaves = useContext(SvgSurface).leaves;
@@ -220,6 +224,28 @@ export function ScreenSvg(props: ScreenSvgProps): ReactNode {
   const masterHidden = new Set([...(master?.placeholders ?? []), ...(props.hidden ?? [])]);
   const name = (screen as { readonly name?: string }).name;
   const alt = (screen as { readonly alt?: string }).alt;
+  const { selection } = props;
+  if (selection !== undefined) {
+    const b = selection.box;
+    const list = { store, screenId: screen.id, registries, theme, hidden: props.hidden, leaves };
+    return (
+      <svg
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlnsXlink="http://www.w3.org/1999/xlink"
+        width={n3(b.w)}
+        height={n3(b.h)}
+        viewBox={`${n3(b.x)} ${n3(b.y)} ${n3(b.w)} ${n3(b.h)}`}
+        data-screen-id={screen.id}
+      >
+        <title>{name ?? screen.id}</title>
+        {alt === undefined ? null : <desc>{alt}</desc>}
+        {selection.roots.map((id) => (
+          <SvgElementNode key={id} {...list} id={id} />
+        ))}
+      </svg>
+    );
+  }
   return (
     <svg
       version="1.1"

@@ -5,6 +5,7 @@
 ```ts
 
 import { ArtworkFontBinding } from '@fluxion/core';
+import { Box } from '@fluxion/geometry';
 import { ComponentType } from 'react';
 import { Context } from 'react';
 import { ElementRecord } from '@fluxion/schema';
@@ -60,7 +61,20 @@ export type ScreenSvgViewProps = {
     readonly theme?: Theme;
     readonly registries?: RenderRegistries;
     readonly hidden?: ReadonlySet<RecordId>;
+    readonly selection?: readonly RecordId[];
 };
+
+// @public
+export type SelectionScope = {
+    readonly drawn: ReadonlySet<RecordId>;
+    readonly hidden: ReadonlySet<RecordId>;
+};
+
+// @public
+export function selectionScope(view: ReadView, screenId: RecordId, selected: Iterable<RecordId>): SelectionScope;
+
+// @public
+export function selectionViewBox(view: ReadView, drawn: Iterable<RecordId>, theme: Theme, extent?: (id: RecordId) => Box | undefined): Box | undefined;
 
 // @public
 export type Svg = ComponentType<ElementViewProps>;

@@ -3,10 +3,10 @@
 // renderToStaticMarkup; the ids React generates are renumbered `fx<n>-<k>` with every `url(#…)` and `#…` reference that names them;
 // the package rides in `<metadata>` (svg-package.ts). Mixed runtime: no `node:*`, DOM or clock here; the host's measurer, registries
 // and package writer come in as ports. Fonts (outlined or embedded subsets) are M20.13's: text is `<text>` naming its family.
-import { appliedMaster, createCore, sha256Hex, type TextMeasurer } from '@fluxion/core';
+import { appliedMaster, type Core, createCore, sha256Hex, type TextMeasurer } from '@fluxion/core';
 import { writeFlux } from '@fluxion/format';
 import { builtinRegistries, modePolicy, type RenderRegistries, screensInOrder } from '@fluxion/render';
-import { ScreenSvgView, type SvgDiagnostic, SvgSurface } from '@fluxion/render/svg';
+import { ScreenSvgView, type SvgDiagnostic, SvgSurface, selectionScope } from '@fluxion/render/svg';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
 import { createElement } from 'react';
@@ -24,6 +24,11 @@ export type SvgExportOptions = {
   readonly screenId?: RecordId;
   /** Carry the package in `<metadata>` (default true). */
   readonly package?: boolean;
+  /**
+   * Export these elements of the screen instead of all of it (ADR-0056 item 6): their members, connectors whose two ends are drawn,
+   * no master, a viewBox of their outset bounds; the package is pruned to them (`scope="selection"`).
+   */
+  readonly selection?: readonly RecordId[];
 };
 
 /**
@@ -95,19 +100,30 @@ async function writeDefault(document: DocumentFile): Promise<Uint8Array | undefi
   return written.ok ? written.value : undefined;
 }
 
+/** What the package holds: the screen, its applied master, and the drawn elements of a selection export. */
+type PackageScope = { readonly screenId: RecordId; readonly master: RecordId | undefined; readonly only: ReadonlySet<RecordId> | undefined };
+
+/** The package scope of screen `screenId`: its applied master, and the drawn elements when `selection` is given. */
+function packageScope(store: Core['store'], screenId: RecordId, selection: readonly RecordId[] | undefined): PackageScope {
+  const master = store.query((v) => appliedMaster(v, screenId).master)();
+  const only = selection === undefined ? undefined : store.query((v) => selectionScope(v, screenId, selection).drawn)();
+  return { screenId, master, only };
+}
+
 /** `<metadata>` of the export and the finding of a package left out. */
-async function metadata(file: DocumentFile, screenId: RecordId, master: RecordId | undefined, write: SvgExportPorts['writePackage']) {
+async function metadata(file: DocumentFile, at: PackageScope, write: SvgExportPorts['writePackage']) {
   const schema = String((file as { readonly schemaVersion?: unknown }).schemaVersion ?? '');
-  const bytes = await (write ?? writeDefault)(screenPackage(file, screenId, master));
+  const head = { schema, screen: at.screenId, scope: at.only === undefined ? ('screen' as const) : ('selection' as const) };
+  const bytes = await (write ?? writeDefault)(screenPackage(file, at.screenId, at.master, at.only));
   if (bytes === undefined) {
     const diagnostic = { code: 'FLX_EXPORT_PACKAGE_OMITTED', message: 'the package could not be written and is left out' };
-    return { xml: packageMetadata({ bytes, schema, screen: screenId, omitted: 'unwritable' }), diagnostic };
+    return { xml: packageMetadata({ ...head, bytes, omitted: 'unwritable' }), diagnostic };
   }
   if (bytes.length > SVG_PACKAGE_MAX_BYTES) {
     const diagnostic = { code: 'FLX_EXPORT_PACKAGE_OMITTED', message: `the package is ${bytes.length} bytes, over ${SVG_PACKAGE_MAX_BYTES}: left out` };
-    return { xml: packageMetadata({ bytes: undefined, schema, screen: screenId, omitted: 'too-large' }), diagnostic };
+    return { xml: packageMetadata({ ...head, bytes: undefined, omitted: 'too-large' }), diagnostic };
   }
-  return { xml: packageMetadata({ bytes, schema, screen: screenId }), diagnostic: undefined };
+  return { xml: packageMetadata({ ...head, bytes }), diagnostic: undefined };
 }
 
 /** `markup` with `inserted` after its `<title>` and `<desc>` (the first children, for readers). */
@@ -147,7 +163,14 @@ export async function exportSvg(file: DocumentFile, options: SvgExportOptions = 
     seen.add(key);
     diagnostics.push(d);
   };
-  const view = createElement(ScreenSvgView, { store, screenId, mode: 'export', registries, ...(ports.theme === undefined ? {} : { theme: ports.theme }) });
+  const view = createElement(ScreenSvgView, {
+    store,
+    screenId,
+    mode: 'export',
+    registries,
+    ...(ports.theme === undefined ? {} : { theme: ports.theme }),
+    ...(options.selection === undefined ? {} : { selection: options.selection }),
+  });
   const surface = {
     report,
     ...(ports.measurer === undefined ? {} : { measurer: ports.measurer }),
@@ -158,8 +181,7 @@ export async function exportSvg(file: DocumentFile, options: SvgExportOptions = 
   );
   let svg = markup;
   if (options.package !== false) {
-    const master = store.query((v) => appliedMaster(v, screenId).master)();
-    const meta = await metadata(file, screenId, master, ports.writePackage);
+    const meta = await metadata(file, packageScope(store, screenId, options.selection), ports.writePackage);
     if (meta.diagnostic !== undefined) diagnostics.push(meta.diagnostic);
     svg = afterTitle(markup, meta.xml);
   }

@@ -2,7 +2,8 @@
 // master, the screen's theme as core picks it, its background, the element order and the registered views), drawn as one SVG 1.1
 // document by each view's `Svg` leaf, the built-in views' leaves supplied here. Its own entry, so the player and the editor's
 // initial bundle never carry it (NFR-SIZE-001/002); the exporters render it with react-dom/server.
-import type { Store } from '@fluxion/core';
+import type { Store, TextMeasurer } from '@fluxion/core';
+import type { Box } from '@fluxion/geometry';
 import type { RecordId, ScreenRecord } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
 import { type ComponentType, createElement, type ReactNode, useContext, useMemo } from 'react';
@@ -18,8 +19,9 @@ import { useScreenTheme } from './screen-theme.js';
 import { screenBackground } from './screen-view.js';
 import { ShapeView } from './shape-view.js';
 import { FrameSvg, ImageSvg } from './svg-boxes.js';
-import { ConnectorSvg } from './svg-connector.js';
-import { ScreenSvg, SvgSurface } from './svg-surface.js';
+import { ConnectorSvg, connectorExtent } from './svg-connector.js';
+import { selectionRoots, selectionScope, selectionViewBox } from './svg-selection.js';
+import { ScreenSvg, SvgSurface, useSvgMeasurer } from './svg-surface.js';
 import { TableSvg } from './svg-table.js';
 import { GroupSvg, ShapeSvg, TextSvg } from './svg-views.js';
 import { TableView } from './table-view.js';
@@ -62,7 +64,35 @@ export type ScreenSvgViewProps = {
   readonly registries?: RenderRegistries;
   /** Elements a build hides (default none). */
   readonly hidden?: ReadonlySet<RecordId>;
+  /**
+   * Export these elements of the screen instead of all of it (ADR-0056 item 6): with their members, connectors whose two ends are
+   * drawn, no master or background, in a viewBox of their outset world bounds rounded out to whole px.
+   */
+  readonly selection?: readonly RecordId[];
 };
+
+/** A selection's lists, hidden elements and viewBox (the screen area when nothing drawn has a box). */
+function scope(
+  store: Store,
+  screenId: RecordId,
+  selected: readonly RecordId[],
+  frame: { readonly theme: Theme; readonly area: Box; readonly registries: RenderRegistries; readonly measurer: TextMeasurer },
+) {
+  const { theme, area } = frame;
+  const { drawn, hidden, roots } = store.query((view) => {
+    const scoped = selectionScope(view, screenId, selected);
+    return { ...scoped, roots: selectionRoots(view, screenId, scoped.drawn) };
+  })();
+  // a connector's extent reads its route and hops as signals of their own, so outside the view's query
+  const extents = new Map<RecordId, Box | undefined>();
+  for (const id of drawn) {
+    if ((store.get(id) as { readonly transform?: unknown } | undefined)?.transform === undefined) {
+      extents.set(id, connectorExtent(store, frame.registries, id, { theme, measurer: frame.measurer, hidden }));
+    }
+  }
+  const box = store.query((view) => selectionViewBox(view, drawn, theme, (id) => extents.get(id)))() ?? area;
+  return { hidden, selection: { roots, box } };
+}
 
 /**
  * One screen of `store` as an SVG 1.1 document (the root `<svg>`): nothing outside `export` mode. Text is laid out with the
@@ -78,18 +108,22 @@ export function ScreenSvgView(props: ScreenSvgViewProps): ReactNode {
   const registries = useMemo(() => props.registries ?? builtinRegistries(), [props.registries]);
   const screen = useValue(useMemo(() => store.record$(screenId), [store, screenId])) as ScreenRecord | undefined;
   const context = useContext(SvgSurface);
+  const measurer = useSvgMeasurer();
   if (!modePolicy(props.mode).svgSurface || screen?.type !== 'screen') return null;
   const area = screenArea(screen);
   const background = screenBackground(screen, master, theme);
   const surface = { ...context, theme, leaves: context.leaves ?? BUILTIN_SVG_LEAVES };
+  const scoped = props.selection === undefined ? undefined : scope(store, screenId, props.selection, { theme, area, registries, measurer });
+  const hidden = scoped === undefined ? props.hidden : new Set([...(props.hidden ?? []), ...scoped.hidden]);
   return createElement(
     SvgSurface.Provider,
     { value: surface },
-    createElement(ScreenSvg, { store, screen, area, background, master, registries, theme, hidden: props.hidden }),
+    createElement(ScreenSvg, { store, screen, area, background, master, registries, theme, hidden, selection: scoped?.selection }),
   );
 }
 
 export { ExportContext, type ExportText, type Svg, useExportText } from './export-text.js';
 export { FrameSvg, ImageSvg } from './svg-boxes.js';
+export { type SelectionScope, selectionScope, selectionViewBox } from './svg-selection.js';
 export { type SvgDiagnostic, SvgSurface, type SvgSurfaceContext } from './svg-surface.js';
 export { TableSvg } from './svg-table.js';

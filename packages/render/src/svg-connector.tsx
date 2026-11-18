@@ -2,15 +2,18 @@
 // hops, trims and decoration), in screen coordinates, stroked in literal attributes; SVG 1.1 end markers (`orient="auto"`, the start
 // marker's path turned to point away from the line, since `auto-start-reverse` is SVG 2); and its labels laid out by layoutStyled,
 // centred on their points of the route.
-import { MARKER_SIZE, type MarkerDef, markerTrim, type TextMeasurer } from '@fluxion/core';
-import { roundCorners } from '@fluxion/geometry';
-import { labelPosition, type RoutePoint, routePoint, trimRoute } from '@fluxion/routing';
-import type { ConnectorElement } from '@fluxion/schema';
+import { type FontSpec, layoutStyled, MARKER_SIZE, type MarkerDef, markerTrim, type Store, type TextMeasurer } from '@fluxion/core';
+import { type Box, boxUnion, type PathCommand, pathBounds, pathFromCommands, roundCorners } from '@fluxion/geometry';
+import { labelPosition, type RoutePoint, routeConnector, routePoint, trimRoute } from '@fluxion/routing';
+import type { ConnectorElement, RecordId } from '@fluxion/schema';
 import type { ResolvedFont, Theme } from '@fluxion/theme';
 import { type ReactNode, type SVGAttributes, useId } from 'react';
 import { decoratedRoute, hopped, markerOf, partPaint, styled, useRouted } from './connector-view.js';
+import { hopsOfConnector, visibleHops } from './line-jumps.js';
 import { pathData } from './path-data.js';
-import type { ElementViewProps } from './registries.js';
+import type { ElementViewProps, RenderRegistries } from './registries.js';
+import { richBlocks } from './rich-layout.js';
+import { withSettledRoutes } from './settled-routes.js';
 import { lit, n3, opacityOf, strokeAttrs } from './svg-paint.js';
 import { useSvgMeasurer } from './svg-surface.js';
 import { SvgLabel } from './svg-text.js';
@@ -86,6 +89,66 @@ function ConnectorLabel(props: {
       box={{ x: at.x - w / 2, y: at.y - size, w, h: 2 * size, padding: 0 }}
     />
   );
+}
+
+/** The tight bounds of `commands` widened by `by` on every side, or undefined when they draw nothing. */
+function widened(commands: readonly PathCommand[], by: number): Box | undefined {
+  const path = pathFromCommands(commands);
+  const b = path.ok ? pathBounds(path.value) : null;
+  return b === null ? undefined : { x: b.x - by, y: b.y - by, w: b.w + 2 * by, h: b.h + 2 * by };
+}
+
+/**
+ * Where connector `id` draws, as {@link ConnectorSvg} draws it: its route with its hops, widened by half its stroke and, with any
+ * marker, the marker's length; its decoration's strokes; and its labels as laid out. Undefined when it has no route (a selection
+ * export's viewBox, ADR-0056 item 6).
+ *
+ * @public
+ */
+export function connectorExtent(
+  store: Store,
+  registries: RenderRegistries,
+  id: RecordId,
+  frame: { readonly theme: Theme; readonly measurer: TextMeasurer; readonly hidden?: ReadonlySet<RecordId> | undefined },
+): Box | undefined {
+  const { theme, measurer } = frame;
+  const ctx = withSettledRoutes(store, registries);
+  const hops = hopsOfConnector(store, ctx, id)();
+  return store.query((view) => {
+    const element = view.get(id) as ConnectorElement | undefined;
+    const route = element === undefined ? undefined : routeConnector(view, ctx, id);
+    if (element === undefined || route === undefined) return undefined;
+    const { style, lengths } = styled(id, element.style, element.route.cornerRadius, theme);
+    const { radius, width } = lengths;
+    const drawn = roundCorners(route.commands, radius);
+    const marked = [element.markers?.start, element.markers?.end, element.markers?.mid].some((m) => markerOf(registries, m) !== undefined);
+    const line = hopped({ commands: route.commands, hops: visibleHops(view, hops, frame.hidden) }, drawn, radius);
+    const boxes = [widened(line, width / 2 + (marked ? MARKER_SIZE * width : 0))];
+    for (const d of decoratedRoute(registries, element.route.type, line, width).decorated) boxes.push(widened(d.commands, d.width / 2));
+    boxes.push(...labelBoxes(element, drawn, style.font, { theme, measurer }));
+    return union(boxes);
+  })();
+}
+
+/** The union of the defined `boxes`, or undefined when none is. */
+const union = (boxes: readonly (Box | undefined)[]): Box | undefined =>
+  boxes.reduce<Box | undefined>((acc, b) => (b === undefined ? acc : acc === undefined ? b : boxUnion(acc, b)), undefined);
+
+/** Where `element`'s labels draw on `route`: their text laid out as {@link ConnectorLabel} lays it, centred on their points. */
+function labelBoxes(
+  element: ConnectorElement,
+  route: readonly PathCommand[],
+  font: ResolvedFont,
+  frame: { readonly theme: Theme; readonly measurer: TextMeasurer },
+): Box[] {
+  const concrete = concreteFont(font, frame.theme);
+  const base: FontSpec = { ...concrete, weight: concrete.weight ?? 400, style: concrete.style ?? 'normal' };
+  return (element.labels ?? []).map((label) => {
+    const blocks = richBlocks(label.text, frame.theme).blocks;
+    const laid = layoutStyled(blocks, base, frame.measurer, { maxWidth: Math.max(1, 40 * base.size), align: 'center' });
+    const at = labelPosition(route, label.position, label.offset);
+    return { x: at.x - laid.width / 2, y: at.y - laid.height / 2, w: laid.width, h: laid.height };
+  });
 }
 
 /**

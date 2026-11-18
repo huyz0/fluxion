@@ -223,8 +223,50 @@ leg('FR-EXP-004 an exported fixture is standalone SVG 1.1: text as measured tspa
       'FR-EXP-004: an exported fixture is valid SVG 1.1',
       'FR-EXP-004: text is measured tspans with no foreignObject',
       'FR-EXP-004: the package is in metadata',
+      'FR-EXP-004: the checker refuses what an SVG 1.1 export must not hold',
     ],
   }),
+);
+// the leaves M20.12's splits drew (M20.40, M20.41), the selection scope and the browser build's bytes (M20.43, cp5 F1)
+leg('FR-EXP-004 the boxed leaves, rich-text marks, tables and regions, the selection scope, and browser bytes equal to Node', () =>
+  all(
+    () =>
+      tests('packages/exporters/src/svg-boxes.test.ts', {
+        named: [
+          'FR-EXP-004: a frame clips its members in screen coordinates, turned as it is; clip false does not',
+          'FR-EXP-004: images, image fills and component snapshots draw from data URLs; without bytes they are reported, never fetched',
+          'FR-EXP-004: shadows and effects are SVG 1.1 filters with literal floods; artwork is inlined with literal colours and its own ids',
+        ],
+      }),
+    () =>
+      tests('packages/exporters/src/svg-text.test.ts', {
+        named: [
+          'FR-EXP-004: marks draw as text-decoration, fills, highlight rectangles and links; list items have their markers',
+          "FR-EXP-004: an in-document screen link draws as text, and a block's own alignment places its lines",
+          'FR-EXP-004: an unsafe link href draws as text, never as <a>',
+          'FR-EXP-004: a bullet nested past the second level is a circle, as the html leaf draws it',
+          'FR-EXP-004: a table draws each cell at its place with its border, fill and text',
+          "FR-EXP-004: a shape's further text regions and icon slots draw in their boxes; the first region's key is not drawn twice",
+        ],
+      }),
+    () =>
+      tests('packages/exporters/src/svg-selection.test.ts', {
+        named: [
+          'FR-EXP-004: a selection draws its elements and their members, and a connector only when both its ends are drawn',
+          'FR-EXP-004: the viewBox is the outset world bounds of what is drawn, rounded out to whole px',
+          'FR-EXP-004: a selection on a mastered screen draws no master, and its package holds the selection and the closure it names',
+          "FR-EXP-004: a selected group's member connector is drawn by its ends too, never by its group (M20.43 r2 F1)",
+          'FR-EXP-004: the viewBox adds a stroke to a hard shadow, never the larger of the two (M20.43 r1 F1)',
+          "FR-EXP-004: the viewBox takes in a drawn connector's route, markers and labels, not only the boxes (M20.43 r1 F2)",
+          'FR-EXP-004: a selected member without its group keeps the parent chain in the package, which reopens unrepaired (M20.43 r1 F3)',
+        ],
+      }),
+    () =>
+      tests('packages/exporters/src/svg.browser.test.ts', {
+        project: 'browser',
+        named: ["FR-EXP-004: the studio's export bytes equal Node's for the same fixture"],
+      }),
+  ),
 );
 leg(`FR-EXP-004 rasterized SVG vs present mode within PARITY_MAX_DIFF_PCT (${t('PARITY_MAX_DIFF_PCT')} %) in three browsers`, () =>
   browsers(['e2e/export.svg-parity.spec.ts']),

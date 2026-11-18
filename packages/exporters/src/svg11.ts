@@ -232,12 +232,15 @@ export function parseXml(xml: string): { readonly nodes: readonly Node[] } | { r
   return { nodes: reader.nodes };
 }
 
-/** Whether `node` lies inside an `<a>` (where a link may point outside the file). */
-const inLink = (node: Node): boolean => (node.parent === undefined ? false : node.parent.name === 'a' || inLink(node.parent));
+/** A link a standalone file may follow: web and mail addresses only (never `javascript:` or another scheme). */
+const OUTBOUND = /^(?:https?:|mailto:)/i;
 
-/** The problem of a reference `value` of `node`: a fragment naming nothing, or (but on or in a link) anything but a `data:` URL. */
+/**
+ * The problem of a reference `value` of `node`: a fragment naming nothing, or anything but a `data:` URL, except an `<a>`'s own
+ * web or mail link (what is drawn inside a link still refers to nothing outside the file).
+ */
 function hrefProblem(node: Node, value: string, ids: ReadonlySet<string>): string | undefined {
-  const bad = value.startsWith('#') ? !ids.has(value.slice(1)) : !value.startsWith('data:') && node.name !== 'a' && !inLink(node);
+  const bad = value.startsWith('#') ? !ids.has(value.slice(1)) : !value.startsWith('data:') && !(node.name === 'a' && OUTBOUND.test(value.trim()));
   return bad ? `<${node.name}> refers to ${value.slice(0, 40)}` : undefined;
 }
 

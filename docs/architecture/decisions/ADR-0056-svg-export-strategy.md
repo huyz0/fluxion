@@ -314,4 +314,11 @@ Fonts:
   `glyphs` to the font inventory with the fonts (M20.13). `useExportText` returns the lines, the text's font and colour as literals
   and its top for the vertical alignment; outline paths come with M20.13's outlining. The sdk gains `@types/react` and
   `@types/react-dom` as dev dependencies for its test pack view; the subpath's externality is a harness case on the built entry.
+- Amended in M20.43's commit: a selection export also draws no screen background (the selection is its own picture). A connector is
+  drawn when both its bound ends are drawn, whether or not it is selected or a member of a selected group; one with a free or undrawn end is left
+  out. The viewBox widens each boxed element's world bounds by its filter region's margin (its stroke's reach plus its shadows'
+  offset, 1.5 × blur and spread and its effects), or by the stroke's reach alone without one, and takes in each drawn connector's
+  route with hops, half its stroke and its markers' length, decoration strokes and laid-out labels. The pruned package keeps the
+  screen's drawn elements, their parent chains (a member names its parent) and its master whole, since the screen names it.
+  The checker allows a reference outside the file only as an `<a>`'s own `http:`, `https:` or `mailto:` link.
 - Related: ADR-0015, ADR-0026, ADR-0036, ADR-0051, ADR-0052, ADR-0054, ADR-0148, ADR-0186, ADR-0192, ADR-0201, ADR-0220.

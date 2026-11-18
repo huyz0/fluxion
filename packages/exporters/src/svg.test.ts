@@ -85,6 +85,10 @@ describe('exportSvg (ADR-0056, M20.12)', () => {
     expect(bad('<rect fill="url(#missing)"/>')).not.toEqual([]);
     expect(bad('<rect id="a"/><rect id="a"/>')).not.toEqual([]);
     expect(bad('<script/>')).not.toEqual([]);
+    // a link may point outside the file only as an <a>'s own web or mail address (M20.43, cp5 F1)
+    expect(bad('<a xlink:href="https://example.com/"><text>x</text></a>')).toEqual([]);
+    expect(bad('<a xlink:href="javascript:alert(1)"><text>x</text></a>')).not.toEqual([]);
+    expect(bad('<a xlink:href="https://example.com/"><image xlink:href="https://example.com/a.png"/></a>')).not.toEqual([]);
   });
 
   it('FR-EXP-004: text is measured tspans with no foreignObject', async () => {
