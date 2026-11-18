@@ -7,8 +7,14 @@
 import type { ResolvedEffect, ResolvedShadow } from '@fluxion/theme';
 import type { ReactNode } from 'react';
 
+/** Turns a resolved colour into the literal an svg-surface export writes (ADR-0056 item 8); absent, colours stay CSS. */
+type Literal = ((css: string) => string) | undefined;
+
+/** A flood of `css`: a presentation attribute of its literal on the svg surface, else CSS so the screen's variables apply. */
+const flood = (css: string, literal: Literal) => (literal === undefined ? { style: { floodColor: css } } : { floodColor: literal(css) });
+
 /** A shadow's primitives, its result named `name`. */
-function Shadow(props: { readonly s: ResolvedShadow; readonly name: string }): ReactNode {
+function Shadow(props: { readonly s: ResolvedShadow; readonly name: string; readonly literal: Literal }): ReactNode {
   const { s, name } = props;
   // an inset shadow is cast by the outside of the shape: its alpha inverted
   const source = s.inset ? `${name}-out` : 'SourceAlpha';
@@ -24,7 +30,7 @@ function Shadow(props: { readonly s: ResolvedShadow; readonly name: string }): R
       {s.spread === 0 ? null : <feMorphology in={source} operator={s.spread > 0 ? 'dilate' : 'erode'} radius={Math.abs(s.spread)} result={spread} />}
       <feGaussianBlur in={spread} stdDeviation={s.blur / 2} result={`${name}-blur`} />
       <feOffset in={`${name}-blur`} dx={s.x} dy={s.y} result={`${name}-offset`} />
-      <feFlood style={{ floodColor: s.color }} result={`${name}-color`} />
+      <feFlood {...flood(s.color, props.literal)} result={`${name}-color`} />
       <feComposite in={`${name}-color`} in2={`${name}-offset`} operator="in" result={s.inset ? `${name}-all` : name} />
       {s.inset ? <feComposite in={`${name}-all`} in2="SourceAlpha" operator="in" result={name} /> : null}
     </>
@@ -32,7 +38,7 @@ function Shadow(props: { readonly s: ResolvedShadow; readonly name: string }): R
 }
 
 /** Effect `k` applied to the result `from`, its own result named `effect-k`. */
-function Effect(props: { readonly e: ResolvedEffect; readonly k: number; readonly from: string }): ReactNode {
+function Effect(props: { readonly e: ResolvedEffect; readonly k: number; readonly from: string; readonly literal: Literal }): ReactNode {
   const { e, k, from } = props;
   const name = `effect-${k}`;
   if (e.type === 'blur') return <feGaussianBlur in={from} stdDeviation={e.radius / 2} result={name} />;
@@ -40,7 +46,7 @@ function Effect(props: { readonly e: ResolvedEffect; readonly k: number; readonl
   return (
     <>
       <feGaussianBlur in={from} stdDeviation={e.radius / 2} result={`${name}-blur`} />
-      <feFlood style={{ floodColor: e.color }} result={`${name}-color`} />
+      <feFlood {...flood(e.color, props.literal)} result={`${name}-color`} />
       <feComposite in={`${name}-color`} in2={`${name}-blur`} operator="in" result={`${name}-light`} />
       <feMerge result={name}>
         <feMergeNode in={`${name}-light`} />
@@ -70,8 +76,10 @@ export function EffectsFilter(props: {
   readonly effects: readonly ResolvedEffect[];
   readonly box: { readonly w: number; readonly h: number };
   readonly margin: number;
+  /** Writes colours as literals (the svg surface, ADR-0056 item 8). */
+  readonly literal?: (css: string) => string;
 }): ReactNode {
-  const { id, shadows, effects, box } = props;
+  const { id, shadows, effects, box, literal } = props;
   if (shadows.length === 0 && effects.length === 0) return null;
   const m = reach(shadows, effects, props.margin);
   const below = shadows.flatMap((s, k) => (s.inset ? [] : [`shadow-${k}`]));
@@ -80,7 +88,7 @@ export function EffectsFilter(props: {
     <filter id={id} filterUnits="userSpaceOnUse" x={-m} y={-m} width={box.w + 2 * m} height={box.h + 2 * m}>
       {shadows.map((s, k) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: a style's shadows have no identity but their order
-        <Shadow key={k} s={s} name={`shadow-${k}`} />
+        <Shadow key={k} s={s} name={`shadow-${k}`} literal={literal} />
       ))}
       <feMerge result="effect--1">
         {[...below, 'SourceGraphic', ...over].map((name) => (
@@ -89,7 +97,7 @@ export function EffectsFilter(props: {
       </feMerge>
       {effects.map((e, k) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: a style's effects have no identity but their order
-        <Effect key={k} e={e} k={k} from={`effect-${k - 1}`} />
+        <Effect key={k} e={e} k={k} from={`effect-${k - 1}`} literal={literal} />
       ))}
     </filter>
   );

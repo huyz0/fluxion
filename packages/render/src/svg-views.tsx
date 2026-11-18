@@ -1,21 +1,26 @@
 // The built-in views' svg-surface leaves (ADR-0056 item 1, FR-EXP-004): a shape's outline (rounded, its stroke centred, inside or
 // outside, its decorations) in literal paint, with its label laid out in its text region; a text element's text in its box; a group,
-// which draws nothing of its own. Each draws in its box's own coordinates, as the html leaf does. What this surface does not draw
-// yet (an image fill, artwork, effects, table regions: M20.40) is reported, not rasterized.
+// which draws nothing of its own. Each draws in its box's own coordinates, as the html leaf does. A shape's image fill is a pattern of
+// the asset's `data:` URL, its artwork is inlined with literal colours and prefixed ids, and its shadows and effects are SVG 1.1
+// filter primitives with literal flood colours, all as the html leaf draws them.
 import { fitShapeText, type ShapeDef, shrinksText, TEXT_FIT_DEFAULTS, type TextMeasurer, textRegion } from '@fluxion/core';
 import { roundCorners } from '@fluxion/geometry';
 import type { ShapeElement, TextElement } from '@fluxion/schema';
 import { resolveStyle, type Theme } from '@fluxion/theme';
 import { type ReactNode, useId } from 'react';
+import { useArtwork } from './artwork-view.js';
+import type { ImageSource } from './assets.js';
 import { concreteLength } from './css-values.js';
+import { EffectsFilter } from './effects.js';
 import { plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
 import { styledBlocks } from './rich-layout.js';
 import { useOutline } from './shape-outline.js';
 import { viewStyle } from './shape-style.js';
-import { opacityOf, strokeAttrs, svgPaint } from './svg-paint.js';
-import { SvgPlaceholder, useSvgMeasurer, useSvgReport } from './svg-surface.js';
+import { strokeReach } from './shape-view.js';
+import { imagePaint, lit, opacityOf, strokeAttrs, svgPaint } from './svg-paint.js';
+import { SvgPlaceholder, useSvgImage, useSvgMeasurer } from './svg-surface.js';
 import { SvgLabel } from './svg-text.js';
 import { concreteFont } from './text-measurer.js';
 
@@ -53,13 +58,15 @@ function SvgOutline(props: {
   );
 }
 
-/** What of a shape's style this surface does not draw yet, as findings. */
-function unsupported(style: ReturnType<typeof viewStyle>, artwork: boolean): string[] {
-  return [
-    ...(style.fill.type === 'image' ? ['an image fill'] : []),
-    ...(artwork ? ['artwork'] : []),
-    ...(style.shadows.length + style.effects.length > 0 ? ['effects'] : []),
-  ];
+/** A closed outline's fill: an image pattern or a colour or gradient, in literals (an open outline fills nothing). */
+function shapeFill(
+  style: ReturnType<typeof viewStyle>,
+  closed: boolean,
+  at: { readonly id: string; readonly w: number; readonly h: number; readonly theme: Theme; readonly image: ImageSource | undefined },
+) {
+  if (!closed) return { fill: 'none', defs: undefined };
+  const box = { w: at.w, h: at.h };
+  return style.fill.type === 'image' ? imagePaint(style.fill, at.id, box, at.image) : svgPaint(style.fill, at.id, box, at.theme);
 }
 
 /** Where a shape's label goes: its definition's text region with the fit's padding, at the size a shrink fit chose. */
@@ -85,33 +92,52 @@ function shapeLabel(element: ShapeElement, def: ShapeDef, style: ReturnType<type
  * @public
  */
 export function ShapeSvg(props: ElementViewProps): ReactNode {
-  const { theme, registries } = props;
+  const { theme, registries, store } = props;
   const element = props.element as ShapeElement;
   const ids = useId().replace(/[^\w-]/g, '');
-  const report = useSvgReport();
   const measurer = useSvgMeasurer();
   const def = registries.shapeDefs.get(element.defId);
   const { w, h } = element.transform;
   const outlined = useOutline(def, element, { w, h });
-  if (def === undefined || outlined === undefined || !outlined.ok) return <SvgPlaceholder {...props} />;
   const style = viewStyle(element, def, theme);
-  for (const what of unsupported(style, def.artwork !== undefined))
-    report({ code: 'FLX_EXPORT_UNSUPPORTED', elementId: element.id, message: `${what} is not drawn on the svg surface yet` });
+  const image = useSvgImage(store, style.fill.type === 'image' ? style.fill.assetId : undefined, element.id);
+  const artwork = useArtwork(def, { w, h }, { prefix: `fx-art-${ids}`, theme, fonts: registries.artworkFonts?.get(element.defId), literal: true });
+  if (artwork === false || def === undefined || outlined === undefined || !outlined.ok) return <SvgPlaceholder {...props} />;
   const closed = outlined.value.path.closed;
-  const { fill, defs } = closed ? svgPaint(style.fill, `fx-fill-${ids}`, { w, h }, theme) : { fill: 'none', defs: undefined };
+  const { fill, defs } = shapeFill(style, closed, { id: `fx-fill-${ids}`, w, h, theme, image });
   const radius = concreteLength(style.radius, theme);
   const drawn = closed && radius > 0 && outlined.fillRule === undefined ? roundCorners(outlined.value.commands, radius) : outlined.value.commands;
   const stroke = strokeAttrs(style.stroke, theme);
+  const align = closed ? style.stroke.align : 'center';
   const opacity = opacityOf(style.opacity, theme);
   const label = shapeLabel(element, def, style, { theme, measurer });
-  return (
-    <g opacity={opacity === 1 ? undefined : opacity}>
-      {defs === undefined ? null : <defs>{defs}</defs>}
-      <SvgOutline d={pathData(drawn)} fill={fill} stroke={stroke} align={closed ? style.stroke.align : 'center'} ids={ids} fillRule={outlined.fillRule} />
+  const effected = style.shadows.length + style.effects.length > 0;
+  // imported paint replaces the outline and decorations, keeping the effects (as the html leaf draws it)
+  const paint = artwork ?? (
+    <>
+      <SvgOutline d={pathData(drawn)} fill={fill} stroke={stroke} align={align} ids={ids} fillRule={outlined.fillRule} />
       {outlined.value.decorations.map((d, k) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: decorations have stable definition order
         <path key={k} d={segmentsData(d)} fill="none" {...stroke} />
       ))}
+    </>
+  );
+  return (
+    <g opacity={opacity === 1 ? undefined : opacity}>
+      {defs === undefined && !effected ? null : (
+        <defs>
+          {defs}
+          <EffectsFilter
+            id={`fx-effects-${ids}`}
+            shadows={style.shadows}
+            effects={style.effects}
+            box={{ w, h }}
+            margin={strokeReach(stroke.strokeWidth, align, stroke.strokeLinejoin)}
+            literal={(css) => lit(css, theme) || 'none'}
+          />
+        </defs>
+      )}
+      {effected ? <g filter={`url(#fx-effects-${ids})`}>{paint}</g> : paint}
       <SvgLabel doc={element.text} font={style.font} opacity="1" box={label.box} theme={theme} measurer={measurer} size={label.size} />
     </g>
   );

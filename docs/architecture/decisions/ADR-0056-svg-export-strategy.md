@@ -303,5 +303,9 @@ Fonts:
   - Item 4 (`ExportContext`, `useExportText`, the `@fluxion/sdk/export` subpath kept external from render), the table, region,
     frame-clip, image, artwork, component-snapshot and effects leaves, rich-text marks (decorations, highlights, links, list
     markers), the selection scope and its `viewBox`, and the browser byte-parity case move to M20.40, which M20.13 depends on.
+    M20.40 draws the frame clip, image, image-fill, component-snapshot, effects and artwork leaves and splits the rest: tables,
+    regions and rich-text marks (M20.41), item 4's contract (M20.42), the selection scope and byte parity (M20.43). The svg surface
+    reads images only as `data:` URLs from the exporter's `assets` port; any other URL is reported (`FLX_EXPORT_ASSET_MISSING`)
+    and not written.
     Item 4's "peer" wording is corrected here: render stays a regular sdk dependency, kept external in the subpath's build.
 - Related: ADR-0015, ADR-0026, ADR-0036, ADR-0051, ADR-0052, ADR-0054, ADR-0148, ADR-0186, ADR-0192, ADR-0201, ADR-0220.

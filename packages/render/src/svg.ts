@@ -8,14 +8,16 @@ import type { Theme } from '@fluxion/theme';
 import { type ComponentType, createElement, type ReactNode, useContext, useMemo } from 'react';
 import { builtinRegistries } from './builtins.js';
 import { ConnectorView } from './connector-view.js';
-import { GroupView } from './container-views.js';
+import { FrameView, GroupView } from './container-views.js';
 import { screenArea } from './fit.js';
+import { ImageView } from './image-view.js';
 import { useMasterLayers } from './master-view.js';
 import { modePolicy, type RenderMode } from './mode-policy.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { useScreenTheme } from './screen-theme.js';
 import { screenBackground } from './screen-view.js';
 import { ShapeView } from './shape-view.js';
+import { FrameSvg, ImageSvg } from './svg-boxes.js';
 import { ConnectorSvg } from './svg-connector.js';
 import { ScreenSvg, SvgSurface } from './svg-surface.js';
 import { GroupSvg, ShapeSvg, TextSvg } from './svg-views.js';
@@ -35,6 +37,8 @@ export const BUILTIN_SVG_LEAVES: ReadonlyMap<ComponentType<ElementViewProps>, Co
   [TextView, TextSvg],
   [ConnectorView, ConnectorSvg],
   [GroupView, GroupSvg],
+  [FrameView, FrameSvg],
+  [ImageView, ImageSvg],
 ]);
 
 /**
@@ -82,4 +86,5 @@ export function ScreenSvgView(props: ScreenSvgViewProps): ReactNode {
   );
 }
 
+export { FrameSvg, ImageSvg } from './svg-boxes.js';
 export { type SvgDiagnostic, SvgSurface, type SvgSurfaceContext } from './svg-surface.js';

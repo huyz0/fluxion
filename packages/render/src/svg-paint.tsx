@@ -3,6 +3,7 @@
 // `<radialGradient>` with literal stops, laid out as the html surface lays them (CSS gradient geometry, M4.30).
 import type { ResolvedPaint, Theme } from '@fluxion/theme';
 import type { ReactNode, SVGAttributes } from 'react';
+import type { ImageSource } from './assets.js';
 import { concreteLength, substitute } from './css-values.js';
 
 /** `v` rounded to 1/1000 (no `-0`), as path data is. */
@@ -63,6 +64,33 @@ export function svgPaint(
     return { fill: `url(#${id})`, defs };
   }
   return { fill: 'none' };
+}
+
+/** How each image fit places the image in the box, as SVG preserveAspectRatio. */
+export const ASPECT: { readonly [fit: string]: string } = { cover: 'xMidYMid slice', contain: 'xMidYMid meet', fill: 'none' };
+
+/** The tile of an image whose asset records no natural size (as the html surface tiles it). */
+const TILE = 64;
+
+/**
+ * An image paint as a pattern `id` with the image's `data:` URL: fitted to the box, or repeated at its natural size (`tile`); nothing
+ * when the export has no image.
+ */
+export function imagePaint(
+  paint: Extract<ResolvedPaint, { type: 'image' }>,
+  id: string,
+  box: { readonly w: number; readonly h: number },
+  src: ImageSource | undefined,
+): { readonly fill: string; readonly defs?: ReactNode } {
+  if (src === undefined) return { fill: 'none' };
+  const tile = paint.fit === 'tile';
+  const [w, h] = tile ? [src.w ?? TILE, src.h ?? TILE] : [box.w, box.h];
+  const defs = (
+    <pattern id={id} patternUnits="userSpaceOnUse" width={n3(w)} height={n3(h)}>
+      <image xlinkHref={src.href} width={n3(w)} height={n3(h)} preserveAspectRatio={tile ? 'none' : (ASPECT[paint.fit] ?? 'xMidYMid slice')} />
+    </pattern>
+  );
+  return { fill: `url(#${id})`, defs };
 }
 
 /** A stroke as SVG presentation attributes. */

@@ -40,6 +40,7 @@ export type SvgExportOptions = {
 export type SvgExportPorts = {
     readonly measurer?: TextMeasurer;
     readonly registries?: RenderRegistries;
+    readonly assets?: (assetId: RecordId) => string | undefined;
     readonly theme?: Theme;
     readonly writePackage?: (document: DocumentFile) => Promise<Uint8Array | undefined>;
 };

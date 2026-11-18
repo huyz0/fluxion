@@ -36,6 +36,8 @@ export type SvgExportPorts = {
   readonly measurer?: TextMeasurer;
   /** Where element views and shape definitions are looked up (default: the built-ins over the document core's registries). */
   readonly registries?: RenderRegistries;
+  /** Asset bytes as `data:` URLs by asset id, for images, image fills and component snapshots (default: none, each reported). */
+  readonly assets?: (assetId: RecordId) => string | undefined;
   /** The theme (default: the screen's, as the view picks it). */
   readonly theme?: Theme;
   /** Writes the package `.flux` of the pruned document (default: format's writeFlux with no asset bytes); undefined leaves it out. */
@@ -146,7 +148,11 @@ export async function exportSvg(file: DocumentFile, options: SvgExportOptions = 
     diagnostics.push(d);
   };
   const view = createElement(ScreenSvgView, { store, screenId, mode: 'export', registries, ...(ports.theme === undefined ? {} : { theme: ports.theme }) });
-  const surface = { report, ...(ports.measurer === undefined ? {} : { measurer: ports.measurer }) };
+  const surface = {
+    report,
+    ...(ports.measurer === undefined ? {} : { measurer: ports.measurer }),
+    ...(ports.assets === undefined ? {} : { assets: ports.assets }),
+  };
   const markup = namespaced(
     renumberIds(renderToStaticMarkup(createElement(SvgSurface.Provider, { value: surface }, view)), `fx${shown.indexOf(screenId) + 1}-`),
   );

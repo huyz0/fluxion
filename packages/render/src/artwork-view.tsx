@@ -23,13 +23,14 @@ function identifiers(root: SvgArtworkNode, prefix: string): Map<string, string> 
   return ids;
 }
 
-function colors(artwork: SvgArtwork, theme: Theme): ReadonlyMap<string, string> {
+function colors(artwork: SvgArtwork, theme: Theme, literal: boolean): ReadonlyMap<string, string> {
   const result = new Map<string, string>();
   const resolve = colorResolver(theme);
-  for (const [literal, ref] of Object.entries(artwork.colors ?? {})) {
+  for (const [source, ref] of Object.entries(artwork.colors ?? {})) {
     const path = tokenPath(ref);
     const resolved = resolve(path);
-    if (resolved.ok && isCssColor(resolved.value)) result.set(literal, `var(--fx-${path.split('.').join('-')}, ${literal})`);
+    // the svg surface writes the token's value itself (no `var()`, ADR-0056 item 8)
+    if (resolved.ok && isCssColor(resolved.value)) result.set(source, literal ? resolved.value : `var(--fx-${path.split('.').join('-')}, ${source})`);
   }
   return result;
 }
@@ -80,12 +81,17 @@ export function ArtworkView(props: {
   readonly w: number;
   readonly h: number;
   readonly theme: Theme;
+  /** Draws for the svg surface: token colours as literals, and only SVG 1.1 attributes on the outer `<svg>`. */
+  readonly literal?: boolean | undefined;
 }): ReactNode {
   const { artwork, prefix, w, h, theme } = props;
   const { x, y, width, height } = artwork.viewBox;
-  const context = { ids: identifiers(artwork.root, prefix), colors: colors(artwork, theme) };
+  const literal = props.literal === true;
+  const context = { ids: identifiers(artwork.root, prefix), colors: colors(artwork, theme, literal) };
+  const html = literal ? {} : { 'aria-hidden': 'true' as const, className: 'fx-artwork' };
   return (
-    <svg aria-hidden="true" className="fx-artwork" width={w} height={h} viewBox={`${x} ${y} ${width} ${height}`} preserveAspectRatio="none">
+    // biome-ignore lint/a11y/noSvgWithoutTitle: decoration of its shape; hidden on the html surface, under its element's title on the svg surface
+    <svg {...html} width={w} height={h} viewBox={`${x} ${y} ${width} ${height}`} preserveAspectRatio="none">
       {painted(artwork.root, 'root', context)}
     </svg>
   );
@@ -106,12 +112,17 @@ function checkedArtwork(def: ShapeDef | undefined, fonts: readonly ArtworkFontBi
 export function useArtwork(
   def: ShapeDef | undefined,
   size: { readonly w: number; readonly h: number },
-  paint: { readonly prefix: string; readonly theme: Theme; readonly fonts?: readonly ArtworkFontBinding[] | undefined },
+  paint: {
+    readonly prefix: string;
+    readonly theme: Theme;
+    readonly fonts?: readonly ArtworkFontBinding[] | undefined;
+    readonly literal?: boolean | undefined;
+  },
 ): ReactNode | false | undefined {
-  const { prefix, theme, fonts } = paint;
+  const { prefix, theme, fonts, literal } = paint;
   const { w, h } = size;
   const artwork = useMemo(() => checkedArtwork(def, fonts), [def, fonts]);
   if (artwork === undefined) return undefined;
   if (artwork === false || !artworkFits(artwork, w, h)) return false;
-  return <ArtworkView artwork={artwork} prefix={prefix} w={w} h={h} theme={theme} />;
+  return <ArtworkView artwork={artwork} prefix={prefix} w={w} h={h} theme={theme} literal={literal} />;
 }

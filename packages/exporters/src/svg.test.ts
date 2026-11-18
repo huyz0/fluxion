@@ -53,8 +53,8 @@ describe('exportSvg (ADR-0056, M20.12)', () => {
     }
     const mastered = await exportSvg(MASTERED.file, { screenId: MASTERED.screenId }, { registries });
     expect(svg11Problems(mastered.svg)).toEqual([]);
-    // every shape of the mastered screen has a view here: no placeholder stands in for one (the frame and the table are M20.40's)
-    expect(mastered.diagnostics.filter((d) => d.code === 'FLX_EXPORT_NO_SVG_VIEW').map((d) => d.message.split(' ')[0])).toEqual(['frame', 'table']);
+    // every shape of the mastered screen has a view here: no placeholder stands in for one (the table is M20.41's)
+    expect(mastered.diagnostics.filter((d) => d.code === 'FLX_EXPORT_NO_SVG_VIEW').map((d) => d.message.split(' ')[0])).toEqual(['table']);
     expect(mastered.svg).toContain('fluxion:master="01juEngAtRB8wyUaaRvkVH"');
     await expect(mastered.svg).toMatchFileSnapshot('../__golden__/masters-tables.svg');
     // what is not drawn is reported, never silently dropped

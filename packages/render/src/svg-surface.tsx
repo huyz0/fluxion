@@ -4,9 +4,11 @@
 // they are stored in screen coordinates; a connector draws in screen coordinates; the master's elements draw beneath the screen's.
 // A view with no `Svg` draws a labelled placeholder and reports `FLX_EXPORT_NO_SVG_VIEW`; nothing is rasterized silently.
 import type { MasterLayers, Store, TextMeasurer } from '@fluxion/core';
-import { type ElementRecord, type RecordId, type ScreenRecord, type Transform, transformRotation } from '@fluxion/schema';
-import type { ResolvedPaint, Theme } from '@fluxion/theme';
+import { type AssetRecord, type ElementRecord, type FrameElement, type RecordId, type ScreenRecord, type Transform, transformRotation } from '@fluxion/schema';
+import { type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
 import { type ComponentType, type Context, createContext, type ReactNode, useContext, useId } from 'react';
+import type { AssetUrls, ImageSource } from './assets.js';
+import { concreteLength } from './css-values.js';
 import type { ElementViewProps, RenderRegistries } from './registries.js';
 import { elementsInOrder } from './screen-order.js';
 import { createFixedMeasurer } from './server-measurer.js';
@@ -19,7 +21,11 @@ import { MeasurerContext } from './text-measurer.js';
  * @public
  */
 export type SvgDiagnostic = {
-  /** `FLX_EXPORT_NO_SVG_VIEW` (a view with no `Svg`: a placeholder is drawn), `FLX_EXPORT_UNSUPPORTED` (a paint or part this surface does not draw yet). */
+  /**
+   * `FLX_EXPORT_NO_SVG_VIEW` (a view with no `Svg`: a placeholder is drawn), `FLX_EXPORT_NO_SNAPSHOT` (a component with no snapshot),
+   * `FLX_EXPORT_ASSET_MISSING` (an asset with no `data:` URL is not drawn), `FLX_EXPORT_UNSUPPORTED` (a part this surface does not
+   * draw yet).
+   */
   readonly code: string;
   /** The element concerned. */
   readonly elementId?: string;
@@ -39,6 +45,8 @@ export type SvgSurfaceContext = {
   readonly report?: (diagnostic: SvgDiagnostic) => void;
   /** The svg leaves of views that carry none themselves, by their html component (the built-ins'). */
   readonly leaves?: ReadonlyMap<ComponentType<ElementViewProps>, ComponentType<ElementViewProps>>;
+  /** Asset bytes as `data:` URLs by asset id (images, image fills, component snapshots); an asset without one is not drawn. */
+  readonly assets?: AssetUrls;
 };
 
 /**
@@ -57,6 +65,23 @@ export function useSvgMeasurer(): TextMeasurer {
   return own ?? screen ?? FIXED;
 }
 
+/**
+ * The drawable image of `assetId` on the svg surface: its `data:` URL (an export never refers outside the file) with the asset's
+ * natural size; undefined, reported for `elementId`, when the export has none.
+ */
+export function useSvgImage(store: Store, assetId: string | undefined, elementId: string): ImageSource | undefined {
+  const { assets, report } = useContext(SvgSurface);
+  if (assetId === undefined) return undefined;
+  const href = assets?.(assetId as RecordId);
+  if (href === undefined || !href.startsWith('data:')) {
+    report?.({ code: 'FLX_EXPORT_ASSET_MISSING', elementId, message: `asset ${assetId} has no data URL here: it is not drawn` });
+    return undefined;
+  }
+  const record = store.get(assetId as RecordId);
+  const asset = record?.type === 'asset' ? (record as AssetRecord) : undefined;
+  return { href, ...(asset?.w === undefined ? {} : { w: asset.w }), ...(asset?.h === undefined ? {} : { h: asset.h }) };
+}
+
 /** The finding reporter of the svg surface (nothing when none listens). */
 export const useSvgReport = (): ((d: SvgDiagnostic) => void) => useContext(SvgSurface).report ?? (() => undefined);
 
@@ -64,7 +89,14 @@ export const useSvgReport = (): ((d: SvgDiagnostic) => void) => useContext(SvgSu
 export function SvgPlaceholder(props: ElementViewProps): ReactNode {
   const report = useSvgReport();
   const t = (props.element as { readonly transform?: Transform }).transform;
-  report({ code: 'FLX_EXPORT_NO_SVG_VIEW', elementId: props.element.id, message: `${props.element.kind} has no SVG view: a placeholder is drawn` });
+  const snapshotId = (props.element as { readonly snapshotAssetId?: string }).snapshotAssetId;
+  const snapshot = useSvgImage(props.store, snapshotId, props.element.id);
+  // a component is drawn from its rendered snapshot (ADR-0056 item 9); without one it gets the placeholder
+  if (snapshot !== undefined && t !== undefined)
+    return <image x={0} y={0} width={n3(t.w)} height={n3(t.h)} preserveAspectRatio="none" xlinkHref={snapshot.href} />;
+  if (props.element.kind === 'component' && snapshotId === undefined)
+    report({ code: 'FLX_EXPORT_NO_SNAPSHOT', elementId: props.element.id, message: 'the component has no snapshot: a placeholder is drawn' });
+  else report({ code: 'FLX_EXPORT_NO_SVG_VIEW', elementId: props.element.id, message: `${props.element.kind} has no SVG view: a placeholder is drawn` });
   if (t === undefined) return null;
   const label = `Unsupported element: ${props.element.kind}`;
   return (
@@ -98,9 +130,29 @@ type ListProps = {
   readonly leaves?: SvgSurfaceContext['leaves'];
 };
 
+/**
+ * The clip of a frame's members (ADR-0052, ADR-0056 item 8): its box with its corner radius, in screen coordinates and turned as the
+ * frame is; undefined for anything else and for a frame with `clip: false`.
+ */
+function frameClip(element: ElementRecord, theme: Theme, id: string): ReactNode {
+  // kind-switch-allow: a frame is the one kind whose members are clipped by its box
+  if (element.kind !== 'frame') return undefined;
+  const frame = element as FrameElement;
+  if (frame.clip === false) return undefined;
+  const t = frame.transform;
+  const { style } = resolveStyle(frame.style, 'frame', theme, ['records', frame.id, 'style']);
+  const radius = concreteLength(style.radius, theme);
+  return (
+    <clipPath id={id}>
+      <rect x={n3(t.x)} y={n3(t.y)} width={n3(t.w)} height={n3(t.h)} rx={radius > 0 ? n3(radius) : undefined} transform={turn(t)} />
+    </clipPath>
+  );
+}
+
 /** One element drawn by its view's `Svg` leaf, then its members. */
 function SvgElementNode(props: Omit<ListProps, 'parentId'> & { readonly id: RecordId }): ReactNode {
   const { store, id, registries, theme } = props;
+  const clipId = `fx-frame-${useId().replace(/[^\w-]/g, '')}`;
   const element = store.get(id) as ElementRecord | undefined;
   if (element?.type !== 'element') return null;
   const view = registries.elementViews.get(element.kind);
@@ -108,6 +160,8 @@ function SvgElementNode(props: Omit<ListProps, 'parentId'> & { readonly id: Reco
   const words = store.query((v) => view?.a11y?.(element, v))();
   const t = (element as { readonly transform?: Transform }).transform;
   const leaf = <View element={element} store={store} theme={theme} registries={registries} />;
+  const clip = frameClip(element, theme, clipId);
+  const members = <SvgElementList {...props} parentId={id} />;
   return (
     <>
       <g data-el-id={id} transform={t === undefined ? undefined : turn(t)}>
@@ -121,7 +175,14 @@ function SvgElementNode(props: Omit<ListProps, 'parentId'> & { readonly id: Reco
           </svg>
         )}
       </g>
-      <SvgElementList {...props} parentId={id} />
+      {clip === undefined ? (
+        members
+      ) : (
+        <>
+          <defs>{clip}</defs>
+          <g clipPath={`url(#${clipId})`}>{members}</g>
+        </>
+      )}
     </>
   );
 }

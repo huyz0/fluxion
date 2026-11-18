@@ -27,6 +27,12 @@ import { Theme } from '@fluxion/theme';
 export const BUILTIN_SVG_LEAVES: ReadonlyMap<ComponentType<ElementViewProps>, ComponentType<ElementViewProps>>;
 
 // @public
+export function FrameSvg(props: ElementViewProps): ReactNode;
+
+// @public
+export function ImageSvg(props: ElementViewProps): ReactNode;
+
+// @public
 export function ScreenSvgView(props: ScreenSvgViewProps): ReactNode;
 
 // @public
@@ -54,6 +60,7 @@ export type SvgSurfaceContext = {
     readonly measurer?: TextMeasurer;
     readonly report?: (diagnostic: SvgDiagnostic) => void;
     readonly leaves?: ReadonlyMap<ComponentType<ElementViewProps>, ComponentType<ElementViewProps>>;
+    readonly assets?: AssetUrls;
 };
 
 ```

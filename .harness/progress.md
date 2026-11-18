@@ -5254,3 +5254,9 @@ round-allowance: M20.4 review round 4 under Huy's 2026-11-05T11:04:52Z delegatio
 ## 2026-11-18 M20.44: CI red at e1234d3, Edit theme focus (Fixes-ci 44230337698)
 - macOS verify failed theme-editor.browser 'Edit theme opens the editor … Esc closes it': activeElement was body. Cause: `close` focused the button in the Esc handler, then the editor's pending mount effect focused its first input, which left with the dialog. The same flake hit a local staged run during M20.12.
 - Fix: ThemeEditorControl focuses the button in an effect once `editing` turns false (after the unmount). New case reproduces the order (Esc, then the input focused, in one act): red on the old close, green now.
+## 2026-11-18 M20.40: SVG export boxed leaves (split from M20.12)
+- Frame: FrameSvg draws its box in literals; the surface wraps its members in `<g clip-path>` with a clipPath of the box (radius, the frame's turn) in screen coordinates; `clip: false` adds none.
+- Images: SvgSurfaceContext.assets (exportSvg's new `assets` port) gives `data:` URLs; useSvgImage reports FLX_EXPORT_ASSET_MISSING for an asset without one (a blob or http URL is never written). ImageSvg crops, fits and masks as ImageView; shape image fills are patterns (imagePaint); a component draws its snapshot, else the placeholder with FLX_EXPORT_NO_SNAPSHOT.
+- Effects: EffectsFilter takes an optional `literal` (flood-color attribute instead of CSS); ShapeSvg wraps its paint in the filter, the label outside it. Artwork: ArtworkView/useArtwork take `literal` (token colours as values, no aria-hidden/class on the outer svg). html output unchanged.
+- svg11 checker: feMorphology radius and feComponentTransfer function attributes added (SVG 1.1). Golden __golden__/boxes.svg.
+- Rest split: M20.41 tables/regions/rich-text marks, M20.42 pack-view contract, M20.43 selection scope and byte parity; M20.13 depends on all. ADR-0056 More Information notes the split.
