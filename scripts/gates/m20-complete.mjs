@@ -114,15 +114,25 @@ for (const [number, what, rows] of [
   leg(`ADR-${number} (${what}) accepted before its feature rows (${rows[0]}-${rows.at(-1)})`, () => accepted(number, rows));
 
 // ── theme studio (plan tasks 3-9) ──────────────────────────────────────────────────────────────────
+// the theme editor's image seeds and theme files (M20.38, cp4 F1)
+const THEME_EDITOR = 'packages/editor/src/theme-editor/theme-editor.browser.test.tsx';
 leg('FR-THM-005 every generated text/background pair from 1-3 seeds is at least 4.5:1 (property)', () =>
   tests('packages/theme/src/palette.prop.test.ts', {
     named: ['FR-THM-005: every text/background pair from 1-3 seeds is at least 4.5:1', 'FR-THM-005: a locked role keeps its colour through shuffle'],
   }),
 );
-leg('FR-THM-005 a fixture image gives the same palette twice and its AA pairs hold', () =>
-  tests('packages/theme/src/palette-image.test.ts', {
-    named: ['FR-THM-005: a fixture image gives the same palette twice', 'FR-THM-005: an image palette holds its AA pairs'],
-  }),
+leg('FR-THM-005 a fixture image gives the same palette twice and its AA pairs hold; an image picked in the theme editor seeds it', () =>
+  all(
+    () =>
+      tests('packages/theme/src/palette-image.test.ts', {
+        named: ['FR-THM-005: a fixture image gives the same palette twice', 'FR-THM-005: an image palette holds its AA pairs'],
+      }),
+    () =>
+      tests(THEME_EDITOR, {
+        project: 'browser',
+        named: ['FR-THM-005: an image picked in the theme editor fills the seeds and generates its palette in one undo step'],
+      }),
+  ),
 );
 leg('FR-THM-006 per-kind default styles and variants resolve by reference; variant emphasis renders themed', () =>
   all(
@@ -153,6 +163,14 @@ leg('FR-THM-007 an exported theme file re-imports deep-equal; a theme pack regis
         named: ['FR-THM-007: an exported theme file re-imports deep-equal', 'FR-THM-007: a theme pack registers its themes'],
       }),
     () => tests('packages/editor/src/theme-picker.browser.test.tsx', { project: 'browser', named: ['FR-THM-007: pack themes appear in the theme picker'] }),
+    () =>
+      tests(THEME_EDITOR, {
+        project: 'browser',
+        named: [
+          'FR-THM-007: Export theme file hands over <slug>.tokens.json, which re-imports deep-equal',
+          'FR-THM-007: a Fluxion theme file imported in the theme editor adds a new theme record beside the edited one',
+        ],
+      }),
   ),
 );
 leg('FR-THM-009 the DTCG fixture round-trips equal and the CSS-variable export matches its golden', () =>
@@ -164,6 +182,14 @@ leg('FR-THM-009 the DTCG fixture round-trips equal and the CSS-variable export m
           'FR-THM-009: the canonical DTCG fixture round-trips equal',
           'FR-THM-009: a foreign ramp file imports with warnings and never fails',
           'FR-THM-009: the CSS-variable export matches its golden',
+        ],
+      }),
+    () =>
+      tests(THEME_EDITOR, {
+        project: 'browser',
+        named: [
+          'FR-THM-009: Export CSS hands over the CSS variables of the edited theme as a separate file',
+          'FR-THM-009: a foreign DTCG file imported in the theme editor is added as a theme record in one undo step, its warnings listed',
         ],
       }),
   ),
@@ -186,7 +212,7 @@ leg('NFR-A11Y-005 the contrast linter flags each combo below WCAG AA and the val
       }),
   ),
 );
-leg('theme.editor-live: changing primary recolours the canvas within one frame; Chromium, Firefox, WebKit; axe clean', () =>
+leg('theme.editor-live: changing primary recolours the canvas within one frame; theme file export and DTCG import; Chromium, Firefox, WebKit; axe clean', () =>
   e2e(['e2e/theme.editor-live.spec.ts']),
 );
 

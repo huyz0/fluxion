@@ -91,6 +91,7 @@ export const CHROME_CSS: string = `@layer fx.chrome {
 .fx-chrome-theme-section { display: flex; gap: 4px; }
 .fx-chrome-theme-role, .fx-chrome-theme-lock, .fx-chrome-theme-actions { display: flex; align-items: center; gap: 6px; }
 .fx-chrome-theme-role-name { flex: 1; }
+.fx-chrome-theme-warnings { margin: 0; padding-left: 16px; font-size: 12px; }
 .fx-chrome-variants { gap: 8px; flex-wrap: wrap; }
 .fx-chrome-variant { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .fx-chrome-variant-swatch { display: flex; align-items: center; justify-content: center; width: 48px; height: 32px; box-sizing: border-box; border-radius: 4px; }

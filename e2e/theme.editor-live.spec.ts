@@ -70,4 +70,34 @@ test.describe('theme editor', { tag: '@desktop' }, () => {
     await expect.poll(() => screenColor(editor, 'primary')).toBe(before);
     await expect(primary).toHaveValue(before);
   });
+
+  test('FR-THM-009: the theme editor exports the theme file and its CSS, and imports a foreign DTCG file onto the canvas in one undo step', async ({
+    page,
+    expectAccessible,
+  }) => {
+    const editor = new EditorPage(page);
+    await editor.open('example-shapes-gallery');
+    const before = await screenColor(editor, 'primary');
+    await editor.toolbarButton('Edit theme').click();
+    const panel = editor.themeEditor;
+    await expect(panel).toBeVisible();
+
+    const [tokens] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Export theme file', exact: true }).click()]);
+    expect(tokens.suggestedFilename()).toMatch(/^[a-z0-9-]+\.tokens\.json$/);
+    const [css] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Export CSS', exact: true }).click()]);
+    expect(css.suggestedFilename()).toMatch(/^[a-z0-9-]+\.css$/);
+
+    const foreign = { color: { brand: { $type: 'color', $value: '#7c3aed' }, primary: { $type: 'color', $value: '{color.brand}' } } };
+    await panel
+      .getByLabel('Import theme file')
+      .setInputFiles({ name: 'brand.tokens.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(foreign)) });
+    await expect(panel.getByText(/^Imported /)).toBeVisible();
+    await expect.poll(() => screenColor(editor, 'primary')).not.toBe(before);
+    await expect(panel.getByLabel('primary colour', { exact: true })).toHaveValue('#7c3aed');
+    await expect(panel.getByRole('list', { name: 'Theme file warnings' })).toBeVisible();
+    await expectAccessible();
+
+    await editor.toolbarButton('Undo').click();
+    await expect.poll(() => screenColor(editor, 'primary')).toBe(before);
+  });
 });

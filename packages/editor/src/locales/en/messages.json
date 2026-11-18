@@ -1,4 +1,10 @@
 {
+  "-BAOJx": {
+    "message": "Exported {0}.",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "-Tgvvf": {
     "message": "{value} (custom)",
     "origin": [
@@ -33,6 +39,12 @@
     "message": "label",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "0btnNX": {
+    "message": "Seeds from an image",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "0nAqyj": {
@@ -337,6 +349,12 @@
       "packages/editor/src/library/library-panel.tsx"
     ]
   },
+  "A7yGqo": {
+    "message": "Exported {0}; tokens left out are listed.",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "ACjxWW": {
     "message": "Zoom",
     "origin": [
@@ -499,6 +517,12 @@
     "message": "Applied to the canvas.",
     "origin": [
       "packages/editor/src/source-view/source-status.ts"
+    ]
+  },
+  "EONGwT": {
+    "message": "Export CSS",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "EOwry0": {
@@ -925,6 +949,12 @@
       "packages/editor/src/library/library-import-form.ts"
     ]
   },
+  "Q4jWsc": {
+    "message": "Reading the image…",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "QMGSLh": {
     "message": "Read {0}",
     "origin": [
@@ -941,6 +971,12 @@
     "message": "Import My shapes",
     "origin": [
       "packages/editor/src/library/my-shapes-section.tsx"
+    ]
+  },
+  "RLLPnN": {
+    "message": "Imported {0}.",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "Rr-tAv": {
@@ -1150,6 +1186,12 @@
       "packages/editor/src/canvas.tsx"
     ]
   },
+  "Zu50kc": {
+    "message": "the image could not be read",
+    "origin": [
+      "packages/editor/src/theme-editor/image-seeds.ts"
+    ]
+  },
   "ZvJXpi": {
     "message": "The document refused the change: {0}",
     "origin": [
@@ -1204,6 +1246,12 @@
       "packages/editor/src/navigator/section-header.tsx"
     ]
   },
+  "aC1BSH": {
+    "message": "Import theme file",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "aD15f5": {
     "message": "Unused",
     "origin": [
@@ -1238,6 +1286,12 @@
     "message": "Edit text: {region}",
     "origin": [
       "packages/editor/src/inline-text-editor.tsx"
+    ]
+  },
+  "bXt4oK": {
+    "message": "Export theme file",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "bb6_c9": {
@@ -1861,6 +1915,12 @@
       "packages/editor/src/library/library-import-form.ts"
     ]
   },
+  "hr94dO": {
+    "message": "Theme files",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
+    ]
+  },
   "hsax1u": {
     "message": "position",
     "origin": [
@@ -1951,6 +2011,12 @@
       "packages/editor/src/navigator/screen-row.tsx"
     ]
   },
+  "lg-iMU": {
+    "message": "the file is not JSON",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-files.ts"
+    ]
+  },
   "lvMnw2": {
     "message": "Separate tags with commas",
     "origin": [
@@ -1961,6 +2027,12 @@
     "message": "Add",
     "origin": [
       "packages/editor/src/font-picker.tsx"
+    ]
+  },
+  "mXwbiv": {
+    "message": "Theme file warnings",
+    "origin": [
+      "packages/editor/src/theme-editor/theme-editor.tsx"
     ]
   },
   "mcmuCe": {

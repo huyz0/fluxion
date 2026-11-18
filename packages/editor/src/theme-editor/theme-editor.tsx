@@ -9,7 +9,9 @@ import { t } from '@lingui/core/macro';
 import '../i18n.js';
 import { type CSSProperties, type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Execute } from '../pointer.js';
+import { imageSeeds } from './image-seeds.js';
 import { colorOf, type EditedTheme, editedTheme, generated, themeWrite, variantPreviews, withColor } from './theme-edit.js';
+import { cssFile, downloadFile, importThemeFile, type ThemeFile, tokensFile } from './theme-files.js';
 
 /**
  * Props of {@link ThemeEditor}.
@@ -25,6 +27,8 @@ export type ThemeEditorProps = {
   readonly screenId: RecordId | undefined;
   /** Close the editor. */
   readonly onClose: () => void;
+  /** Hand the person an exported file (default: a browser download). */
+  readonly download?: (file: ThemeFile) => void;
 };
 
 /** The theme edited, following the records (an undo, a theme switch or a master change shows at once). */
@@ -80,15 +84,27 @@ function RoleRow(props: {
   );
 }
 
-/** The palette generator: up to three seeds, Generate and Shuffle, and what the contrast repair moved. */
+/** The palette generator: up to three seeds (typed, or drawn from an image), Generate and Shuffle, and what the contrast repair moved. */
 function PaletteSection(props: { readonly primary: string; readonly onGenerate: (seeds: readonly string[], shuffle: number) => string }): ReactNode {
   const id = useId();
   const [seeds, setSeeds] = useState<readonly string[]>(() => [props.primary, '', '']);
   const [shuffle, setShuffle] = useState(0);
   const [status, setStatus] = useState('');
-  const run = (next: number) => {
+  // the latest generator: an image decodes after renders that may have changed the edited theme or the locks
+  const generate = useRef(props.onGenerate);
+  generate.current = props.onGenerate;
+  const run = (next: number, from: readonly string[] = seeds) => {
     setShuffle(next);
-    setStatus(props.onGenerate(seeds, next));
+    setStatus(generate.current(from, next));
+  };
+  const fromImage = async (file: File | undefined) => {
+    if (file === undefined) return;
+    setStatus(t`Reading the image…`);
+    const out = await imageSeeds(file);
+    if ('error' in out) return setStatus(out.error);
+    const next = [0, 1, 2].map((i) => out.seeds[i] ?? '');
+    setSeeds(next);
+    run(shuffle, next);
   };
   return (
     <section className="fx-chrome-theme-section" aria-labelledby={`${id}-h`}>
@@ -105,6 +121,10 @@ function PaletteSection(props: { readonly primary: string; readonly onGenerate: 
           />
         </label>
       ))}
+      <label className="fx-chrome-formrow">
+        {t`Seeds from an image`}
+        <input type="file" accept="image/*" onChange={(e) => void fromImage(picked(e.target))} />
+      </label>
       <div className="fx-chrome-theme-actions">
         <button type="button" className="fx-chrome-button" onClick={() => run(shuffle)}>
           {t`Generate palette`}
@@ -116,6 +136,64 @@ function PaletteSection(props: { readonly primary: string; readonly onGenerate: 
       <p role="status" className="fx-chrome-hint">
         {status}
       </p>
+    </section>
+  );
+}
+
+/** The file a file input holds, its value cleared so that picking the same file again is a new pick. */
+function picked(input: HTMLInputElement): File | undefined {
+  const file = input.files?.[0];
+  input.value = '';
+  return file;
+}
+
+/** The theme as files: export it as a theme file or as CSS variables, and import a Fluxion or foreign DTCG file. */
+function FilesSection(props: {
+  readonly theme: Theme;
+  readonly download: (file: ThemeFile) => void;
+  readonly onImport: (text: string) => { readonly status: string; readonly warnings: readonly string[] };
+}): ReactNode {
+  const id = useId();
+  const [status, setStatus] = useState('');
+  const [warnings, setWarnings] = useState<readonly string[]>([]);
+  const read = async (file: File | undefined) => {
+    if (file === undefined) return;
+    const out = props.onImport(await file.text());
+    setStatus(out.status);
+    setWarnings(out.warnings);
+  };
+  const exportTokens = () => {
+    const { file, warnings: left } = tokensFile(props.theme);
+    props.download(file);
+    setStatus(left.length === 0 ? t`Exported ${file.name}.` : t`Exported ${file.name}; tokens left out are listed.`);
+    setWarnings(left.map((w) => w.message));
+  };
+  return (
+    <section className="fx-chrome-theme-section" aria-labelledby={`${id}-h`}>
+      <h3 id={`${id}-h`} className="fx-chrome-heading">{t`Theme files`}</h3>
+      <div className="fx-chrome-theme-actions">
+        <button type="button" className="fx-chrome-button" onClick={exportTokens}>
+          {t`Export theme file`}
+        </button>
+        <button type="button" className="fx-chrome-button" onClick={() => props.download(cssFile(props.theme))}>
+          {t`Export CSS`}
+        </button>
+      </div>
+      <label className="fx-chrome-formrow">
+        {t`Import theme file`}
+        <input type="file" accept=".json,application/json" onChange={(e) => void read(picked(e.target))} />
+      </label>
+      <p role="status" className="fx-chrome-hint">
+        {status}
+      </p>
+      {warnings.length === 0 ? null : (
+        <ul className="fx-chrome-theme-warnings" aria-label={t`Theme file warnings`}>
+          {warnings.map((w, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list per import; two warnings may read the same
+            <li key={i}>{w}</li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
@@ -151,7 +229,7 @@ function VariantsSection(props: { readonly theme: Theme }): ReactNode {
  * @public
  */
 export function ThemeEditor(props: ThemeEditorProps): ReactNode {
-  const { store, execute, screenId, onClose } = props;
+  const { store, execute, screenId, onClose, download = downloadFile } = props;
   const edited = useEditedTheme(store, screenId);
   const [locked, setLocked] = useState<ReadonlySet<PaletteRole>>(new Set());
   const [error, setError] = useState('');
@@ -173,6 +251,14 @@ export function ThemeEditor(props: ThemeEditorProps): ReactNode {
     store.history.seal();
     write(out.theme);
     return out.palette.adjusted.length === 0 ? t`Palette applied.` : t`Palette applied; adjusted for contrast: ${out.palette.adjusted.join(', ')}.`;
+  };
+  const onImport = (text: string) => {
+    const read = importThemeFile(store, edited, text);
+    if ('error' in read) return { status: read.error, warnings: [] };
+    store.history.seal();
+    const done = execute('document.applyRecords', read.write);
+    if (!done.ok) return { status: done.error.message, warnings: [] };
+    return { status: t`Imported ${read.theme.name}.`, warnings: read.warnings.map((w) => w.message) };
   };
   return (
     <div
@@ -204,6 +290,7 @@ export function ThemeEditor(props: ThemeEditorProps): ReactNode {
       </section>
       <PaletteSection primary={colorOf(edited.theme, 'primary')} onGenerate={onGenerate} />
       <VariantsSection theme={edited.theme} />
+      <FilesSection theme={edited.theme} download={download} onImport={onImport} />
       {error === '' ? null : (
         <p role="alert" className="fx-chrome-hint">
           {error}

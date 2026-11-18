@@ -148,7 +148,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-THM-006 | M | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/editor/src/theme-editor/theme-edit.test.ts` +5 |
 | FR-THM-007 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/theme.editor-live.spec.ts` +5 |
 | FR-THM-008 | M | R1 | M9 | [14-theme-text-media.md](14-theme-text-media.md) | `apps/studio/src/font-embed.test.ts` +22 |
-| FR-THM-009 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | `packages/theme/src/dtcg.test.ts` |
+| FR-THM-009 | S | R3 | M20 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/theme.editor-live.spec.ts` +2 |
 | FR-THM-010 | S | R7 | M29 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-THM-011 | C | R6 | M28 | [14-theme-text-media.md](14-theme-text-media.md) | — |
 | FR-TXT-001 | M | R1 | M7 | [14-theme-text-media.md](14-theme-text-media.md) | `e2e/parity.edit-vs-present.spec.ts` +6 |
