@@ -140,6 +140,23 @@ describe('theme editor panel (M20.11)', () => {
     expect(host.querySelector('[aria-label="Theme editor"]')).toBeNull();
     expect(document.activeElement).toBe(button('Edit theme'));
   });
+
+  it('FR-THM-007: Esc before the editor focuses its first field still returns focus to Edit theme (ci 44230337698)', async () => {
+    const { core, screen } = fresh();
+    const session = createSession('doc');
+    const props = { store: core.store, execute: core.execute, session, screenId: screen, fonts: undefined, assets: new Map() as never };
+    act(() => root.render(<ToolbarExtras {...props} themes={[]} />));
+    await act(async () => button('Edit theme').click());
+    await expect.poll(() => host.querySelector('[role="dialog"][aria-label="Theme editor"]')).not.toBeNull();
+    const dialog = host.querySelector('[role="dialog"][aria-label="Theme editor"]') as HTMLElement;
+    // the editor focusing its first field after Esc but before it unmounts: the order a slow mount effect gives
+    act(() => {
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      dialog.querySelector<HTMLElement>('input')?.focus();
+    });
+    expect(host.querySelector('[aria-label="Theme editor"]')).toBeNull();
+    expect(document.activeElement).toBe(button('Edit theme'));
+  });
 });
 
 /** Hand `input` the file `file` as a person picking it does. */

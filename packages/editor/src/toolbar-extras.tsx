@@ -5,7 +5,7 @@ import type { Store } from '@fluxion/core';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { t } from '@lingui/core/macro';
-import { type ComponentType, lazy, type ReactNode, Suspense, useRef, useState } from 'react';
+import { type ComponentType, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AssetDialog } from './asset-dialog.js';
 import type { AssetStore } from './asset-store.js';
@@ -83,10 +83,14 @@ function AssetsControl(props: { readonly store: Store; readonly execute: Execute
 function ThemeEditorControl(props: { readonly store: Store; readonly execute: Execute; readonly screenId: RecordId | undefined }): ReactNode {
   const [editing, setEditing] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
-  const close = () => {
-    setEditing(false);
-    button.current?.focus();
-  };
+  const wasEditing = useRef(false);
+  // focus returns to the button once the editor has unmounted: focusing it in `close` lost to the editor's own mount focus when Esc
+  // came before that effect ran, and the input it focused then left with the dialog (ci 44230337698)
+  useEffect(() => {
+    if (wasEditing.current && !editing) button.current?.focus();
+    wasEditing.current = editing;
+  }, [editing]);
+  const close = () => setEditing(false);
   return (
     <>
       <button ref={button} type="button" className="fx-chrome-button" aria-haspopup="dialog" aria-expanded={editing} onClick={() => setEditing((on) => !on)}>
