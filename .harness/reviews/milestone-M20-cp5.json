@@ -1,0 +1,63 @@
+{
+  "milestone": "M20",
+  "checkpoint": "cp5",
+  "range": "f65794988a379033871b5af71948d50c55389f33..412a69a28240fe4888bb70d46294c562e75f942f",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "changes-requested",
+  "reviewedDelta": "cp4 covered f657949..e72afc2. This review read e72afc2..412a69a: 16f85d3 (cp4 record), 82c751f M20.39, 07e443c M20.38, e1234d3 M20.12, ec335c7 M20.44, 099ec6a M20.40, 7e8f6ff M20.45 and 412a69a M20.41. cp4's dispositions were carried out. F1 became M20.38: the theme editor has image seeds (createImageBitmap at most 256 px, in editor image-seeds.ts), Export theme file, Export CSS and Import theme file. m20-complete's FR-THM-005, FR-THM-007 and FR-THM-009 legs name its five browser cases, and theme.editor-live has a FR-THM-009 export/import step with axe. M20.24 depends on M20.38. F2 became M20.39: core screenThemeChoice is the one rule, and render useScreenTheme, dsl contrast, the editor's theme-edit and theme-editor hook, source-view completion and the SVG exporter's ScreenSvgView (through useScreenTheme) all call it. F3: problemsOf builds one view per pass, and problems-view.test counts 1 createStore call for 6 fixes. The F4 argue line is in review-argued.txt; no row in the delta touched last-ci. 1. Coherence: one design. layoutStyled is the measured layout and wrapStyled is its projection, held equal by a property test. The svg surface is a parallel leaf set keyed by html view component, as ADR-0056 chose. Helpers are shared rather than copied: image-fit.ts (M20.41), richBlocks/rich-marks with safeLinkUrl, and screenThemeChoice. Diagnostics use one FLX_EXPORT_* family. 2. Spec fidelity: each row's acceptance is met. The M20.12 to M20.40 to M20.41-M20.43 splits carry every item of the parent text, including the sdk/export render-external build case (now M20.42), selection scope and byte parity (M20.43); F4 ratifies them. 3. Standards drift: changesets, ADR-0056 amendments, api reports, traceability rows, Fixes-ci trailers and Threshold-change trailers on each golden re-record are present. One drift: M20.38 named its new cases in m20-complete, but M20.40 and M20.41 did not (F1). 4. Gate honesty: the gate reads 15/38. I spot-checked three mutants by reading code against tests. (a) Swapping the screen and master order in screenThemeChoice is killed: screen-theme.test sets both and expects the screen. (b) Building a store per contrast fix is killed: problems-view.test expects createStore count 1 for 6 fixes. (c) Drawing the highlight rect after the text is killed: svg-text.test matches the rect followed by </g><text. The FR-EXP-004 leg names only M20.12's three svg.test cases, so the leg would stay green if the frame, image, effect, table, region and mark cases were renamed or narrowed (F1). The full-verification leg is red only on budget's 'cold setup pending CI' from M20.12's lockfile change (F2). Locally, theme.editor-live and studio.boot-phases still fail on firefox and webkit, but CI at 412a69a passed every e2e shard on all three engines (F3). 5. Architecture: core stays pure, since layoutStyled takes an injected measurer and sha256Hex is core's own. exporters (L5, mixed) adds only workspace deps (core, format, render, schema, theme) and react/react-dom peers, which are MIT and already in the tree; the commit body says so. tools/gen/workspaces.json and the 01-overview L5 row were updated. render gains the @fluxion/render/svg subpath with its own tsdown entry and render.svg.api.md, and the player bundle is untouched. svg11's href rule now allows any value on <a> itself. The renderer passes links through safeLinkUrl, but no svg case shows an unsafe href is dropped (folded into F1). CI: last-ci reads ci green at 412a69a (run 44253326191), gates green, and cold setup 314 s.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "file": "scripts/gates/m20-complete.mjs",
+      "line": 220,
+      "summary": "The FR-EXP-004 leg names only M20.12's three svg.test.ts cases. M20.40's three cases in packages/exporters/src/svg-boxes.test.ts (frame clip, images/fills/snapshots from data URLs, filters and artwork) and M20.41's five cases in svg-text.test.ts (marks and links, the in-document link and block align, nested bullets, tables, regions and icon slots) are in no leg. The backlog preamble says 'The row that writes a test adds or renames its exact file in its leg of scripts/gates/m20-complete.mjs', and M20.38 did that for its theme cases. M20.13's parity fixture set (text-heavy, master, table, clipping frame) leaves images, effects, artwork and rich-text marks uncovered by any gate leg. Related: svg11's hrefProblem now accepts any value on an <a> itself. safeLinkUrl in rich-marks keeps unsafe links out today, but no svg case shows that a javascript: href is dropped or refused.",
+      "evidence": "scripts/gates/m20-complete.mjs:220-228 (named: three M20.12 titles only); grep of it( titles in packages/exporters/src/svg-boxes.test.ts:83,100,121 and svg-text.test.ts:43,59,77,94,107; docs/backlog/current.md preamble; packages/exporters/src/svg11.ts hrefProblem (node.name !== 'a'); packages/render/src/rich-marks.ts:82"
+    },
+    {
+      "id": "F2",
+      "severity": "nit",
+      "file": ".harness/budget.json",
+      "summary": "m20-complete's 'full verification' leg fails only on budget: 'cold setup pending CI'. M20.12's lockfile change re-recorded the budget with --cold-pending (ADR-0145). Main CI at 412a69a has a green cold-setup reading (314 s, run 44253326191), so check-budget --record --cold-from-ci can now be run. This is bookkeeping, not a defect.",
+      "evidence": "packet gate output 'FAIL full verification ... budget: cold setup pending CI'; e1234d3 body 'Budget re-recorded for the lockfile change with cold setup pending CI'; last-ci output at 412a69a"
+    },
+    {
+      "id": "F3",
+      "severity": "nit",
+      "file": "e2e/theme.editor-live.spec.ts",
+      "summary": "cp4 risk 4 still stands. Locally, the firefox and webkit projects of theme.editor-live (both cases, including M20.38's new FR-THM-009 step) and studio.boot-phases fail, while CI at 412a69a passed every firefox, webkit and chromium e2e shard. progress.md (M19.29) records that Firefox and WebKit are not installed on this host, and M19.31 counted its closing gate run on a three-engine host in the pinned image. So the cause is the host, not the product. M20.38's new e2e step has not yet passed on firefox or webkit outside CI.",
+      "evidence": "packet gate output lines for theme.editor-live and studio boot phases ([firefox]/[webkit] unexpected); gh run view 44253326191 (e2e firefox 1-3/3, webkit, chromium success); .harness/progress.md:5069 and :5116"
+    },
+    {
+      "id": "F4",
+      "severity": "nit",
+      "file": "docs/backlog/current.md",
+      "summary": "Split ratification (a checkpoint, not the row's commit, ratifies a narrowed scope). M20.12 split to M20.40, and M20.40 split into M20.41, M20.42 and M20.43. Every item of the parent texts lands in a row. The sdk/export subpath with its render-external build case (cp2 F5) is in M20.42, the pack-view contract is in M20.42, and the selection scope and byte parity are in M20.43. M20.13 depends on all five. M20.25's deps cell still lists 'M20.26–M20.39' and so reaches M20.40–M20.43 only through M20.13. Its rows-done leg covers every row anyway.",
+      "evidence": "git show e1234d3/099ec6a -- docs/backlog/current.md (old and new row texts); current rows M20.12, M20.13, M20.40-M20.43, M20.25"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M20.43",
+      "note": "Amend M20.43 (todo, the last SVG-leaf row before M20.13). Its commit adds to m20-complete's FR-EXP-004 standalone leg (or to a sibling FR-EXP-004 leg) the exact titles of svg-boxes.test.ts's three M20.40 cases, svg-text.test.ts's five M20.41 cases and its own selection cases. It also adds a svg-text.test case 'FR-EXP-004: an unsafe link href draws as text, never as <a>' and a svg.test checker case showing svg11Problems refuses a javascript: href on <a>. Each leg is run once."
+    },
+    {
+      "finding": "F2",
+      "disposition": "argue",
+      "note": "M20 cp5 F2: m20-complete's full-verification leg is red only on budget's cold-setup-pending marker from M20.12's lockfile change. That is ADR-0145 bookkeeping, not a weakened gate. The cp5 record commit (or the next row) runs check-budget.mjs --record --cold-from-ci at a main sha that carries that lockfile, and M20.25's one-run gate needs it green."
+    },
+    {
+      "finding": "F3",
+      "disposition": "argue",
+      "note": "M20 cp5 F3: the local firefox and webkit failures of theme.editor-live and studio.boot-phases come from the host, which has no Firefox or WebKit (progress M19.29), while CI at 412a69a passed every e2e shard on all three engines. M20.25 counts its one-run m20-complete on a three-engine host in the pinned image, as M19.31 did. If any of these cases fails there or in a CI e2e-report, a Fixes row opens and nothing is quarantined."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "M20 cp5 F4: ratified. The M20.12 to M20.40 to M20.41-M20.43 splits narrow no scope: every item of the parent acceptance (leaves, rich-text marks, tables and regions, pack-view contract with the render-external sdk/export build case, selection scope, studio/Node byte parity) is in a todo or done row that M20.13 depends on. M20.25's deps cell gains M20.40-M20.45 at its next edit."
+    }
+  ],
+  "planDelta": "Planned 25 rows; 45 now, 1.8x (39 at cp4). The six added since cp4 are four splits of the SVG export core (M20.12 into M20.40, then M20.41-M20.43) and two Fixes-ci rows (M20.44, a theme-editor focus race on macOS; M20.45, a slow byte-wise deep equal and a noisy timing ratio). The SVG export carries nine ADR-0056 items, and a single row was never going to hold them. This milestone shows that an ADR with many numbered items should be planned as one row per item group, not split mid-row. The run since cp4 is healthy: eight commits, both cp4 reopens closed, two reds fixed in the next commit with Fixes-ci, and CI green at 412a69a with a 314 s cold setup. Lessons: a split row's commit must still name its cases in the gate leg (F1), and the cp1 lesson weakens with each split. Risks: (1) M20.13 (fonts and three-browser parity), M20.14 (Inkscape), M20.15 (studio and CLI) and the decompiler chain M20.16-M20.18 are all still ahead. (2) M20.19, M20.20 and M20.23 need nightly or CI-time evidence and have not started, flagged at every checkpoint since cp1; their wall-clock lead time now dominates the milestone's end. (3) M20.26 and M20.35 are still todo. (4) M20.25's one-run gate needs a three-engine host (F3)."
+}
