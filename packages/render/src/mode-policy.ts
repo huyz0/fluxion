@@ -25,13 +25,15 @@ export type ModePolicy = {
   readonly showHidden: boolean;
   /** A master's unfilled placeholders are drawn as dashed hints (edit only: nowhere in present or export, ADR-0054). */
   readonly placeholderHints: boolean;
+  /** The screen may be drawn on the svg surface (export only, ADR-0056). */
+  readonly svgSurface: boolean;
 };
 
 const POLICIES: { readonly [M in RenderMode]: ModePolicy } = {
-  edit: { editOverlay: true, interactive: false, measure: true, showHidden: true, placeholderHints: true },
-  present: { editOverlay: false, interactive: true, measure: true, showHidden: false, placeholderHints: false },
-  export: { editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false },
-  thumbnail: { editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false },
+  edit: { editOverlay: true, interactive: false, measure: true, showHidden: true, placeholderHints: true, svgSurface: false },
+  present: { editOverlay: false, interactive: true, measure: true, showHidden: false, placeholderHints: false, svgSurface: false },
+  export: { editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false, svgSurface: true },
+  thumbnail: { editOverlay: false, interactive: false, measure: false, showHidden: false, placeholderHints: false, svgSurface: false },
 };
 
 /**

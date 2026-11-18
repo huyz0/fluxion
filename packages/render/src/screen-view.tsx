@@ -112,7 +112,7 @@ function useContentCss(): void {
 }
 
 /** The background `screen` draws: its own, else its applied master's (ADR-0054). */
-function screenBackground(screen: ScreenRecord, master: MasterLayers | undefined, theme: Theme): ResolvedPaint {
+export function screenBackground(screen: ScreenRecord, master: MasterLayers | undefined, theme: Theme): ResolvedPaint {
   if (screen.background !== undefined || master === undefined) return resolveBackground(screen.background, theme, ['records', screen.id]).paint;
   return resolveBackground(master.background, theme, ['records', master.master]).paint;
 }

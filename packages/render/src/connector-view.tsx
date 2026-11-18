@@ -74,7 +74,7 @@ function routeFrame(commands: readonly PathCommand[], margin: number): Frame {
 const marginFor = (strokes: readonly DecoratedStroke[], width: number): number => ROUTE_MARGIN + Math.max(0, ...strokes.map((d) => (d.width - width) / 2));
 
 /** The registered marker `marker` names (none for `none`, an absent or an unregistered one). */
-const markerOf = (registries: RenderRegistries, marker: Marker | undefined): MarkerDef | undefined =>
+export const markerOf = (registries: RenderRegistries, marker: Marker | undefined): MarkerDef | undefined =>
   marker === undefined ? undefined : registries.markers.get(marker);
 
 /** The labels of `element` placed along `route`, in `style`'s font. */
@@ -94,7 +94,7 @@ function Labels(props: { readonly element: ConnectorElement; readonly route: rea
  * The stroke of a route: `drawn` (the route with its corners rounded), or with hops a route of straight segments (the only kind given
  * hops) with a hop at each crossing that fits, its corners rounded to `radius`.
  */
-function hopped(
+export function hopped(
   routed: { readonly commands: readonly PathCommand[]; readonly hops: ConnectorHops | undefined },
   drawn: readonly PathCommand[],
   radius: number,
@@ -105,7 +105,16 @@ function hopped(
 }
 
 /** The style of a connector with what is derived from it: its stroke as CSS, the corner radius and the stroke width in px. */
-function styled(id: RecordId, own: ConnectorElement['style'], cornerRadius: number | undefined, theme: ElementViewProps['theme']) {
+export function styled(
+  id: RecordId,
+  own: ConnectorElement['style'],
+  cornerRadius: number | undefined,
+  theme: ElementViewProps['theme'],
+): {
+  readonly style: ReturnType<typeof resolveStyle>['style'];
+  readonly line: CSSProperties;
+  readonly lengths: { readonly radius: number; readonly width: number };
+} {
   const { style } = resolveStyle(own, 'connector', theme, ['records', id, 'style']);
   const line: CSSProperties = {
     fill: 'none',
@@ -130,11 +139,16 @@ const CORE_LIGHTEN = 0.65;
  * The paint of a decorated stroke: the line's colour, or, for a pipe's core, white part-way over the wall it lies on, so
  * the core is a lighter shade of the line on any background (a colour, a gradient or an image).
  */
-const partPaint = (part: DecoratedStroke['part'], stroke: CSSProperties['stroke']): CSSProperties =>
+export const partPaint = (part: DecoratedStroke['part'], stroke: CSSProperties['stroke']): CSSProperties =>
   part === 'core' ? { stroke: '#ffffff', strokeOpacity: CORE_LIGHTEN } : { stroke };
 
 /** The decoration of route type `type` and the strokes it makes of `commands` (none for a plain route). */
-function decoratedRoute(registries: RenderRegistries, type: string, commands: readonly PathCommand[], width: number) {
+export function decoratedRoute(
+  registries: RenderRegistries,
+  type: string,
+  commands: readonly PathCommand[],
+  width: number,
+): { readonly decoration: DecoratedRouter['decoration'] | undefined; readonly decorated: readonly DecoratedStroke[] } {
   const decoration = decorationOf(registries, type);
   return { decoration, decorated: decoration === undefined ? [] : decorateRoute(commands, decoration, width) };
 }
@@ -163,7 +177,10 @@ function DecoratedStrokes(props: { readonly strokes: readonly DecoratedStroke[];
  * changes, so moving a shape reroutes the connectors bound to it and no others; its hops are a query of its own entry, and a hop over a
  * connector a build hides is left out.
  */
-function useRouted(store: ElementViewProps['store'], registries: RenderRegistries, id: RecordId) {
+/** A connector's route as a view draws it: the pass's route, whether it is the global pass's, and its visible hops. */
+export type Routed = NonNullable<ReturnType<typeof routeConnector>> & { readonly global: boolean; readonly hops: ConnectorHops | undefined };
+
+export function useRouted(store: ElementViewProps['store'], registries: RenderRegistries, id: RecordId): Routed | undefined {
   const record = useContext(RenderStatsContext);
   const hidden = useContext(BuildHiddenContext);
   return useValue(

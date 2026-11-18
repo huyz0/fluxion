@@ -4,9 +4,6 @@
  * @packageDocumentation
  */
 
-/**
- * Version of this package.
- *
- * @public
- */
-export const VERSION: string = '0.0.0';
+export { exportSvg, renumberIds, type SvgExport, type SvgExportOptions, type SvgExportPorts } from './svg.js';
+export { SVG_PACKAGE_MAX_BYTES, screenPackage } from './svg-package.js';
+export { VERSION } from './version.js';

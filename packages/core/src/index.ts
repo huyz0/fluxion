@@ -89,7 +89,16 @@ export {
 } from './table/table-ops.js';
 export { type FitInput, type FittedText, fitText, growsText, shrinksText, TEXT_FIT_DEFAULTS } from './text/fit.js';
 export { createMetricsMeasurer, type FaceMetrics, type FontMetricsFile, readFontMetrics } from './text/metrics.js';
-export { type StyledBlock, type StyledOptions, type StyledRun, wrapStyled } from './text/styled.js';
+export {
+  type LaidOutLine,
+  type LaidOutPiece,
+  type LaidOutText,
+  layoutStyled,
+  type StyledBlock,
+  type StyledOptions,
+  type StyledRun,
+  wrapStyled,
+} from './text/styled.js';
 export { type WrappedText, wrapText } from './text/wrap.js';
 export { themeRecordId } from './theme-commands.js';
 export type { Diff, PutChange, Tx, TxFailure, TxMeta, TxOptions, TxOrigin } from './transaction.js';

@@ -34,7 +34,8 @@ export type ElementViewProps = {
    * The theme styles resolve against. Its colour values may lag a colour-only change: they reach the
    * view as CSS variables the screen defines, so draw colours from resolved styles (`var(--fx-…)`),
    * never from token values (ADR-0015 amendment, M5.13). A view needs an ancestor carrying
-   * `toCssVars(theme)` (`<ScreenView>`'s `.fx-screen`).
+   * `toCssVars(theme)` (`<ScreenView>`'s `.fx-screen`). This rule is the html surface's: an svg-surface
+   * leaf (`ElementView.Svg`, ADR-0056) writes resolved literals, never `var()`.
    */
   readonly theme: Theme;
   /** The registries the view was looked up in (a shape view reads `shapeDefs`). */
@@ -52,6 +53,12 @@ export type ElementViewProps = {
 export type ElementView = {
   /** Draws the element; must be pure: the same record gives the same markup in every mode. */
   readonly Component: ComponentType<ElementViewProps>;
+  /**
+   * Draws the element on the svg surface (ADR-0056, `@fluxion/render/svg`): SVG 1.1 only, in the box's own coordinates, colours as
+   * resolved literals (the `var(--fx-…)` rule of {@link ElementViewProps.theme} is the html surface's), no `foreignObject`. A view
+   * without one exports as a placeholder with a finding.
+   */
+  readonly Svg?: ComponentType<ElementViewProps>;
   /**
    * The words a screen reader gets for what the view draws without words (an image's alt text, a connector's relation as "A connects to B: label"), or nothing.
    * Pure; read through the store's tracked view, so the text follows the records. It is drawn visually hidden beside the view (NFR-A11Y-002).

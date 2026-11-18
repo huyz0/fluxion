@@ -17,6 +17,7 @@
       "!packages/cli/schemas",
       "!packs/fonts-core/catalog.json",
       "!packages/render/__golden__",
+      "!packages/exporters/__golden__",
       "!packages/cli/__golden__",
       "!examples/dsl/__golden__",
       "!packs/*/__golden__",

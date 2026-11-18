@@ -134,7 +134,7 @@
       "name": "@fluxion/exporters",
       "layer": "L5",
       "runtime": "mixed",
-      "dependsOn": ["render", "player", "format"],
+      "dependsOn": ["render", "player", "format", "core", "schema", "theme"],
       "desc": "PDF/PNG/SVG/PPTX/video/site exporters."
     },
     {

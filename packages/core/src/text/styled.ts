@@ -59,6 +59,60 @@ export type StyledOptions = {
   readonly maxWidth: number;
   /** `collapse`: the space between two blocks is the larger of the two (a block layout); `add` (default): both (a flex column; the blocks of a list still collapse). */
   readonly spacing?: 'collapse' | 'add';
+  /** Where a line sits in `maxWidth` (`layoutStyled`; CSS `text-align`): `left` (default), `center` or `right`; `justify` lays out as `left`. */
+  readonly align?: string;
+};
+
+/**
+ * A piece of a laid-out line: text in one font, at `x` from the left of the text box.
+ *
+ * @public
+ */
+export type LaidOutPiece = {
+  /** The text. */
+  readonly text: string;
+  /** Its font. */
+  readonly font: FontSpec;
+  /** Its left edge, px from the text box's left. */
+  readonly x: number;
+  /** Its measured width, px. */
+  readonly width: number;
+};
+
+/**
+ * A laid-out line.
+ *
+ * @public
+ */
+export type LaidOutLine = {
+  /** Its text (the pieces' together). */
+  readonly text: string;
+  /** Its top, px from the text's top. */
+  readonly top: number;
+  /** Its height (its tallest piece or its block's size, times the block's line height). */
+  readonly height: number;
+  /** Its baseline, px from the text's top: the half-leading and the tallest piece's ascent below its top. */
+  readonly baseline: number;
+  /** Its left edge, px from the text box's left: the block's indent and the alignment offset. */
+  readonly x: number;
+  /** Its width. */
+  readonly width: number;
+  /** Its pieces, left to right; neighbours of one font are one piece. */
+  readonly pieces: readonly LaidOutPiece[];
+};
+
+/**
+ * Styled blocks laid out as they are drawn: each line with its place, baseline and pieces (ADR-0056 item 3).
+ *
+ * @public
+ */
+export type LaidOutText = {
+  /** The lines, in order. */
+  readonly lines: readonly LaidOutLine[];
+  /** The widest line, its indent included. */
+  readonly width: number;
+  /** The height of everything with the space around the blocks. */
+  readonly height: number;
 };
 
 /** One piece of a line: text in one font. */
@@ -94,22 +148,28 @@ function tokens(runs: readonly StyledRun[], block: FontSpec): Token[] {
   });
 }
 
-/** The width of `pieces`: those of one font together, so what the measurer shapes across words is kept. */
-function width(pieces: readonly Piece[], measurer: TextMeasurer): number {
-  let total = 0;
-  let group: { font: FontSpec; text: string } | undefined;
+/** `pieces` with neighbours of one font joined, each measured: what the measurer shapes across words is kept. */
+function groups(pieces: readonly Piece[], measurer: TextMeasurer): { readonly text: string; readonly font: FontSpec; readonly width: number }[] {
+  const joined: Piece[] = [];
   for (const p of pieces) {
-    if (group !== undefined && key(group.font) === key(p.font)) group = { font: group.font, text: group.text + p.text };
-    else {
-      if (group !== undefined) total += measurer.measure(group.text, group.font).width;
-      group = { font: p.font, text: p.text };
-    }
+    const last = joined.at(-1);
+    if (last !== undefined && key(last.font) === key(p.font)) joined[joined.length - 1] = { font: last.font, text: last.text + p.text };
+    else joined.push(p);
   }
-  return group === undefined ? total : total + measurer.measure(group.text, group.font).width;
+  return joined.map((g) => ({ ...g, width: measurer.measure(g.text, g.font).width }));
 }
 
-/** A laid-out line: its text, its width and its height. */
-type Line = { readonly text: string; readonly width: number; readonly height: number };
+/** The width of `pieces`, measured as {@link groups}. */
+const width = (pieces: readonly Piece[], measurer: TextMeasurer): number => groups(pieces, measurer).reduce((total, g) => total + g.width, 0);
+
+/** A laid-out line of a block: its text, width and height, its measured pieces, and the font its baseline follows. */
+type Line = {
+  readonly text: string;
+  readonly width: number;
+  readonly height: number;
+  readonly pieces: readonly { readonly text: string; readonly font: FontSpec; readonly width: number }[];
+  readonly tallest: FontSpec;
+};
 
 /** What a block is laid out in. */
 type Layout = {
@@ -136,8 +196,10 @@ class LineBuilder {
   /** End the line. */
   end(): void {
     const { block, lineHeight, measurer } = this.#layout;
-    const tallest = Math.max(block.size, ...this.#pieces.map((p) => p.font.size));
-    this.lines.push({ text: this.#pieces.map((p) => p.text).join(''), width: width(this.#pieces, measurer), height: tallest * lineHeight });
+    const tallest = this.#pieces.reduce((t, p) => (p.font.size > t.size ? p.font : t), block);
+    const pieces = groups(this.#pieces, measurer);
+    const text = this.#pieces.map((p) => p.text).join('');
+    this.lines.push({ text, width: pieces.reduce((w, g) => w + g.width, 0), height: tallest.size * lineHeight, pieces, tallest });
     this.#pieces = [];
     this.#pending = undefined;
   }
@@ -187,39 +249,105 @@ function blockLines(runs: readonly StyledRun[], layout: Layout): Line[] {
  */
 const gap = (above: number, below: number, collapses: boolean): number => (collapses ? Math.max(above, below) : above + below);
 
-/**
- * `blocks` laid out in `options.maxWidth`: the lines as strings, the widest line and the height of everything
- * with the space around the blocks. `base` is the font of the label; only its size scales a heading and
- * an indent, a run's own size does not move with it.
- *
- * @public
- */
-export function wrapStyled(blocks: readonly StyledBlock[], base: FontSpec, measurer: TextMeasurer, options: StyledOptions): WrappedText {
-  const texts: string[] = [];
+/** How far a line of `width` sits from the left of `room` under `align`. */
+function alignOffset(align: string | undefined, room: number, width: number): number {
+  if (align === 'center') return (room - width) / 2;
+  if (align === 'right' || align === 'end') return room - width;
+  return 0;
+}
+
+/** The baseline of a line of `height` at `top` whose tallest font is `font` (CSS: half the leading above the content area). */
+function baselineOf(line: Line, top: number, measurer: TextMeasurer): number {
+  const m = measurer.measure(line.text === '' ? ' ' : line.text, line.tallest);
+  return top + (line.height - (m.ascent + m.descent)) / 2 + m.ascent;
+}
+
+/** A block's laid-out lines from `top`, placed in `maxWidth` after `indent`. */
+function placeLines(
+  lines: readonly Line[],
+  at: { readonly top: number; readonly indent: number; readonly room: number },
+  options: StyledOptions,
+  measurer: TextMeasurer | undefined,
+): LaidOutLine[] {
+  let top = at.top;
+  return lines.map((line) => {
+    const x = at.indent + alignOffset(options.align, at.room, line.width);
+    let left = x;
+    const pieces = line.pieces.map((p) => {
+      const piece = { text: p.text, font: p.font, x: left, width: p.width };
+      left += p.width;
+      return piece;
+    });
+    const placed = {
+      text: line.text,
+      top,
+      height: line.height,
+      baseline: measurer === undefined ? 0 : baselineOf(line, top, measurer),
+      x,
+      width: line.width,
+      pieces,
+    };
+    top += line.height;
+    return placed;
+  });
+}
+
+/** How a pass lays out: its measurer and options, and whether it measures baselines (a wrap reads none, and measures nothing more). */
+type Pass = { readonly measurer: TextMeasurer; readonly options: StyledOptions; readonly baselines: boolean };
+
+/** Block `b`'s lines at `top`: its own font, indent and room under `base`. */
+function blockOf(b: StyledBlock, base: FontSpec, top: number, pass: Pass): { readonly lines: LaidOutLine[]; readonly indent: number } {
+  const { measurer, options } = pass;
+  const font: FontSpec = { ...base, size: base.size * (b.scale ?? 1), weight: b.weight ?? base.weight ?? 400 };
+  const indent = (b.indentEm ?? 0) * base.size;
+  const room = Math.max(0, options.maxWidth - indent);
+  const lines = blockLines(b.runs, { block: font, lineHeight: b.lineHeight ?? base.lineHeight ?? 1.2, maxWidth: room, measurer });
+  return { lines: placeLines(lines, { top, indent, room }, options, pass.baselines ? measurer : undefined), indent };
+}
+
+/** {@link layoutStyled} in `pass`. */
+function lay(blocks: readonly StyledBlock[], base: FontSpec, pass: Pass): LaidOutText {
+  const out: LaidOutLine[] = [];
   let widest = 0;
-  let height = 0;
-  let space = 0;
+  let y = 0;
   let previousAfter = 0;
   // tzap disable next-line BooleanLiteral: before the first block there is no space to collapse with
   let previousIndented = false;
   for (const b of blocks) {
-    const font: FontSpec = { ...base, size: base.size * (b.scale ?? 1), weight: b.weight ?? base.weight ?? 400 };
-    const indent = (b.indentEm ?? 0) * base.size;
-    const lines = blockLines(b.runs, {
-      block: font,
-      lineHeight: b.lineHeight ?? base.lineHeight ?? 1.2,
-      maxWidth: Math.max(0, options.maxWidth - indent),
-      measurer,
-    });
+    const indented = (b.indentEm ?? 0) > 0;
+    y += gap(previousAfter, b.before ?? 0, pass.options.spacing === 'collapse' || (previousIndented && indented));
+    const { lines, indent } = blockOf(b, base, y, pass);
     for (const line of lines) {
-      texts.push(line.text);
+      out.push(line);
       widest = Math.max(widest, line.width + indent);
-      height += line.height;
+      y += line.height;
     }
-    const [before, after] = [b.before ?? 0, b.after ?? 0];
-    space += gap(previousAfter, before, options.spacing === 'collapse' || (previousIndented && indent > 0));
-    previousAfter = after;
-    previousIndented = indent > 0;
+    previousAfter = b.after ?? 0;
+    previousIndented = indented;
   }
-  return { lines: texts, width: widest, height: height + space + previousAfter };
+  return { lines: out, width: widest, height: y + previousAfter };
+}
+
+/**
+ * `blocks` laid out in `options.maxWidth` as they are drawn (ADR-0056 item 3): each line with its top, height, baseline, its
+ * alignment offset and its pieces of one font with their `x`; the widest line and the height of everything with the space around
+ * the blocks. `base` is the font of the label; only its size scales a heading and an indent, a run's own size does not move with
+ * it. `wrapStyled` is its projection.
+ *
+ * @public
+ */
+export function layoutStyled(blocks: readonly StyledBlock[], base: FontSpec, measurer: TextMeasurer, options: StyledOptions): LaidOutText {
+  return lay(blocks, base, { measurer, options, baselines: true });
+}
+
+/**
+ * `blocks` laid out in `options.maxWidth`: the lines as strings, the widest line and the height of everything
+ * with the space around the blocks. `base` is the font of the label; only its size scales a heading and
+ * an indent, a run's own size does not move with it. The projection of {@link layoutStyled}.
+ *
+ * @public
+ */
+export function wrapStyled(blocks: readonly StyledBlock[], base: FontSpec, measurer: TextMeasurer, options: StyledOptions): WrappedText {
+  const laid = lay(blocks, base, { measurer, options, baselines: false });
+  return { lines: laid.lines.map((l) => l.text), width: laid.width, height: laid.height };
 }

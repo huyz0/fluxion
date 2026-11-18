@@ -4,7 +4,49 @@
 
 ```ts
 
+import { DocumentFile } from '@fluxion/schema';
+import { RecordId } from '@fluxion/schema';
+import { RenderRegistries } from '@fluxion/render';
+import { SvgDiagnostic } from '@fluxion/render/svg';
+import { TextMeasurer } from '@fluxion/core';
+import { Theme } from '@fluxion/theme';
+
+// @public
+export function exportSvg(file: DocumentFile, options?: SvgExportOptions, ports?: SvgExportPorts): Promise<SvgExport>;
+
+// @public
+export function renumberIds(markup: string, prefix: string): string;
+
+// @public
+export function screenPackage(file: DocumentFile, screenId: RecordId, master?: RecordId): DocumentFile;
+
+// @public
+export const SVG_PACKAGE_MAX_BYTES: number;
+
+// @public
+export type SvgExport = {
+    readonly svg: string;
+    readonly screenId: RecordId;
+    readonly diagnostics: readonly SvgDiagnostic[];
+};
+
+// @public
+export type SvgExportOptions = {
+    readonly screenId?: RecordId;
+    readonly package?: boolean;
+};
+
+// @public
+export type SvgExportPorts = {
+    readonly measurer?: TextMeasurer;
+    readonly registries?: RenderRegistries;
+    readonly theme?: Theme;
+    readonly writePackage?: (document: DocumentFile) => Promise<Uint8Array | undefined>;
+};
+
 // @public
 export const VERSION: string;
+
+// (No @packageDocumentation comment for this package)
 
 ```

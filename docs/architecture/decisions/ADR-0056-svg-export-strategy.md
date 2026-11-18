@@ -97,7 +97,7 @@ only when the fonts are installed.
      answers.
    - `ElementView` is a render export today, not an SDK one, and the layer map lets sdk use only render's types. In M20.12's
      commit a new subpath `@fluxion/sdk/export` re-exports `ElementView`, `Svg`, `ExportContext` and `useExportText` at runtime,
-     with `@fluxion/render` a peer dependency kept external in the subpath's build, so every pack reads the host's one context
+     with `@fluxion/render` staying a regular sdk dependency (not a peer; corrected in M20.12) kept external in the subpath's build, so every pack reads the host's one context
      instance (a bundled copy would get no measured lines). The sdk main entry stays types-only. The same commit amends
      01-overview's sdk row ("render (types; runtime through the `export` subpath, ADR-0056)"), updates the API reports
      (`check-api`) and adds a changeset: a public-API contract change under this ADR, with a test that a pack built against the
@@ -294,4 +294,14 @@ Fonts:
     M20.13. The default mode depends on it. If it fails, that is a defect in M20.13, or a `blockedReason`, not a change of default.
   - Whether Inkscape 1.4 meets `PARITY_MAX_DIFF_PCT` on outlined fixtures given cairo's anti-aliasing (M20.14, item 12).
   - The exact Inkscape AppImage version and hash (M20.14).
+- Amended in M20.12's commit:
+  - Item 1: there is no `surface` prop on `ScreenViewProps`. The svg surface is `ScreenSvgView` in a separate subpath,
+    `@fluxion/render/svg`, which maps each html view component to its `Svg` leaf (`BUILTIN_SVG_LEAVES`) and reads
+    `modePolicy(mode).svgSurface`. render's main entry and the player bundle carry none of it.
+  - Item 7: `exportSvg` writes the package through a `writePackage` port. Its default is format's `writeFlux` with no asset
+    bytes; hosts with asset bytes pass `writePortableFlux` (M20.15).
+  - Item 4 (`ExportContext`, `useExportText`, the `@fluxion/sdk/export` subpath kept external from render), the table, region,
+    frame-clip, image, artwork, component-snapshot and effects leaves, rich-text marks (decorations, highlights, links, list
+    markers), the selection scope and its `viewBox`, and the browser byte-parity case move to M20.40, which M20.13 depends on.
+    Item 4's "peer" wording is corrected here: render stays a regular sdk dependency, kept external in the subpath's build.
 - Related: ADR-0015, ADR-0026, ADR-0036, ADR-0051, ADR-0052, ADR-0054, ADR-0148, ADR-0186, ADR-0192, ADR-0201, ADR-0220.

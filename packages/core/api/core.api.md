@@ -582,6 +582,35 @@ export const isFontFormat: (version: unknown) => version is ShapePackFontFormat;
 export { isMasterScreen }
 
 // @public
+export type LaidOutLine = {
+    readonly text: string;
+    readonly top: number;
+    readonly height: number;
+    readonly baseline: number;
+    readonly x: number;
+    readonly width: number;
+    readonly pieces: readonly LaidOutPiece[];
+};
+
+// @public
+export type LaidOutPiece = {
+    readonly text: string;
+    readonly font: FontSpec;
+    readonly x: number;
+    readonly width: number;
+};
+
+// @public
+export type LaidOutText = {
+    readonly lines: readonly LaidOutLine[];
+    readonly width: number;
+    readonly height: number;
+};
+
+// @public
+export function layoutStyled(blocks: readonly StyledBlock[], base: FontSpec, measurer: TextMeasurer, options: StyledOptions): LaidOutText;
+
+// @public
 export function lockedWithin(view: ReadView, id: RecordId, lock: LockName): boolean;
 
 // @public
@@ -1185,6 +1214,7 @@ export type StyledBlock = {
 export type StyledOptions = {
     readonly maxWidth: number;
     readonly spacing?: "collapse" | "add";
+    readonly align?: string;
 };
 
 // @public

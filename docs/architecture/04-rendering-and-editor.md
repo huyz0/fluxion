@@ -43,9 +43,10 @@
   transform/filter bugs, clipping, rasterization).
 - *Compositing*: each wrapper is promotable, so WAAPI can animate `transform`/`opacity` on the
   compositor (research 03 §8.1 rule 1). An SVG `<g>` would animate on the main thread.
-- *Export*: the SVG exporter (FR-EXP-004) serializes each wrapper into a nested `<svg>` and turns
-  text regions into `<foreignObject>` or outlined `<text>` (with the Node measurer). The
-  `foreignObject` path lives **only** in the export serializer.
+- *Export*: the SVG exporter (FR-EXP-004, ADR-0056) draws the same tree through each view's
+  svg-surface leaf (`ElementView.Svg`, in the `@fluxion/render/svg` subpath) into a nested `<svg>`
+  per element, with text as measured `<tspan>`s laid out by core's `layoutStyled`. No
+  `foreignObject`, in any renderer or export.
 
 The cost is one DOM subtree per element. At the target scale (hundreds to ~2k elements,
 NFR-PERF-002) memoized views plus culling keep that within budget (§5).
@@ -95,7 +96,7 @@ Planned additions, each with the milestone that needs it:
   `ElementHandle { id, root, geometry?, setStyleVar, setAttr }` sink for per-frame writes that bypass
   React (research 03 §8.1 rule 10) — the player milestones;
 - on `ElementView`: `kind`, `measure(el, measurer)` (intrinsic size for autoSize/layout), `a11y(el)`,
-  `exportSvg(el, ctx)` and `cull: 'hide' | 'unmount' | 'never'`; a `css` string of view content CSS;
+  `Svg` (the svg-surface leaf, ADR-0056; done in M20.12, with `ExportContext` for pack views in M20.40) and `cull: 'hide' | 'unmount' | 'never'`; a `css` string of view content CSS;
 
 `elementViews` (and later `components`) are render-level registries (03 §4). Packs register views
 the same way third parties do; an unknown kind renders a placeholder that keeps its record (FR-DOC-005,
