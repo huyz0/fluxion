@@ -143,8 +143,8 @@ only when the fonts are installed.
    - **Colours on the svg surface are resolved literals** (`resolveStyle` and then `substitute`; no `var()`, which Inkscape does
      not read), written as presentation attributes, not classes. `ElementViewProps`' doc rule ("colours via `var(--fx-…)`, never
      token values") is amended in M20.12's doc comment: the rule applies to the html surface, and literals apply to the svg surface.
-   - Effects use only SVG 1.1 filter primitives: `feGaussianBlur`, `feOffset`, `feFlood`, `feComposite` and `feMerge`, never
-     `feDropShadow`.
+   - Effects use only SVG 1.1 filter primitives: `feGaussianBlur`, `feOffset`, `feFlood`, `feComposite`, `feMerge`,
+     `feMorphology` (a shadow's spread) and `feComponentTransfer` with `feFuncA` (an inset's alpha), never `feDropShadow`.
    - Images are `<image xlink:href="data:…">`. Sanitized SVG artwork (ADR-0186) is inlined as a nested `<svg>` with its ids
      prefixed.
    - React's `useId` ids («r1») are not XML names. The serializer renumbers them `fx<screen>-<n>`, along with every `url(#…)` that

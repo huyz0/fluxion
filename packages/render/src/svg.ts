@@ -20,7 +20,9 @@ import { ShapeView } from './shape-view.js';
 import { FrameSvg, ImageSvg } from './svg-boxes.js';
 import { ConnectorSvg } from './svg-connector.js';
 import { ScreenSvg, SvgSurface } from './svg-surface.js';
+import { TableSvg } from './svg-table.js';
 import { GroupSvg, ShapeSvg, TextSvg } from './svg-views.js';
+import { TableView } from './table-view.js';
 import { TextView } from './text-view.js';
 import { useValue } from './use-value.js';
 
@@ -39,6 +41,7 @@ export const BUILTIN_SVG_LEAVES: ReadonlyMap<ComponentType<ElementViewProps>, Co
   [GroupView, GroupSvg],
   [FrameView, FrameSvg],
   [ImageView, ImageSvg],
+  [TableView, TableSvg],
 ]);
 
 /**
@@ -88,3 +91,4 @@ export function ScreenSvgView(props: ScreenSvgViewProps): ReactNode {
 
 export { FrameSvg, ImageSvg } from './svg-boxes.js';
 export { type SvgDiagnostic, SvgSurface, type SvgSurfaceContext } from './svg-surface.js';
+export { TableSvg } from './svg-table.js';

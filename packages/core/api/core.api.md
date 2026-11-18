@@ -590,6 +590,7 @@ export type LaidOutLine = {
     readonly x: number;
     readonly width: number;
     readonly pieces: readonly LaidOutPiece[];
+    readonly block: number;
 };
 
 // @public
@@ -598,6 +599,7 @@ export type LaidOutPiece = {
     readonly font: FontSpec;
     readonly x: number;
     readonly width: number;
+    readonly run: number;
 };
 
 // @public
@@ -1208,6 +1210,7 @@ export type StyledBlock = {
     readonly before?: number;
     readonly after?: number;
     readonly indentEm?: number;
+    readonly align?: string;
 };
 
 // @public

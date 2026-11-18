@@ -21,6 +21,7 @@ import { viewStyle } from './shape-style.js';
 import { strokeReach } from './shape-view.js';
 import { imagePaint, lit, opacityOf, strokeAttrs, svgPaint } from './svg-paint.js';
 import { SvgPlaceholder, useSvgImage, useSvgMeasurer } from './svg-surface.js';
+import { SvgRegionsAndSlots } from './svg-table.js';
 import { SvgLabel } from './svg-text.js';
 import { concreteFont } from './text-measurer.js';
 
@@ -139,6 +140,7 @@ export function ShapeSvg(props: ElementViewProps): ReactNode {
       )}
       {effected ? <g filter={`url(#fx-effects-${ids})`}>{paint}</g> : paint}
       <SvgLabel doc={element.text} font={style.font} opacity="1" box={label.box} theme={theme} measurer={measurer} size={label.size} />
+      <SvgRegionsAndSlots element={element} def={def} font={style.font} shapeDefs={registries.shapeDefs} store={store} theme={theme} measurer={measurer} />
     </g>
   );
 }

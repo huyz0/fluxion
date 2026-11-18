@@ -47,11 +47,17 @@ export function blockSpacing(attrs: { readonly [key: string]: unknown }): { read
   };
 }
 
+/** A text block's own alignment, when it is one CSS knows. */
+export function blockAlign(attrs: { readonly [key: string]: unknown }): string | undefined {
+  const align = attrs['align'];
+  return typeof align === 'string' && ALIGN.has(align) ? align : undefined;
+}
+
 /** The CSS of a text block's attributes: alignment, its own line height, the space above and below. */
 function textStyle(attrs: { readonly [key: string]: unknown }): { readonly [property: string]: string } | undefined {
   const css: { [property: string]: string } = {};
-  const align = attrs['align'];
-  if (typeof align === 'string' && ALIGN.has(align)) css['textAlign'] = align;
+  const align = blockAlign(attrs);
+  if (align !== undefined) css['textAlign'] = align;
   const { lineHeight, before, after } = blockSpacing(attrs);
   if (lineHeight !== undefined) css['lineHeight'] = String(lineHeight);
   if (before !== undefined) css['marginTop'] = `${before}px`;

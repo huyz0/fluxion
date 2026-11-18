@@ -5,6 +5,7 @@ import type { ResolvedPaint, Theme } from '@fluxion/theme';
 import type { ReactNode, SVGAttributes } from 'react';
 import type { ImageSource } from './assets.js';
 import { concreteLength, substitute } from './css-values.js';
+import { ASPECT, TILE } from './image-fit.js';
 
 /** `v` rounded to 1/1000 (no `-0`), as path data is. */
 export const n3 = (v: number): number => Math.round(v * 1000) / 1000 || 0;
@@ -25,7 +26,7 @@ const stops = (paint: { readonly stops: ReadonlyArray<{ readonly offset: number;
 
 /**
  * The fill of `paint` on a `w` × `h` box at (`x`, `y`), as literals: a colour, or a gradient `id` defined beside it. An image paint fills
- * nothing on this surface yet (M20.40), as does `none`.
+ * nothing here (`imagePaint` draws it from the export's `data:` URL), as does `none`.
  */
 export function svgPaint(
   paint: ResolvedPaint,
@@ -65,12 +66,6 @@ export function svgPaint(
   }
   return { fill: 'none' };
 }
-
-/** How each image fit places the image in the box, as SVG preserveAspectRatio. */
-export const ASPECT: { readonly [fit: string]: string } = { cover: 'xMidYMid slice', contain: 'xMidYMid meet', fill: 'none' };
-
-/** The tile of an image whose asset records no natural size (as the html surface tiles it). */
-const TILE = 64;
 
 /**
  * An image paint as a pattern `id` with the image's `data:` URL: fitted to the box, or repeated at its natural size (`tile`); nothing

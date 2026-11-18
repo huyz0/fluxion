@@ -23,6 +23,7 @@ import { type ImageSource, useImage } from './assets.js';
 import { concreteLength } from './css-values.js';
 import { EffectsFilter } from './effects.js';
 import { PlaceholderView } from './elements.js';
+import { ASPECT, TILE } from './image-fit.js';
 import { labelStyle, plainParagraphs } from './label.js';
 import { pathData, segmentsData } from './path-data.js';
 import { RegionsAndSlots } from './region-views.js';
@@ -90,11 +91,6 @@ function svgFill(
       return { fill: 'none' };
   }
 }
-
-/** How `cover`, `contain` and `fill` fit an image into the box (CSS object-fit, as SVG preserveAspectRatio). */
-const ASPECT: { readonly [fit: string]: string } = { cover: 'xMidYMid slice', contain: 'xMidYMid meet', fill: 'none' };
-/** The tile size of an image whose asset records no natural size. */
-const TILE = 64;
 
 /**
  * An image paint as an SVG pattern: fitted to the box, or repeated at its natural size (`tile`, the

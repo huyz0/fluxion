@@ -8,9 +8,10 @@ import { resolveStyle } from '@fluxion/theme';
 import { type ReactNode, useId } from 'react';
 import type { ImageSource } from './assets.js';
 import { concreteLength } from './css-values.js';
+import { ASPECT } from './image-fit.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
-import { ASPECT, n3, opacityOf, strokeAttrs, svgPaint } from './svg-paint.js';
+import { n3, opacityOf, strokeAttrs, svgPaint } from './svg-paint.js';
 import { useSvgImage } from './svg-surface.js';
 
 /**

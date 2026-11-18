@@ -7,7 +7,7 @@ import { MAX_RICH_TEXT_DEPTH, type RichTextDoc, type RichTextNode } from '@fluxi
 import type { Theme } from '@fluxion/theme';
 import { concreteLength, substitute } from './css-values.js';
 import { fieldText, inlineNodes } from './label.js';
-import { type BlockPlan, blockSpacing, CODE_EM, HEADING_EM, HEADINGS, LIST_INDENT_EM, planBlock } from './rich-blocks.js';
+import { type BlockPlan, blockAlign, blockSpacing, CODE_EM, HEADING_EM, HEADINGS, LIST_INDENT_EM, planBlock } from './rich-blocks.js';
 import { type MarkPlan, planMarks } from './rich-marks.js';
 
 /** What a mark's element does to the run inside it. */
@@ -37,30 +37,77 @@ function runOf(node: RichTextNode, theme: Theme): StyledRun {
   return planMarks(node.marks).reduce<StyledRun>((run, plan) => EFFECTS[plan.tag]?.(run, plan, theme) ?? run, { text });
 }
 
-/** The block of a text node: its runs, its heading's scale, its own spacing, and its list's indent. */
+/** The block of a text node: its runs, its heading's scale, its own spacing and alignment, and its list's indent. */
 function blockOf(node: RichTextNode, plan: BlockPlan | undefined, lists: number, theme: Theme): StyledBlock {
   const level = plan === undefined ? -1 : (HEADINGS as readonly string[]).indexOf(plan.tag);
+  // an unknown block's attributes are never read
+  const align = plan === undefined ? undefined : blockAlign(node.attrs ?? {});
   return {
     runs: inlineNodes(node).map((n) => runOf(n, theme)),
     ...(level < 0 ? {} : { scale: HEADING_EM[level], weight: 700 }),
-    // an unknown block's attributes are never read
     ...(plan === undefined ? {} : blockSpacing(node.attrs ?? {})),
     ...(lists === 0 ? {} : { indentEm: lists * LIST_INDENT_EM }),
+    ...(align === undefined ? {} : { align }),
   };
 }
 
-/** How deep a node is: in lists (for the indent) and in nodes (for the depth limit). */
-type Level = { readonly lists: number; readonly depth: number };
+/**
+ * A list item's marker: a bullet or the item's number, at its list's nesting level (1 for a top-level list).
+ *
+ * @public
+ */
+export type ListMarker = { readonly ordered: boolean; readonly n: number; readonly level: number };
+
+/**
+ * What a block draws beside its fonts: the marks of each of its runs, outermost first (as RichText nests them), and the marker of
+ * the list item it starts.
+ *
+ * @public
+ */
+export type BlockPaint = { readonly runs: readonly (readonly MarkPlan[])[]; readonly marker?: ListMarker };
+
+/** How deep a node is: in lists (for the indent) and in nodes (for the depth limit); `marker` waits for an item's first block. */
+type Level = { readonly lists: number; readonly depth: number; readonly marker?: ListMarker | undefined };
+
+/** A block with what it draws beside its fonts. */
+type Rich = { readonly block: StyledBlock; readonly paint: BlockPaint };
+
+/** The items of a list: each item's blocks, its marker on the first. */
+function listItems(list: RichTextNode, plan: BlockPlan, level: Level, theme: Theme): Rich[] {
+  const inside = { lists: level.lists + 1, depth: level.depth + 1 };
+  const first = plan.start ?? 1;
+  return (list.content ?? []).flatMap((item, k) => {
+    const marker = { ordered: plan.tag === 'ol', n: first + k, level: inside.lists };
+    return walk([item], { ...inside, marker }, theme);
+  });
+}
 
 /** The blocks under `nodes`: a list nests one level more, an item stays at its list's level. */
-function walk(nodes: readonly RichTextNode[], level: Level, theme: Theme): StyledBlock[] {
+function walk(nodes: readonly RichTextNode[], level: Level, theme: Theme): Rich[] {
+  let marker = level.marker;
   return nodes.flatMap((node) => {
     const plan = level.depth > MAX_RICH_TEXT_DEPTH ? undefined : planBlock(node);
     const inside = { lists: level.lists, depth: level.depth + 1 };
-    if (plan?.tag === 'ul' || plan?.tag === 'ol') return walk(node.content ?? [], { ...inside, lists: level.lists + 1 }, theme);
-    if (plan?.tag === 'li') return walk(node.content ?? [], inside, theme);
-    return [blockOf(node, plan, level.lists, theme)];
+    if (plan?.tag === 'ul' || plan?.tag === 'ol') {
+      marker = undefined;
+      return listItems(node, plan, level, theme);
+    }
+    if (plan?.tag === 'li') return walk(node.content ?? [], { ...inside, lists: level.lists, marker: level.marker }, theme);
+    const runs = inlineNodes(node).map((n) => (n.type === 'hardBreak' ? [] : planMarks(n.marks)));
+    const paint = marker === undefined ? { runs } : { runs, marker };
+    marker = undefined;
+    return [{ block: blockOf(node, plan, level.lists, theme), paint }];
   });
+}
+
+/**
+ * The blocks of `doc` for layout, with what each draws beside its fonts (the svg surface draws marks and markers from it).
+ *
+ * @public
+ */
+export function richBlocks(doc: RichTextDoc | undefined, theme: Theme): { readonly blocks: StyledBlock[]; readonly paints: BlockPaint[] } {
+  const rich = walk(doc?.content ?? [], { lists: 0, depth: 1 }, theme);
+  return { blocks: rich.map((r) => r.block), paints: rich.map((r) => r.paint) };
 }
 
 /**
@@ -69,5 +116,5 @@ function walk(nodes: readonly RichTextNode[], level: Level, theme: Theme): Style
  * @public
  */
 export function styledBlocks(doc: RichTextDoc | undefined, theme: Theme): StyledBlock[] {
-  return walk(doc?.content ?? [], { lists: 0, depth: 1 }, theme);
+  return richBlocks(doc, theme).blocks;
 }

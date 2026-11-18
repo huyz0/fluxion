@@ -6,11 +6,9 @@ import type { ImageElement } from '@fluxion/schema';
 import { resolveStyle } from '@fluxion/theme';
 import { type ReactNode, useId, useMemo } from 'react';
 import { type ImageSource, useImage } from './assets.js';
+import { ASPECT } from './image-fit.js';
 import { pathData } from './path-data.js';
 import type { ElementViewProps } from './registries.js';
-
-/** How each fit places the (cropped) image in the box, as SVG preserveAspectRatio (CSS object-fit). */
-const FIT: { readonly [fit: string]: string } = { contain: 'xMidYMid meet', cover: 'xMidYMid slice', fill: 'none' };
 
 /**
  * The view of `kind: 'image'` elements.
@@ -52,7 +50,7 @@ export function ImageView(props: ElementViewProps): ReactNode {
  */
 function picture(element: ImageElement, image: ImageSource, cropId: string): ReactNode {
   const { w, h } = element.transform;
-  const fit = FIT[element.fit ?? 'contain'];
+  const fit = ASPECT[element.fit ?? 'contain'];
   const { crop } = element;
   if (crop === undefined || image.w === undefined || image.h === undefined)
     return <image className="fx-image" href={image.href} width={w} height={h} preserveAspectRatio={fit} />;

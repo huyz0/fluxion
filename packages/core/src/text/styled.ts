@@ -47,6 +47,8 @@ export type StyledBlock = {
   readonly after?: number;
   /** Indent as a multiple of the base size (a list's: 1.5 per level). */
   readonly indentEm?: number;
+  /** Where its lines sit (`layoutStyled`; a block's own CSS `text-align`), over the options' `align`. */
+  readonly align?: string;
 };
 
 /**
@@ -77,6 +79,8 @@ export type LaidOutPiece = {
   readonly x: number;
   /** Its measured width, px. */
   readonly width: number;
+  /** The index of the run of its block it comes from (pieces split where runs meet, so a run's marks can be drawn). */
+  readonly run: number;
 };
 
 /**
@@ -97,8 +101,10 @@ export type LaidOutLine = {
   readonly x: number;
   /** Its width. */
   readonly width: number;
-  /** Its pieces, left to right; neighbours of one font are one piece. */
+  /** Its pieces, left to right: text of one font from one run, each at its place in the line as measured whole. */
   readonly pieces: readonly LaidOutPiece[];
+  /** The index of the block it belongs to. */
+  readonly block: number;
 };
 
 /**
@@ -115,13 +121,13 @@ export type LaidOutText = {
   readonly height: number;
 };
 
-/** One piece of a line: text in one font. */
-type Piece = { readonly text: string; readonly font: FontSpec };
+/** One piece of a line: text in one font, from run `run` of its block. */
+type Piece = { readonly text: string; readonly font: FontSpec; readonly run: number };
 
-/** A token of a block: a word or a space in a font, or a hard break. */
+/** A token of a block: a word or a space in a font from run `run`, or a hard break. */
 type Token =
-  | { readonly type: 'word'; readonly text: string; readonly font: FontSpec }
-  | { readonly type: 'space'; readonly font: FontSpec }
+  | { readonly type: 'word'; readonly text: string; readonly font: FontSpec; readonly run: number }
+  | { readonly type: 'space'; readonly font: FontSpec; readonly run: number }
   | { readonly type: 'break' };
 
 const key = (f: FontSpec): string => `${f.family}\u0000${f.size}\u0000${f.weight}\u0000${f.style}`;
@@ -133,28 +139,41 @@ function runFont(run: StyledRun, block: FontSpec): FontSpec {
 }
 
 /** The token of the `k`-th part of a run's text split at its separators (a break, or a run of white space): the odd ones. */
-function tokenOf(part: string, k: number, font: FontSpec): Token[] {
+function tokenOf(part: string, k: number, font: FontSpec, run: number): Token[] {
   if (part === '') return [];
-  if (k % 2 === 0) return [{ type: 'word', text: part, font }];
-  return [part === '\n' ? { type: 'break' } : { type: 'space', font }];
+  if (k % 2 === 0) return [{ type: 'word', text: part, font, run }];
+  return [part === '\n' ? { type: 'break' } : { type: 'space', font, run }];
 }
 
 /** The words and single spaces of a block's runs (a run of white space is one space; `\n` a break). */
 function tokens(runs: readonly StyledRun[], block: FontSpec): Token[] {
-  return runs.flatMap((run) => {
+  return runs.flatMap((run, r) => {
     const font = runFont(run, block);
     // tzap disable next-line Regex: white space split one character at a time gives several spaces, and the pending one is replaced by each
-    return run.text.split(/(\n|[ \t\r\f\v]+)/).flatMap((part, k) => tokenOf(part, k, font));
+    return run.text.split(/(\n|[ \t\r\f\v]+)/).flatMap((part, k) => tokenOf(part, k, font, r));
   });
 }
 
+/** The text of a group from one run. */
+type Segment = { readonly text: string; readonly run: number };
+
+/** A group of a line: neighbours of one font joined and measured whole, with the runs it holds in order. */
+type Group = { readonly text: string; readonly font: FontSpec; readonly width: number; readonly segments: readonly Segment[] };
+
+/** `segments` with `p` added: to the last one when it is from the same run. */
+function addSegment(segments: readonly Segment[], p: Piece): Segment[] {
+  const last = segments.at(-1);
+  return last?.run === p.run ? [...segments.slice(0, -1), { text: last.text + p.text, run: p.run }] : [...segments, { text: p.text, run: p.run }];
+}
+
 /** `pieces` with neighbours of one font joined, each measured: what the measurer shapes across words is kept. */
-function groups(pieces: readonly Piece[], measurer: TextMeasurer): { readonly text: string; readonly font: FontSpec; readonly width: number }[] {
-  const joined: Piece[] = [];
+function groups(pieces: readonly Piece[], measurer: TextMeasurer): Group[] {
+  const joined: { text: string; font: FontSpec; segments: Segment[] }[] = [];
   for (const p of pieces) {
     const last = joined.at(-1);
-    if (last !== undefined && key(last.font) === key(p.font)) joined[joined.length - 1] = { font: last.font, text: last.text + p.text };
-    else joined.push(p);
+    if (last !== undefined && key(last.font) === key(p.font))
+      joined[joined.length - 1] = { font: last.font, text: last.text + p.text, segments: addSegment(last.segments, p) };
+    else joined.push({ text: p.text, font: p.font, segments: [{ text: p.text, run: p.run }] });
   }
   return joined.map((g) => ({ ...g, width: measurer.measure(g.text, g.font).width }));
 }
@@ -167,7 +186,7 @@ type Line = {
   readonly text: string;
   readonly width: number;
   readonly height: number;
-  readonly pieces: readonly { readonly text: string; readonly font: FontSpec; readonly width: number }[];
+  readonly pieces: readonly Group[];
   readonly tallest: FontSpec;
 };
 
@@ -205,8 +224,8 @@ class LineBuilder {
   }
 
   /** A space in `font`, kept until a word follows on the same line (a leading or trailing one is dropped). */
-  space(font: FontSpec): void {
-    this.#pending = { text: ' ', font };
+  space(font: FontSpec, run: number): void {
+    this.#pending = { text: ' ', font, run };
   }
 
   /** A word: on this line if it fits, else on the next (a word wider than the line stands alone). */
@@ -233,10 +252,10 @@ function blockLines(runs: readonly StyledRun[], layout: Layout): Line[] {
         builder.end();
         break;
       case 'space':
-        builder.space(t.font);
+        builder.space(t.font, t.run);
         break;
       case 'word':
-        builder.word({ text: t.text, font: t.font });
+        builder.word({ text: t.text, font: t.font, run: t.run });
         break;
     }
   }
@@ -262,21 +281,38 @@ function baselineOf(line: Line, top: number, measurer: TextMeasurer): number {
   return top + (line.height - (m.ascent + m.descent)) / 2 + m.ascent;
 }
 
-/** A block's laid-out lines from `top`, placed in `maxWidth` after `indent`. */
-function placeLines(
-  lines: readonly Line[],
-  at: { readonly top: number; readonly indent: number; readonly room: number },
-  options: StyledOptions,
-  measurer: TextMeasurer | undefined,
-): LaidOutLine[] {
+/**
+ * Group `g` at `left` as pieces of one run each: a run's place is the width of the group's text before it, measured with the font, so
+ * the pieces sit where the whole group is drawn (no measurer: one piece, as a wrap reads none).
+ */
+function runPieces(g: Group, left: number, measurer: TextMeasurer | undefined): LaidOutPiece[] {
+  const [first] = g.segments;
+  if (measurer === undefined || first === undefined || g.segments.length === 1)
+    return [{ text: g.text, font: g.font, x: left, width: g.width, run: first?.run ?? 0 }];
+  let before = '';
+  let start = 0;
+  return g.segments.map((s, k) => {
+    before += s.text;
+    const end = k === g.segments.length - 1 ? g.width : measurer.measure(before, g.font).width;
+    const piece = { text: s.text, font: g.font, x: left + start, width: end - start, run: s.run };
+    start = end;
+    return piece;
+  });
+}
+
+/** Where a block's lines are placed: from `top`, after `indent`, in `room`, aligned by `align`, as block `block`. */
+type Placement = { readonly top: number; readonly indent: number; readonly room: number; readonly align: string | undefined; readonly block: number };
+
+/** A block's laid-out lines placed at `at`. */
+function placeLines(lines: readonly Line[], at: Placement, measurer: TextMeasurer | undefined): LaidOutLine[] {
   let top = at.top;
   return lines.map((line) => {
-    const x = at.indent + alignOffset(options.align, at.room, line.width);
+    const x = at.indent + alignOffset(at.align, at.room, line.width);
     let left = x;
-    const pieces = line.pieces.map((p) => {
-      const piece = { text: p.text, font: p.font, x: left, width: p.width };
+    const pieces = line.pieces.flatMap((p) => {
+      const split = runPieces(p, left, measurer);
       left += p.width;
-      return piece;
+      return split;
     });
     const placed = {
       text: line.text,
@@ -286,6 +322,7 @@ function placeLines(
       x,
       width: line.width,
       pieces,
+      block: at.block,
     };
     top += line.height;
     return placed;
@@ -295,14 +332,21 @@ function placeLines(
 /** How a pass lays out: its measurer and options, and whether it measures baselines (a wrap reads none, and measures nothing more). */
 type Pass = { readonly measurer: TextMeasurer; readonly options: StyledOptions; readonly baselines: boolean };
 
-/** Block `b`'s lines at `top`: its own font, indent and room under `base`. */
-function blockOf(b: StyledBlock, base: FontSpec, top: number, pass: Pass): { readonly lines: LaidOutLine[]; readonly indent: number } {
+/** Block `b` (the `index`-th)'s lines at `top`: its own font, indent and room under `base`. */
+function blockOf(
+  b: StyledBlock,
+  base: FontSpec,
+  at: { readonly top: number; readonly index: number },
+  pass: Pass,
+): { readonly lines: LaidOutLine[]; readonly indent: number } {
   const { measurer, options } = pass;
+  const top = at.top;
   const font: FontSpec = { ...base, size: base.size * (b.scale ?? 1), weight: b.weight ?? base.weight ?? 400 };
   const indent = (b.indentEm ?? 0) * base.size;
   const room = Math.max(0, options.maxWidth - indent);
   const lines = blockLines(b.runs, { block: font, lineHeight: b.lineHeight ?? base.lineHeight ?? 1.2, maxWidth: room, measurer });
-  return { lines: placeLines(lines, { top, indent, room }, options, pass.baselines ? measurer : undefined), indent };
+  const placement = { top, indent, room, align: b.align ?? options.align, block: at.index };
+  return { lines: placeLines(lines, placement, pass.baselines ? measurer : undefined), indent };
 }
 
 /** {@link layoutStyled} in `pass`. */
@@ -313,10 +357,10 @@ function lay(blocks: readonly StyledBlock[], base: FontSpec, pass: Pass): LaidOu
   let previousAfter = 0;
   // tzap disable next-line BooleanLiteral: before the first block there is no space to collapse with
   let previousIndented = false;
-  for (const b of blocks) {
+  for (const [index, b] of blocks.entries()) {
     const indented = (b.indentEm ?? 0) > 0;
     y += gap(previousAfter, b.before ?? 0, pass.options.spacing === 'collapse' || (previousIndented && indented));
-    const { lines, indent } = blockOf(b, base, y, pass);
+    const { lines, indent } = blockOf(b, base, { top: y, index }, pass);
     for (const line of lines) {
       out.push(line);
       widest = Math.max(widest, line.width + indent);

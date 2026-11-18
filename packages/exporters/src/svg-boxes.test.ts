@@ -31,6 +31,7 @@ function boxes(): { readonly file: DocumentFile; readonly ids: Readonly<Record<s
     y: 300,
     w: 160,
     h: 90,
+    label: 'lit',
     style: {
       shadow: [
         { x: 6, y: 6, blur: 4, spread: 2, color: '#000000' },
@@ -124,10 +125,13 @@ describe('exportSvg: boxed leaves (ADR-0056 items 8 and 9, M20.40)', () => {
     expect(shadowed).toMatch(/<filter id="([^"]+)" filterUnits="userSpaceOnUse"[^>]*>.*<\/filter><\/defs><g filter="url\(#\1\)">/);
     expect(shadowed).toContain('<feFlood flood-color="#000000"');
     expect(shadowed).toContain('<feFlood flood-color="#00ff00"');
-    expect(shadowed).not.toContain('style=');
+    expect(shadowed).not.toMatch(/ style=/);
     expect(shadowed).not.toContain('feDropShadow');
     // the label stays outside the filter, as the html leaf keeps it sharp
-    expect(shadowed.slice(shadowed.indexOf('<g filter='))).toMatch(/<\/g><\/g><\/svg><\/g>$|<\/g><\/g><\/svg><\/g>/);
+    const filtered = /<g filter="url\(#[^"]+\)">(.*?)<\/g><text /.exec(shadowed);
+    expect(filtered).not.toBeNull();
+    expect(filtered?.[1]).not.toContain('<text');
+    expect(shadowed.slice(shadowed.indexOf('<g filter='))).toMatch(/<\/g><text [^>]*>.*>lit ?<\/tspan>/);
     const art = groupOf(svg, ids['art'] as string);
     expect(art).toContain('<linearGradient id="fx1-');
     expect(art).not.toMatch(/url\(#paint\)|fx-artwork|aria-hidden|var\(/);

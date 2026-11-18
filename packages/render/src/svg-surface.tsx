@@ -96,7 +96,8 @@ export function SvgPlaceholder(props: ElementViewProps): ReactNode {
     return <image x={0} y={0} width={n3(t.w)} height={n3(t.h)} preserveAspectRatio="none" xlinkHref={snapshot.href} />;
   if (props.element.kind === 'component' && snapshotId === undefined)
     report({ code: 'FLX_EXPORT_NO_SNAPSHOT', elementId: props.element.id, message: 'the component has no snapshot: a placeholder is drawn' });
-  else report({ code: 'FLX_EXPORT_NO_SVG_VIEW', elementId: props.element.id, message: `${props.element.kind} has no SVG view: a placeholder is drawn` });
+  else if (snapshotId === undefined)
+    report({ code: 'FLX_EXPORT_NO_SVG_VIEW', elementId: props.element.id, message: `${props.element.kind} has no SVG view: a placeholder is drawn` });
   if (t === undefined) return null;
   const label = `Unsupported element: ${props.element.kind}`;
   return (

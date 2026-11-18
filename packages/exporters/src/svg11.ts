@@ -235,9 +235,9 @@ export function parseXml(xml: string): { readonly nodes: readonly Node[] } | { r
 /** Whether `node` lies inside an `<a>` (where a link may point outside the file). */
 const inLink = (node: Node): boolean => (node.parent === undefined ? false : node.parent.name === 'a' || inLink(node.parent));
 
-/** The problem of a reference `value` of `node`: a fragment naming nothing, or (outside a link) anything but a `data:` URL. */
+/** The problem of a reference `value` of `node`: a fragment naming nothing, or (but on or in a link) anything but a `data:` URL. */
 function hrefProblem(node: Node, value: string, ids: ReadonlySet<string>): string | undefined {
-  const bad = value.startsWith('#') ? !ids.has(value.slice(1)) : !value.startsWith('data:') && !inLink(node);
+  const bad = value.startsWith('#') ? !ids.has(value.slice(1)) : !value.startsWith('data:') && node.name !== 'a' && !inLink(node);
   return bad ? `<${node.name}> refers to ${value.slice(0, 40)}` : undefined;
 }
 

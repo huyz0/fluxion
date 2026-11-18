@@ -63,4 +63,7 @@ export type SvgSurfaceContext = {
     readonly assets?: AssetUrls;
 };
 
+// @public
+export function TableSvg(props: ElementViewProps): ReactNode;
+
 ```

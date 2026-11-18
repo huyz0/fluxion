@@ -72,8 +72,8 @@ describe('layoutStyled (ADR-0056 item 3, M20.12)', () => {
     const [first, second] = at('left');
     // 'ab ' at 5 px a character, then the bold piece; one line of 15 px (10 px at 1.5) with its baseline at half the leading plus the ascent
     expect(first?.pieces).toEqual([
-      { text: 'ab ', font: { ...base, weight: 400, style: 'normal' }, x: 0, width: 15 },
-      { text: 'cd', font: { ...base, weight: 700, style: 'normal' }, x: 15, width: 11 },
+      { text: 'ab ', font: { ...base, weight: 400, style: 'normal' }, x: 0, width: 15, run: 0 },
+      { text: 'cd', font: { ...base, weight: 700, style: 'normal' }, x: 15, width: 11, run: 1 },
     ]);
     expect([first?.top, first?.height, first?.baseline]).toEqual([0, 15, 2.5 + 8]);
     // the second block's indent is 1.5 times the base size; its space above follows the first line
@@ -82,5 +82,24 @@ describe('layoutStyled (ADR-0056 item 3, M20.12)', () => {
     expect(at('right')[0]?.x).toBe(100 - 26);
     expect(at('center')[1]?.x).toBe(15 + (85 - 5) / 2);
     expect(at('justify')[0]?.x).toBe(0);
+    expect([first?.block, second?.block]).toEqual([0, 1]);
+  });
+
+  it('FR-TXT-002: runs of one font are pieces of their own, placed by the width of the text before them, on the lines a wrap gives', () => {
+    // a run of underlined text beside plain text: one font, two runs, so two pieces in one measured group
+    const blocks: StyledBlock[] = [{ runs: [{ text: 'plain ' }, { text: 'marked' }, { text: ' tail' }] }];
+    const [line] = layoutStyled(blocks, base, measurer, { maxWidth: 200 }).lines;
+    expect(line?.pieces.map((p) => [p.text, p.run, p.x, p.width])).toEqual([
+      ['plain ', 0, 0, 30],
+      ['marked', 1, 30, 30],
+      [' tail', 2, 60, 25],
+    ]);
+    expect(wrapStyled(blocks, base, measurer, { maxWidth: 200 }).lines).toEqual([line?.text]);
+  });
+
+  it("FR-TXT-002: a block's own alignment wins over the options'", () => {
+    const blocks: StyledBlock[] = [{ runs: [{ text: 'ab' }], align: 'right' }, { runs: [{ text: 'cd' }] }];
+    const lines = layoutStyled(blocks, base, measurer, { maxWidth: 100, align: 'center' }).lines;
+    expect(lines.map((l) => l.x)).toEqual([90, 45]);
   });
 });

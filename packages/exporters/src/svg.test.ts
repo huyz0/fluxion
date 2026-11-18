@@ -38,7 +38,7 @@ function carried(svg: string): { readonly bytes: Uint8Array; readonly sha256: st
 
 /** The text of each line `<tspan x y>` in `svg`, its pieces joined. */
 const lines = (svg: string): string[] =>
-  [...svg.matchAll(/<tspan x="[^"]+" y="[^"]+">((?:<tspan[^>]*>[^<]*<\/tspan>)*)<\/tspan>/g)].map((m) =>
+  [...svg.matchAll(/<tspan x="[^"]+" y="[^"]+">((?:<a [^>]*>|<\/a>|<tspan[^>]*>[^<]*<\/tspan>)*)<\/tspan>/g)].map((m) =>
     [...(m[1] as string).matchAll(/>([^<]*)</g)].map((p) => p[1]).join(''),
   );
 
@@ -53,8 +53,8 @@ describe('exportSvg (ADR-0056, M20.12)', () => {
     }
     const mastered = await exportSvg(MASTERED.file, { screenId: MASTERED.screenId }, { registries });
     expect(svg11Problems(mastered.svg)).toEqual([]);
-    // every shape of the mastered screen has a view here: no placeholder stands in for one (the table is M20.41's)
-    expect(mastered.diagnostics.filter((d) => d.code === 'FLX_EXPORT_NO_SVG_VIEW').map((d) => d.message.split(' ')[0])).toEqual(['table']);
+    // every element of the mastered screen has a view here: no placeholder stands in for one
+    expect(mastered.diagnostics.filter((d) => d.code === 'FLX_EXPORT_NO_SVG_VIEW').map((d) => d.message.split(' ')[0])).toEqual([]);
     expect(mastered.svg).toContain('fluxion:master="01juEngAtRB8wyUaaRvkVH"');
     await expect(mastered.svg).toMatchFileSnapshot('../__golden__/masters-tables.svg');
     // what is not drawn is reported, never silently dropped
