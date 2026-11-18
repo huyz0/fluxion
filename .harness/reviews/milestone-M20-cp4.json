@@ -1,0 +1,66 @@
+{
+  "milestone": "M20",
+  "checkpoint": "cp4",
+  "range": "f65794988a379033871b5af71948d50c55389f33..e72afc2385a79e400f74bcf1887f7638b149809d",
+  "reviewer": "claude:independent-subagent",
+  "verdict": "changes-requested",
+  "reviewedDelta": "cp3 covered f657949..7631c8b. This review read 7631c8b..e72afc2: 5f3510a (cp3 record), 71b9c6d M20.6, 8840271 M20.7, b95ae5c M20.8, 3cf7bf7 M20.9, ac4a8b2 M20.10, e04b0ef M20.11 and e72afc2 M20.37. cp3's dispositions were carried out. F1 became M20.37. For F2, 5f3510a added .changeset/editor-context-menu-rerender.md and the changesets leg is PASS. F3 and F5 are in review-argued.txt. F4 amended M20.35. On cp3 F3: e2e-report at e04b0ef (run 44203745586) reads 870 run, 0 flaky, 0 failed, so the FR-SCR-003 flake has not recurred. 1. Coherence: the theme modules form one design: palette, palette-image, variants, dtcg/dtcg-codec/dtcg-foreign/dtcg-read, css-export and contrast-lint, all pure and all on ADR-0055. The DSL CONTRAST rule now uses theme's checkContrast/solveLightness and its own 4.5/3 constants are gone, so there is one contrast table. The weak point is F2: 'which theme does this screen draw with' is now written three times. 2. Spec fidelity: every row's acceptance is met as written, but the rows left out the studio half of the theme requirements (F1). 3. Standards drift: none found. Each code commit carries its changeset, ADR-0055 was amended in the same commit as each contract addition (SDK re-exports, import choices), traceability rows were updated, and test titles cite their requirement IDs. 4. Gate honesty: the gate reads 14/38. The six theme legs are green. Locally, theme.editor-live and studio.boot-phases both fail on firefox and webkit. CI at e04b0ef passed every e2e shard on three engines with 0 flaky, so the cause looks environmental. M20.25's one-run three-engine pass must still show it. I spot-checked three mutants by reading code against tests. (a) Dropping the rAF read, or making the theme write async, in theme.editor-live is killed: the spec reads --fx-color-primary and the shape fill inside the next requestAnimationFrame. (b) A non-deterministic k-means start in paletteFromPixels is killed: the fixture asserts exact hex seeds. (c) A contrastFix that picks the wrong field (font vs stroke) is killed by validation-contrast's 'each fix clears its warning'. The gate can still go green with no image input, no theme file or DTCG import/export and no CSS export anywhere in the studio (F1). 5. Architecture: theme stays pure, and image decoding is the caller's. dsl->theme and dsl->core were already dependencies. No new runtime dependencies. Public API grew additively in theme, sdk, dsl and editor, and each api.md was updated. lloyd/nearest/Lab/Cluster are exported from palette-image.ts but not from index.ts. Since M20.37, last-ci writes blockedReason to state.json on STARVED, as its acceptance asks. CI: last-ci reads ci green at e04b0ef, gates green at e72afc2 and cold setup 507 s.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "major",
+      "file": "packages/editor/src/theme-editor/theme-editor.tsx",
+      "summary": "The studio half of FR-THM-005/007/009 is in no row and no gate leg. The plan goal says 'Themes become a studio feature \u2014 accessible palettes generated from seed colours or an image, ... a live theme editor, DTCG import/export and CSS variables'. FR-THM-007 is 'Theme editor UI with live preview; save/import/export theme files'. ADR-0055 \u00a7Image \u2192 palette says 'the editor decodes with createImageBitmap to <= 256 px longest side and passes ImageData's fields'. palette-image.ts says 'the editor passes ImageData's fields'. In fact nothing outside packages/theme and the SDK re-exports calls paletteFromPixels, exportDtcg, importDtcg, themesFromFiles or themeToCss. The M20.11 panel has role inputs, three seed inputs, Generate, Shuffle and variant previews, and no image input or theme file / DTCG / CSS import or export. M20.6, M20.8 and M20.9 were written as library acceptance, and M20.11's acceptance names only the primary-colour live preview, so every row closed honestly while the plan item slipped between them. M20.24 owes docs pages for 'palette, DTCG' that would describe studio actions that do not exist.",
+      "evidence": "grep -rln 'paletteFromPixels|exportDtcg|importDtcg|themeToCss|themesFromFiles' packages apps packs (non-test): only packages/theme and packages/sdk; ADR-0055 line 109; progress.md M20.11 entry (Palette section: three seeds, Generate palette and Shuffle); m20-complete.mjs legs 116-190 name no editor case for image/import/export"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "file": "packages/dsl/src/lint/contrast.ts",
+      "summary": "The rule 'the theme a screen draws with' (screen.themeId, else the applied master's, else document.themeId, else the light theme) now has three separate copies: render/src/screen-theme.ts useScreenTheme (plus screen-view's master lookup), dsl/src/lint/contrast.ts screenContext, and editor/src/theme-editor/theme-edit.ts themeHolders/editedTheme. The first review round of M20.10 (F1 and F2: screen background and theme per screen) and of M20.11 (F1: the applied master's theme skipped) each found a copy that had already drifted from the renderer. The copies differ in small ways. Render requires typeof themeId === 'string' and dsl uses ??. Render rebuilds the theme from name/tokens/defaults/tableStyles, while dsl and editor call themeOf on the whole record. These differences are harmless today. A fourth copy is due with SVG export (M20.12), where the exporter must pick the same theme.",
+      "evidence": "packages/render/src/screen-theme.ts:18-35; packages/dsl/src/lint/contrast.ts:68-80; packages/editor/src/theme-editor/theme-edit.ts:36-55; progress.md M20.10 r1 and M20.11 r1 lines"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "file": "packages/editor/src/problems.ts",
+      "line": 115,
+      "summary": "Confirmed (known item). For each FLX_LINT_CONTRAST finding, contrastFix calls elementContrastIssues(doc, id, LIGHT_THEME). That builds a new read-only store of the whole document (contrast.ts:134 viewOf) and re-derives the screen context, which the lint pass had already computed. ProblemsTab runs problemsOf on every store revision, and M20.11 makes every colour-input event a revision. So with the Problems tab open, a document with k low-contrast elements and n records costs O(k*n) store builds per pick. That works against the theme editor's within-one-frame goal. The lint finding already carries the fix colour in its hint, so the work is duplicated.",
+      "evidence": "packages/editor/src/problems.ts:110-124; packages/editor/src/problems-tab.tsx:35 (useMemo on revision); packages/dsl/src/lint/contrast.ts:134,149-153"
+    },
+    {
+      "id": "F4",
+      "severity": "nit",
+      "file": "scripts/harness/last-ci.mjs",
+      "line": 155,
+      "summary": "Confirmed (known item). After M20.37 r1, completed infrastructure-miss runs are counted in the 'newer' list of a red run. The RED line then says '(N newer runs pending)' when some of those runs have finished, and they count toward LAST_CI_MAX_PENDING. Both effects push toward stopping (an earlier 'stop landing'), never toward a false green.",
+      "evidence": "scripts/harness/last-ci.mjs:138-163; progress.md M20.37 r1 line ('missed runs counted among the newer runs')"
+    }
+  ],
+  "dispositions": [
+    {
+      "finding": "F1",
+      "disposition": "reopen",
+      "target": "M20.38",
+      "note": "New row M20.38 (FR-THM-005, FR-THM-007, FR-THM-009; deps M20.11), studio theme files and image seeds. WHEN a user picks an image in the theme editor THE SYSTEM SHALL decode it outside packages/theme (createImageBitmap, <= 256 px, as ADR-0055 says), fill the seed inputs from paletteFromPixels and generate the palette in one undo step. WHEN a user exports the edited theme THE SYSTEM SHALL download <slug>.tokens.json (exportDtcg) and, as a separate action, a .css file (themeToCss). WHEN a user imports a Fluxion or foreign DTCG file THE SYSTEM SHALL add it as a theme record in one undo step and list importDtcg's warnings. This is shown by exact-title browser cases in packages/editor/src/theme-editor/theme-editor.browser.test.tsx that m20-complete's FR-THM-005, FR-THM-007 and FR-THM-009 legs name, plus an e2e step in e2e/theme.editor-live.spec.ts or a new spec under the same three-engine and axe leg. The editor's initial gzip stays within EDITOR_INITIAL_GZIP (the code lives in the lazy panel chunk). M20.24 depends on it."
+    },
+    {
+      "finding": "F2",
+      "disposition": "reopen",
+      "target": "M20.39",
+      "note": "New row M20.39 (FR-THM-004, FR-THM-006, NFR-A11Y-005, HARNESS; before M20.12). Add one pure helper in core (e.g. screenTheme(view, screenId) returning the holder record and the theme record id, in ADR-0152/ADR-0054 order) with a case for each step of the order and for an invalid or missing record. render's useScreenTheme, dsl's screenContext and the editor's editedTheme/themeHolders call it, and M20.12's SVG exporter uses it too. Existing tests stay green unchanged."
+    },
+    {
+      "finding": "F3",
+      "disposition": "reopen",
+      "target": "M20.39",
+      "note": "Same row M20.39. problemsOf builds no store per contrast finding. Either the CONTRAST finding carries its fix colour and field as data, or problemsOf builds one view per pass and hands it to the fix. A problems.test case shows one view built per problemsOf call (an injected or counted builder), or, if timing is the measure, the theme-edit browser case stays in one frame with the Problems tab open."
+    },
+    {
+      "finding": "F4",
+      "disposition": "argue",
+      "note": "M20 cp4 F4: last-ci counts completed infrastructure-miss runs among a red run's 'newer runs pending', in its line and against LAST_CI_MAX_PENDING. Both errors lean toward stopping, never toward green. The next row that touches last-ci words it '(N newer runs: P pending, M infrastructure misses)' and counts only pending runs against the bound."
+    }
+  ],
+  "planDelta": "Planned 25 rows; 37 now, 39 with M20.38 and M20.39, which is 1.56x and over the 1.5x line. The reason: M20.6-M20.11 each had library-level acceptance, so the studio surfaces fell between the rows (F1). Two copies of the screen-theme rule needed review-round fixes, which pointed to the third and to the shared helper (F2). Since cp3 the run has been healthy: six feature rows (M20.6-M20.11) and M20.37 in eight commits, no Fixes-ci rows, CI green at e04b0ef, and 0 flaky in e2e-report. Lessons for later milestones: when a plan goal says 'studio feature', a row and a gate case must name the UI entry point, not only the library function, and a rule needed by render, lint, editor and export belongs in core before its second copy. Risks: (1) the SVG chain M20.12-M20.15 and the decompiler M20.16-M20.18 are all still ahead, and both are ADR-governed and multi-round. (2) M20.19, M20.20 and M20.23 still need CI-time evidence and have not started, flagged at every checkpoint. (3) M20.26 (cp1 F1) and M20.35 are still todo. (4) The local three-engine run of the theme.editor-live and boot-phases legs failed on firefox and webkit while CI passed them, so M20.25's one-run gate needs a working pinned-image run. Find the cause early rather than at the end."
+}
