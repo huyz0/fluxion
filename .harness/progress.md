@@ -5260,3 +5260,7 @@ round-allowance: M20.4 review round 4 under Huy's 2026-11-05T11:04:52Z delegatio
 - Effects: EffectsFilter takes an optional `literal` (flood-color attribute instead of CSS); ShapeSvg wraps its paint in the filter, the label outside it. Artwork: ArtworkView/useArtwork take `literal` (token colours as values, no aria-hidden/class on the outer svg). html output unchanged.
 - svg11 checker: feMorphology radius and feComponentTransfer function attributes added (SVG 1.1). Golden __golden__/boxes.svg.
 - Rest split: M20.41 tables/regions/rich-text marks, M20.42 pack-view contract, M20.43 selection scope and byte parity; M20.13 depends on all. ADR-0056 More Information notes the split.
+
+## 2026-11-18 M20.45: CI red at 099ec6a (Fixes-ci 44239750388)
+- ubuntu headroom: import-svg.test 'the 50-SVG corpus as a ZIP gives the same bytes as the files' read 10782 of 20000 ms, over half in two consecutive runs. A probe split it: zip 11 ms, convert 106 ms, `toEqual` over the packs' Uint8Arrays 904 ms (a per-byte deep walk, about 10x under coverage). It now compares each file as `path base64` strings: 118 ms for the case here, the same equality.
+- cold-setup: font-subset-save.test's 1.6 MB range case failed its codepoint ratio (bound 3) beside harness/attw/api legs. The fastest of 15 alternated runs per side (was 7) leaves a contended run fewer chances to hold every sample slow; the bound is unchanged and the reads cost a few ms each.

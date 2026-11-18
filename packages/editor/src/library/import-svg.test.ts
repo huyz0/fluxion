@@ -131,7 +131,9 @@ describe('convertSvgLibrary', () => {
     const zipBytes = zipOf([...entries].reverse());
     const zipped = await convertSvgLibrary({ kind: 'zip', items: [item('corpus.zip', zipBytes)] }, optionsOf(host()));
     if (!zipped.ok) throw new Error(JSON.stringify(zipped));
-    expect([...zipped.value.pack.files]).toEqual([...(filesPack ?? [])]);
+    // each file by its path and bytes as one string: a deep equal walks every byte (900 ms here, 10 s under coverage, ci 44239750388)
+    const byPath = (files: ReadonlyMap<string, Uint8Array>) => [...files].map(([path, bytes]) => `${path} ${Buffer.from(bytes).toString('base64')}`);
+    expect(byPath(zipped.value.pack.files)).toEqual(byPath(filesPack ?? new Map()));
   });
 
   it('NFR-SEC-001: the entry-count, per-entry and total caps of picked files are met from their sizes before any bytes are read', async () => {

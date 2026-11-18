@@ -213,7 +213,7 @@ describe('disposable font worker with a watchdog (FR-AST-003, ADR-0051)', () => 
 const CJK = Array.from({ length: 5000 }, (_, i) => 0x4e00 + i);
 /** A subset font record whose recorded range is `unicodes`. */
 const recorded = (unicodes: string) => font('f1', 'bundled', { font: { ...font('f1', 'bundled').font, subset: { source: hex(FIRA), unicodes } } });
-const SCALING_RUNS = 7;
+const SCALING_RUNS = 15;
 const SCALING_MAX = 3;
 /** Milliseconds for one subsetFontGaps read of `doc` against `inventory`. */
 function readMs(doc: DocumentFile, inventory: readonly number[]): number {
