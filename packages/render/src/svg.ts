@@ -81,7 +81,7 @@ export function ScreenSvgView(props: ScreenSvgViewProps): ReactNode {
   if (!modePolicy(props.mode).svgSurface || screen?.type !== 'screen') return null;
   const area = screenArea(screen);
   const background = screenBackground(screen, master, theme);
-  const surface = { ...context, leaves: context.leaves ?? BUILTIN_SVG_LEAVES };
+  const surface = { ...context, theme, leaves: context.leaves ?? BUILTIN_SVG_LEAVES };
   return createElement(
     SvgSurface.Provider,
     { value: surface },
@@ -89,6 +89,7 @@ export function ScreenSvgView(props: ScreenSvgViewProps): ReactNode {
   );
 }
 
+export { ExportContext, type ExportText, type Svg, useExportText } from './export-text.js';
 export { FrameSvg, ImageSvg } from './svg-boxes.js';
 export { type SvgDiagnostic, SvgSurface, type SvgSurfaceContext } from './svg-surface.js';
 export { TableSvg } from './svg-table.js';

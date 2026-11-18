@@ -5270,3 +5270,8 @@ round-allowance: M20.4 review round 4 under Huy's 2026-11-05T11:04:52Z delegatio
 - TableSvg: each cell a rect at its grid place in its resolved style, text padded 6 px. SvgRegionsAndSlots: regions after the first, icon slots as an outline in the text colour or a `data:` image. svg11: an external href is allowed on `<a>` only.
 - M20.40 minors: shared image-fit.ts (ASPECT/TILE for html and svg leaves); a component whose snapshot bytes are missing reports ASSET_MISSING only; svgPaint doc; ADR-0056 item 8 lists feMorphology/feComponentTransfer; boxes test proves the label is outside the filter group.
 - Goldens rich-text.svg, masters-tables.svg, boxes.svg re-recorded (Threshold-change trailer, ADR-0056).
+
+## 2026-11-18 M20.42: SVG export pack-view contract
+- render/svg: `ExportContext` (the svg surface's own context object), `Svg` (an ElementView leaf's type), `useExportText(text, style, box)` returning layoutStyled's lines with the text's literal font and colour and its top for the vertical alignment; each piece goes to the context's new `glyphs` receiver (wired to the font inventory in M20.13). ScreenSvgView puts the screen's `theme` on the context.
+- `@fluxion/sdk/export` re-exports ElementView, ElementViewProps, ExportContext, ExportText, Svg, useExportText; tsdown entry `export/index` keeps render external (harness case in tests/harness/packages.test.mjs reads the built entry). 01-overview sdk row and ADR-0056 More Information amended.
+- sdk devDependencies gain @types/react and @types/react-dom (catalog; already in the lockfile) for the test pack view; tsconfig jsx react-jsx. Lockfile importers only; budget recorded --cold-pending.

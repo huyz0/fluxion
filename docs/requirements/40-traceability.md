@@ -237,7 +237,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-INT-009 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-010 | M | R5 | M24 | [18-interaction.md](18-interaction.md) | — |
 | FR-INT-011 | S | R5 | M25 | [18-interaction.md](18-interaction.md) | — |
-| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/cli/src/host.test.ts` +17 |
+| FR-EXT-001 | M | R0 | M3 | [19-extensibility.md](19-extensibility.md) | `packages/cli/src/host.test.ts` +19 |
 | FR-EXT-002 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-003 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
 | FR-EXT-004 | M | R6 | M26 | [19-extensibility.md](19-extensibility.md) | — |
@@ -293,7 +293,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EXP-001 | M | R1 | M10 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/player-inline/src/inline.browser.test.ts` |
 | FR-EXP-002 | M | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-003 | M | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
-| FR-EXP-004 | M | R3 | M20 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/exporters/src/svg-boxes.test.ts` +2 |
+| FR-EXP-004 | M | R3 | M20 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/exporters/src/svg-boxes.test.ts` +4 |
 | FR-EXP-005 | S | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-006 | S | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-007 | S | R2 | M14 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/cli/src/commands.test.ts` +2 |

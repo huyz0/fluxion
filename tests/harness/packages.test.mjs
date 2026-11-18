@@ -1,6 +1,6 @@
 // NFR-MNT-001 / NFR-MNT-007: every library packs cleanly (publint) with correct types (attw).
 import assert from 'node:assert/strict';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { out, REPO, sandbox } from './helpers.mjs';
@@ -105,5 +105,17 @@ describe('check-packages (NFR-MNT-001, NFR-MNT-007)', () => {
     } finally {
       sb.cleanup();
     }
+  });
+});
+
+describe('@fluxion/sdk/export (ADR-0056 item 4)', () => {
+  it("FR-EXT-001 FR-EXP-004: the sdk export subpath's build keeps render external, so a pack reads the host's one context", () => {
+    // run after a build (the ladder builds first): a bundled render would be a second context, and a pack's text would get no lines
+    const built = readFileSync(join(REPO, 'packages/sdk/dist/export/index.js'), 'utf8');
+    assert.match(built, /from ["']@fluxion\/render\/svg["']/);
+    assert.doesNotMatch(built, /createContext/);
+    const types = readFileSync(join(REPO, 'packages/sdk/dist/export/index.d.ts'), 'utf8');
+    for (const name of ['ElementView', 'ElementViewProps', 'ExportContext', 'ExportText', 'Svg', 'useExportText'])
+      assert.match(types, new RegExp(`\\b${name}\\b`));
   });
 });

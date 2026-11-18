@@ -8,14 +8,18 @@ import { ArtworkFontBinding } from '@fluxion/core';
 import { ComponentType } from 'react';
 import { Context } from 'react';
 import { ElementRecord } from '@fluxion/schema';
+import { FontSpec } from '@fluxion/core';
 import { GlobalRoute } from '@fluxion/routing';
 import { GlobalRouteInput } from '@fluxion/routing';
+import { LaidOutLine } from '@fluxion/core';
 import { MarkerDef } from '@fluxion/core';
 import { ReactNode } from 'react';
 import { ReadSignal } from '@fluxion/core';
 import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
+import { ResolvedStyle } from '@fluxion/theme';
+import { RichTextDoc } from '@fluxion/schema';
 import { RouteContext } from '@fluxion/routing';
 import { Router } from '@fluxion/routing';
 import { ShapeDef } from '@fluxion/core';
@@ -25,6 +29,19 @@ import { Theme } from '@fluxion/theme';
 
 // @public
 export const BUILTIN_SVG_LEAVES: ReadonlyMap<ComponentType<ElementViewProps>, ComponentType<ElementViewProps>>;
+
+// @public
+export const ExportContext: Context<SvgSurfaceContext>;
+
+// @public
+export type ExportText = {
+    readonly lines: readonly LaidOutLine[];
+    readonly font: FontSpec;
+    readonly color: string;
+    readonly top: number;
+    readonly width: number;
+    readonly height: number;
+};
 
 // @public
 export function FrameSvg(props: ElementViewProps): ReactNode;
@@ -46,6 +63,9 @@ export type ScreenSvgViewProps = {
 };
 
 // @public
+export type Svg = ComponentType<ElementViewProps>;
+
+// @public
 export type SvgDiagnostic = {
     readonly code: string;
     readonly elementId?: string;
@@ -61,9 +81,17 @@ export type SvgSurfaceContext = {
     readonly report?: (diagnostic: SvgDiagnostic) => void;
     readonly leaves?: ReadonlyMap<ComponentType<ElementViewProps>, ComponentType<ElementViewProps>>;
     readonly assets?: AssetUrls;
+    readonly theme?: Theme;
+    readonly glyphs?: (font: FontSpec, text: string) => void;
 };
 
 // @public
 export function TableSvg(props: ElementViewProps): ReactNode;
+
+// @public
+export function useExportText(text: RichTextDoc | string, style: ResolvedStyle, box: {
+    readonly w: number;
+    readonly h: number;
+}): ExportText;
 
 ```

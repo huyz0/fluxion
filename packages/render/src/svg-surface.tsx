@@ -3,7 +3,7 @@
 // viewBox overflow="visible">` around its view's `Svg` leaf (SVG 1.1 has no transform on `<svg>`); members follow as siblings, since
 // they are stored in screen coordinates; a connector draws in screen coordinates; the master's elements draw beneath the screen's.
 // A view with no `Svg` draws a labelled placeholder and reports `FLX_EXPORT_NO_SVG_VIEW`; nothing is rasterized silently.
-import type { MasterLayers, Store, TextMeasurer } from '@fluxion/core';
+import type { FontSpec, MasterLayers, Store, TextMeasurer } from '@fluxion/core';
 import { type AssetRecord, type ElementRecord, type FrameElement, type RecordId, type ScreenRecord, type Transform, transformRotation } from '@fluxion/schema';
 import { type ResolvedPaint, resolveStyle, type Theme } from '@fluxion/theme';
 import { type ComponentType, type Context, createContext, type ReactNode, useContext, useId } from 'react';
@@ -47,6 +47,10 @@ export type SvgSurfaceContext = {
   readonly leaves?: ReadonlyMap<ComponentType<ElementViewProps>, ComponentType<ElementViewProps>>;
   /** Asset bytes as `data:` URLs by asset id (images, image fills, component snapshots); an asset without one is not drawn. */
   readonly assets?: AssetUrls;
+  /** The screen's theme (set by `ScreenSvgView`): what a pack view's `useExportText` resolves its style against. */
+  readonly theme?: Theme;
+  /** Receives the text of each piece `useExportText` lays out, in its font: the export's glyph inventory. */
+  readonly glyphs?: (font: FontSpec, text: string) => void;
 };
 
 /**

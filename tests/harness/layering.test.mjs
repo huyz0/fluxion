@@ -164,7 +164,10 @@ describe('check-layering (NFR-MNT-001)', () => {
         sb.edit('docs/architecture/01-overview.md', (t) =>
           t
             .replace('| schema | ✅ |', '| schema, render | ✅ |')
-            .replace('| core, render (types), schema, theme |', '| core, render (types), schema, theme, basic |'),
+            .replace(
+              '| core, render (types; runtime through the `export` subpath, ADR-0056), schema, theme |',
+              '| core, render (types; runtime through the `export` subpath, ADR-0056), schema, theme, basic |',
+            ),
         );
         mapRun = layering();
       }

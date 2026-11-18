@@ -308,4 +308,10 @@ Fonts:
     reads images only as `data:` URLs from the exporter's `assets` port; any other URL is reported (`FLX_EXPORT_ASSET_MISSING`)
     and not written.
     Item 4's "peer" wording is corrected here: render stays a regular sdk dependency, kept external in the subpath's build.
+- Amended in M20.42's commit: item 4's `ExportContext` is the svg surface's context object itself (`SvgSurface`), so a pack and the
+  host share one instance; `Svg` is the type of an `ElementView`'s leaf. The context gains `theme` (set by `ScreenSvgView`, what
+  `useExportText` resolves a style against) and `glyphs` (the receiver of each laid-out piece's text in its font); the exporter wires
+  `glyphs` to the font inventory with the fonts (M20.13). `useExportText` returns the lines, the text's font and colour as literals
+  and its top for the vertical alignment; outline paths come with M20.13's outlining. The sdk gains `@types/react` and
+  `@types/react-dom` as dev dependencies for its test pack view; the subpath's externality is a harness case on the built entry.
 - Related: ADR-0015, ADR-0026, ADR-0036, ADR-0051, ADR-0052, ADR-0054, ADR-0148, ADR-0186, ADR-0192, ADR-0201, ADR-0220.

@@ -15,6 +15,11 @@
       "@fluxion/source": "./src/testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./dist/testing/index.js"
+    },
+    "./export": {
+      "@fluxion/source": "./src/export/index.ts",
+      "types": "./dist/export/index.d.ts",
+      "default": "./dist/export/index.js"
     }
   },
   "files": [
@@ -47,6 +52,8 @@
     }
   },
   "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "vitest": "catalog:"
