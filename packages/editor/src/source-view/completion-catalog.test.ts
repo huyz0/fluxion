@@ -57,4 +57,27 @@ describe('completionCatalog (FR-DSL-009, ADR-0032)', () => {
     records['doc'] = { type: 'document', themeId: 'gone' };
     expect(c.tokens()).toEqual(cat.tokens());
   });
+
+  it("FR-THM-004: token names follow the screen's applied master's theme, as the view draws it, and skip a master that does not apply", () => {
+    const m = documentBuilder({ seed: 214 });
+    const screen = m.screen() as RecordId;
+    const master = m.screen() as RecordId;
+    const c2 = createCore(m.build());
+    const get = (id: string) => c2.store.get(id as RecordId) as unknown as Record<string, unknown>;
+    const put = (...records: Record<string, unknown>[]) => expect(c2.execute('document.applyRecords', { puts: records, deletes: [] }).ok).toBe(true);
+    const doc = c2.store.members('byType', 'document')[0] as string;
+    const theme = (name: string) => ({ id: `theme-${name}`, type: 'theme', name, tokens: { [name]: { c: { $type: 'color', $value: '#000000' } } } });
+    put(
+      theme('doc'),
+      theme('master'),
+      { ...get(doc), themeId: 'theme-doc' },
+      { ...get(master), themeId: 'theme-master' },
+      { ...get(screen), masterId: master },
+    );
+    const c = completionCatalog({ shapeDefs: c2.registries.shapeDefs, view: c2.store, screen: () => screen });
+    // the master is a plain screen: it does not apply (ADR-0054), so the document's theme
+    expect(c.tokens()).toEqual(['doc.c']);
+    put({ ...get(master), role: 'master' });
+    expect(c.tokens()).toEqual(['master.c']);
+  });
 });

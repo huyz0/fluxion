@@ -1,6 +1,6 @@
 // The contrast rule (NFR-A11Y-005): each element's colours against what the view draws behind them, on the theme and page
 // background of its screen as the renderer picks them (FR-THM-004, ADR-0152, ADR-0054).
-import { appliedMaster, createStore, type ReadView } from '@fluxion/core';
+import { appliedMaster, createStore, type ReadView, screenThemeChoice } from '@fluxion/core';
 import type { DocumentFile, RecordId, Style } from '@fluxion/schema';
 import {
   type ContrastIssue,
@@ -64,16 +64,16 @@ function themeRecord(doc: DocumentFile, id: unknown): Theme | undefined {
 }
 
 /**
- * The context of screen `screenId`: the theme of its own override, else its applied master's, else the document's, else `fallback`;
+ * The context of screen `screenId`: the theme core's `screenThemeChoice` names (its override, else its applied master's, else the
+ * document's), else `fallback`;
  * the page its own background, else its master's, a background painting nothing showing the theme's `color.background`.
  */
 function screenContext(doc: DocumentFile, view: ReadView, screenId: unknown, fallback: Theme | undefined): ScreenContext | undefined {
   const screen = recOf(doc, screenId);
-  const masterId = screen === undefined ? undefined : appliedMaster(view, screen.id as RecordId).master;
-  const master = recOf(doc, masterId);
-  const document = recordsOf(doc, 'document')[0];
-  const themeId = screen?.['themeId'] ?? master?.['themeId'] ?? document?.['themeId'];
-  const theme = themeRecord(doc, themeId) ?? fallback;
+  const id = screen?.id as RecordId | undefined;
+  const master = recOf(doc, id === undefined ? undefined : appliedMaster(view, id).master);
+  // the theme as the view picks it (core's one rule, M20.39)
+  const theme = themeRecord(doc, screenThemeChoice(view, id).themeId) ?? fallback;
   if (theme === undefined) return undefined;
   const vars = varsOf(theme);
   const own = screen?.['background'] !== undefined || master === undefined;
@@ -139,6 +139,7 @@ const viewOf = (doc: DocumentFile): ReadView => createStore(doc, { validate: fal
  * The theme and the page are its screen's, as the view draws them: the screen's theme override, else its applied master's, else
  * the document's, else `fallback`; the screen's background, else its master's, else the theme's `color.background`. A page
  * painted with a gradient or an image is not checked against. Each issue carries the nearest passing colour (theme's `checkContrast`).
+ * `view`, a read view of `doc` the caller already holds, saves building one per call.
  *
  * @example
  * ```ts
@@ -146,10 +147,10 @@ const viewOf = (doc: DocumentFile): ReadView => createStore(doc, { validate: fal
  * ```
  * @public
  */
-export function elementContrastIssues(doc: DocumentFile, id: string, fallback?: Theme): readonly ElementContrastIssue[] {
+export function elementContrastIssues(doc: DocumentFile, id: string, fallback?: Theme, view?: ReadView): readonly ElementContrastIssue[] {
   const e = recOf(doc, id);
   if (e?.type !== 'element') return [];
-  const at = screenContext(doc, viewOf(doc), e['screenId'], fallback);
+  const at = screenContext(doc, view ?? viewOf(doc), e['screenId'], fallback);
   return at === undefined ? [] : issuesOf(e, at);
 }
 
@@ -170,7 +171,7 @@ export const CONTRAST: LintRule = {
   weight: 6,
   describe: 'text or an outline with too little contrast (WCAG AA: text 4.5:1, large text and outlines 3:1)',
   check(doc, ctx) {
-    const view = viewOf(doc);
+    const view = ctx.view ?? viewOf(doc);
     const screens = new Map<unknown, ScreenContext | undefined>();
     const contextOf = (screenId: unknown): ScreenContext | undefined => {
       if (!screens.has(screenId)) screens.set(screenId, screenContext(doc, view, screenId, ctx.theme));

@@ -866,6 +866,15 @@ export function sameMasterLayers(a: MasterLayers | undefined, b: MasterLayers | 
 export function screenRecordsToCopy(view: ReadView, screen: RecordId): RecordId[];
 
 // @public
+export type ScreenThemeChoice = {
+    readonly holder: RecordId | undefined;
+    readonly themeId: RecordId | undefined;
+};
+
+// @public
+export function screenThemeChoice(view: ReadView, screenId: RecordId | undefined): ScreenThemeChoice;
+
+// @public
 export function sha256Bytes(data: Uint8Array): Uint8Array;
 
 // @public

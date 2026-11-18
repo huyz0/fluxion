@@ -70,6 +70,30 @@ describe('theme editor panel (M20.11)', () => {
     expect(input('primary colour').value).toBe('#2563eb');
   });
 
+  it('FR-THM-004: with a master that does not apply, the editor follows the theme it edits through a pick and its undo', () => {
+    const b = documentBuilder({ seed: 12 });
+    const screen = b.screen() as RecordId;
+    const plain = b.screen() as RecordId;
+    const core = createCore(b.build());
+    const get = (id: string) => core.store.get(id as RecordId) as unknown as Record<string, unknown>;
+    const doc = core.store.members('byType', 'document')[0] as string;
+    const theme = (name: string) => ({ id: `theme-${name}`, type: 'theme', name, tokens: { color: { primary: { $type: 'color', $value: '#123456' } } } });
+    const puts = [theme('doc'), theme('m'), { ...get(doc), themeId: 'theme-doc' }, { ...get(plain), themeId: 'theme-m' }, { ...get(screen), masterId: plain }];
+    expect(core.execute('document.applyRecords', { puts, deletes: [] }).ok).toBe(true);
+    act(() => root.render(<ThemeEditor store={core.store} execute={core.execute} screenId={screen} onClose={() => undefined} />));
+    const primary = input('primary colour');
+    act(() => primary.focus());
+    enter(primary, '#e11d48');
+    act(() => primary.blur());
+    // the editor shows the pick: it follows the record it writes
+    expect(input('primary colour').value).toBe('#e11d48');
+    // the document's theme is edited (the plain screen is no master, ADR-0054); the other stays as it was
+    expect((get('theme-doc') as { tokens: { color: { primary: { $value: string } } } }).tokens.color.primary.$value).toBe('#e11d48');
+    expect((get('theme-m') as { tokens: { color: { primary: { $value: string } } } }).tokens.color.primary.$value).toBe('#123456');
+    act(() => core.store.history.undo());
+    expect(input('primary colour').value).toBe('#123456');
+  });
+
   it('FR-THM-006: the variant previews follow the edited theme', () => {
     const { core, screen } = fresh();
     act(() => root.render(<ThemeEditor store={core.store} execute={core.execute} screenId={screen} onClose={() => undefined} />));

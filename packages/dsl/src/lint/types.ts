@@ -1,5 +1,5 @@
 // The quality linter's shapes (06-ai-authoring.md §7, FR-AI-005): a rule reads the laid-out document and says what looks wrong.
-import type { Registry } from '@fluxion/core';
+import type { ReadView, Registry } from '@fluxion/core';
 import type { Diagnostic, DiagnosticSeverity, DocumentFile, RecordId } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
 
@@ -32,6 +32,8 @@ export type LintContext = {
   readonly theme?: Theme;
   /** Text measurement; without it the overflow rule has nothing to measure. */
   readonly measureText?: MeasureText;
+  /** A read view of the same document (a store of it), for rules that read through its indexes; without it such a rule builds one. */
+  readonly view?: ReadView;
 };
 
 /**

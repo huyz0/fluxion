@@ -1,7 +1,7 @@
-// The theme a screen is drawn with (FR-THM-004, ADR-0152): its own override (`screen.themeId`) else the document's
-// (`document.themeId`), a screen naming none taking its applied master's first (ADR-0054), read from the `theme` record, else the built-in light theme. A theme record that is not a valid
-// theme is drawn as the light theme rather than half-styled.
-import type { Store } from '@fluxion/core';
+// The theme a screen is drawn with (FR-THM-004, ADR-0152): the record core's `screenThemeChoice` names (the screen's override,
+// else its applied master's, else the document's, ADR-0054; M20.39), else the built-in light theme. A theme record that is not a
+// valid theme is drawn as the light theme rather than half-styled.
+import { type Store, screenThemeChoice } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { LIGHT_THEME, type Theme, themeOf } from '@fluxion/theme';
 import { useMemo } from 'react';
@@ -10,17 +10,18 @@ import { useValue } from './use-value.js';
 type Rec = { readonly [field: string]: unknown } | undefined;
 
 /**
- * The theme of the screen `screenId` of `store`, following the records (a theme switch or an override restyles the screen); a
- * screen naming no theme takes `masterThemeId`, its applied master's override, before the document's (ADR-0054).
+ * The theme of the screen `screenId` of `store`, following the records (a theme switch or an override restyles the screen), as
+ * core's `screenThemeChoice` picks it: the screen's override, else its applied master's, else the document's (ADR-0054). The
+ * caller passes `masterThemeId`, its applied master's override, so a change of it re-reads the choice.
  *
  * @public
  */
 export function useScreenTheme(store: Store, screenId: RecordId, masterThemeId?: RecordId): Theme {
   const docId = store.members('byType', 'document')[0] ?? '';
-  const screen = useValue(useMemo(() => store.record$(screenId), [store, screenId])) as Rec;
-  const doc = useValue(useMemo(() => store.record$(docId as RecordId), [store, docId])) as Rec;
-  const themeId =
-    (typeof screen?.['themeId'] === 'string' ? screen['themeId'] : undefined) ?? masterThemeId ?? (typeof doc?.['themeId'] === 'string' ? doc['themeId'] : '');
+  const screen = useValue(useMemo(() => store.record$(screenId), [store, screenId]));
+  const doc = useValue(useMemo(() => store.record$(docId as RecordId), [store, docId]));
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the records that choose are the inputs; the store reads them again
+  const themeId = useMemo(() => screenThemeChoice(store, screenId).themeId ?? '', [store, screenId, screen, doc, masterThemeId]);
   const record = useValue(useMemo(() => store.record$(themeId as RecordId), [store, themeId])) as Rec;
   return useMemo(() => {
     if (record === undefined || record['type'] !== 'theme') return LIGHT_THEME;

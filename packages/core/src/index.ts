@@ -53,6 +53,7 @@ export {
 } from './masters.js';
 export type { Clock, FileIO, FontSpec, Hasher, Logger, LogLevel, SyncHash128, TextMeasurer, TextMetrics } from './ports/ports.js';
 export { createRegistry, type Disposable, describeOf, type PluginId, type Registry, type RegistryOptions } from './registry.js';
+export { type ScreenThemeChoice, screenThemeChoice } from './screen-theme.js';
 export { screenRecordsToCopy } from './screens/screen-commands.js';
 export { nextVisibleScreen } from './screens/screen-order.js';
 export { type HandleSubject, handleValue, type ParamHandle, shapeHandles } from './shape/handles.js';

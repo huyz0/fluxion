@@ -12,6 +12,7 @@ import { Diagnostic } from '@fluxion/schema';
 import { DiagnosticCode } from '@fluxion/schema';
 import { DiagnosticSeverity } from '@fluxion/schema';
 import { DocumentFile } from '@fluxion/schema';
+import { ReadView } from '@fluxion/core';
 import { RecordId } from '@fluxion/schema';
 import { Registry } from '@fluxion/core';
 import { Scorecard as Scorecard_2 } from '@fluxion/layout';
@@ -271,7 +272,7 @@ export type ElementContrastIssue = ContrastIssue & {
 };
 
 // @public
-export function elementContrastIssues(doc: DocumentFile, id: string, fallback?: Theme): readonly ElementContrastIssue[];
+export function elementContrastIssues(doc: DocumentFile, id: string, fallback?: Theme, view?: ReadView): readonly ElementContrastIssue[];
 
 // @public
 export type EvalCase = {
@@ -475,6 +476,7 @@ export function lint(doc: DocumentFile, registry: LintRegistry, ctx?: LintContex
 export type LintContext = {
     readonly theme?: Theme;
     readonly measureText?: MeasureText;
+    readonly view?: ReadView;
 };
 
 // @public

@@ -1,7 +1,7 @@
 // The theme editor (FR-THM-007, FR-THM-005, FR-THM-006, M20.11): the colour roles of the theme the open screen is drawn with, the
 // palette generator, and previews of the shape variants. A lazy chunk: toolbar-extras.tsx loads it on the first open. Every edit is
 // one `document.applyRecords`, so the canvas recolours in the same render; the inputs of one colour pick merge into one undo step.
-import type { Store } from '@fluxion/core';
+import { type Store, screenThemeChoice } from '@fluxion/core';
 import { useValue } from '@fluxion/render';
 import type { RecordId } from '@fluxion/schema';
 import { PALETTE_ROLES, type PaletteRole, type Theme, toCssVars } from '@fluxion/theme';
@@ -34,8 +34,9 @@ function useEditedTheme(store: Store, screenId: RecordId | undefined): EditedThe
   const screen = useValue(useMemo(() => store.record$((screenId ?? '') as RecordId), [store, screenId])) as { masterId?: unknown } | undefined;
   const masterId = (typeof screen?.masterId === 'string' ? screen.masterId : '') as RecordId;
   const master = useValue(useMemo(() => store.record$(masterId), [store, masterId]));
-  const holders = [screen, master, doc] as readonly ({ themeId?: unknown } | undefined)[];
-  const themeId = (holders.map((h) => h?.themeId).find((id) => typeof id === 'string') ?? '') as RecordId;
+  // the theme record as the view picks it (core's one rule, M20.39): a master that does not apply names none
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the holder records are the inputs; core reads them again
+  const themeId = useMemo(() => (screenThemeChoice(store, screenId).themeId ?? '') as RecordId, [store, screenId, doc, screen, master]);
   const record = useValue(useMemo(() => store.record$(themeId), [store, themeId]));
   // biome-ignore lint/correctness/useExhaustiveDependencies: the records read are the inputs; the store reads them again
   return useMemo(() => editedTheme(store, screenId), [store, screenId, doc, screen, master, record]);

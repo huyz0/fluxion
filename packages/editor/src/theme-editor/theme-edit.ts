@@ -1,6 +1,6 @@
 // What the theme editor reads and writes (FR-THM-007, FR-THM-005, FR-THM-006, M20.11): the theme the open screen is drawn with (as the renderer picks it),
 // a colour role set to a new colour, a generated palette applied, and the records that store the edit as one `document.applyRecords`.
-import { appliedMaster, type Store, themeRecordId } from '@fluxion/core';
+import { type Store, screenThemeChoice, themeRecordId } from '@fluxion/core';
 import type { RecordId, Style } from '@fluxion/schema';
 import {
   applyPalette,
@@ -31,25 +31,12 @@ export type EditedTheme = { readonly theme: Theme; readonly recordId: string | u
 
 const recordOf = (store: Store, id: unknown): Rec | undefined =>
   typeof id === 'string' && id !== '' ? (store.get(id as RecordId) as Rec | undefined) : undefined;
-const documentOf = (store: Store): Rec | undefined => recordOf(store, store.members('byType', 'document')[0]);
-const named = (r: Rec | undefined): boolean => typeof r?.['themeId'] === 'string';
-
-/** The records that choose the open screen's theme, in the renderer's order: the screen, its applied master, the document. */
-export function themeHolders(store: Store, screenId: string | undefined): readonly (Rec | undefined)[] {
-  const screen = recordOf(store, screenId);
-  const master = screen === undefined ? undefined : recordOf(store, appliedMaster(store, screen.id as RecordId).master);
-  return [screen, master, documentOf(store)];
-}
-
-/** The theme the screen `screenId` is drawn with (ADR-0152, ADR-0054). */
+/** The theme the screen `screenId` is drawn with, as core's `screenThemeChoice` picks it (ADR-0152, ADR-0054; M20.39). */
 export function editedTheme(store: Store, screenId: string | undefined): EditedTheme {
-  const holders = themeHolders(store, screenId);
-  const holder = holders.find(named) ?? holders[2];
-  const record = recordOf(store, holder?.['themeId']);
+  const { holder, themeId } = screenThemeChoice(store, screenId as RecordId | undefined);
+  const record = recordOf(store, themeId);
   const theme = record?.type === 'theme' ? themeOf(record) : undefined;
-  return theme === undefined || record === undefined
-    ? { theme: LIGHT_THEME, recordId: undefined, holder: holder?.id }
-    : { theme, recordId: record.id, holder: holder?.id };
+  return theme === undefined || record === undefined ? { theme: LIGHT_THEME, recordId: undefined, holder } : { theme, recordId: record.id, holder };
 }
 
 /** `theme-<name>`, or with the first free `-2`, `-3`… when a record holds it already (it is never overwritten). */

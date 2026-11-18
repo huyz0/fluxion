@@ -1,6 +1,6 @@
 // The catalog completion reads (FR-DSL-009, ADR-0032), built from what the editor already holds: the shape registry, the theme record the
-// document or screen uses, and the screen's elements. Each list is read when asked, so an edit shows in the next completion. Lazy chunk.
-import { CORE_SHAPE_IDS, type ReadView, type Registry, type ShapeDef } from '@fluxion/core';
+// screen is drawn with, and the screen's elements. Each list is read when asked, so an edit shows in the next completion. Lazy chunk.
+import { CORE_SHAPE_IDS, type ReadView, type Registry, type ShapeDef, screenThemeChoice } from '@fluxion/core';
 import type { RecordId } from '@fluxion/schema';
 import { isToken, LIGHT_THEME, type TokenGroup } from '@fluxion/theme';
 import type { CompletionCatalog } from './completion.js';
@@ -26,12 +26,9 @@ function tokenNames(group: TokenGroup, prefix = ''): string[] {
 
 type Rec = { readonly themeId?: unknown; readonly tokens?: unknown; readonly semantic?: { readonly slug?: unknown }; readonly type?: unknown };
 
-/** The tokens of the theme the screen uses, else the document's, else the built-in light theme. */
+/** The tokens of the theme the screen is drawn with (core's rule: its own, its applied master's, the document's), else the document's, else the built-in light theme. */
 function themeTokens(view: ReadView, screen: RecordId | undefined): TokenGroup {
-  const ids = [
-    screen === undefined ? undefined : (view.get(screen) as Rec | undefined)?.themeId,
-    (view.get(view.members('byType', 'document')[0] as RecordId) as Rec | undefined)?.themeId,
-  ];
+  const ids = [screenThemeChoice(view, screen).themeId, (view.get(view.members('byType', 'document')[0] as RecordId) as Rec | undefined)?.themeId];
   for (const id of ids) {
     const tokens = typeof id === 'string' ? (view.get(id as RecordId) as Rec | undefined)?.tokens : undefined;
     if (typeof tokens === 'object' && tokens !== null) return tokens as TokenGroup;
