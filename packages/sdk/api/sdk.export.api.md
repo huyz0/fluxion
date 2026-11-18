@@ -7,8 +7,12 @@
 import { ElementView } from '@fluxion/render';
 import { ElementViewProps } from '@fluxion/render';
 import { ExportContext } from '@fluxion/render/svg';
+import { ExportLine } from '@fluxion/render/svg';
+import { ExportMarks } from '@fluxion/render/svg';
+import { ExportPiece } from '@fluxion/render/svg';
 import { ExportText } from '@fluxion/render/svg';
 import { Svg } from '@fluxion/render/svg';
+import { TextOutline } from '@fluxion/render/svg';
 import { useExportText } from '@fluxion/render/svg';
 
 export { ElementView }
@@ -17,9 +21,17 @@ export { ElementViewProps }
 
 export { ExportContext }
 
+export { ExportLine }
+
+export { ExportMarks }
+
+export { ExportPiece }
+
 export { ExportText }
 
 export { Svg }
+
+export { TextOutline }
 
 export { useExportText }
 

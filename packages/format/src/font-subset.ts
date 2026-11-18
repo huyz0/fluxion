@@ -164,7 +164,7 @@ const HB_SUBSET_FLAGS_NAME_LEGACY = 0x8;
 
 type Kept = Extract<FontSubsetOutcome, { status: 'kept' }>;
 const kept = (reason: FontKeptReason, message: string): Kept => ({ status: 'kept', reason, message });
-class Refusal extends Error {
+export class Refusal extends Error {
   readonly outcome: Kept;
   constructor(outcome: Kept) {
     super(outcome.message);
@@ -357,7 +357,7 @@ export async function fontSubsetCacheKey(input: FontSubsetInput, engines: Pick<F
 }
 
 /** The SFNT inside `bytes`: WOFF2 decoded within bounds, TTF/OTF as is; other containers are refused. */
-function sfntOf(codec: Woff2CodecExports, bytes: Uint8Array): Uint8Array {
+export function sfntOf(codec: Woff2CodecExports, bytes: Uint8Array): Uint8Array {
   const magic = tagAt(bytes, 0);
   if (magic === 'wOF2') return decodeWoff2(codec, bytes);
   if (magic === 'ttcf') return refuse('font-collection', 'font collections are kept whole');

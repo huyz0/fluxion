@@ -13,6 +13,7 @@ import { FontSpec } from '@fluxion/core';
 import { GlobalRoute } from '@fluxion/routing';
 import { GlobalRouteInput } from '@fluxion/routing';
 import { LaidOutLine } from '@fluxion/core';
+import { LaidOutPiece } from '@fluxion/core';
 import { MarkerDef } from '@fluxion/core';
 import { ReactNode } from 'react';
 import { ReadSignal } from '@fluxion/core';
@@ -35,8 +36,28 @@ export const BUILTIN_SVG_LEAVES: ReadonlyMap<ComponentType<ElementViewProps>, Co
 export const ExportContext: Context<SvgSurfaceContext>;
 
 // @public
+export type ExportLine = Omit<LaidOutLine, "pieces"> & {
+    readonly pieces: readonly ExportPiece[];
+};
+
+// @public
+export type ExportMarks = {
+    readonly underline: boolean;
+    readonly strike: boolean;
+    readonly color?: string;
+    readonly highlight?: string;
+    readonly href?: string;
+};
+
+// @public
+export type ExportPiece = LaidOutPiece & {
+    readonly marks: ExportMarks;
+    readonly outline?: TextOutline;
+};
+
+// @public
 export type ExportText = {
-    readonly lines: readonly LaidOutLine[];
+    readonly lines: readonly ExportLine[];
     readonly font: FontSpec;
     readonly color: string;
     readonly top: number;
@@ -97,10 +118,24 @@ export type SvgSurfaceContext = {
     readonly assets?: AssetUrls;
     readonly theme?: Theme;
     readonly glyphs?: (font: FontSpec, text: string) => void;
+    readonly outline?: (font: FontSpec, text: string) => TextOutline | undefined;
 };
 
 // @public
 export function TableSvg(props: ElementViewProps): ReactNode;
+
+// @public
+export type TextOutline = {
+    readonly d: string;
+    readonly underline: {
+        readonly y: number;
+        readonly thickness: number;
+    };
+    readonly strike: {
+        readonly y: number;
+        readonly thickness: number;
+    };
+};
 
 // @public
 export function useExportText(text: RichTextDoc | string, style: ResolvedStyle, box: {

@@ -122,8 +122,8 @@ export function ScreenSvgView(props: ScreenSvgViewProps): ReactNode {
   );
 }
 
-export { ExportContext, type ExportText, type Svg, useExportText } from './export-text.js';
+export { ExportContext, type ExportLine, type ExportMarks, type ExportPiece, type ExportText, type Svg, useExportText } from './export-text.js';
 export { FrameSvg, ImageSvg } from './svg-boxes.js';
 export { type SelectionScope, selectionScope, selectionViewBox } from './svg-selection.js';
-export { type SvgDiagnostic, SvgSurface, type SvgSurfaceContext } from './svg-surface.js';
+export { type SvgDiagnostic, SvgSurface, type SvgSurfaceContext, type TextOutline } from './svg-surface.js';
 export { TableSvg } from './svg-table.js';

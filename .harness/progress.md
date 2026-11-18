@@ -5282,3 +5282,11 @@ round-allowance: M20.4 review round 4 under Huy's 2026-11-05T11:04:52Z delegatio
 - svg11: an external href is allowed only as an `<a>`'s own http(s)/mailto link; anything inside a link refers to nothing outside (was: anything on or in `<a>`).
 - svg.browser.test.ts: rich-text and two-rects-line export in Chromium to the Node goldens' bytes.
 - m20-complete: the FR-EXP-004 standalone leg names the checker case; a new leg names M20.40's, M20.41's and M20.43's cases and the browser byte case.
+
+## 2026-11-18 M20.13: SVG fonts outlined by default; glyph inventory; pack-view marks (split: M20.46 embed, M20.47 parity)
+- exporters svg-fonts.ts: `SvgExportPorts.fonts` ({ faces: SvgFontFace[], codec }) ; exportSvg renders twice (ADR-0056 item 2): a first render records every piece in its font through `glyphs`, `outlineRuns` matches each font to a face (core `matchFace`, now public, the measurer's own choice), reads it through format's new `fontSfnt` (pinned WOFF2 codec), shapes it with fontkit 2.0.4 (`await import('fontkit')`, kern + liga) into one px path at the pen origin, then the second render draws them. A font with no face, or an unreadable face, stays `<text>` and is reported FLX_EXPORT_FONT_NOT_EMBEDDED once per family.
+- render svg-text: `SvgLabel` records every piece and list marker through `glyphs`; a piece with an outline draws as `<path transform="translate(x baseline)">`, its colour as fill, underline/strike as rects from the face's post/OS2 metrics, a link as `<a>`; the outlines share a `<g>` whose `<title>` is the label's text; what is not outlined stays one `<text>`. SvgSurfaceContext gains `outline`; `TextOutline` type.
+- render export-text: `useExportText` pieces carry `marks` (underline, strike, color, highlight, href) and `outline` (M20.42 r1 F1); ExportLine/ExportPiece/ExportMarks/TextOutline re-exported by `@fluxion/sdk/export`.
+- fontkit 2.0.4 (MIT) added to @fluxion/exporters only (catalog pin); local `fontkit.d.ts`. CSP: a test walks fontkit's browser import graph (brotli/decompress only) and finds no eval/Function.
+- Backlog: M20.13 narrowed to outline; M20.46 (embed subsets) and M20.47 (three-engine parity spec) added; M20.14/15/25 deps updated. m20-complete gains the fonts leg.
+

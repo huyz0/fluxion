@@ -268,6 +268,27 @@ leg('FR-EXP-004 the boxed leaves, rich-text marks, tables and regions, the selec
       }),
   ),
 );
+// fonts outlined by default (M20.13); embedded subsets are M20.46's, the three-engine parity spec M20.47's
+leg('FR-EXP-004 text is outlined from its face by default; marks, unmatched fonts and the lazy CSP-safe outliner', () =>
+  all(
+    () =>
+      tests('packages/exporters/src/svg-fonts.test.ts', {
+        named: [
+          "FR-EXP-004: text is outlined by default from the face its font matches, each piece's path at its tspan's x and baseline, its text in the title",
+          'FR-EXP-004: an outlined piece keeps its marks: a colour as its fill, underline and strike as bars, a link around it',
+          'FR-EXP-004: a font no face matches stays <text> naming its family, reported FLX_EXPORT_FONT_NOT_EMBEDDED; the rest is outlined',
+          'FR-EXP-004: a face that fails while its runs are shaped (a damaged table fontkit reads lazily) stays <text>, reported, never thrown (M20.13 r1 F1)',
+          'FR-EXP-004: a list marker is recorded and outlined too, ending 0.4 em before its line as the <text> marker does (M20.13 r1 F2)',
+          'FR-EXP-004: fontkit is imported only when an export outlines, and nothing it loads in a browser evaluates strings (studio CSP)',
+        ],
+      }),
+    () =>
+      tests('packages/sdk/src/export/export.browser.test.tsx', {
+        project: 'browser',
+        named: ["FR-EXT-001 FR-EXP-004: useExportText gives each piece its marks and the export's outline of it (M20.42 r1 F1, M20.13)"],
+      }),
+  ),
+);
 leg(`FR-EXP-004 rasterized SVG vs present mode within PARITY_MAX_DIFF_PCT (${t('PARITY_MAX_DIFF_PCT')} %) in three browsers`, () =>
   browsers(['e2e/export.svg-parity.spec.ts']),
 );

@@ -10,6 +10,7 @@ import { RenderRegistries } from '@fluxion/render';
 import { SvgDiagnostic } from '@fluxion/render/svg';
 import { TextMeasurer } from '@fluxion/core';
 import { Theme } from '@fluxion/theme';
+import { Woff2CodecExports } from '@fluxion/format';
 
 // @public
 export function exportSvg(file: DocumentFile, options?: SvgExportOptions, ports?: SvgExportPorts): Promise<SvgExport>;
@@ -43,7 +44,22 @@ export type SvgExportPorts = {
     readonly registries?: RenderRegistries;
     readonly assets?: (assetId: RecordId) => string | undefined;
     readonly theme?: Theme;
+    readonly fonts?: SvgFontPorts;
     readonly writePackage?: (document: DocumentFile) => Promise<Uint8Array | undefined>;
+};
+
+// @public
+export type SvgFontFace = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+    readonly bytes: Uint8Array;
+};
+
+// @public
+export type SvgFontPorts = {
+    readonly faces: readonly SvgFontFace[];
+    readonly codec: () => Promise<Woff2CodecExports>;
 };
 
 // @public

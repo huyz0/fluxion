@@ -425,6 +425,13 @@ export type ExprWhere = {
 };
 
 // @public
+export type FaceKey = {
+    readonly family: string;
+    readonly weight: number;
+    readonly style: "normal" | "italic";
+};
+
+// @public
 export type FaceMetrics = {
     readonly family: string;
     readonly weight: number;
@@ -677,6 +684,9 @@ export function masterLayers(view: ReadView, screenId: RecordId): MasterLayers |
 
 // @public
 export type MasterProblemCode = "not-master" | "chain" | "infinite" | "size";
+
+// @public
+export function matchFace<F extends FaceKey>(faces: readonly F[], font: FontSpec): F | undefined;
 
 // @public
 export function mergeCells(grid: TableGrid, area: CellArea): TableGrid | undefined;

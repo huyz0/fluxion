@@ -24,7 +24,8 @@
     "@fluxion/format": "workspace:*",
     "@fluxion/render": "workspace:*",
     "@fluxion/schema": "workspace:*",
-    "@fluxion/theme": "workspace:*"
+    "@fluxion/theme": "workspace:*",
+    "fontkit": "catalog:"
   },
   "peerDependencies": {
     "react": "^19.0.0",

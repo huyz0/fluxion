@@ -34,6 +34,21 @@ export type SvgDiagnostic = {
 };
 
 /**
+ * A run of text as glyph outlines (ADR-0056 item 5): one path in px with the pen's start at the origin on the baseline (y down), and
+ * where the face draws its underline and strike, px below the baseline (negative is above), with their thickness.
+ *
+ * @public
+ */
+export type TextOutline = {
+  /** The glyphs' path data, px, the pen starting at (0, 0) on the baseline. */
+  readonly d: string;
+  /** The underline's top, px below the baseline, and its thickness. */
+  readonly underline: { readonly y: number; readonly thickness: number };
+  /** The strike line's top, px below the baseline (negative: above it), and its thickness. */
+  readonly strike: { readonly y: number; readonly thickness: number };
+};
+
+/**
  * What an svg-surface render reads beside the props: the measurer its text is laid out with and where its findings go.
  *
  * @public
@@ -49,8 +64,10 @@ export type SvgSurfaceContext = {
   readonly assets?: AssetUrls;
   /** The screen's theme (set by `ScreenSvgView`): what a pack view's `useExportText` resolves its style against. */
   readonly theme?: Theme;
-  /** Receives the text of each piece `useExportText` lays out, in its font: the export's glyph inventory. */
+  /** Receives the text of each piece laid out (labels, list markers, `useExportText`), in its font: the export's glyph inventory. */
   readonly glyphs?: (font: FontSpec, text: string) => void;
+  /** The outline of `text` in `font`, when the export outlines it (fonts `outline`, a face with bytes); else it stays `<text>`. */
+  readonly outline?: (font: FontSpec, text: string) => TextOutline | undefined;
 };
 
 /**

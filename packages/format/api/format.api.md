@@ -302,6 +302,9 @@ export type FontJobWorker = {
 export type FontKeptReason = "reserved-font-name" | "unverified-source" | "variable-font" | "font-collection" | "unsupported-format" | "malformed" | "too-large" | "not-smaller" | "unbounded-text" | "engine-failure";
 
 // @public
+export function fontSfnt(codec: Woff2CodecExports, bytes: Uint8Array): Uint8Array | undefined;
+
+// @public
 export function fontSubsetCacheKey(input: FontSubsetInput, engines: Pick<FontEngines, "identity">, hasher: ContentHasher): Promise<string>;
 
 // @public

@@ -115,6 +115,7 @@ export {
 } from './drawio-import.js';
 export { FONT_ENGINE_HASHES, type FontEngineModules, type FontEnginePorts, instantiateFontEngines, type WasmInstantiate } from './font-engines.js';
 export { type GlyphInventory, glyphInventory } from './font-inventory.js';
+export { fontSfnt } from './font-sfnt.js';
 export {
   type EngineMemory,
   FONT_SUBSET_POLICY,

@@ -75,15 +75,35 @@ function firstFamily(list: string): string {
   return first.replace(/^(["'])(.*)\1$/, '$2');
 }
 
-/** The face that best matches `font`: its family, then its style, then the nearest weight (the heavier on a tie). */
-function pickFace(faces: readonly FaceMetrics[], font: FontSpec): FaceMetrics | undefined {
+/**
+ * What a face is matched by: its family, weight and style.
+ *
+ * @public
+ */
+export type FaceKey = {
+  /** The family as CSS writes it unquoted; matched without regard to case. */
+  readonly family: string;
+  /** CSS weight. */
+  readonly weight: number;
+  /** CSS style. */
+  readonly style: 'normal' | 'italic';
+};
+
+/**
+ * The face of `faces` that best matches `font`: the first family of its list (unquoted, any case), then its style, then the nearest
+ * weight (the heavier on a tie, the first of equal faces); undefined when none has the family. The measurer's choice, so whatever
+ * else a host keeps per face (an SVG export's outlines, ADR-0056 item 5) is picked as the text was measured.
+ *
+ * @public
+ */
+export function matchFace<F extends FaceKey>(faces: readonly F[], font: FontSpec): F | undefined {
   const family = firstFamily(font.family).toLowerCase();
   const same = faces.filter((f) => f.family.toLowerCase() === family);
   const style = font.style === 'italic' ? 'italic' : 'normal';
   const ofStyle = same.filter((f) => f.style === style);
   const pool = ofStyle.length > 0 ? ofStyle : same;
   const weight = font.weight ?? 400;
-  let best: FaceMetrics | undefined;
+  let best: F | undefined;
   for (const f of pool) {
     if (best === undefined) best = f;
     else {
@@ -121,7 +141,7 @@ function lineWidth(line: string, face: FaceMetrics, size: number): number {
 export function createMetricsMeasurer(faces: readonly FaceMetrics[], fallback: TextMeasurer): TextMeasurer {
   return {
     measure(text: string, font: FontSpec): TextMetrics {
-      const face = pickFace(faces, font);
+      const face = matchFace(faces, font);
       if (face === undefined) return fallback.measure(text, font);
       const lines = text.split('\n');
       return {

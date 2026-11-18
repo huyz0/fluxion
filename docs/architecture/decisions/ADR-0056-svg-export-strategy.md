@@ -321,4 +321,10 @@ Fonts:
   route with hops, half its stroke and its markers' length, decoration strokes and laid-out labels. The pruned package keeps the
   screen's drawn elements, their parent chains (a member names its parent) and its master whole, since the screen names it.
   The checker allows a reference outside the file only as an `<a>`'s own `http:`, `https:` or `mailto:` link.
+- Amended in M20.13's commit: the host lends fonts as `SvgExportPorts.fonts`, its faces (`{ family, weight, style, bytes }`,
+  the document's own first, as the measurer orders them) and a WOFF2 codec instance. Each font is matched by core's `matchFace`,
+  the measurer's own choice; format's `fontSfnt` reads the face. There is no `fonts` option until M20.46 adds `embed`, so the
+  default is the only mode. Outlined underlines and strikes are rects at the face's `post` and `OS/2` positions. The CSP question
+  is settled statically: fontkit's browser import graph (it takes `brotli/decompress.js`, never the encoder) evaluates no strings,
+  as a test checks. The row is split: embedded subsets are M20.46, the three-engine parity spec M20.47.
 - Related: ADR-0015, ADR-0026, ADR-0036, ADR-0051, ADR-0052, ADR-0054, ADR-0148, ADR-0186, ADR-0192, ADR-0201, ADR-0220.

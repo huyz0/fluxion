@@ -88,7 +88,7 @@ export {
   type TableGrid,
 } from './table/table-ops.js';
 export { type FitInput, type FittedText, fitText, growsText, shrinksText, TEXT_FIT_DEFAULTS } from './text/fit.js';
-export { createMetricsMeasurer, type FaceMetrics, type FontMetricsFile, readFontMetrics } from './text/metrics.js';
+export { createMetricsMeasurer, type FaceKey, type FaceMetrics, type FontMetricsFile, matchFace, readFontMetrics } from './text/metrics.js';
 export {
   type LaidOutLine,
   type LaidOutPiece,

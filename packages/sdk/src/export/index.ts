@@ -3,4 +3,13 @@
 // `ExportContext` instance: a bundled copy would be another context, and its text would get no measured lines.
 
 export type { ElementView, ElementViewProps } from '@fluxion/render';
-export { ExportContext, type ExportText, type Svg, useExportText } from '@fluxion/render/svg';
+export {
+  ExportContext,
+  type ExportLine,
+  type ExportMarks,
+  type ExportPiece,
+  type ExportText,
+  type Svg,
+  type TextOutline,
+  useExportText,
+} from '@fluxion/render/svg';

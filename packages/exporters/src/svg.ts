@@ -6,11 +6,12 @@
 import { appliedMaster, type Core, createCore, sha256Hex, type TextMeasurer } from '@fluxion/core';
 import { writeFlux } from '@fluxion/format';
 import { builtinRegistries, modePolicy, type RenderRegistries, screensInOrder } from '@fluxion/render';
-import { ScreenSvgView, type SvgDiagnostic, SvgSurface, selectionScope } from '@fluxion/render/svg';
+import { ScreenSvgView, type SvgDiagnostic, SvgSurface, type SvgSurfaceContext, selectionScope } from '@fluxion/render/svg';
 import type { DocumentFile, RecordId } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
-import { createElement } from 'react';
+import { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { glyphCollector, outlineRuns, type SvgFontPorts } from './svg-fonts.js';
 import { PACKAGE_NS, packageMetadata, SVG_PACKAGE_MAX_BYTES, screenPackage } from './svg-package.js';
 import { VERSION } from './version.js';
 
@@ -45,6 +46,11 @@ export type SvgExportPorts = {
   readonly assets?: (assetId: RecordId) => string | undefined;
   /** The theme (default: the screen's, as the view picks it). */
   readonly theme?: Theme;
+  /**
+   * The faces text is outlined with and the WOFF2 codec that reads them (ADR-0056 item 5: fonts are outlined by default); a font no
+   * face matches stays `<text>` naming its family, reported `FLX_EXPORT_FONT_NOT_EMBEDDED` (default: no faces).
+   */
+  readonly fonts?: SvgFontPorts;
   /** Writes the package `.flux` of the pruned document (default: format's writeFlux with no asset bytes); undefined leaves it out. */
   readonly writePackage?: (document: DocumentFile) => Promise<Uint8Array | undefined>;
 };
@@ -126,6 +132,21 @@ async function metadata(file: DocumentFile, at: PackageScope, write: SvgExportPo
   return { xml: packageMetadata({ ...head, bytes }), diagnostic: undefined };
 }
 
+/** No faces: every font stays `<text>`, reported; the codec is never asked for. */
+const NO_FONTS: SvgFontPorts = { faces: [], codec: () => Promise.reject(new Error('no font faces were lent')) };
+
+/**
+ * The markup of `view` in three phases (ADR-0056 item 2): a render that records each piece's text in its font, the outlines of those
+ * runs, and the render that draws them. Both renders read the same store and measurer, so they lay out the same lines.
+ */
+async function drawn(view: ReactElement, surface: SvgSurfaceContext, fonts: SvgFontPorts = NO_FONTS): Promise<string> {
+  const render = (extra: Partial<SvgSurfaceContext>) => renderToStaticMarkup(createElement(SvgSurface.Provider, { value: { ...surface, ...extra } }, view));
+  const { runs, glyphs } = glyphCollector();
+  render({ glyphs });
+  const outline = await outlineRuns(runs, fonts, surface.report ?? (() => undefined));
+  return render({ outline });
+}
+
 /** `markup` with `inserted` after its `<title>` and `<desc>` (the first children, for readers). */
 function afterTitle(markup: string, inserted: string): string {
   const title = markup.indexOf('</title>');
@@ -176,9 +197,7 @@ export async function exportSvg(file: DocumentFile, options: SvgExportOptions = 
     ...(ports.measurer === undefined ? {} : { measurer: ports.measurer }),
     ...(ports.assets === undefined ? {} : { assets: ports.assets }),
   };
-  const markup = namespaced(
-    renumberIds(renderToStaticMarkup(createElement(SvgSurface.Provider, { value: surface }, view)), `fx${shown.indexOf(screenId) + 1}-`),
-  );
+  const markup = namespaced(renumberIds(await drawn(view, surface, ports.fonts), `fx${shown.indexOf(screenId) + 1}-`));
   let svg = markup;
   if (options.package !== false) {
     const meta = await metadata(file, packageScope(store, screenId, options.selection), ports.writePackage);
