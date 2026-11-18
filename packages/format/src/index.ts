@@ -136,7 +136,7 @@ export {
   runFontSubsetJob,
   serveFontSubsetJob,
 } from './font-subset-job.js';
-export { type EmbeddedFont, type FontSubsetDeps, type FontSubsetPlan, planFontSubsets } from './font-subset-plan.js';
+export { type EmbeddedFont, type FontAssetFace, type FontSubsetDeps, type FontSubsetPlan, fontAssetFace, planFontSubsets } from './font-subset-plan.js';
 export {
   type FontSubsetIdentity,
   type FontSubsetLine,

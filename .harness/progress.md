@@ -5295,3 +5295,8 @@ round-allowance: M20.4 review round 4 under Huy's 2026-11-05T11:04:52Z delegatio
 - render: SvgSurfaceContext `family` maps a font to the family list written (alias first); SvgLabel's `<text>`/pieces and useExportText's fonts use it.
 - svg11: a `<style>` may hold no `@import` and only data:/fragment `url()`s.
 
+
+## 2026-11-18 M20.15: `fluxion render --format svg [--fonts outline|embed]` (studio menu split to M20.48)
+- cli render-svg.ts: one `<dir>/<screen-id>.svg` per drawn screen by exportSvg with the HTML page's registries, measurer and asset URLs. Fonts: the document's font assets with bytes (a `.flux`), then the bundled fonts-core faces (verified, OFL); codec from format's pinned engines, read once; `--fonts embed` subsets through `cliSubsetDeps().job` (fresh worker per font). Export findings become reply `diagnostics` at `/records/<element or screen>`; an unregistered code is an internal error.
+- schema: the seven FLX_EXPORT_* codes registered (docs/reference/diagnostics.md "SVG export"); every `--json` schema snapshot and specs/schema/cli-result.json gain them. ADR-0036 amendment; 06 §9 table; 01 §2 cli → exporters.
+- format: `fontAssetFace(asset)` exported (the verified-source rule `planFontSubsets` uses), so the CLI judges a document font as `convert --subset-fonts` does.

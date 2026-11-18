@@ -55,4 +55,11 @@ M14.14 (the ops layer, the envelope with `diagnostics`, the exit-code matrix `ex
 
 ## More Information
 
+**Amendment (M20.15, ADR-0056).** `render --format svg` needs no browser after all: it writes `<out>/<screen-id>.svg` per drawn screen
+with `@fluxion/exporters`' `exportSvg`, the same measurer, registries and asset URLs the HTML page uses. `--fonts outline|embed`
+(default `outline`) is valid only with `svg`; any other value, or the option with another format, is a usage error (exit 2). The
+result keeps its shape (`out`, `screens`, `files`); what the export could not draw as present mode draws it comes back as the
+reply's `diagnostics`, with the export's codes (`FLX_EXPORT_*`) now registered in `@fluxion/schema` and listed in
+docs/reference/diagnostics.md, so every command's `--json` schema snapshot gains them.
+
 ADR-0147 (the shape this extends), ADR-0144 (results), ADR-0155 (`convert`), 06-ai-authoring.md §9, docs/standards/contracts.md §1 and §6, FR-CLI-002, FR-CLI-005, FR-AI-006.

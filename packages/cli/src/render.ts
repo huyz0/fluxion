@@ -2,7 +2,8 @@
 // document as one static HTML page, written by render's renderDocumentToHtml. An invalid document
 // exits 1 with its diagnostics (as validate reports them); an unknown screen id is a usage error.
 // A `.flux` archive is opened by the loader under the shape content policy; its saved packs' exact
-// artwork fonts are embedded under their private aliases, and missing bytes refuse it (ADR-0192).
+// artwork fonts are embedded under their private aliases, and missing bytes refuse it (ADR-0192). `--format svg` writes one SVG
+// per screen instead (render-svg.ts, FR-CLI-002, ADR-0056), its text outlined or, with `--fonts embed`, embedded as subsets.
 import { readFile, writeFile } from 'node:fs/promises';
 import { embeddedConnectors, loadFlux, sha256Hex } from '@fluxion/format';
 import { type AssetUrls, builtinRegistries } from '@fluxion/render';
@@ -14,6 +15,7 @@ import { type Command, internal, io, type Outcome, unsupported, usage } from './
 import { hostRegistries, hostRouters } from './host.js';
 import { measurerFor } from './measurer.js';
 import { type Launcher, playwrightLauncher, renderPngs } from './render-png.js';
+import { documentFaces, renderSvgs, type SvgFonts, type SvgPage } from './render-svg.js';
 
 /**
  * Why the screens `wanted` names cannot be rendered: not screens of `document`, hidden (export
@@ -33,18 +35,35 @@ function screenProblem(document: DocumentFile, wanted: readonly string[], file: 
 /** What `render` was asked for. */
 type Request = {
   readonly file: string;
-  /** The HTML file, or for png the directory of the images. */
+  /** The HTML file, or for png and svg the directory of the images. */
   readonly out: string;
-  readonly format: 'html' | 'png';
+  readonly format: Format;
+  /** How SVG text is drawn. */
+  readonly fonts: SvgFonts;
   readonly screens: readonly string[] | undefined;
   readonly launch: Launcher;
 };
 
+/** The formats `render` writes. */
+type Format = 'html' | 'png' | 'svg';
+/** What `render` replies with. */
+type Written = { out: string; screens: number; files?: readonly string[]; diagnostics?: readonly Diagnostic[] };
+
+/** The page written as one SVG per screen into `out`; or the outcome that says why not. */
+async function emitSvg(page: Page, out: string, fonts: SvgFonts, log: (text: string) => void): Promise<Outcome | Written> {
+  const written = await renderSvgs(page.svg, out, fonts);
+  if ('exitCode' in written) return written;
+  log(`${out}: ${written.files.length} SVG${written.files.length === 1 ? '' : 's'}\n`);
+  return { out, screens: written.files.length, files: written.files, diagnostics: written.diagnostics };
+}
+
 /** What the page is written as: the files or the one HTML file, and the reply's result; or the outcome that says why not. */
 async function emit(
-  { html, drawn, fonts, out, format, launch }: Page & { out: string; format: 'html' | 'png'; launch: Launcher },
+  page: Page & { out: string; format: Format; svgFonts: SvgFonts; launch: Launcher },
   log: (text: string) => void,
-): Promise<Outcome | { out: string; screens: number; files?: readonly string[] }> {
+): Promise<Outcome | Written> {
+  const { html, drawn, fonts, out, format, launch } = page;
+  if (format === 'svg') return emitSvg(page, out, page.svgFonts, log);
   if (format === 'png') {
     const files = await renderPngs({ html, fonts }, drawn, out, launch);
     if (!Array.isArray(files)) return files as Outcome;
@@ -61,8 +80,18 @@ async function emit(
   return { out, screens: drawn.length };
 }
 
-/** A rendered page: its HTML, the screens drawn, the private families of the artwork fonts it embeds, the document and what it reported. */
-type Page = { html: string; drawn: readonly string[]; fonts: readonly string[]; document: DocumentFile; diagnostics: readonly Diagnostic[] };
+/**
+ * A rendered page: its HTML, the screens drawn, the private families of the artwork fonts it embeds, the document, what it reported, and
+ * what an SVG export of its screens is drawn from.
+ */
+type Page = {
+  html: string;
+  drawn: readonly string[];
+  fonts: readonly string[];
+  document: DocumentFile;
+  diagnostics: readonly Diagnostic[];
+  svg: SvgPage;
+};
 
 /** The page of `document` drawn from `host` (and the saved packs' `embedded` fonts); or the usage outcome for a screen it lacks. */
 function pageOf(
@@ -74,6 +103,8 @@ function pageOf(
     diagnostics: readonly Diagnostic[];
     embedded?: EmbeddedShapePacks;
     assets?: AssetUrls;
+    /** The bytes of the document's assets by hash (a `.flux`'s), for the SVG export's own font faces. */
+    bytesOf?: (hash: string) => Uint8Array | undefined;
   },
 ): Outcome | Page {
   const problem = screenProblem(document, options.screens ?? [], options.label);
@@ -83,14 +114,17 @@ function pageOf(
   // (ADR-0017, M18.252); the connectors draw the global routing pass's routes, as the studio and the .flux.html do (M16.28)
   const routers = hostRouters(host);
   const registries = { ...builtinRegistries(host.shapeDefs, routers, host.markers, options.embedded?.artworkFonts), globalPass: () => globalRoutes };
+  const measurer = measurerFor(document);
   const { html, screens: drawn } = renderDocumentToHtml(document, {
     registries,
-    measurer: measurerFor(document),
+    measurer,
     ...(options.screens === undefined ? {} : { screens: options.screens as readonly RecordId[] }),
     ...(fonts.length ? { artworkFonts: fonts } : {}),
     ...(options.assets ? { assets: options.assets } : {}),
   });
-  return { html, drawn, fonts: fonts.map((f) => f.alias), document, diagnostics: options.diagnostics };
+  const faces = documentFaces(document, options.bytesOf ?? (() => undefined));
+  const svg: SvgPage = { document, drawn, registries, measurer, faces, ...(options.assets ? { assets: options.assets } : {}) };
+  return { html, drawn, fonts: fonts.map((f) => f.alias), document, diagnostics: options.diagnostics, svg };
 }
 
 /** The static page of the document in `text`: its HTML, the screens drawn and the document; or the outcome that says why not. */
@@ -130,6 +164,7 @@ export async function archivePage(bytes: Uint8Array, screens: readonly string[] 
     diagnostics: [...diagnostics, ...noted, ...refusedTypes],
     embedded: packs.value,
     assets: assetUrls(loaded.value),
+    bytesOf: (hash) => assets.get(hash)?.bytes,
   });
 }
 
@@ -176,7 +211,7 @@ async function readBytes(file: string): Promise<Uint8Array | Outcome> {
 const isArchive = (bytes: Uint8Array) => bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
 
 /** Renders the document at `file` to `out`. */
-async function render({ file, out, format, screens, launch }: Request, log: (text: string) => void): Promise<Outcome> {
+async function render({ file, out, format, fonts, screens, launch }: Request, log: (text: string) => void): Promise<Outcome> {
   // checked before the input is read: a broken bundle is not the user's file
   const host = hostRegistries();
   if (host.problems.length > 0) return internal(host.problems.map((d) => d.message).join('; '));
@@ -184,15 +219,17 @@ async function render({ file, out, format, screens, launch }: Request, log: (tex
   if (!(bytes instanceof Uint8Array)) return bytes;
   const page = isArchive(bytes) ? await archivePage(bytes, screens, file) : staticPage(new TextDecoder().decode(bytes), screens, file);
   if ('exitCode' in page) return page;
-  const written = await emit({ ...page, out, format, launch }, log);
-  return 'exitCode' in written ? written : { exitCode: 0, diagnostics: page.diagnostics, result: written };
+  const written = await emit({ ...page, out, format, svgFonts: fonts, launch }, log);
+  if ('exitCode' in written) return written;
+  const { diagnostics: found = [], ...result } = written;
+  return { exitCode: 0, diagnostics: [...page.diagnostics, ...found], result };
 }
 
 /** The `render` command. */
 export const RENDER: Command = {
-  summary: 'Render a document or a .flux file to a static HTML file, or a PNG per screen',
-  usage: 'render <file> -o <out.html | out-dir> [--format html|png] [--screen <id>]',
-  options: { out: { type: 'string', short: 'o' }, format: { type: 'string' }, screen: { type: 'string', multiple: true } },
+  summary: 'Render a document or a .flux file to a static HTML file, or a PNG or SVG per screen',
+  usage: 'render <file> -o <out.html | out-dir> [--format html|png|svg] [--fonts outline|embed] [--screen <id>]',
+  options: { out: { type: 'string', short: 'o' }, format: { type: 'string' }, fonts: { type: 'string' }, screen: { type: 'string', multiple: true } },
   run: ({ values, positionals }, out) => {
     const [file, ...extra] = positionals;
     if (file === undefined) return usage('render needs a document file');
@@ -200,8 +237,11 @@ export const RENDER: Command = {
     const target = values['out'];
     if (typeof target !== 'string' || target === '') return usage('render needs -o <out.html>');
     const format = values['format'] ?? 'html';
-    if (format !== 'html' && format !== 'png') return unsupported(`render writes html or png, not "${String(format)}"`, ['argv']);
+    if (format !== 'html' && format !== 'png' && format !== 'svg') return unsupported(`render writes html, png or svg, not "${String(format)}"`, ['argv']);
+    const fonts = values['fonts'];
+    if (fonts !== undefined && format !== 'svg') return usage('--fonts applies to --format svg only');
+    if (fonts !== undefined && fonts !== 'outline' && fonts !== 'embed') return usage(`--fonts is outline or embed, not "${String(fonts)}"`);
     const screens = values['screen'] as string[] | undefined;
-    return render({ file, out: target, format, screens, launch: playwrightLauncher }, out.stderr);
+    return render({ file, out: target, format, fonts: fonts ?? 'outline', screens, launch: playwrightLauncher }, out.stderr);
   },
 };

@@ -97,7 +97,9 @@ describe('the document commands in-process (FR-CLI-002, FR-LAY-004, FR-EXP-007)'
     expect((await cli('convert', join(dir, 'absent.flux'), html)).code).toBe(1);
     expect((await cli('convert', flux)).code).toBe(2);
     const page = join(dir, 'r.html');
-    expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', page, '--format', 'svg')).code).toBe(2);
+    // svg is written since M20.15; pdf is not yet a format render writes
+    expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', page, '--format', 'pdf')).code).toBe(2);
+    expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', join(dir, 'svg'), '--format', 'svg')).code).toBe(0);
     expect((await cli('render', 'fixtures/docs/two-rects-line.flux.json', '-o', page, '--screen', 'nope')).code).toBe(2);
   });
 

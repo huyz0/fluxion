@@ -261,7 +261,7 @@ All commands wrap `@fluxion/cli/ops`, the same functions the MCP server calls.
 | `validate <file>` · `lint <file> [--min-score n]` | validation; quality rules and score |
 | `compile <in.flux.yaml> -o <out>` · `decompile <file> -o <out> [--format flux\|mermaid] [--screen id]` | FluxScript ⇄ document; a screen as a Mermaid flowchart (FR-EXP-007) |
 | `layout <file> -o <out> [--algorithm a]` · `layout <file> --score` | re-run layout and write positions; or print the scorecard per screen (overlaps, crossings, bends, displacement; FR-LAY-004) |
-| `render <file> -o <out> [--format html\|png] [--screen id]` | static HTML, or a PNG per screen (Playwright; svg, pdf and `--step` are not built yet) |
+| `render <file> -o <out> [--format html\|png\|svg] [--fonts outline\|embed] [--screen id]` | static HTML, a PNG per screen (Playwright), or a standalone SVG per screen (exporters' exportSvg, no browser; text outlined, or `--fonts embed` as used-glyph subsets; ADR-0056); pdf and `--step` are not built yet |
 | `catalog [--format llm\|json\|md] [--pack p]` | AI catalog |
 | `migrate <file>` · `convert <in> <out>` | upgrade schema; `.flux` ⇄ `.flux.html` ⇄ `.flux.json` |
 | `patch <file> <patch.json>` | apply an AI patch atomically |

@@ -32,6 +32,9 @@
       "path": "../../packages/render"
     },
     {
+      "path": "../../packages/exporters"
+    },
+    {
       "path": "../../packages/sdk"
     },
     {

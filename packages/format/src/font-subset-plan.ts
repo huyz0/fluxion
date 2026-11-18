@@ -52,19 +52,50 @@ type FontMeta = {
   readonly copyright?: unknown;
   readonly metrics?: unknown;
 };
+/** What a font asset's record says of its face and rights, as a subset job takes them. @public */
+export type FontAssetFace = {
+  /** Its recorded family, when it names one. */
+  readonly family?: string;
+  /** CSS weight. */
+  readonly weight: number;
+  /** CSS style. */
+  readonly style: string;
+  /** Its licence and copyright, one per line. */
+  readonly rights: string;
+  /** Whether a catalog vouches for its source and licence. */
+  readonly verifiedSource: boolean;
+};
+
+/**
+ * The face and rights `asset` records: its weight and style (400 normal when it records none), its licence and copyright as
+ * the rights text, and whether its source is verified: only a catalog font (bundled or Google) with an allowed licence is, an
+ * upload's licence being its user's label.
+ * @public
+ */
+export function fontAssetFace(asset: AssetRecord): FontAssetFace {
+  const recorded = field(asset as Json, 'font');
+  const meta = (isObject(recorded) ? recorded : {}) as FontMeta & { readonly family?: unknown };
+  return {
+    ...(typeof meta.family === 'string' ? { family: meta.family } : {}),
+    weight: typeof meta.weight === 'number' ? meta.weight : 400,
+    style: typeof meta.style === 'string' ? meta.style : 'normal',
+    rights: [meta.license, meta.copyright].filter((s): s is string => typeof s === 'string').join('\n'),
+    verifiedSource: CATALOG_SOURCES.has(String(meta.source)) && typeof meta.license === 'string' && artworkFontLicenses.includes(meta.license),
+  };
+}
+
 function inputOf(font: EmbeddedFont, codepoints: readonly number[]): FontSubsetInput {
   const recorded = field(font.asset as Json, 'font');
   const meta = (isObject(recorded) ? recorded : {}) as FontMeta;
-  const rights = [meta.license, meta.copyright].filter((s): s is string => typeof s === 'string').join('\n');
+  const { weight, style, rights, verifiedSource } = fontAssetFace(font.asset);
   return {
     bytes: font.bytes,
     sourceSha256: font.asset.hash,
-    weight: typeof meta.weight === 'number' ? meta.weight : 400,
-    style: typeof meta.style === 'string' ? meta.style : 'normal',
+    weight,
+    style,
     codepoints,
     rights,
-    // only a catalog font (bundled or Google) with an allowed licence is a verified source; an upload's licence is its user's label
-    verifiedSource: CATALOG_SOURCES.has(String(meta.source)) && typeof meta.license === 'string' && artworkFontLicenses.includes(meta.license),
+    verifiedSource,
     ...(meta.metrics === undefined ? {} : { metrics: meta.metrics }),
   };
 }

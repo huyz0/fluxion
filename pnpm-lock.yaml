@@ -477,6 +477,9 @@ importers:
       '@fluxion/dsl':
         specifier: workspace:*
         version: link:../dsl
+      '@fluxion/exporters':
+        specifier: workspace:*
+        version: link:../exporters
       '@fluxion/format':
         specifier: workspace:*
         version: link:../format

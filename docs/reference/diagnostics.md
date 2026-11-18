@@ -170,6 +170,21 @@ whole (an option parse error, a file that cannot be read); an internal error has
 | `FLX_MCP_STALE_REVISION` | error | `apply_patch` named a `baseRevision` older than the document's current revision, so another change landed first. | Read the document again, rebase the patch on the new revision and retry. |
 | `FLX_MCP_PATH_OUTSIDE_ROOTS` | error | A path argument resolves outside the roots the server was started with (`--root`); nothing was read or written. | Use a path inside an allowed root, or start the server with the folder as a root. |
 
+## SVG export (ADR-0056)
+
+Reported by `exportSvg` and by `fluxion render --format svg` in its `--json` output; the path names the screen, or the element
+the finding is about (`/records/<id>`). The file is written either way.
+
+| Code | Severity | Meaning | Typical fix |
+|---|---|---|---|
+| `FLX_EXPORT_NO_SCREEN` | error | The export names no screen the document has; nothing is written. | Name a screen of the document. |
+| `FLX_EXPORT_NO_SVG_VIEW` | warning | An element's kind has no SVG view (a plugin view drawn only by the browser): a placeholder is drawn. | Give the plugin an SVG view, or export the screen as PNG. |
+| `FLX_EXPORT_NO_SNAPSHOT` | warning | A component instance has no saved snapshot to draw: a placeholder is drawn. | Open and save the document in the studio so the snapshot is recorded. |
+| `FLX_EXPORT_ASSET_MISSING` | warning | An image, image fill or snapshot asset has no bytes in what was exported (a `.flux.json` carries none): it is not drawn. | Export the `.flux` that holds the asset's bytes. |
+| `FLX_EXPORT_FONT_NOT_EMBEDDED` | warning | A font has no face with bytes, or its face is no font file: its text stays `<text>` naming the family, drawn by the viewer's fonts. | Embed the font in the document, or use a bundled font. |
+| `FLX_EXPORT_FONT_WHOLE` | info | `--fonts embed` wrote a face whole: its subset was refused (an unverified source, a Reserved Font Name) or no font job ran. | Nothing, unless the file's size matters: record the font's modification permission. |
+| `FLX_EXPORT_PACKAGE_OMITTED` | warning | The `.flux` package could not be written into `<metadata>`, or is over its size limit: the SVG cannot be reopened as a document. | Export the `.flux` alongside the SVG. |
+
 ## Single-SVG conversion (ADR-0187)
 
 | Code | Severity | Meaning | Typical fix |

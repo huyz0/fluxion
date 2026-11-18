@@ -259,6 +259,18 @@ export const FONT_SUBSET_JOB_TIMEOUT_MS = 3e4;
 export const FONT_SUBSET_POLICY = "fluxion-font-subset/1 features=all scripts=all names=all+legacy hinting=kept";
 
 // @public
+export type FontAssetFace = {
+    readonly family?: string;
+    readonly weight: number;
+    readonly style: string;
+    readonly rights: string;
+    readonly verifiedSource: boolean;
+};
+
+// @public
+export function fontAssetFace(asset: AssetRecord): FontAssetFace;
+
+// @public
 export type FontEngineModules = {
     readonly harfbuzz: Uint8Array;
     readonly codec: Uint8Array;
