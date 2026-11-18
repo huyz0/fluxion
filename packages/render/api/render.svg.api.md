@@ -119,6 +119,7 @@ export type SvgSurfaceContext = {
     readonly theme?: Theme;
     readonly glyphs?: (font: FontSpec, text: string) => void;
     readonly outline?: (font: FontSpec, text: string) => TextOutline | undefined;
+    readonly family?: (font: FontSpec) => string | undefined;
 };
 
 // @public

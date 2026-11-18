@@ -11,6 +11,7 @@ import type { DocumentFile, RecordId } from '@fluxion/schema';
 import type { Theme } from '@fluxion/theme';
 import { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { embedRuns } from './svg-embed.js';
 import { glyphCollector, outlineRuns, type SvgFontPorts } from './svg-fonts.js';
 import { PACKAGE_NS, packageMetadata, SVG_PACKAGE_MAX_BYTES, screenPackage } from './svg-package.js';
 import { VERSION } from './version.js';
@@ -30,6 +31,11 @@ export type SvgExportOptions = {
    * no master, a viewBox of their outset bounds; the package is pruned to them (`scope="selection"`).
    */
   readonly selection?: readonly RecordId[];
+  /**
+   * How text is drawn (ADR-0056 item 5): `outline` (default), each piece as its glyphs' path from its face; `embed`, as `<text>`
+   * naming its face's subset, embedded once in `<defs><style>` as an `@font-face`.
+   */
+  readonly fonts?: 'outline' | 'embed';
 };
 
 /**
@@ -139,12 +145,19 @@ const NO_FONTS: SvgFontPorts = { faces: [], codec: () => Promise.reject(new Erro
  * The markup of `view` in three phases (ADR-0056 item 2): a render that records each piece's text in its font, the outlines of those
  * runs, and the render that draws them. Both renders read the same store and measurer, so they lay out the same lines.
  */
-async function drawn(view: ReactElement, surface: SvgSurfaceContext, fonts: SvgFontPorts = NO_FONTS): Promise<string> {
+async function drawn(
+  view: ReactElement,
+  surface: SvgSurfaceContext,
+  fonts: { readonly mode: 'outline' | 'embed' | undefined; readonly ports: SvgFontPorts | undefined },
+): Promise<string> {
   const render = (extra: Partial<SvgSurfaceContext>) => renderToStaticMarkup(createElement(SvgSurface.Provider, { value: { ...surface, ...extra } }, view));
   const { runs, glyphs } = glyphCollector();
   render({ glyphs });
-  const outline = await outlineRuns(runs, fonts, surface.report ?? (() => undefined));
-  return render({ outline });
+  const report = surface.report ?? (() => undefined);
+  if (fonts.mode !== 'embed') return render({ outline: await outlineRuns(runs, fonts.ports ?? NO_FONTS, report) });
+  const { css, family } = await embedRuns(runs, fonts.ports ?? NO_FONTS, report);
+  const markup = render({ family });
+  return css === '' ? markup : afterTitle(markup, `<defs><style type="text/css">${css}</style></defs>`);
 }
 
 /** `markup` with `inserted` after its `<title>` and `<desc>` (the first children, for readers). */
@@ -197,7 +210,7 @@ export async function exportSvg(file: DocumentFile, options: SvgExportOptions = 
     ...(ports.measurer === undefined ? {} : { measurer: ports.measurer }),
     ...(ports.assets === undefined ? {} : { assets: ports.assets }),
   };
-  const markup = namespaced(renumberIds(await drawn(view, surface, ports.fonts), `fx${shown.indexOf(screenId) + 1}-`));
+  const markup = namespaced(renumberIds(await drawn(view, surface, { mode: options.fonts, ports: ports.fonts }), `fx${shown.indexOf(screenId) + 1}-`));
   let svg = markup;
   if (options.package !== false) {
     const meta = await metadata(file, packageScope(store, screenId, options.selection), ports.writePackage);

@@ -280,6 +280,18 @@ function idsOf(nodes: readonly Node[]): { readonly ids: ReadonlySet<string>; rea
   return { ids, problems };
 }
 
+/** The problems of the style sheets in `xml`: an `@import`, or a `url()` that is neither a `data:` URL nor a fragment. */
+function styleProblems(xml: string): string[] {
+  return [...xml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].flatMap((m) => {
+    const css = m[1] as string;
+    const urls = [...css.matchAll(/url\(\s*["']?([^"')]*)/g)].map((u) => (u[1] as string).trim());
+    return [
+      ...(/@import/i.test(css) ? ['a <style> imports another sheet'] : []),
+      ...urls.filter((u) => !u.startsWith('data:') && !u.startsWith('#')).map((u) => `a <style> refers to ${u.slice(0, 40)}`),
+    ];
+  });
+}
+
 /**
  * The problems of `xml` as a standalone SVG 1.1 export (none: it passes).
  *
@@ -295,5 +307,6 @@ export function svg11Problems(xml: string): readonly string[] {
     ...(rooted ? [] : ['the root is not <svg version="1.1" xmlns="http://www.w3.org/2000/svg">']),
     ...problems,
     ...parsed.nodes.flatMap((n) => nodeProblems(n, ids)),
+    ...styleProblems(xml),
   ];
 }

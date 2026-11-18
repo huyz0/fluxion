@@ -68,6 +68,8 @@ export type SvgSurfaceContext = {
   readonly glyphs?: (font: FontSpec, text: string) => void;
   /** The outline of `text` in `font`, when the export outlines it (fonts `outline`, a face with bytes); else it stays `<text>`. */
   readonly outline?: (font: FontSpec, text: string) => TextOutline | undefined;
+  /** The family list to write for `font` (fonts `embed`: the embedded face's alias first, then its own list); else its own. */
+  readonly family?: (font: FontSpec) => string | undefined;
 };
 
 /**

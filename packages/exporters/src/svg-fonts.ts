@@ -5,7 +5,7 @@
 // one path in px, the pen at the origin on the baseline. A font with no face, or a face whose file cannot be read, stays `<text>`
 // naming its family and is reported once. No `node:*`, DOM or clock: the host lends the faces and the codec.
 import { type FontSpec, matchFace } from '@fluxion/core';
-import { fontSfnt, type Woff2CodecExports } from '@fluxion/format';
+import { type FontSubsetInput, type FontSubsetOutcome, fontSfnt, type Woff2CodecExports } from '@fluxion/format';
 import type { SvgDiagnostic, TextOutline } from '@fluxion/render/svg';
 import type { Font, GlyphRun, PathCommand } from 'fontkit';
 
@@ -23,6 +23,12 @@ export type SvgFontFace = {
   readonly style: 'normal' | 'italic';
   /** The font file's bytes. */
   readonly bytes: Uint8Array;
+  /** Its recorded licence and copyright text, for the subset job (a Reserved Font Name keeps it whole). */
+  readonly rights?: string;
+  /** The host verified its source and licence (a catalog font); an unverified face is embedded whole. */
+  readonly verifiedSource?: boolean;
+  /** Recorded permission to modify it, overriding an unverified source and a Reserved Font Name. */
+  readonly modificationPermission?: boolean;
 };
 
 /**
@@ -35,6 +41,11 @@ export type SvgFontPorts = {
   readonly faces: readonly SvgFontFace[];
   /** A WOFF2 codec instance (format's `instantiateFontEngines(…).codec`), asked for once an export has a face to read. */
   readonly codec: () => Promise<Woff2CodecExports>;
+  /**
+   * Runs one font subset job (`fonts: 'embed'`): format's `runFontSubsetJob` through the host's `FontJobWorker`, under ADR-0051's
+   * limits; without it every embedded face is whole.
+   */
+  readonly subset?: (input: FontSubsetInput) => Promise<FontSubsetOutcome>;
 };
 
 /** The texts each font of an export draws, as its first render recorded them. */

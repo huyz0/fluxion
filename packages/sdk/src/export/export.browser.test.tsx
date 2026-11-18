@@ -47,7 +47,13 @@ function MarksSvg(props: ElementViewProps) {
     ],
   };
   const text = useExportText(doc as never, style, { w: 2000, h: 80 });
-  return <desc>{JSON.stringify(text.lines.flatMap((l) => l.pieces.map((p) => ({ text: p.text, marks: p.marks, outlined: p.outline !== undefined }))))}</desc>;
+  return (
+    <desc>
+      {JSON.stringify(
+        text.lines.flatMap((l) => l.pieces.map((p) => ({ text: p.text, marks: p.marks, outlined: p.outline !== undefined, family: p.font.family }))),
+      )}
+    </desc>
+  );
 }
 
 describe('@fluxion/sdk/export (ADR-0056 item 4, M20.42)', () => {
@@ -76,12 +82,14 @@ describe('@fluxion/sdk/export (ADR-0056 item 4, M20.42)', () => {
     const svg = renderToStaticMarkup(
       createElement(
         SvgSurface.Provider,
-        { value: { measurer: twenties, outline } },
+        { value: { measurer: twenties, outline, family: (f: FontSpec) => `"fx-export-test", ${f.family}` } },
         createElement(ScreenSvgView, { store, screenId: s, mode: 'export', registries }),
       ),
     );
     const json = /<desc>([^<]*)<\/desc>/.exec(svg)?.[1]?.replace(/&quot;/g, '"') ?? '[]';
-    const pieces = JSON.parse(json) as { text: string; marks: Record<string, unknown>; outlined: boolean }[];
+    const pieces = JSON.parse(json) as { text: string; marks: Record<string, unknown>; outlined: boolean; family: string }[];
+    // an embedding export names its alias first in every piece's family (M20.46)
+    expect(pieces.every((p) => p.family.startsWith('"fx-export-test", '))).toBe(true);
     const byText = new Map(pieces.map((p) => [p.text.trim(), p]));
     expect(byText.get('plain')).toMatchObject({ marks: { underline: false, strike: false }, outlined: false });
     expect(byText.get('under')).toMatchObject({ marks: { underline: true, strike: false }, outlined: true });

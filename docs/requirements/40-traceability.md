@@ -293,7 +293,7 @@ two milestones is delivered in parts (see the milestone plans for the split).
 | FR-EXP-001 | M | R1 | M10 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/player-inline/src/inline.browser.test.ts` |
 | FR-EXP-002 | M | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-003 | M | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
-| FR-EXP-004 | M | R3 | M20 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/exporters/src/svg-boxes.test.ts` +7 |
+| FR-EXP-004 | M | R3 | M20 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/exporters/src/svg-boxes.test.ts` +8 |
 | FR-EXP-005 | S | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-006 | S | R7 | M30 | [21-import-export-publish.md](21-import-export-publish.md) | — |
 | FR-EXP-007 | S | R2 | M14 | [21-import-export-publish.md](21-import-export-publish.md) | `packages/cli/src/commands.test.ts` +2 |

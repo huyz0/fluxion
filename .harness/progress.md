@@ -5290,3 +5290,8 @@ round-allowance: M20.4 review round 4 under Huy's 2026-11-05T11:04:52Z delegatio
 - fontkit 2.0.4 (MIT) added to @fluxion/exporters only (catalog pin); local `fontkit.d.ts`. CSP: a test walks fontkit's browser import graph (brotli/decompress only) and finds no eval/Function.
 - Backlog: M20.13 narrowed to outline; M20.46 (embed subsets) and M20.47 (three-engine parity spec) added; M20.14/15/25 deps updated. m20-complete gains the fonts leg.
 
+## 2026-11-18 M20.46: SVG fonts embedded as subsets by option
+- exporters: `SvgExportOptions.fonts: 'outline' | 'embed'` (default outline). svg-embed.ts `embedRuns`: the first render's glyph runs give each matched face its codepoints (with NFC/NFD forms); `SvgFontPorts.subset` (the host's runFontSubsetJob) cuts it; the bytes go once into `<defs><style type="text/css">` as `@font-face{font-family:"fx-export-<sha256(bytes):12>";src:url(data:…) format(…);font-weight;font-style}` (the descriptors keep a browser from synthesizing bold or italic). A refused subset or no job embeds the whole file (FLX_EXPORT_FONT_WHOLE); no face or no font file: FLX_EXPORT_FONT_NOT_EMBEDDED. SvgFontFace gains rights, verifiedSource, modificationPermission.
+- render: SvgSurfaceContext `family` maps a font to the family list written (alias first); SvgLabel's `<text>`/pieces and useExportText's fonts use it.
+- svg11: a `<style>` may hold no `@import` and only data:/fragment `url()`s.
+

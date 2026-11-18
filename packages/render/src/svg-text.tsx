@@ -24,7 +24,7 @@ const CIRCLE = '\u25e6';
 /** A link's colour where no colour mark inside it sets one: the browser's default link colour, as the html leaf's bare `<a>`. */
 const LINK_COLOUR = '#0000ee';
 
-/** A piece's font attributes where they differ from the `<text>`'s own. */
+/** A piece's font attributes where they differ from the `<text>`'s own (whose family is already the one written). */
 function fontAttrs(font: FontSpec, base: FontSpec) {
   return {
     ...(font.family === base.family ? {} : { fontFamily: font.family }),
@@ -217,8 +217,11 @@ function TextLines(props: {
   readonly fill: string;
   readonly opacity: number;
   readonly theme: Theme;
+  readonly family: SvgSurfaceContext['family'];
 }): ReactNode {
-  const { drawn, paints, at, base, theme } = props;
+  const { drawn, paints, at, theme } = props;
+  const written = (font: FontSpec): FontSpec => ({ ...font, family: props.family?.(font) ?? font.family });
+  const base = written(props.base);
   const left = drawn.filter((d) => (d.marker !== undefined && d.markerShape === undefined) || d.shapes.some((s) => s === undefined));
   if (left.length === 0) return null;
   return (
@@ -236,14 +239,14 @@ function TextLines(props: {
         // biome-ignore lint/suspicious/noArrayIndexKey: a label's lines have no identity but their order
         <tspan key={i} x={n3(at.left + d.line.x)} y={n3(at.top + d.line.baseline)}>
           {d.marker === undefined || d.markerShape !== undefined ? null : (
-            <tspan x={n3(markerEnd(at, d.line, base))} textAnchor="end">
+            <tspan x={n3(markerEnd(at, d.line, props.base))} textAnchor="end">
               {markerText(d.marker)}
             </tspan>
           )}
           {d.line.pieces.map((p, k) =>
             d.shapes[k] !== undefined ? null : (
               // biome-ignore lint/suspicious/noArrayIndexKey: a line's pieces have no identity but their order
-              <Piece key={k} p={p} plans={plansOf(paints, d.line, p)} base={base} left={at.left} theme={theme} />
+              <Piece key={k} p={{ ...p, font: written(p.font) }} plans={plansOf(paints, d.line, p)} base={base} left={at.left} theme={theme} />
             ),
           )}
         </tspan>
@@ -287,7 +290,7 @@ export function SvgLabel(props: {
     <>
       <Highlights lines={lines} paints={paints} at={at} theme={theme} measurer={measurer} opacity={opacity} />
       {outlined ? <OutlinedLines {...shared} measurer={measurer} /> : null}
-      <TextLines {...shared} />
+      <TextLines {...shared} family={surface.family} />
     </>
   );
 }

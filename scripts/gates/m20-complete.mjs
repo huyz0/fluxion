@@ -268,8 +268,8 @@ leg('FR-EXP-004 the boxed leaves, rich-text marks, tables and regions, the selec
       }),
   ),
 );
-// fonts outlined by default (M20.13); embedded subsets are M20.46's, the three-engine parity spec M20.47's
-leg('FR-EXP-004 text is outlined from its face by default; marks, unmatched fonts and the lazy CSP-safe outliner', () =>
+// fonts outlined by default (M20.13) or embedded as subsets (M20.46); the three-engine parity spec is M20.47's
+leg('FR-EXP-004 text is outlined from its face by default or embedded as subsets; marks, unmatched fonts and the lazy CSP-safe outliner', () =>
   all(
     () =>
       tests('packages/exporters/src/svg-fonts.test.ts', {
@@ -280,6 +280,16 @@ leg('FR-EXP-004 text is outlined from its face by default; marks, unmatched font
           'FR-EXP-004: a face that fails while its runs are shaped (a damaged table fontkit reads lazily) stays <text>, reported, never thrown (M20.13 r1 F1)',
           'FR-EXP-004: a list marker is recorded and outlined too, ending 0.4 em before its line as the <text> marker does (M20.13 r1 F2)',
           'FR-EXP-004: fontkit is imported only when an export outlines, and nothing it loads in a browser evaluates strings (studio CSP)',
+        ],
+      }),
+    () =>
+      tests('packages/exporters/src/svg-embed.test.ts', {
+        named: [
+          "FR-EXP-004: fonts embed cuts each face to the export's codepoints with the host's font job, once, under an alias its text names first",
+          'FR-EXP-004: a face whose subset is refused, or a host with no font job, embeds the whole file, reported FLX_EXPORT_FONT_WHOLE',
+          'FR-EXP-004: a whole TrueType face embeds as font/ttf in format truetype (M20.46 r1 F1)',
+          "FR-EXP-004: a run in another face of the family names that face's own alias, each face embedded once (M20.46 r1 F2)",
+          'FR-EXP-004: an embedded export with a font no face matches names its family alone, reported FLX_EXPORT_FONT_NOT_EMBEDDED',
         ],
       }),
     () =>

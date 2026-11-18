@@ -5,6 +5,8 @@
 ```ts
 
 import { DocumentFile } from '@fluxion/schema';
+import { FontSubsetInput } from '@fluxion/format';
+import { FontSubsetOutcome } from '@fluxion/format';
 import { RecordId } from '@fluxion/schema';
 import { RenderRegistries } from '@fluxion/render';
 import { SvgDiagnostic } from '@fluxion/render/svg';
@@ -36,6 +38,7 @@ export type SvgExportOptions = {
     readonly screenId?: RecordId;
     readonly package?: boolean;
     readonly selection?: readonly RecordId[];
+    readonly fonts?: "outline" | "embed";
 };
 
 // @public
@@ -54,12 +57,16 @@ export type SvgFontFace = {
     readonly weight: number;
     readonly style: "normal" | "italic";
     readonly bytes: Uint8Array;
+    readonly rights?: string;
+    readonly verifiedSource?: boolean;
+    readonly modificationPermission?: boolean;
 };
 
 // @public
 export type SvgFontPorts = {
     readonly faces: readonly SvgFontFace[];
     readonly codec: () => Promise<Woff2CodecExports>;
+    readonly subset?: (input: FontSubsetInput) => Promise<FontSubsetOutcome>;
 };
 
 // @public

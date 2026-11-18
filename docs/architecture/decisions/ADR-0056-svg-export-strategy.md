@@ -327,4 +327,8 @@ Fonts:
   default is the only mode. Outlined underlines and strikes are rects at the face's `post` and `OS/2` positions. The CSP question
   is settled statically: fontkit's browser import graph (it takes `brotli/decompress.js`, never the encoder) evaluates no strings,
   as a test checks. The row is split: embedded subsets are M20.46, the three-engine parity spec M20.47.
+- Amended in M20.46's commit: `fonts: 'outline' | 'embed'` is an `exportSvg` option, and the host lends the subset job as
+  `SvgExportPorts.fonts.subset`. The alias hashes the bytes embedded. Each `@font-face` also carries the face's `font-weight` and
+  `font-style`, so a browser never synthesizes bold or italic over an alias declared without them. A host with no job embeds whole
+  faces, reported `FLX_EXPORT_FONT_WHOLE`. The checker refuses a `<style>` with `@import` or a `url()` that is not `data:`.
 - Related: ADR-0015, ADR-0026, ADR-0036, ADR-0051, ADR-0052, ADR-0054, ADR-0148, ADR-0186, ADR-0192, ADR-0201, ADR-0220.

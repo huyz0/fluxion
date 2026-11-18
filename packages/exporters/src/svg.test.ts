@@ -89,6 +89,10 @@ describe('exportSvg (ADR-0056, M20.12)', () => {
     expect(bad('<a xlink:href="https://example.com/"><text>x</text></a>')).toEqual([]);
     expect(bad('<a xlink:href="javascript:alert(1)"><text>x</text></a>')).not.toEqual([]);
     expect(bad('<a xlink:href="https://example.com/"><image xlink:href="https://example.com/a.png"/></a>')).not.toEqual([]);
+    // an embedded face's sheet holds data: URLs alone (M20.46)
+    expect(bad('<defs><style type="text/css">@font-face{font-family:"a";src:url(data:font/woff2;base64,AA==) format("woff2")}</style></defs>')).toEqual([]);
+    expect(bad('<defs><style type="text/css">@font-face{font-family:"a";src:url(https://example.com/a.woff2)}</style></defs>')).not.toEqual([]);
+    expect(bad('<defs><style type="text/css">@import "https://example.com/a.css";</style></defs>')).not.toEqual([]);
   });
 
   it('FR-EXP-004: text is measured tspans with no foreignObject', async () => {

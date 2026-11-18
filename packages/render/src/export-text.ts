@@ -79,7 +79,7 @@ export type ExportLine = Omit<LaidOutLine, 'pieces'> & {
 export type ExportText = {
   /** The lines, in order; a piece's `x` is px from the box's left, a line's `baseline` px from `top`; each piece has its marks. */
   readonly lines: readonly ExportLine[];
-  /** The text's own font, as literals (a piece in another font carries its own). */
+  /** The text's own font, as literals (a piece in another font carries its own); its family as the export writes it. */
   readonly font: FontSpec;
   /** The text colour, a literal. */
   readonly color: string;
@@ -135,9 +135,17 @@ export function useExportText(text: RichTextDoc | string, style: ResolvedStyle, 
     pieces: line.pieces.map((piece): ExportPiece => {
       context.glyphs?.(piece.font, piece.text);
       const outline = context.outline?.(piece.font, piece.text);
-      return { ...piece, marks: marksOf(plansOf(paints, line, piece), theme), ...(outline === undefined ? {} : { outline }) };
+      const written = { ...piece.font, family: context.family?.(piece.font) ?? piece.font.family };
+      return { ...piece, font: written, marks: marksOf(plansOf(paints, line, piece), theme), ...(outline === undefined ? {} : { outline }) };
     }),
   }));
   const top = (box.h - laid.height) * (DOWN[lit(style.font.verticalAlign, theme)] ?? 0.5);
-  return { lines, font, color: lit(style.font.color, theme) || '#000000', top, width: laid.width, height: laid.height };
+  return {
+    lines,
+    font: { ...font, family: context.family?.(font) ?? font.family },
+    color: lit(style.font.color, theme) || '#000000',
+    top,
+    width: laid.width,
+    height: laid.height,
+  };
 }
