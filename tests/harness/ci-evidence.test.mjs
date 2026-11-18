@@ -147,6 +147,40 @@ describe('check-ci-evidence (NFR-PORT-005, NFR-SEC-005)', () => {
     }
   });
 
+  it('NFR-PORT-005: a required job no hosted runner acquired is an infrastructure miss, never evidence (M20.37, cp3 F1)', () => {
+    const [gates, ci] = green(sha.new);
+    const macos = (steps) => ({
+      ...ci,
+      conclusion: 'failure',
+      jobs: [
+        ...ci.jobs.map((j) => (j.name === 'verify (macos-latest)' ? { ...j, conclusion: 'cancelled', steps } : j)),
+        { name: 'ci-ok', conclusion: 'failure' },
+      ],
+    });
+    const missed = check(record(sha.new), [gates, macos([])]);
+    assert.equal(missed.status, 1, out(missed));
+    assert.match(
+      missed.stderr,
+      /ci: job verify \(macos-latest\) was never acquired by a hosted runner \(infrastructure miss\): not a product red and never green: the next push's run is the remedy; a re-run of the same sha is never counted as evidence/,
+    );
+    assert.doesNotMatch(missed.stderr, /job verify \(macos-latest\) cancelled/);
+    // a job cancelled after it ran a step, or whose steps are unknown, is a cancelled job as before
+    for (const steps of [[{ name: 'checkout' }], undefined]) {
+      const ran = check(record(sha.new), [gates, macos(steps)]);
+      assert.equal(ran.status, 1, out(ran));
+      assert.match(ran.stderr, /ci: job verify \(macos-latest\) cancelled/);
+      assert.doesNotMatch(ran.stderr, /infrastructure miss/);
+    }
+    // --record names the miss as the reason there is no green run to record
+    sb.write('runs.json', JSON.stringify([gates, { ...macos([]), databaseId: 9 }]));
+    const none = sb.node('scripts/gates/check-ci-evidence.mjs', ['--record', sha.new, '--file', sb.path('rec9.json'), '--runs-file', sb.path('runs.json')]);
+    assert.equal(none.status, 1, out(none));
+    assert.match(
+      none.stderr,
+      /no successful ci run for \w{7} yet: run 9 is an infrastructure miss \(verify \(macos-latest\) never acquired by a hosted runner\); not a product red/,
+    );
+  });
+
   it('fails without a record, and --record keeps only successful runs of the commit', () => {
     const missing = sb.node('scripts/gates/check-ci-evidence.mjs', ['--file', sb.path('none.json')]);
     assert.equal(missing.status, 1, out(missing));
@@ -534,9 +568,10 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
       { id: 7, name: 'verify (windows-latest)', conclusion: 'failure', steps: [] },
       { id: 8, name: 'verify (ubuntu-latest)', conclusion: null },
     ];
+    // with their steps, null when the answer has none: a cancelled job with none is an infrastructure miss (M20.37)
     const want = [
-      { name: 'verify (windows-latest)', conclusion: 'failure' },
-      { name: 'verify (ubuntu-latest)', conclusion: null },
+      { name: 'verify (windows-latest)', conclusion: 'failure', steps: [] },
+      { name: 'verify (ubuntu-latest)', conclusion: null, steps: null },
     ];
     const calls = [];
     const fetch = async (url) => {
@@ -584,7 +619,7 @@ describe('ci-runs: GitHub REST reader when gh is absent (NFR-PORT-005)', () => {
       { id: 77, sha: 'd'.repeat(40), workflow: 'nightly', jobs: 101 },
     );
     assert.deepEqual(viaGh.jobs.at(-1), { databaseId: 2000, name: 'png-check', conclusion: 'success', steps: [] });
-    assert.deepEqual((await gh.jobs(77)).at(-1), { name: 'png-check', conclusion: 'success' });
+    assert.deepEqual((await gh.jobs(77)).at(-1), { name: 'png-check', conclusion: 'success', steps: [] });
     // a refused api read too names both failures
     const both = ghSource(() => ({ status: 1, stdout: '', stderr: refused }));
     await assert.rejects(both.view(77), /gh run view failed.*through gh api: gh api repos\/huyz0\/fluxion\/\S+ failed/s);

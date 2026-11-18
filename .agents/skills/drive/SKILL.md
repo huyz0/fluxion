@@ -22,7 +22,9 @@ milestone's completion command exiting 0 — never by your opinion.
    commit carries `Fixes-ci: <red run id>`. Exit 2 means that declared fix is still pending: wait
    for it and run last-ci again; do not fix twice (M18.118). Exit 3 means main's CI state is
    unknown (unreadable, or every run still pending): treat it like red for feature rows; harness
-   rows may proceed (M18.128).
+   rows may proceed (M18.128). INFRA-MISS (a job no hosted runner acquired) is no product red to fix:
+   exit 3 until the next push's run is pending, then 2; never re-run the same sha. STARVED (three
+   runs in a row) sets `blockedReason`: the runner label or matrix is the owner's decision (M20.37).
 4. If `state.json.blockedReason` needs a human decision or denied authorization, report and stop.
    A technical three-attempt stop instead requires independent diagnostic review and an explicit
    in-scope replan before clearing it (ADR-0176); preserve the failed attempts and review evidence.

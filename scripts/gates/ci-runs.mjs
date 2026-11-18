@@ -94,7 +94,8 @@ export function restSource({ fetch = globalThis.fetch, token, repo = REPO } = {}
         []
       ).map((r) => ({ databaseId: r.id, workflowName: r.name, headSha: r.head_sha, status: r.status, conclusion: r.conclusion, createdAt: r.created_at })),
     // a run's jobs and their conclusions, read while it is still pending: last-ci sees a failed job early (M18.191)
-    jobs: async (id) => (await pagedJobs(get, id)).map((j) => ({ name: j.name, conclusion: j.conclusion })),
+    // with their steps: a cancelled job with none is one no runner acquired (infra-miss.mjs, M20.37)
+    jobs: async (id) => (await pagedJobs(get, id)).map((j) => ({ name: j.name, conclusion: j.conclusion, steps: j.steps ?? null })),
     // a run's cold-setup job, its cold step's duration and its log text (null when unknown): last-ci reports them (M18.161, M18.164)
     coldSetup: async (id) => {
       const job = (await pagedJobs(get, id)).find((j) => j.name === 'cold-setup');
@@ -211,7 +212,8 @@ export function ghSource(spawn = spawnSync) {
         '--json',
         RUN_FIELDS,
       ]),
-    jobs: async (id) => ((await viewed(id, 'jobs', () => apiJobs(id))).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion })),
+    jobs: async (id) =>
+      ((await viewed(id, 'jobs', () => apiJobs(id))).jobs ?? []).map((j) => ({ name: j.name, conclusion: j.conclusion, steps: j.steps ?? null })),
     // gh run list cannot page, so the REST path is read through gh api, as the REST source reads it (M18.199)
     ciPage: async (name, page, size = PAGE_SIZE) => (gh(['api', `repos/${REPO}/${ciPagePath(name, page, size)}`]).workflow_runs ?? []).map(listed),
     coldSetup: async (id) => {

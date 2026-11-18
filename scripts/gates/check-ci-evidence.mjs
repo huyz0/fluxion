@@ -19,6 +19,7 @@
 //   --file <f>        another record (tests)
 //   --runs-file <f>   JSON array of `gh run view --json databaseId,workflowName,headSha,conclusion,jobs`
 //                     objects used instead of GitHub (tests)
+// A required job no hosted runner acquired (cancelled, zero steps) is reported as an infrastructure miss, never evidence (M20.37).
 // Both modes also read every ci run on main with the recorded sha's product tree (same-tree.mjs): a job
 // that failed or timed out in one of them and has not been green in two later runs refuses (M18.196, cp25 F2).
 // The runs are paged back to the tree's start; a page that cannot be read, or running out first, refuses (M18.199).
@@ -26,6 +27,7 @@
 // GitHub is read through `gh` when installed, else the REST API (GITHUB_TOKEN sent when set; ci-runs.mjs).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { PAGE_SIZE, runSource, transportHint } from './ci-runs.mjs';
+import { INFRA_REMEDY, infraMiss, neverAcquired } from './infra-miss.mjs';
 import { git, repoPath } from './lib.mjs';
 import { AFTER_REVIEW_PATHS } from './milestone-checks.mjs';
 import { describe, intermittent, shaTreeRuns } from './same-tree.mjs';
@@ -67,6 +69,14 @@ const fromFixture = (id) => {
 const view = async (id) => (fixture ? fromFixture(id) : source.view(id));
 const list = async (sha) => fixture ?? live(() => source.list(sha));
 
+/** Why required job `job` (one of `names`) is no evidence, undefined when it passed. */
+function jobProblem(job, names, workflow) {
+  // a job no runner acquired ran nothing, so it is never evidence; said apart from a product red (M20.37)
+  if (neverAcquired(job)) return `${workflow}: job ${job.name} was never acquired by a hosted runner (infrastructure miss): ${INFRA_REMEDY}`;
+  if (job?.conclusion !== 'success') return `${workflow}: job ${job?.name ?? names[0]} ${job ? job.conclusion : 'missing'}`;
+  return undefined;
+}
+
 /** Problems with one run for `sha`, [] when it is the evidence we need. */
 function problems(run, workflow, sha) {
   const out = [];
@@ -74,8 +84,12 @@ function problems(run, workflow, sha) {
   if (run.headSha !== sha) out.push(`run ${run.databaseId} ran ${String(run.headSha).slice(0, 7)}, not ${sha.slice(0, 7)}`);
   if (run.conclusion !== 'success') out.push(`${workflow} run ${run.databaseId} concluded ${run.conclusion}`);
   for (const names of REQUIRED[workflow]) {
-    const job = (run.jobs ?? []).find((j) => names.includes(j.name));
-    if (job?.conclusion !== 'success') out.push(`${workflow}: job ${job?.name ?? names[0]} ${job ? job.conclusion : 'missing'}`);
+    const problem = jobProblem(
+      (run.jobs ?? []).find((j) => names.includes(j.name)),
+      names,
+      workflow,
+    );
+    if (problem !== undefined) out.push(problem);
   }
   return out;
 }
@@ -172,13 +186,28 @@ async function perfProblems(perf, base, label) {
   return out;
 }
 
+/** Why `sha` has no green `workflow` run when a failed one only missed hosted runners (M20.37), else ''. */
+async function missNote(listed, workflow) {
+  const failed = listed.find((r) => r.workflowName === workflow && r.conclusion === 'failure');
+  if (failed === undefined) return '';
+  const missed = infraMiss(
+    await view(failed.databaseId).then(
+      (r) => r.jobs,
+      () => null,
+    ),
+  );
+  return missed.length === 0
+    ? ''
+    : `: run ${failed.databaseId} is an infrastructure miss (${missed.join(', ')} never acquired by a hosted runner); ${INFRA_REMEDY}`;
+}
+
 if (argv.includes('--record')) {
   const sha = git(['rev-parse', opt('record') ?? 'HEAD']).stdout.trim();
   const listed = await list(sha);
   const runs = {};
   for (const workflow of Object.keys(REQUIRED)) {
     const hit = listed.find((r) => r.workflowName === workflow && r.conclusion === 'success');
-    if (!hit) fail(`no successful ${workflow} run for ${sha.slice(0, 7)} yet`);
+    if (!hit) fail(`no successful ${workflow} run for ${sha.slice(0, 7)} yet${await missNote(listed, workflow)}`);
     runs[workflow] = hit.databaseId;
   }
   const flaky = await sameTreeProblems(sha);

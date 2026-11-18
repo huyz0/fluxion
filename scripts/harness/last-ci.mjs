@@ -40,9 +40,14 @@
 // --red-file <path>: writes the runs it reads as red, `{ verdict, red: [{ run, workflow, sha, jobs }] }`, for land.mjs to tie a
 // commit's Fixes-ci to the run that is red now (M18.225, cp33 F2): every completed red run newer than the newest green one
 // (M18.228), pending runs with a failed job, and the failed runs of an intermittent tree.
+// A completed run whose only fault is a job no hosted runner acquired (cancelled with zero steps, M20.37, cp3 F1) is
+// INFRA-MISS, not red and never green: exit 3 until a newer run is pending, then a bounded wait (exit 2) for it; no
+// Fixes-ci names it and --red-file leaves it out. When the newest STARVED_RUNS completed runs each missed one job,
+// blockedReason is set in the state file (--state <file>, default .harness/state.json) unless one is set already.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { COMPLETED_RUNS, coldDuration, PAGE_SIZE, runSource, transportHint } from '../gates/ci-runs.mjs';
+import { INFRA_REMEDY, infraMiss, recordStarvation, STARVED_RUNS, starved } from '../gates/infra-miss.mjs';
 import { blockingRows } from '../gates/landing-block.mjs';
 import { repoPath } from '../gates/lib.mjs';
 import { describe, intermittent, pagedTreeRuns, productPath, shaTreeRuns } from '../gates/same-tree.mjs';
@@ -422,23 +427,84 @@ for (const workflow of WORKFLOWS) {
     if (tree.verdict === 0) console.log(`last-ci: ${workflow} green at ${sha} (run ${done.databaseId})${tail}`);
     continue;
   }
-  const doneJobs = await failedJobs(done.databaseId);
-  noteRed(workflow, done, doneJobs);
+  let red = done;
+  let redJobs = await failedJobs(done.databaseId);
+  // a run whose only fault is a job no runner acquired is an infrastructure miss, not red: no Fixes-ci names it (M20.37)
+  const missed = redJobs.length === 0 ? infraMiss(await jobsOf(done.databaseId)) : [];
+  if (missed.length > 0) {
+    const miss = await infraMissReport({ workflow, done, missed, mine, pending });
+    verdict = worst(verdict, miss.verdict);
+    for (const line of miss.lines) console.log(line);
+    // a miss proves nothing about the runs behind it: the newest of them that is no miss decides, red as before (r1 F1)
+    red = await behindMisses(mine.slice(mine.indexOf(done) + 1));
+    if (red === undefined) continue;
+    redJobs = await failedJobs(red.databaseId);
+  }
+  noteRed(workflow, red, redJobs);
   // the completed red runs behind it back to the newest green are red still: none has a green after it (M18.228)
-  for (const r of mine.slice(mine.indexOf(done) + 1)) {
+  for (const r of mine.slice(mine.indexOf(red) + 1)) {
     if (r.status !== 'completed') continue;
     if (r.conclusion === 'success' || r.conclusion === 'skipped') break;
-    noteRed(workflow, r, await failedJobs(r.databaseId));
+    const older = await failedJobs(r.databaseId);
+    if (older.length === 0 && infraMiss(await jobsOf(r.databaseId)).length > 0) continue;
+    noteRed(workflow, r, older);
   }
-  if (pending > 0) {
+  // the runs newer than the red one: the pending ones, and any missed runs over it, whose commits may declare its fix
+  const newer = mine.slice(0, mine.indexOf(red));
+  if (newer.length > 0) {
     // a red workflow that blocks (exit 1) outranks a wait (M5.2 review F1)
-    const red = await redWithPending(workflow, done, mine.slice(0, pending), doneJobs);
-    verdict = worst(verdict, red.verdict);
-    console.log(red.line);
+    const line = await redWithPending(workflow, red, newer, redJobs);
+    verdict = worst(verdict, line.verdict);
+    console.log(line.line);
     continue;
   }
   verdict = 1;
-  console.log(`last-ci: RED ${workflow} ${done.conclusion} at ${sha} (run ${done.databaseId}): fix main's CI before the next task`);
+  console.log(`last-ci: RED ${workflow} ${red.conclusion} at ${sha} (run ${red.databaseId}): fix main's CI before the next task`);
+}
+/** The newest completed run of `runs` (newest first) that is not an infrastructure miss, when it is red; undefined when green or none. */
+async function behindMisses(runs) {
+  for (const r of runs) {
+    if (r.status !== 'completed') continue;
+    if (r.conclusion === 'success' || r.conclusion === 'skipped') return undefined;
+    if ((await failedJobs(r.databaseId)).length === 0 && infraMiss(await jobsOf(r.databaseId)).length > 0) continue;
+    return r;
+  }
+  return undefined;
+}
+/** Run `id`'s jobs, null when they cannot be read. */
+async function jobsOf(id) {
+  return Promise.resolve(source.jobs?.(id)).catch(() => null);
+}
+/**
+ * An infrastructure miss at `done` (M20.37, cp3 F1): `missed` jobs no hosted runner acquired. Never green: unknown (exit 3) until a
+ * newer run, the remedy, is pending, then a wait for it (exit 2, bounded as a declared fix is). When the newest STARVED_RUNS completed
+ * runs each missed one job, the starvation is the owner's decision (the runner label or matrix costs money): blockedReason is set.
+ */
+async function infraMissReport({ workflow, done, missed, mine, pending }) {
+  const sha = String(done.headSha).slice(0, 7);
+  const head = `last-ci: INFRA-MISS ${workflow} at ${sha} (run ${done.databaseId}): ${missed.join(', ')} never acquired by a hosted runner (cancelled, no steps); ${INFRA_REMEDY}`;
+  const next = pending > 0 ? mine[pending - 1] : undefined;
+  const first =
+    next === undefined
+      ? { verdict: UNKNOWN, line: `${head}; no newer run yet` }
+      : boundedWait(head, next, mine.slice(0, pending), `wait for the next push's run (run ${next.databaseId})`);
+  const starving = await starvation(mine.slice(pending));
+  if (starving.length === 0) return { verdict: first.verdict, lines: [first.line] };
+  const reason = `ci job ${starving.join(', ')} was never acquired by a hosted runner in the newest ${STARVED_RUNS} completed ${workflow} runs (last at ${sha}, run ${done.databaseId}): the runner label or matrix is the owner's cost decision`;
+  const state = opt('state') ?? repoPath('.harness', 'state.json');
+  const wrote = existsSync(state) && recordStarvation(state, reason);
+  return { verdict: first.verdict, lines: [first.line, `last-ci: STARVED ${reason}; blockedReason ${wrote ? 'set' : 'already set, kept'}`] };
+}
+/** The jobs every one of the newest STARVED_RUNS completed runs of `runs` (newest first) missed, read until a run misses none. */
+async function starvation(runs) {
+  const misses = [];
+  for (const r of runs) {
+    if (r.status !== 'completed' || misses.length === STARVED_RUNS) break;
+    const miss = (await failedJobs(r.databaseId)).length === 0 ? infraMiss(await jobsOf(r.databaseId)) : [];
+    if (miss.length === 0) break;
+    misses.push(miss);
+  }
+  return starved(misses);
 }
 /** The cold-setup line of ci's newest completed run, and whether it blocks (by status). */
 async function coldSetupReport(run, newer) {

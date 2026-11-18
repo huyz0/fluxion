@@ -665,6 +665,106 @@ describe('last-ci (M5.2, M4 final F3)', () => {
     assert.match(r.out, /needed; fix it before the next task/);
   });
 
+  it('NFR-DX-001: a run whose only fault is a job no hosted runner acquired is an infrastructure miss, not red and never green (M20.37, cp3 F1)', () => {
+    const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
+    /** ci's jobs with macOS verify concluded `macos` after `steps`, and ci-ok failing through it. */
+    const jobs = (macos, steps, other = 'success') => [
+      { name: 'verify (ubuntu-latest)', conclusion: other, steps: [{ name: 'checkout' }] },
+      { name: 'verify (macos-latest)', conclusion: macos, ...(steps === undefined ? {} : { steps }) },
+      { name: 'ci-ok', conclusion: 'failure', steps: [{ name: 'gate' }] },
+    ];
+    const ci = (id, at, j) => run('ci', 'failure', `2026-09-29T02:${at}:00Z`, { databaseId: id, headSha: `sha${id}000000`, jobs: j });
+    let r = lastCi([ci(70, '00', jobs('cancelled', [])), gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 3, r.out);
+    assert.match(
+      r.out,
+      /last-ci: INFRA-MISS ci at sha7000 \(run 70\): verify \(macos-latest\) never acquired by a hosted runner \(cancelled, no steps\); not a product red and never green: the next push's run is the remedy; a re-run of the same sha is never counted as evidence; no newer run yet/,
+    );
+    assert.doesNotMatch(r.out, /RED ci/);
+    // no Fixes-ci can name it: it is not listed red
+    assert.deepEqual(r.red, { verdict: 3, red: [] });
+    // the next push's run pending is the remedy: a wait
+    const next = run('ci', 'in_progress', '2026-09-29T02:30:00Z', { databaseId: 71, headSha: 'sha71000000', message: 'M1.2: feat(x): y', jobs: [] });
+    r = lastCi([next, ci(70, '00', jobs('cancelled', [])), gates]);
+    assert.equal(r.status, 2, r.out);
+    assert.match(r.out, /INFRA-MISS ci at sha7000 \(run 70\).*: wait for the next push's run \(run 71\), then run last-ci again/);
+    // a job cancelled after it ran a step, or whose steps are unknown, is no miss: red as before; so is a miss beside a product failure
+    for (const j of [jobs('cancelled', [{ name: 'checkout' }]), jobs('cancelled', undefined), jobs('cancelled', [], 'failure')]) {
+      r = lastCi([ci(70, '00', j), gates]);
+      assert.equal(r.status, 1, r.out);
+      assert.match(r.out, /last-ci: RED ci failure at sha7000 \(run 70\)/);
+      assert.doesNotMatch(r.out, /INFRA-MISS/);
+    }
+    // a product red behind a newer miss is still red: the miss proves nothing about it (r1 F1)
+    r = lastCi([ci(73, '30', jobs('cancelled', [])), ci(72, '20', jobs('failure', [{ name: 'checkout' }])), gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /INFRA-MISS ci at sha7300 \(run 73\)/);
+    assert.match(r.out, /last-ci: RED ci failure at sha7200 \(run 72\) \(1 newer run pending\): none declares Fixes-ci: 72/);
+    assert.deepEqual(
+      r.red.red.map((x) => x.run),
+      ['72'],
+    );
+    // its declared fix whose own run missed a runner is not fixed twice: unknown until the next push's run, not red
+    const fixMissed = { ...ci(73, '30', jobs('cancelled', [])), message: 'M1.3: fix(x): y\n\nFixes-ci: 72' };
+    r = lastCi([fixMissed, ci(72, '20', jobs('failure', [{ name: 'checkout' }])), gates], '2026-09-29T02:40:00Z');
+    assert.equal(r.status, 3, r.out);
+    assert.match(r.out, /RED ci failure at sha7200 \(run 72\).*: wait for the declared fix \(run 73\)/);
+    // an older miss behind a newer red is not listed red either
+    r = lastCi([ci(72, '20', jobs('success', [], 'failure')), ci(70, '00', jobs('cancelled', [])), gates], undefined, undefined, { red: true });
+    assert.equal(r.status, 1, r.out);
+    assert.deepEqual(
+      r.red.red.map((x) => x.run),
+      ['72'],
+    );
+  });
+
+  it('NFR-DX-001: a starvation across the newest three completed runs sets blockedReason, once (M20.37, cp3 F1)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'last-ci-state-'));
+    try {
+      const state = join(dir, 'state.json');
+      writeFileSync(state, JSON.stringify({ milestone: 'M1', blockedReason: null }));
+      const gates = run('gates', 'success', '2026-09-29T01:00:00Z', { databaseId: 39 });
+      const missed = (id, at, name = 'verify (macos-latest)') =>
+        run('ci', 'failure', `2026-09-29T02:${at}:00Z`, {
+          databaseId: id,
+          headSha: `sha${id}000000`,
+          jobs: [
+            { name, conclusion: 'cancelled', steps: [] },
+            { name: 'ci-ok', conclusion: 'failure', steps: [{ name: 'gate' }] },
+          ],
+        });
+      const args = ['--state', state];
+      // two runs: not yet a starvation
+      let r = lastCi([missed(81, '10'), missed(80, '00'), gates], undefined, undefined, { args });
+      assert.equal(r.status, 3, r.out);
+      assert.doesNotMatch(r.out, /STARVED/);
+      assert.equal(JSON.parse(readFileSync(state, 'utf8')).blockedReason, null);
+      // three runs missing a different job each: no starvation of one job
+      r = lastCi([missed(82, '20', 'verify (windows-latest)'), missed(81, '10'), missed(80, '00'), gates], undefined, undefined, { args });
+      assert.doesNotMatch(r.out, /STARVED/);
+      // three runs missing macOS: the owner's decision, recorded
+      r = lastCi([missed(82, '20'), missed(81, '10'), missed(80, '00'), gates], undefined, undefined, { args });
+      assert.equal(r.status, 3, r.out);
+      assert.match(
+        r.out,
+        /last-ci: STARVED ci job verify \(macos-latest\) was never acquired by a hosted runner in the newest 3 completed ci runs .*owner's cost decision; blockedReason set/,
+      );
+      const reason = JSON.parse(readFileSync(state, 'utf8')).blockedReason;
+      assert.match(
+        reason,
+        /^ci job verify \(macos-latest\) was never acquired by a hosted runner in the newest 3 completed ci runs \(last at sha8200, run 82\)/,
+      );
+      assert.equal(JSON.parse(readFileSync(state, 'utf8')).milestone, 'M1');
+      // a reason already set is kept
+      writeFileSync(state, JSON.stringify({ blockedReason: 'another' }));
+      r = lastCi([missed(82, '20'), missed(81, '10'), missed(80, '00'), gates], undefined, undefined, { args });
+      assert.match(r.out, /blockedReason already set, kept/);
+      assert.equal(JSON.parse(readFileSync(state, 'utf8')).blockedReason, 'another');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('a red run names an open blocks-landing row, under which that row and harness-path commits proceed (M18.142)', () => {
     const row = (state) => `| M18.117 | CI green \`blocks-landing\` | HARNESS | acceptance | — | ${state} | |\n`;
     const red = [run('ci', 'failure', '2026-09-29T02:00:00Z', 'deadbee0000000'), run('gates', 'success', '2026-09-29T02:00:00Z')];
